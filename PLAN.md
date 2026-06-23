@@ -97,12 +97,13 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
       grain is the lever; unit = finest grain that NATURAL-FILLS dense (topic for rich
       areas, subdomain for thin); per-KB token ceiling ~45k. See DECISION/GRAIN_ANALYSIS/GRAIN_OPTIMUM.
 - [ ] A.2 deep population (helper) — optional, can precede or follow A.4.
-- [ ] A.4 mass generation — **next action, gated on user go-ahead (choose depth/cost)**
+- [x] A.4 mass generation: 24/24 subdomain dense KBs, all gate-pass; INDEX.json built
+      (489 nodes, 930 edges, ~964k tokens total). knowledge_base/knowledge_searcher/.
+- [ ] A.5 derive foundational Knowledge Searcher specialist — **next action (approach gated)**
 - [ ] Phase B (awaiting a RAW_IDEA)
 
 ## 8. Next action
-Grain rule fixed (natural-fill-driven; dense+topic = finest under one response; ceiling ~45k).
-Awaiting user choice of build depth for A.4: (a) subdomain grain ~24 KBs / ~480 nodes (1x),
-(b) topic grain ~70+ KBs / ~1400 nodes (~3x, runs near ceiling), or (c) adaptive natural-fill
-(finest grain that fills per unit). Then fan out helpers, gate + commit each, and derive the
-foundational Knowledge Searcher specialist (A.5).
+A.4 complete (24/24). Next: A.5 specialist derivation from the 24-KB set. Approach TBD with
+user (one unified Knowledge Searcher specialist vs 8 per-domain vs 24 per-subdomain). 24 KBs
+(~964k tok) exceed one helper context, so derivation will be hierarchical: deterministic
+compact digests (CQs + node topics + workflow per KB) -> helper composes specialist(s).
