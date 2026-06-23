@@ -109,10 +109,13 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
       llm_engineering.taxonomy.json`); plan `phase_b/PLAN_B.md`. User course-correction:
       research-first, CORE SUBSET (6 domains: ftune, orch, eval, distill, reason, select =
       13 subdomain KBs), both boundaries confirmed.
-  - **CORE-6 RESEARCH LAYER COMPLETE:** 13/13 dense KBs gated 35/35
-    (`phase_b/knowledge_base/llm_engineering/`, 281 nodes/505 edges/~465k tok); 6 per-domain
-    specialists gated (`phase_b/specialists/`); INDEX.json + ROUTER.json built (routing verified
-    correct on 6 sample needs). Domains: ftune, orch, eval, distill, reason, select.
+  - **RESEARCH LAYER COMPLETE — all 12 domains:** 25/25 dense KBs gated 35/35
+    (`phase_b/knowledge_base/llm_engineering/`, 543 nodes / 973 edges / ~876k tok); 12
+    per-domain specialists gated (`phase_b/specialists/`); INDEX.json + ROUTER.json rebuilt
+    over the full set (routing 11/12 on sample needs; math/reason overlap handled by
+    multi_specialist_policy + fallback). Domains: ftune, orch, eval, distill, reason, select,
+    tool, intent, steer, infra, math, code. Boundary guards held on steer__repeng (literature
+    survey, not guardrail removal) and intent__cogmodel (adaptive UX, not clinical diagnosis).
   - **OPERATIONAL METHOD (hard-won; reuse for all future KB fan-out):**
     1. Helpers MUST be told: do the work YOURSELF, do NOT use the Agent tool / delegate / "wait"
        (general-purpose sub-agents otherwise spawn children and idle).
@@ -131,15 +134,13 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
        a passing/committed file — that lost a unit once). Commit passes; push.
 
 ## 8. Next action
-Core-6 RESEARCH layer complete (Track 1 for the core subset). Awaiting user direction on the
-next move (asked via AskUserQuestion):
-- **Track 2 — runnable scaffold** (RECOMMENDED): GPU-portable code grounded in the core-6 KBs/
-  specialists — phase_b/ingest (PDF->chunk->distill, reuses the gate), training-with-rollback
-  loop, orchestration graph (any-to-any weighted DAG + router + summarizer + token-budget cap),
-  eval harness, model-selection sheet, dense<->human renderer. Real fine-tunes need rented GPUs;
-  this produces architecture + configs + runnable skeleton.
-- **Expand Track 1** to the other 6 taxonomy domains (tool, intent, steer, infra, math, code) =
-  ~12 more gated KBs + specialists, same v3 method.
+Full 12-domain RESEARCH layer complete (Track 1 done). Remaining Phase B work:
+- **Track 2 — runnable scaffold** (the user's "build the scaffold" ask): GPU-portable code
+  grounded in the 12-domain KBs/specialists — phase_b/ingest (PDF->chunk->distill, reuses the
+  gate + tools/compute_kb_formulas.py), training-with-rollback loop, orchestration graph
+  (any-to-any weighted DAG + router + summarizer + token-budget cap), eval harness,
+  model-selection sheet, dense<->human renderer. Real fine-tunes need rented GPUs; this
+  produces architecture + configs + runnable skeleton.
 - **Supply data**: user drops WCO/iCloud transcripts + book PDFs into phase_b/sources/ to wire
-  real ingestion.
+  real ingestion against actual content.
 Method + harvest loop for any future KB fan-out: see section 7 OPERATIONAL METHOD.
