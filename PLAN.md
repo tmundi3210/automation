@@ -103,10 +103,19 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
       scholcomm/libarch), all pass specialist_validator; + specialists/ROUTER.json over them
       (routing verified on 8 sample needs). tools/build_index.py, tools/build_router.py.
 - [x] **PHASE A COMPLETE** — foundational Knowledge Searcher (KBs + specialists + router).
-- [ ] Phase B (awaiting a RAW_IDEA)
+- [~] **PHASE B STARTED** — RAW_IDEA received (orchestrated fine-tuned specialist "thinking"
+      system). Neutralized + intent-mapped + boundaries set (`phase_b/IDEA_NEUTRALIZED.md`);
+      seed taxonomy committed: 12 domains / 25 subdomains, books + `frontier_not_in_books`
+      (`phase_b/taxonomy/llm_engineering.taxonomy.json`); execution plan `phase_b/PLAN_B.md`.
+      AWAITING user course-correction on first-wave scope/breadth/boundaries before the
+      gated KB fan-out (Track 1) and the GPU-portable code scaffold (Track 2).
 
 ## 8. Next action
-Phase A complete. Awaiting a RAW_IDEA to start Phase B: neutralize idea -> academic books +
-taxonomy (consult Knowledge Searcher via ROUTER for where/how to find sources) -> optional
-DOMAIN_ADAPTER schema -> subdomain-grain dense KBs (gate each) -> per-domain specialist(s).
-Reuse: prompts/_a4_subdomain_job.md, prompts/_a5_specialist_job.md, validators/, tools/.
+Phase B course-correction. Present neutralized framing + 12-domain taxonomy + the
+in-books/not-in-books map; ask: (a) first wave = research-KBs vs architecture-scaffold vs one
+vertical slice; (b) breadth = all 12 domains vs a core subset first; (c) confirm boundary
+reframes (steer/D7 = terse machine I/O + steering literature, NOT guardrail removal; intent/D6
+= adaptive UX signals, NOT clinical diagnosis). Then run Track 1 (A.4 helpers per subdomain,
+gated; A.5 specialists per domain; INDEX + ROUTER) and Track 2 (ingest/train-loop/orchestration/
+eval scaffold). Reuse prompts/_a4_subdomain_job.md, _a5_specialist_job.md, validators/, tools/.
+External blockers: WCO/iCloud data + book PDFs -> phase_b/sources/; GPUs -> rented (scaffold only here).

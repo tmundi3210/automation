@@ -1,0 +1,138 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "set": "llm_engineering",
+  "idea_ref": "phase_b/IDEA_NEUTRALIZED.md",
+  "generated_by": "orchestrator (Phase B seed; deep population deferred to helpers like Phase A.2)",
+  "grain_decision": "one dense KB per SUBDOMAIN (subdomain grain), per Phase A calibration; rich subdomains may split to TOPIC grain at build time per kb_generation_job grain rule",
+  "consulted": "Phase A Knowledge Searcher router (specialists/ROUTER.json) is queried per-subdomain to locate authoritative sources before generation",
+  "domain_count": 12,
+  "real_world_execution_notes": [
+    "The SCIENCE underneath (probability, methodology, cognition, IR/KR, evaluation theory) is book-stable and largely covered by Phase A's find/evaluate specialists.",
+    "The EXECUTION of this system is frontier/tacit: it lives in model cards, framework docs (TRL, PEFT, Axolotl, Unsloth, vLLM, DeepSpeed, llama.cpp, LangGraph, Outlines), public leaderboards (Open LLM Leaderboard, LMSYS Arena, HELM), vendor GPU pricing, and base-model LICENSES/ToS — and it shifts monthly. Each domain tags this in frontier_not_in_books.",
+    "Hard real-world constraints to encode as KB conflict_axes/dominance_rules: (a) base-model license/ToS limits what you may legally fine-tune/serve; (b) small fine-tuned specialists beat generalists only on NARROW, well-specified tasks, not broad 'thinking'; (c) orchestration multiplies latency+cost per hop; (d) benchmark scores are contaminated/gameable (Goodhart); (e) safety-layer ablation degrades general capability and breaks hosted-model ToS.",
+    "Empirical lesson the user cited (raw-data biomedical model beating curated specialists): favor representative/raw training data + verifiable reward over hand-picked bookish examples; treated as a data-curation dominance rule in D1."
+  ],
+  "domains": [
+    {
+      "code": "ftune",
+      "label": "Model Adaptation & Fine-Tuning",
+      "why": "Turn selected base models into specialists; the user's monitored, rollback-capable training loop and 'raw data > curated' lesson live here.",
+      "subdomains": [
+        {"code": "sft_peft", "label": "Supervised & Parameter-Efficient Fine-Tuning", "scope_hint": "SFT, LoRA/QLoRA/DoRA, adapters, quantized training, hyperparameters, catastrophic forgetting, data formatting/templating", "key_books": ["Tunstall, Werra, Wolf — Natural Language Processing with Transformers", "Goodfellow, Bengio, Courville — Deep Learning", "Hu et al. 2021 LoRA", "Dettmers et al. 2023 QLoRA"], "topics": ["dataset schema & chat templating", "LoRA rank/alpha/target-modules", "QLoRA 4-bit NF4", "learning-rate/warmup/epochs", "overfitting & forgetting mitigation", "merging adapters"]},
+        {"code": "pref_align", "label": "Preference & Alignment Tuning", "scope_hint": "RLHF, DPO/IPO/KTO/ORPO, reward modeling, preference-data collection (incl. the user's explain→choose method), verifiable reward (RLVR)", "key_books": ["Ouyang et al. 2022 InstructGPT", "Rafailov et al. 2023 DPO", "Christiano et al. 2017 RLHF", "Lambert — RLHF Book (online)"], "topics": ["reward modeling", "DPO vs PPO tradeoffs", "preference pair construction", "RLVR for math/code", "reward hacking"]},
+        {"code": "train_loop", "label": "Monitored Training Loop, Checkpointing & Rollback", "scope_hint": "eval-in-the-loop, early stopping, checkpoint/resume, rollback on stall/regression, deleting neutral last-N steps, curriculum, run bookkeeping/lineage", "key_books": ["Goodfellow et al. — Deep Learning (regularization/early-stopping ch.)", "Huyen — Designing Machine Learning Systems", "Karpathy — recipe for training NNs (online)"], "topics": ["validation cadence & metric selection", "early-stopping/patience", "checkpoint rewind policy", "plateau/regression detection", "experiment tracking & lineage"]}
+      ],
+      "frontier_not_in_books": ["TRL/PEFT/Axolotl/Unsloth configs & defaults", "current LoRA target-module conventions per architecture", "which preference algo (DPO/ORPO/KTO) is winning this quarter", "GPU-memory math for a given model+context+batch"]
+    },
+    {
+      "code": "orch",
+      "label": "Multi-Agent / Multi-Model Orchestration",
+      "why": "The user's 'not series, not parallel — 3D/4D any-to-any weighted graph' and the summarizer node.",
+      "subdomains": [
+        {"code": "topology", "label": "Agent Graph Topologies & Routing", "scope_hint": "DAG/graph agent workflows, any-to-any edges, routers, mixture-of-experts, conditional/dynamic dispatch, value/confidence-weighted edges", "key_books": ["Wooldridge — An Introduction to MultiAgent Systems", "Shoham & Leyton-Brown — Multiagent Systems", "Russell & Norvig — AIMA (agents)", "Shazeer et al. 2017 (MoE); Fedus et al. 2021 Switch"], "topics": ["router design", "MoE gating", "graph vs pipeline vs blackboard", "edge weighting & value propagation", "loops & termination"]},
+        {"code": "aggregate", "label": "Aggregation, Debate, Ensembling & Summarization", "scope_hint": "weighted aggregation of many model outputs, multi-agent debate, self-consistency vote, the summarizer/compressor to bound context when N outputs exceed an input", "key_books": ["Du et al. 2023 (multiagent debate)", "Wang et al. 2022 (self-consistency)", "Jiang et al. 2023 LLM-Blender", "Nenkova & McKeown — Automatic Summarization"], "topics": ["weighted vote/aggregation", "debate & critique", "context compression", "map-reduce summarization", "conflict resolution across agents"]}
+      ],
+      "frontier_not_in_books": ["LangGraph/AutoGen/CrewAI/LlamaIndex Workflows APIs", "real latency/cost compounding per hop", "production routing patterns (semantic router, RouteLLM)"]
+    },
+    {
+      "code": "eval",
+      "label": "LLM Evaluation, Benchmarking & Scoring",
+      "why": "The user's 'scoring system, pull real benchmark questions, test yourself'.",
+      "subdomains": [
+        {"code": "benchmarks", "label": "Benchmarks, Harnesses & Contamination", "scope_hint": "task benchmarks (MMLU/GSM8K/BBH/HumanEval), eval harnesses (lm-eval-harness, HELM), metric selection, train/test contamination, Goodharting", "key_books": ["Jurafsky & Martin — Speech and Language Processing (eval ch.)", "Hendrycks et al. 2020 MMLU", "Liang et al. 2022 HELM"], "topics": ["metric@k selection", "few-shot vs zero-shot eval", "contamination detection", "leaderboard interpretation", "domain-specific test sets"]},
+        {"code": "judge", "label": "LLM-as-Judge & Preference Scoring", "scope_hint": "model-graded eval, pairwise/Elo arenas, rubric scoring, judge bias/calibration, building a scoring system from real test questions", "key_books": ["Zheng et al. 2023 (MT-Bench / LLM-as-judge)", "Chiang et al. 2024 (Chatbot Arena)"], "topics": ["rubric design", "pairwise vs pointwise", "position/verbosity bias", "judge calibration", "human-spot-check loops"]}
+      ],
+      "frontier_not_in_books": ["which benchmarks are saturated/contaminated now", "lm-eval-harness/HELM task configs", "Arena Elo dynamics", "private eval-set hygiene"]
+    },
+    {
+      "code": "tool",
+      "label": "Tool Use, Retrieval & Agent Memory",
+      "why": "The user's tools for live info, exact math/code execution, and personal-history memory.",
+      "subdomains": [
+        {"code": "funccall", "label": "Function Calling & Tool-Augmented Inference", "scope_hint": "function/tool schemas, ReAct, tool selection/planning, code-execution tools, tool-use fine-tuning, error handling/retries", "key_books": ["Yao et al. 2022 ReAct", "Schick et al. 2023 Toolformer", "Russell & Norvig — AIMA (planning)"], "topics": ["tool schema design", "ReAct loops", "tool-use training data", "exec sandboxes", "failure recovery"]},
+        {"code": "rag_mem", "label": "Retrieval-Augmented Generation & Agent Memory", "scope_hint": "RAG grounding, vector/lexical retrieval (reuse Phase A IR), long-term agent memory, personal-context store (read/write the user's history), live-info tools", "key_books": ["Lewis et al. 2020 RAG", "Packer et al. 2023 MemGPT", "Manning, Raghavan, Schütze — Intro to Information Retrieval"], "topics": ["chunking & indexing", "memory write/update/forget", "personal profile store", "freshness/live data", "grounding & citation"]}
+      ],
+      "frontier_not_in_books": ["MCP / function-calling formats per vendor", "vector DB choices (FAISS/pgvector/Qdrant)", "memory frameworks (Letta/MemGPT, Mem0)"]
+    },
+    {
+      "code": "distill",
+      "label": "Knowledge Distillation & Dense Representation",
+      "why": "Extends Phase A: PDF→chunk→per-chunk helper→dense machine-facing KB; plus dense↔human rendering and compact code representation.",
+      "subdomains": [
+        {"code": "ingest", "label": "Document Ingestion & Chunking", "scope_hint": "PDF/text extraction, layout/figure handling, semantic chunking, dedup, the Python breaker the user wants, mapping chunks to KB nodes", "key_books": ["Manning et al. — Intro to Information Retrieval (tokenization/segmentation)", "Bird, Klein, Loper — NLP with Python (NLTK)"], "topics": ["PDF→text (pdfplumber/PyMuPDF)", "semantic vs fixed chunking", "chunk→node mapping", "dedup & provenance", "JSONL sharding"]},
+        {"code": "kb_distill", "label": "Schema-Constrained Distillation & Dense↔Human Rendering", "scope_hint": "per-chunk distillation into dense JSON (Phase A schema), structured/constrained decoding, distillation theory, and a decompression model that renders dense→human-readable on demand", "key_books": ["Hinton et al. 2015 (knowledge distillation)", "Willard & Louf 2023 (Outlines / constrained decoding)"], "topics": ["constrained JSON decoding", "distillation losslessness checks", "dense schema design", "human renderer", "round-trip fidelity"]}
+      ],
+      "frontier_not_in_books": ["Outlines/JSON-mode/grammar decoding APIs", "PDF-extraction quality per tool", "our own Phase A gate as the quality bar"]
+    },
+    {
+      "code": "intent",
+      "label": "Intent Modeling & User Understanding",
+      "why": "The user's front-end: understand intent, ask follow-ups, model the person (cognition, biases, multilingual incl. Hindi/Punjabi), objective dial.",
+      "subdomains": [
+        {"code": "cogmodel", "label": "User & Cognition Modeling", "scope_hint": "cognitive psychology, dual-process, cognitive biases, expertise/education estimation (probabilistic, time-varying, NON-clinical), fatigue/time-of-day effects on UX, user modeling", "key_books": ["Kahneman — Thinking, Fast and Slow", "Sternberg & Sternberg — Cognitive Psychology", "Gigerenzer — Rationality for Mortals"], "topics": ["dual-process framing", "bias catalog & mitigation", "expertise estimation as a signal", "adaptive difficulty", "ethical UX bounds (not diagnosis)"]},
+        {"code": "intent_elicit", "label": "Intent Elicitation, Clarifying Questions & Pragmatics", "scope_hint": "asking good clarifying questions, what-you-don't-know detection, objective dial (quality/cost/speed), pragmatics/implicature, multilingual intent (Hindi/Punjabi/code-switching)", "key_books": ["Levinson — Pragmatics", "Jurafsky & Martin — Speech and Language Processing (dialogue)", "Aliannejadi et al. 2019 (clarifying questions)"], "topics": ["clarifying-question policy", "uncertainty/ambiguity detection", "objective dials", "multilingual & code-switch intent", "stopping rule for questioning"]}
+      ],
+      "frontier_not_in_books": ["dialogue-state/agent frameworks", "current multilingual model quality for Punjabi/Hindi", "privacy/consent norms for user-context capture"]
+    },
+    {
+      "code": "steer",
+      "label": "Controllability, Steering & Representation Engineering",
+      "why": "The reframed 'remove layers' item: terse persona-free machine I/O + the published steering literature. Boundary in IDEA_NEUTRALIZED §5.",
+      "subdomains": [
+        {"code": "format_ctrl", "label": "Format, Verbosity & Persona Control (terse machine I/O)", "scope_hint": "constrained/structured decoding, strict-format outputs, anti-hallucination guards, removing chat boilerplate/persona via SFT on dense I/O pairs, token-efficiency", "key_books": ["Willard & Louf 2023 (Outlines)", "Tunstall et al. — NLP with Transformers (generation control)"], "topics": ["grammar/JSON-constrained decoding", "stop sequences & length caps", "persona-free terse SFT", "abstention on low confidence", "machine-protocol I/O"]},
+        {"code": "repeng", "label": "Representation Engineering & Activation Steering (literature)", "scope_hint": "published science of activation steering, control vectors, refusal/persona directions, mechanistic interpretability of 'layers' — studied, not weaponized (see boundary)", "key_books": ["Zou et al. 2023 (Representation Engineering)", "Turner et al. 2023 (Activation Addition)", "Arditi et al. 2024 (refusal direction — literature only)"], "topics": ["control vectors", "steering for style/verbosity", "interpretability of internal directions", "capability/safety tradeoffs (documented)", "scope boundary"]}
+      ],
+      "frontier_not_in_books": ["repeng/control-vector tooling", "vendor ToS on weight modification", "documented capability degradation from ablation"]
+    },
+    {
+      "code": "infra",
+      "label": "Training & Inference Infrastructure",
+      "why": "The user's 'rent servers, train there'; serving + quantization + cost.",
+      "subdomains": [
+        {"code": "train_infra", "label": "GPU Training Infrastructure & Cost", "scope_hint": "GPU rental (cloud/spot), distributed training (FSDP/DeepSpeed/ZeRO), memory math, mixed precision, cost/effectiveness modeling for many small models", "key_books": ["Kleppmann — Designing Data-Intensive Applications (systems)", "Huyen — Designing Machine Learning Systems (infra/cost ch.)"], "topics": ["GPU sizing & memory math", "FSDP/ZeRO sharding", "spot vs on-demand cost", "multi-model training scheduling", "checkpointing infra"]},
+        {"code": "serve_quant", "label": "Inference Serving & Quantization", "scope_hint": "vLLM/TGI serving, batching, KV-cache, quantization (GPTQ/AWQ/GGUF), LoRA hot-swap for many specialists, llama.cpp local", "key_books": ["Kwon et al. 2023 (vLLM / PagedAttention)", "Frantar et al. 2022 (GPTQ)"], "topics": ["serving throughput/latency", "LoRA hot-swap multi-tenant", "quantization quality tradeoffs", "local vs hosted serving", "autoscaling cost"]}
+      ],
+      "frontier_not_in_books": ["live GPU prices (RunPod/Lambda/Vast/CoreWeave)", "vLLM/TGI flags & multi-LoRA support", "GGUF/AWQ quality this quarter"]
+    },
+    {
+      "code": "reason",
+      "label": "Reasoning Enhancement & Test-Time Compute",
+      "why": "The user's core thesis: 'force more output → more intelligence'; token-budget-to-saturation.",
+      "subdomains": [
+        {"code": "ttc", "label": "Test-Time Compute & Structured Reasoning", "scope_hint": "chain-of-thought, self-consistency, tree/graph-of-thought, best-of-N, verifier-guided search, scaling output to the value-saturation token budget", "key_books": ["Wei et al. 2022 (CoT)", "Wang et al. 2022 (self-consistency)", "Yao et al. 2023 (Tree of Thoughts)", "Cobbe et al. 2021 (verifiers)"], "topics": ["CoT prompting & training", "self-consistency vote", "ToT/GoT search", "verifier/PRM scoring", "token-budget saturation curve"]},
+        {"code": "verify", "label": "Verification, Self-Correction & Anti-Hallucination", "scope_hint": "verifier/critic models, self-refine, process reward models, tool-grounded checking, calibrated abstention", "key_books": ["Madaan et al. 2023 (Self-Refine)", "Lightman et al. 2023 (process supervision)"], "topics": ["critic/verifier design", "self-refine loops", "process vs outcome reward", "calibrated abstention", "grounding checks"]}
+      ],
+      "frontier_not_in_books": ["o1/R1-style test-time-scaling recipes", "measured accuracy-vs-tokens curves per task", "PRM availability"]
+    },
+    {
+      "code": "math",
+      "label": "Mathematical & Symbolic Reasoning Specialization",
+      "why": "The user: 'math models are crucial; strict format; Python for exact math; probability'.",
+      "subdomains": [
+        {"code": "prob_stat", "label": "Probability & Statistics Mastery", "scope_hint": "the probability/statistics body the math specialist must master, mapped to evaluable competency questions and test items", "key_books": ["Blitzstein & Hwang — Introduction to Probability", "Wasserman — All of Statistics", "Casella & Berger — Statistical Inference"], "topics": ["probability foundations", "distributions & inference", "Bayesian reasoning", "common pitfalls", "worked-problem competency set"]},
+        {"code": "tool_math", "label": "Tool-Grounded & Strict-Format Numeric Reasoning", "scope_hint": "program-aided math (PAL/PoT), Python/CAS as the exact engine, strict numeric output schema, anti-hallucination, unit/format validation", "key_books": ["Gao et al. 2022 (PAL)", "Chen et al. 2022 (Program of Thoughts)"], "topics": ["delegate computation to code", "strict numeric schema", "CAS/SymPy integration", "answer verification", "no-free-text numeric mode"]}
+      ],
+      "frontier_not_in_books": ["which open math models lead now (Qwen-Math/DeepSeek-Math)", "PAL/PoT tooling", "math benchmark contamination"]
+    },
+    {
+      "code": "code",
+      "label": "Code-Generation Specialization",
+      "why": "The user's coding agents (web/HTML/Python), library-aware codegen, compact code/library representation.",
+      "subdomains": [
+        {"code": "codegen", "label": "Code-Gen Models & Execution Feedback", "scope_hint": "code LLMs, exec-feedback loops, repo/library-aware generation, test-driven generation, stack-specific (web/HTML/Python) specialization", "key_books": ["Chen et al. 2021 (Codex/HumanEval)", "Hunt & Thomas — The Pragmatic Programmer"], "topics": ["exec-verified generation", "library/API grounding", "test-driven loops", "stack-specific tuning", "repo-level context"]},
+        {"code": "code_repr", "label": "Compact Code & Library Representation", "scope_hint": "token-efficient code/library representation (the user's encode→decode idea), API signature compression, retrieval over libraries, expansion back to full code", "key_books": ["Allamanis et al. 2018 (ML on code, survey)", "Manning et al. — Intro to Information Retrieval (code retrieval)"], "topics": ["API-signature compression", "library index/retrieval", "compressed→full expansion", "type-aware representation", "token-budget tradeoffs"]}
+      ],
+      "frontier_not_in_books": ["leading open code models (Qwen-Coder/DeepSeek-Coder)", "library-doc retrieval tooling", "exec-sandbox setup"]
+    },
+    {
+      "code": "select",
+      "label": "Base-Model Selection & Profiling",
+      "why": "The user: 'select the model per specialist — data, restriction, bench score, context, size, tool support, I/O'.",
+      "subdomains": [
+        {"code": "modelcards", "label": "Model Cards, Licenses & Capability Profiling", "scope_hint": "reading model cards, training-data/restriction provenance, license/ToS (Llama/Qwen/Mistral/Gemma), context length, size, tool-use support, benchmark fit", "key_books": ["Mitchell et al. 2019 (Model Cards)", "Bender & Friedman 2018 (Data Statements)"], "topics": ["license/ToS analysis", "capability-vs-size tradeoff", "context-length needs", "tool-use support check", "data-provenance & restriction"]},
+        {"code": "match", "label": "Specialist↔Model Matching & Cost/Quality", "scope_hint": "matching each specialist's task profile to a base model under cost/quality/latency, when to LoRA vs full-tune, when a generalist beats a specialist", "key_books": ["Huyen — Designing Machine Learning Systems (model selection/cost)"], "topics": ["task→model matching", "cost/quality/latency frontier", "LoRA vs full-tune decision", "specialist-vs-generalist test", "fallback model policy"]}
+      ],
+      "frontier_not_in_books": ["current Open LLM Leaderboard / Arena standings", "exact license clauses per release", "live model availability on HF Hub"]
+    }
+  ]
+}
