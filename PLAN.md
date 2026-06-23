@@ -103,12 +103,30 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
       scholcomm/libarch), all pass specialist_validator; + specialists/ROUTER.json over them
       (routing verified on 8 sample needs). tools/build_index.py, tools/build_router.py.
 - [x] **PHASE A COMPLETE** — foundational Knowledge Searcher (KBs + specialists + router).
-- [~] **PHASE B STARTED** — RAW_IDEA received (orchestrated fine-tuned specialist "thinking"
-      system). Neutralized + intent-mapped + boundaries set (`phase_b/IDEA_NEUTRALIZED.md`);
-      seed taxonomy committed: 12 domains / 25 subdomains, books + `frontier_not_in_books`
-      (`phase_b/taxonomy/llm_engineering.taxonomy.json`); execution plan `phase_b/PLAN_B.md`.
-      AWAITING user course-correction on first-wave scope/breadth/boundaries before the
-      gated KB fan-out (Track 1) and the GPU-portable code scaffold (Track 2).
+- [~] **PHASE B IN PROGRESS** — RAW_IDEA received (orchestrated fine-tuned specialist "thinking"
+      system). Neutralized + intent-mapped + boundaries (`phase_b/IDEA_NEUTRALIZED.md`); seed
+      taxonomy: 12 domains / 25 subdomains + `frontier_not_in_books` (`phase_b/taxonomy/
+      llm_engineering.taxonomy.json`); plan `phase_b/PLAN_B.md`. User course-correction:
+      research-first, CORE SUBSET (6 domains: ftune, orch, eval, distill, reason, select =
+      13 subdomain KBs), both boundaries confirmed.
+  - Core-6 KB build: 12/13 committed (`phase_b/knowledge_base/llm_engineering/`), only
+    ftune__pref_align pending. Then A.5 specialists (6) + INDEX + ROUTER for the set.
+  - **OPERATIONAL METHOD (hard-won; reuse for all future KB fan-out):**
+    1. Helpers MUST be told: do the work YOURSELF, do NOT use the Agent tool / delegate / "wait"
+       (general-purpose sub-agents otherwise spawn children and idle).
+    2. Write the ~100KB KB via a PYTHON BUILDER SCRIPT run with Bash (json.dump), NOT via the
+       Write tool — a direct write exceeds the 32000 output-token limit and errors.
+    3. Helpers author BASE metrics only; `tools/compute_kb_formulas.py` fills ALL derived fields
+       deterministically (mirrors validator formulas exactly) — kills formula.consistency fails.
+    4. Helpers copy the STRUCTURE of a known-passing KB (knowledge_searcher/ir__ranking_and_
+       relevance.kb.json) — kills required-key/edge-type/structure fails.
+    5. Job spec: `prompts/_a4_phaseb_job.md` (v3). Validator hardened to FAIL (not crash) on
+       malformed structure.
+    6. Orchestrator HARVEST loop (never trust helper self-reports; my gate is truth):
+       `git checkout -- <kbdir>` (revert straggler overwrites of committed files); for each
+       untracked *.kb.json: run formula tool, validate; PASS -> regen sidecars + git add;
+       FAIL -> rm (a failing file is never a v3 success, so deleting fails is safe; NEVER delete
+       a passing/committed file — that lost a unit once). Commit passes; push.
 
 ## 8. Next action
 Phase B course-correction. Present neutralized framing + 12-domain taxonomy + the
