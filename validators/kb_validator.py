@@ -446,13 +446,23 @@ def main():
         return 1
     r.ok("json.valid")
 
-    check_top_level(kb, r)
-    check_counts(kb, args.mode, r)
-    nid_set = check_ids_and_refs(kb, r)
-    check_bounds_and_obligations(kb, r, args.allow_observed)
-    check_dependency_acyclicity(kb, r, nid_set)
-    check_placeholders(raw, r)
-    check_formulas(kb, r, args.tolerance, args.allow_observed)
+    def _guard(fn, *a):
+        # Convert any unexpected crash inside a check (e.g. malformed structure:
+        # a string where an object is expected) into a deterministic FAIL rather
+        # than an uncaught traceback. Pass behavior for well-formed KBs is unchanged.
+        try:
+            return fn(*a)
+        except Exception as e:
+            r.fail("validator.exception", f"{fn.__name__}: {type(e).__name__}: {e}")
+            return None
+
+    _guard(check_top_level, kb, r)
+    _guard(check_counts, kb, args.mode, r)
+    nid_set = _guard(check_ids_and_refs, kb, r) or set()
+    _guard(check_bounds_and_obligations, kb, r, args.allow_observed)
+    _guard(check_dependency_acyclicity, kb, r, nid_set)
+    _guard(check_placeholders, raw, r)
+    _guard(check_formulas, kb, r, args.tolerance, args.allow_observed)
 
     out = r.to_dict(args.mode)
     if args.report:
