@@ -113,12 +113,13 @@ These extend the project's existing boundary discipline (`phase_b/IDEA_NEUTRALIZ
 
 | Batch | Domains | KBs gated | Specialists | ROUTER/INDEX |
 |---|---|---|---|---|
-| 1 ✅ | security, loops | 6/6 @ 35/35 | security (13/13), loops (13/13) | rebuilt → 12 specialists / 36 KBs |
-| 2 | appmath, appdev, aicomp | in progress | pending | pending |
-| 3–6 | (12 remaining) | queued | queued | queued |
+| 1 ✅ | security, loops | 6/6 @ 35/35 | security, loops (13/13) | → 12 specialists / 36 KBs |
+| 2 ✅ | appmath, appdev, aicomp | 9/9 @ 35/35 | appmath, appdev, aicomp (13/13) | → 15 specialists / 45 KBs |
+| 3 | business, markets, money, uslaw | in progress | pending | pending |
+| 4–6 | (8 remaining) | queued | queued | queued |
 
-**Set totals after Batch 1:** 12 specialists · 36 dense KBs · 742 nodes · 1,389 edges ·
-501 competency-questions · INDEX `all_pass: True`.
+**Set totals after Batch 2:** 15 specialists · 45 dense KBs · 935 nodes · 1,737 edges ·
+625 competency-questions · INDEX `all_pass: True`.
 
 Updated as batches land. The pipeline, gate, and tools are unchanged from the first 10 —
 this is breadth on a proven machine, not new machinery.
