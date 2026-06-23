@@ -1,0 +1,5908 @@
+{
+  "domain": "eval__judge",
+  "domain_label": "LLM-as-Judge & Preference Scoring (LLM Evaluation subdomain)",
+  "purpose": "session_bounded_stepwise_execution_for_llm_as_judge_evaluation_preference_scoring_and_arena_ranking_systems",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "subdomain scope is LLM-as-judge evaluation, pairwise/pointwise scoring, Elo/arena ranking, bias calibration, and human spot-check loops",
+    "evaluation is model-graded unless human annotation is explicitly configured",
+    "candidate model outputs are already generated; generation infrastructure is out of scope"
+  ],
+  "exclusions": [
+    "model training and fine-tuning internals",
+    "inference serving infrastructure",
+    "dataset curation and data collection beyond evaluation sets",
+    "downstream product decisions beyond evaluation reporting"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What evaluation paradigm (pointwise/pairwise/listwise) is used and why?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "JUDGE_PARADIGM, POINTWISE, PAIRWISE define paradigm and selection rationale",
+      "covered_by": [
+        "JUDGE_PARADIGM",
+        "POINTWISE",
+        "PAIRWISE"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How is the LLM judge validated against human preferences before deployment?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "HUMAN_CALIBRATION and JUDGE_MODEL_SELECT define validation protocol",
+      "covered_by": [
+        "HUMAN_CALIBRATION",
+        "JUDGE_MODEL_SELECT"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What rubric dimensions and grade anchors are used for pointwise scoring?",
+      "must_be_answerable_from": [
+        "nodes",
+        "glossary"
+      ],
+      "acceptance_condition": "RUBRIC_DESIGN and POINTWISE define scoring dimensions",
+      "covered_by": [
+        "RUBRIC_DESIGN",
+        "POINTWISE",
+        "MULTI_DIM_SCORING"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How is position bias detected and corrected in pairwise evaluation?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "POSITION_BIAS defines swap-consistency protocol",
+      "covered_by": [
+        "POSITION_BIAS",
+        "PAIRWISE"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How are Elo ratings computed and when are they considered stable?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "ELO_ARENA defines rating update and CI stability criteria",
+      "covered_by": [
+        "ELO_ARENA",
+        "ARENA_PROTOCOL"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How are verbosity and position biases measured and mitigated?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "VERBOSITY_BIAS and POSITION_BIAS define measurement and mitigation",
+      "covered_by": [
+        "VERBOSITY_BIAS",
+        "POSITION_BIAS"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is self-preference bias detected when judge and candidate share a model family?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "SELF_PREF defines detection method and mitigation via judge diversity",
+      "covered_by": [
+        "SELF_PREF",
+        "JUDGE_MODEL_SELECT"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How are human spot-checks integrated to prevent silent judge drift?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "HUMAN_CALIBRATION defines sampling strategy and drift alert protocol",
+      "covered_by": [
+        "HUMAN_CALIBRATION",
+        "INTER_RATER"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is benchmark contamination detected before evaluating a new model?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "BENCHMARK_CONTAM defines n-gram overlap and canary probing",
+      "covered_by": [
+        "BENCHMARK_CONTAM",
+        "GOODHART"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What monitoring is in place to detect Goodhart's Law gaming of the judge metric?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "GOODHART and HUMAN_CALIBRATION define monitoring and alert criteria",
+      "covered_by": [
+        "GOODHART",
+        "HUMAN_CALIBRATION",
+        "EVAL_REPORTING"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How is evaluation cost managed without sacrificing ranking reliability?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "COST_LATENCY and EVAL_PIPELINE define tiering and sampling strategy",
+      "covered_by": [
+        "COST_LATENCY",
+        "EVAL_PIPELINE"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How are safety and helpfulness jointly evaluated to avoid over-refusal masking?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "SAFETY_EVAL and MULTI_DIM_SCORING define dual-threshold evaluation",
+      "covered_by": [
+        "SAFETY_EVAL",
+        "MULTI_DIM_SCORING"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How are evaluation results communicated with appropriate uncertainty quantification?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "EVAL_REPORTING defines CI inclusion and limitations disclosure",
+      "covered_by": [
+        "EVAL_REPORTING"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "pointwise_scoring",
+      "definition": "scoring each output independently on an absolute rubric without cross-output comparison",
+      "synonyms": [
+        "absolute_scoring"
+      ],
+      "not_same_as": [
+        "pairwise_comparison"
+      ],
+      "used_by_nodes": [
+        "POINTWISE",
+        "MULTI_DIM_SCORING"
+      ]
+    },
+    {
+      "term": "pairwise_preference",
+      "definition": "comparing two outputs and eliciting a preference verdict or tie",
+      "synonyms": [
+        "A/B_comparison",
+        "preference_judgment"
+      ],
+      "not_same_as": [
+        "pointwise_scoring"
+      ],
+      "used_by_nodes": [
+        "PAIRWISE",
+        "ELO_ARENA"
+      ]
+    },
+    {
+      "term": "elo_rating",
+      "definition": "continuous skill rating derived from pairwise match outcomes via the Elo update formula",
+      "synonyms": [
+        "elo_score",
+        "Bradley-Terry"
+      ],
+      "not_same_as": [
+        "win_rate"
+      ],
+      "used_by_nodes": [
+        "ELO_ARENA",
+        "ARENA_PROTOCOL"
+      ]
+    },
+    {
+      "term": "position_bias",
+      "definition": "judge tendency to favor the first or last presented option in pairwise comparison regardless of quality",
+      "synonyms": [
+        "ordering_bias",
+        "primacy_bias"
+      ],
+      "not_same_as": [
+        "verbosity_bias"
+      ],
+      "used_by_nodes": [
+        "POSITION_BIAS",
+        "PAIRWISE"
+      ]
+    },
+    {
+      "term": "verbosity_bias",
+      "definition": "judge tendency to prefer longer more elaborate responses independent of actual quality",
+      "synonyms": [
+        "length_bias"
+      ],
+      "not_same_as": [
+        "position_bias"
+      ],
+      "used_by_nodes": [
+        "VERBOSITY_BIAS",
+        "PAIRWISE"
+      ]
+    },
+    {
+      "term": "self_preference",
+      "definition": "tendency of a judge model to rate outputs from models with similar training or its own outputs higher",
+      "synonyms": [
+        "model_familiarity_bias"
+      ],
+      "not_same_as": [
+        "position_bias"
+      ],
+      "used_by_nodes": [
+        "SELF_PREF",
+        "JUDGE_MODEL_SELECT"
+      ]
+    },
+    {
+      "term": "goodhart_law",
+      "definition": "when a measure becomes a target it ceases to be a good measure; metric gaming degrades proxy validity",
+      "synonyms": [
+        "metric_gaming",
+        "campbell_law"
+      ],
+      "not_same_as": [
+        "benchmark_contamination"
+      ],
+      "used_by_nodes": [
+        "GOODHART",
+        "HUMAN_CALIBRATION"
+      ]
+    },
+    {
+      "term": "benchmark_contamination",
+      "definition": "evaluation inflation when test questions appear in candidate model training data",
+      "synonyms": [
+        "data_leakage",
+        "test_set_contamination"
+      ],
+      "not_same_as": [
+        "goodhart_law"
+      ],
+      "used_by_nodes": [
+        "BENCHMARK_CONTAM",
+        "MT_BENCH"
+      ]
+    },
+    {
+      "term": "swap_consistency",
+      "definition": "rate at which pairwise verdicts remain consistent when A/B order is swapped",
+      "synonyms": [
+        "swap_agreement"
+      ],
+      "not_same_as": [
+        "inter_rater_agreement"
+      ],
+      "used_by_nodes": [
+        "POSITION_BIAS",
+        "PAIRWISE"
+      ]
+    },
+    {
+      "term": "inter_rater_reliability",
+      "definition": "degree of agreement between independent annotators or judges measured by Cohen kappa or Krippendorff alpha",
+      "synonyms": [
+        "inter_annotator_agreement",
+        "IRR"
+      ],
+      "not_same_as": [
+        "accuracy"
+      ],
+      "used_by_nodes": [
+        "INTER_RATER",
+        "HUMAN_CALIBRATION"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "JUDGE_PARADIGM",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "ELO_ARENA",
+      "MULTI_DIM_SCORING"
+    ],
+    "probabilistic_modeling": [
+      "GOODHART",
+      "BENCHMARK_CONTAM",
+      "SELF_PREF"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "SAFETY_EVAL",
+      "GOODHART"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "HUMAN_CALIBRATION",
+      "INTER_RATER"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "CHAIN_OF_THOUGHT_JUDGE",
+      "RUBRIC_DESIGN"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract",
+      "EVAL_PIPELINE"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for LLM-as-judge evaluation work units in absence of supplied datasets; informed by Zheng et al. 2023 (MT-Bench/LLM-as-a-Judge) and Chiang et al. 2024 (Chatbot Arena) conceptually but not as observed evidence",
+      "citation_or_locator": "Zheng et al. 2023 arXiv:2306.05685; Chiang et al. 2024 arXiv:2403.04132",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "JUDGE_PARADIGM",
+      "topic": "llm_judge_fundamentals",
+      "definition": "Establish the LLM-as-judge paradigm: use a capable language model to evaluate free-form outputs via pointwise, pairwise, or listwise prompts, replacing expensive human annotation at scale.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "pointwise scoring",
+          "pairwise preference",
+          "listwise ranking",
+          "judge model selection"
+        ],
+        "excluded": [
+          "human annotation pipelines",
+          "benchmark leaderboard construction"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "machine_learning"
+      ],
+      "subfields": [
+        "llm_evaluation",
+        "automated_evaluation"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "llm_engineer"
+      ],
+      "contradictors": [
+        "human_only_eval_advocate"
+      ],
+      "inputs": [
+        "candidate outputs",
+        "evaluation criteria",
+        "judge model"
+      ],
+      "outputs": [
+        "preference labels",
+        "score distributions",
+        "judge prompt template"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.85,
+        "user_value": 0.8,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.9,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.7,
+        "risk_score": 0.71,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.45,
+        "lock_score": 0.6,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.75,
+        "uncertainty_interval": [
+          0.15,
+          0.5
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "new judge model released or human calibration data collected",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Scales to millions of outputs without human annotators",
+          "example": "GPT-4-as-judge evaluates 10k chatbot responses overnight"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Judge bias and self-preference corrupt results if uncalibrated",
+          "example": "GPT-4 rates GPT-4 outputs 10-15% higher than human consensus"
+        }
+      ],
+      "failure_modes": [
+        "position bias flips pairwise verdicts",
+        "verbosity bias favors longer responses",
+        "self-preference if judge==candidate"
+      ],
+      "acceptance_tests": [
+        "judge agreement with human annotations >0.80 Pearson on held-out set",
+        "position-swap consistency rate >0.85"
+      ],
+      "revisit_triggers": [
+        "judge model updated",
+        "task domain shifts",
+        "human agreement drops below threshold"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "POINTWISE",
+      "topic": "pointwise_scoring",
+      "definition": "Score each candidate output independently on a numeric rubric (e.g., 1-5 Likert), yielding absolute quality estimates without cross-candidate comparison.",
+      "node_type": "work_unit",
+      "group": "scoring_modes",
+      "scope_boundary": {
+        "included": [
+          "single-output rubric",
+          "Likert scales",
+          "absolute quality scores",
+          "per-dimension scoring"
+        ],
+        "excluded": [
+          "pairwise comparison",
+          "reference-free vs reference-based distinction"
+        ]
+      },
+      "academic_fields": [
+        "nlp"
+      ],
+      "subfields": [
+        "llm_evaluation",
+        "rubric_design"
+      ],
+      "specialists": [
+        "eval_engineer"
+      ],
+      "contradictors": [
+        "pairwise_only_advocate"
+      ],
+      "inputs": [
+        "candidate output",
+        "evaluation rubric",
+        "judge prompt"
+      ],
+      "outputs": [
+        "numeric score per dimension",
+        "score rationale"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.53,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.67,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "rubric redesigned or task domain changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Produces absolute scores enabling longitudinal comparison",
+          "example": "compare model v1 vs v2 without re-evaluating all pairs"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High variance on subjective tasks; anchoring effects inflate scores",
+          "example": "all models cluster near 4/5 on open-ended generation"
+        }
+      ],
+      "failure_modes": [
+        "score bunching at top",
+        "rubric ambiguity yields low inter-rater agreement",
+        "no contrast between mediocre and good"
+      ],
+      "acceptance_tests": [
+        "score variance >0.5 across quality levels",
+        "rubric examples cover each grade level"
+      ],
+      "revisit_triggers": [
+        "score distribution collapses",
+        "rubric misalignment with task"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PAIRWISE",
+      "topic": "pairwise_preference",
+      "definition": "Present two candidate outputs to the judge and elicit a preference or tie verdict, building a partial order that aggregates into win rates.",
+      "node_type": "work_unit",
+      "group": "scoring_modes",
+      "scope_boundary": {
+        "included": [
+          "A/B comparison",
+          "win/lose/tie verdicts",
+          "forced-choice preference",
+          "win rate aggregation"
+        ],
+        "excluded": [
+          "absolute quality scoring",
+          "Elo computation"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "machine_learning"
+      ],
+      "subfields": [
+        "llm_evaluation",
+        "comparative_evaluation"
+      ],
+      "specialists": [
+        "eval_engineer",
+        "arena_designer"
+      ],
+      "contradictors": [
+        "pointwise_only_advocate"
+      ],
+      "inputs": [
+        "two candidate outputs",
+        "judge prompt",
+        "position randomization seed"
+      ],
+      "outputs": [
+        "preference verdict",
+        "win/loss/tie matrix"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.4,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.58,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.67,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.54,
+        "update_signal": "position bias audit fails or arena protocol changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Higher inter-rater agreement than absolute scoring on subjective tasks",
+          "example": "arena human votes show 0.85+ agreement on pairwise vs 0.60 on 5-point scale"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "O(n^2) pairs for n models; position bias inflates first-presented option",
+          "example": "100-model evaluation needs 4950 pairs × swap = 9900 calls"
+        }
+      ],
+      "failure_modes": [
+        "position bias: first option wins 55-60% without swap",
+        "verdict non-transitivity in three-way comparisons"
+      ],
+      "acceptance_tests": [
+        "swap-consistency rate >0.82",
+        "tie rate <25% on clearly differentiated outputs"
+      ],
+      "revisit_triggers": [
+        "position bias detected",
+        "swap-consistency drops below threshold"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ELO_ARENA",
+      "topic": "elo_arena_ranking",
+      "definition": "Aggregate pairwise match outcomes into a continuous skill rating (Elo/Bradley-Terry) for ranking models on an open arena platform.",
+      "node_type": "work_unit",
+      "group": "ranking_systems",
+      "scope_boundary": {
+        "included": [
+          "Elo rating updates",
+          "Bradley-Terry model",
+          "arena leaderboard",
+          "bootstrapped confidence intervals"
+        ],
+        "excluded": [
+          "pairwise verdict collection",
+          "model training details"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "machine_learning"
+      ],
+      "subfields": [
+        "comparative_evaluation",
+        "tournament_design"
+      ],
+      "specialists": [
+        "arena_designer",
+        "statistician"
+      ],
+      "contradictors": [
+        "win_rate_only_advocate"
+      ],
+      "inputs": [
+        "pairwise match outcomes",
+        "initial ratings",
+        "K-factor config"
+      ],
+      "outputs": [
+        "model Elo scores",
+        "ranking with confidence intervals",
+        "leaderboard"
+      ],
+      "dependencies": [
+        "PAIRWISE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.8,
+        "user_value": 0.75,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.55,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.62,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.62,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "models updated or match volume crosses stability threshold",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Handles intransitive preferences gracefully via probabilistic model",
+          "example": "Chatbot Arena ranks 50+ models with overlapping confidence intervals"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Requires thousands of matches for stable rating; cold-start for new models",
+          "example": "new model needs 500+ matches to narrow CI below 30 Elo points"
+        }
+      ],
+      "failure_modes": [
+        "non-stationarity: model updates invalidate historical matches",
+        "category conflation across task types",
+        "adversarial match selection"
+      ],
+      "acceptance_tests": [
+        "95% CI width <50 Elo points after 1000 matches",
+        "rank order stable across bootstrap resamples"
+      ],
+      "revisit_triggers": [
+        "model weights updated post-rating",
+        "match distribution skewed to easy queries",
+        "CI width exceeds threshold"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "RUBRIC_DESIGN",
+      "topic": "rubric_design",
+      "definition": "Design criterion-specific rubrics that operationalize quality dimensions (accuracy, coherence, safety, instruction-following) into scorable anchors for judge prompts.",
+      "node_type": "work_unit",
+      "group": "evaluation_design",
+      "scope_boundary": {
+        "included": [
+          "criterion definition",
+          "anchor examples",
+          "grade anchors",
+          "multi-dimensional rubrics"
+        ],
+        "excluded": [
+          "judge model selection",
+          "benchmark dataset curation"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "cognitive_science"
+      ],
+      "subfields": [
+        "rubric_design",
+        "annotation_guidelines"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "annotation_lead"
+      ],
+      "contradictors": [
+        "holistic_impression_advocate"
+      ],
+      "inputs": [
+        "task specification",
+        "stakeholder quality criteria",
+        "sample outputs at each quality level"
+      ],
+      "outputs": [
+        "rubric document",
+        "judge prompt template",
+        "grade anchor examples"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.65,
+        "risk_score": 0.69,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.45,
+        "lock_score": 0.57,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "task redesign or human calibration reveals rubric gaps",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit anchors reduce inter-rater variance and guide judge reasoning",
+          "example": "MT-Bench rubrics with reference answers cut score variance 30%"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rubric creation requires domain expert time and iterative refinement",
+          "example": "designing 8-dimension coding rubric takes 2-4 weeks with expert review"
+        }
+      ],
+      "failure_modes": [
+        "over-specific rubrics fail on out-of-distribution outputs",
+        "anchors unrepresentative of real quality levels",
+        "dimension overlap causes double-counting"
+      ],
+      "acceptance_tests": [
+        "inter-rater agreement >0.75 Cohen kappa on rubric pilot",
+        "every grade level has at least 2 anchor examples"
+      ],
+      "revisit_triggers": [
+        "task domain shift",
+        "human-judge agreement drops",
+        "new quality dimension identified"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "POSITION_BIAS",
+      "topic": "position_bias",
+      "definition": "Detect and correct positional ordering effects in pairwise judge prompts where the judge systematically favors the first or second presented option.",
+      "node_type": "work_unit",
+      "group": "bias_calibration",
+      "scope_boundary": {
+        "included": [
+          "swap augmentation",
+          "position-swap consistency",
+          "first-option preference measurement",
+          "debiasing weighting"
+        ],
+        "excluded": [
+          "verbosity bias",
+          "self-preference bias"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "nlp"
+      ],
+      "subfields": [
+        "judge_calibration",
+        "bias_detection"
+      ],
+      "specialists": [
+        "eval_engineer",
+        "bias_analyst"
+      ],
+      "contradictors": [
+        "no_debiasing_advocate"
+      ],
+      "inputs": [
+        "pairwise verdict log",
+        "swap-pair outputs",
+        "judge model"
+      ],
+      "outputs": [
+        "position bias estimate",
+        "debiased verdicts",
+        "swap-consistency report"
+      ],
+      "dependencies": [
+        "PAIRWISE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.4,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.6,
+        "risk_score": 0.61,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.66,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "audit detects position skew or judge model changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Swap augmentation halves position bias at cost of 2x judge calls",
+          "example": "Zheng et al. 2023: swap reduces inconsistency rate from 25% to 12%"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "2x call overhead; inconsistent pairs must be handled as ties or discarded",
+          "example": "borderline cases become ties, reducing discriminative power"
+        }
+      ],
+      "failure_modes": [
+        "only swapping without checking consistency",
+        "ignoring format differences that confound position"
+      ],
+      "acceptance_tests": [
+        "swap-consistency rate >0.85 on pilot set",
+        "first-position win rate within [0.45,0.55]",
+        "bias audit report generated before large-scale evaluation begins"
+      ],
+      "revisit_triggers": [
+        "judge model update",
+        "new output format introduced",
+        "win-rate skew exceeds 5%"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "VERBOSITY_BIAS",
+      "topic": "verbosity_bias",
+      "definition": "Identify and mitigate the tendency of LLM judges to prefer longer, more elaborate responses independent of actual quality.",
+      "node_type": "work_unit",
+      "group": "bias_calibration",
+      "scope_boundary": {
+        "included": [
+          "length-quality correlation analysis",
+          "length-controlled evaluation",
+          "length-normalized scoring"
+        ],
+        "excluded": [
+          "position bias",
+          "content quality assessment"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "nlp"
+      ],
+      "subfields": [
+        "judge_calibration",
+        "bias_detection"
+      ],
+      "specialists": [
+        "eval_engineer",
+        "bias_analyst"
+      ],
+      "contradictors": [
+        "length_as_proxy_advocate"
+      ],
+      "inputs": [
+        "judge verdict log",
+        "response lengths",
+        "quality labels"
+      ],
+      "outputs": [
+        "length-quality correlation report",
+        "debiased scoring prompt",
+        "length-stratified metrics"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM",
+        "RUBRIC_DESIGN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.68,
+        "user_value": 0.65,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.56,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.65,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "task type changes or length distribution shifts",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Length-stratified analysis reveals whether bias exists before it corrupts leaderboard",
+          "example": "correlation plot of length vs win-rate exposes systematic preference"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Controlling for length may suppress legitimate quality signal in verbose tasks",
+          "example": "in long-form writing, length can correlate with completeness"
+        }
+      ],
+      "failure_modes": [
+        "conflating verbosity with completeness",
+        "length normalization over-penalizing necessary detail"
+      ],
+      "acceptance_tests": [
+        "Spearman correlation of response length vs judge score <0.30 after debiasing",
+        "length-stratified win rates within 5% of mean"
+      ],
+      "revisit_triggers": [
+        "new task type with different length norms",
+        "verbosity correlation exceeds 0.40"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SELF_PREF",
+      "topic": "self_preference_bias",
+      "definition": "Measure and control the tendency of a judge model to rate outputs from models with similar training or its own outputs higher than objectively warranted.",
+      "node_type": "work_unit",
+      "group": "bias_calibration",
+      "scope_boundary": {
+        "included": [
+          "self-preference measurement",
+          "cross-model judge matrix",
+          "judge diversity ensemble"
+        ],
+        "excluded": [
+          "position bias",
+          "verbosity bias"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "nlp"
+      ],
+      "subfields": [
+        "judge_calibration",
+        "bias_detection"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "bias_analyst"
+      ],
+      "contradictors": [
+        "single_judge_advocate"
+      ],
+      "inputs": [
+        "pairwise verdicts segmented by judge-vs-candidate model family",
+        "human preference labels"
+      ],
+      "outputs": [
+        "self-preference delta score",
+        "judge diversity recommendation"
+      ],
+      "dependencies": [
+        "PAIRWISE",
+        "JUDGE_PARADIGM"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.75,
+        "user_value": 0.68,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.68,
+        "risk_score": 0.66,
+        "confidence_score": 0.48,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.59,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.22,
+          0.55
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "judge or candidate model families updated or mixed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Using multiple judges from different families averages out self-preference",
+          "example": "3-judge ensemble from different providers reduces self-pref delta to <3%"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-judge ensemble triples evaluation cost and requires aggregation protocol",
+          "example": "majority vote on disagreements adds latency and complexity"
+        }
+      ],
+      "failure_modes": [
+        "using single proprietary judge to evaluate competing proprietary models",
+        "ignoring training data overlap as a confounder"
+      ],
+      "acceptance_tests": [
+        "self-preference delta <5% relative to cross-family judge baseline",
+        "ensemble judge agreement >0.80 on calibration set"
+      ],
+      "revisit_triggers": [
+        "new model family added to evaluation",
+        "human calibration study reveals systematic bias"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "HUMAN_CALIBRATION",
+      "topic": "human_calibration",
+      "definition": "Run periodic human annotation batches to calibrate LLM judge scores, detect drift, and validate that automated scores remain aligned with human preferences.",
+      "node_type": "work_unit",
+      "group": "quality_assurance",
+      "scope_boundary": {
+        "included": [
+          "inter-annotator agreement",
+          "human-judge correlation",
+          "calibration sampling strategy",
+          "drift detection"
+        ],
+        "excluded": [
+          "full human evaluation at scale",
+          "judge model retraining"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "nlp"
+      ],
+      "subfields": [
+        "annotation",
+        "quality_assurance"
+      ],
+      "specialists": [
+        "annotation_lead",
+        "eval_researcher"
+      ],
+      "contradictors": [
+        "fully_automated_eval_advocate"
+      ],
+      "inputs": [
+        "stratified sample of judge verdicts",
+        "human annotators",
+        "annotation guidelines"
+      ],
+      "outputs": [
+        "human-judge agreement report",
+        "calibration delta",
+        "drift alert"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM",
+        "RUBRIC_DESIGN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.5,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.65,
+        "risk_score": 0.68,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.44,
+        "lock_score": 0.6,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.72,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "judge model updated or agreement metric drops",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Catches silent judge drift before it corrupts production metrics",
+          "example": "monthly 200-sample audit detected GPT-4 scoring shift after provider update"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Human annotation is slow and expensive; sampling may miss tail failures",
+          "example": "200-sample audit at $2/task = $400 + analyst time per cycle"
+        }
+      ],
+      "failure_modes": [
+        "sampling only easy cases, missing edge-case drift",
+        "using same annotators who designed rubrics, creating confirmation bias"
+      ],
+      "acceptance_tests": [
+        "human-judge Pearson correlation >0.80 on calibration sample",
+        "audit cycle completed before major evaluation report"
+      ],
+      "revisit_triggers": [
+        "judge model updated",
+        "human agreement drops below 0.75",
+        "task domain shifts"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "BENCHMARK_CONTAM",
+      "topic": "benchmark_contamination",
+      "definition": "Detect and mitigate contamination where candidate models have seen benchmark test questions during training, invalidating performance estimates.",
+      "node_type": "work_unit",
+      "group": "evaluation_integrity",
+      "scope_boundary": {
+        "included": [
+          "n-gram overlap detection",
+          "canary probing",
+          "held-out test set rotation",
+          "dynamic benchmark generation"
+        ],
+        "excluded": [
+          "training data curation",
+          "model training protocols"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "statistics"
+      ],
+      "subfields": [
+        "benchmark_design",
+        "evaluation_integrity"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "data_engineer"
+      ],
+      "contradictors": [
+        "static_benchmark_advocate"
+      ],
+      "inputs": [
+        "training corpus metadata",
+        "benchmark test questions",
+        "model outputs on verbatim vs paraphrased prompts"
+      ],
+      "outputs": [
+        "contamination risk report",
+        "clean held-out test subset",
+        "contamination score per question"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.72,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.55,
+        "node_conflict_pressure": 0.7,
+        "risk_score": 0.72,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.47,
+        "lock_score": 0.54,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.75,
+        "uncertainty_interval": [
+          0.25,
+          0.6
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "new training run or benchmark published publicly",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "N-gram overlap detection flags obvious memorization before evaluation",
+          "example": "8-gram overlap >50% on test questions signals contamination"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Semantic contamination not caught by n-gram overlap; rephrasing hides it",
+          "example": "paraphrased benchmark items undetected by string matching"
+        }
+      ],
+      "failure_modes": [
+        "relying solely on string match, missing semantic contamination",
+        "not rotating benchmarks as training data expands"
+      ],
+      "acceptance_tests": [
+        "n-gram overlap <5% on final test set",
+        "canary probe accuracy not significantly above random baseline"
+      ],
+      "revisit_triggers": [
+        "new model training run",
+        "benchmark questions become public",
+        "training data scope expands"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "GOODHART",
+      "topic": "goodhart_metric_gaming",
+      "definition": "Monitor for and mitigate Goodhart's Law effects where optimizing the judge score becomes the goal, causing models to game the metric rather than improve genuine quality.",
+      "node_type": "work_unit",
+      "group": "evaluation_integrity",
+      "scope_boundary": {
+        "included": [
+          "proxy metric vs true objective divergence",
+          "judge-optimized outputs",
+          "metric stability monitoring"
+        ],
+        "excluded": [
+          "rubric design internals",
+          "model training optimization"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "ml_theory"
+      ],
+      "subfields": [
+        "evaluation_integrity",
+        "metric_design"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "ml_theorist"
+      ],
+      "contradictors": [
+        "single_metric_optimizer"
+      ],
+      "inputs": [
+        "model outputs over time",
+        "judge score trends",
+        "human quality assessments"
+      ],
+      "outputs": [
+        "metric-quality correlation report",
+        "gaming detection alert",
+        "diversified metric suite"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM",
+        "HUMAN_CALIBRATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.7,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.55,
+        "node_conflict_pressure": 0.7,
+        "risk_score": 0.7,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.55,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.72,
+        "uncertainty_interval": [
+          0.25,
+          0.58
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "training objective changes to include judge score or human audit reveals gaming",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tracking multiple uncorrelated metrics makes gaming harder",
+          "example": "combining judge score, ROUGE, human rating, and task accuracy"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Diversifying metrics complicates optimization and stakeholder communication",
+          "example": "teams disagree on which metric to optimize when they diverge"
+        }
+      ],
+      "failure_modes": [
+        "single judge score as sole training signal",
+        "judge and candidate from same family enabling style transfer"
+      ],
+      "acceptance_tests": [
+        "human quality tracks judge score within 10% over 3 evaluation cycles",
+        "metric divergence alert triggers when human-judge gap >0.15"
+      ],
+      "revisit_triggers": [
+        "model explicitly trained on judge scores",
+        "judge score trends diverge from human ratings"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MT_BENCH",
+      "topic": "mt_bench_evaluation",
+      "definition": "Apply the MT-Bench framework (Zheng et al. 2023) for multi-turn instruction-following evaluation using GPT-4 as judge on 80 curated questions across 8 categories.",
+      "node_type": "work_unit",
+      "group": "benchmark_frameworks",
+      "scope_boundary": {
+        "included": [
+          "multi-turn evaluation",
+          "8-category coverage",
+          "reference-guided scoring",
+          "GPT-4 judge protocol"
+        ],
+        "excluded": [
+          "single-turn benchmarks",
+          "safety evaluation"
+        ]
+      },
+      "academic_fields": [
+        "nlp"
+      ],
+      "subfields": [
+        "benchmark_design",
+        "llm_evaluation"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "benchmark_designer"
+      ],
+      "contradictors": [
+        "single_turn_only_advocate"
+      ],
+      "inputs": [
+        "MT-Bench question set",
+        "candidate model",
+        "GPT-4 judge",
+        "reference answers"
+      ],
+      "outputs": [
+        "per-category scores",
+        "overall MT-Bench score",
+        "multi-turn degradation analysis"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM",
+        "RUBRIC_DESIGN",
+        "POINTWISE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.55,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.7,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.54,
+        "update_signal": "MT-Bench questions become public or score saturation detected",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-turn design reveals instruction-following degradation invisible in single-turn evals",
+          "example": "turn-2 score drop >1 point flags context-forgetting models"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fixed 80-question set ages quickly; GPT-4 judge cost limits adoption",
+          "example": "$80+ per full evaluation run limits iteration speed"
+        }
+      ],
+      "failure_modes": [
+        "saturating upper bound as models improve",
+        "category imbalance masking weak dimensions"
+      ],
+      "acceptance_tests": [
+        "per-category variance documented",
+        "reference answers validated by domain expert"
+      ],
+      "revisit_triggers": [
+        "score saturation on any category",
+        "judge model deprecated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ARENA_PROTOCOL",
+      "topic": "chatbot_arena_protocol",
+      "definition": "Operate a live human-preference arena (Chiang et al. 2024) where users submit queries and vote on anonymous model outputs, producing crowd-sourced Elo rankings.",
+      "node_type": "work_unit",
+      "group": "benchmark_frameworks",
+      "scope_boundary": {
+        "included": [
+          "anonymous pairwise voting",
+          "crowd-sourced preference",
+          "live leaderboard",
+          "Elo aggregation"
+        ],
+        "excluded": [
+          "synthetic benchmark construction",
+          "automated judge evaluation"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "crowdsourcing"
+      ],
+      "subfields": [
+        "comparative_evaluation",
+        "arena_design"
+      ],
+      "specialists": [
+        "arena_designer",
+        "community_manager"
+      ],
+      "contradictors": [
+        "synthetic_only_eval_advocate"
+      ],
+      "inputs": [
+        "user-submitted queries",
+        "model outputs",
+        "voter preference labels"
+      ],
+      "outputs": [
+        "Elo leaderboard",
+        "category-specific rankings",
+        "battle statistics"
+      ],
+      "dependencies": [
+        "PAIRWISE",
+        "ELO_ARENA"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.78,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.6,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.61,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.65,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "voting anomalies detected or arena scope changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Real user queries avoid benchmark contamination; crowd wisdom aggregates diverse preferences",
+          "example": "Chatbot Arena 1M+ votes provide near-oracle ranking signal"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Volunteer bias skews toward tech-savvy English queries; adversarial voting possible",
+          "example": "underrepresents non-English, domain-expert, and safety-relevant queries"
+        }
+      ],
+      "failure_modes": [
+        "strategic voting by model developers",
+        "query distribution mismatch with target use case"
+      ],
+      "acceptance_tests": [
+        "vote authenticity checks in place",
+        "query distribution audit matches target demographic"
+      ],
+      "revisit_triggers": [
+        "suspected adversarial voting",
+        "demographic shift in user base",
+        "category expansion"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "JUDGE_MODEL_SELECT",
+      "topic": "judge_model_selection",
+      "definition": "Select and validate the judge model considering capability, cost, self-preference risk, API reliability, and alignment with human preferences for the target domain.",
+      "node_type": "work_unit",
+      "group": "evaluation_design",
+      "scope_boundary": {
+        "included": [
+          "judge capability benchmarking",
+          "cost-capability tradeoff",
+          "judge validation protocol",
+          "domain alignment testing"
+        ],
+        "excluded": [
+          "rubric design",
+          "candidate model selection"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "ml_engineering"
+      ],
+      "subfields": [
+        "judge_calibration",
+        "model_selection"
+      ],
+      "specialists": [
+        "eval_engineer",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "strongest_model_always_advocate"
+      ],
+      "inputs": [
+        "candidate judge models",
+        "human preference sample",
+        "task domain spec",
+        "cost budget"
+      ],
+      "outputs": [
+        "selected judge model",
+        "judge validation report",
+        "cost estimate"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM",
+        "SELF_PREF"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.72,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.62,
+        "risk_score": 0.68,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.62,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "judge model deprecated or human alignment study completed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Validated judge selection prevents systematic bias before expensive evaluation runs",
+          "example": "pre-validation on 100-sample pilot saves downstream rerun cost"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Smaller faster judges save cost but may miss subtle quality differences",
+          "example": "using Claude-Haiku as judge misses nuanced factual errors caught by Opus"
+        }
+      ],
+      "failure_modes": [
+        "selecting judge without domain alignment check",
+        "using same provider as candidate for cost savings"
+      ],
+      "acceptance_tests": [
+        "judge-human correlation >0.80 on domain pilot set",
+        "cost per evaluation within budget",
+        "self-preference delta <5% validated before deployment"
+      ],
+      "revisit_triggers": [
+        "judge model deprecated or updated",
+        "cost increase exceeds 20%",
+        "human alignment drops"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CHAIN_OF_THOUGHT_JUDGE",
+      "topic": "chain_of_thought_judge",
+      "definition": "Prompt the judge model to produce explicit step-by-step reasoning before the verdict, improving consistency and enabling human audit of judge rationale.",
+      "node_type": "work_unit",
+      "group": "judge_prompting",
+      "scope_boundary": {
+        "included": [
+          "CoT judge prompts",
+          "rationale extraction",
+          "reasoning before verdict",
+          "structured rationale format"
+        ],
+        "excluded": [
+          "few-shot judge prompting",
+          "reference-based scoring"
+        ]
+      },
+      "academic_fields": [
+        "nlp"
+      ],
+      "subfields": [
+        "prompt_engineering",
+        "judge_calibration"
+      ],
+      "specialists": [
+        "prompt_engineer",
+        "eval_engineer"
+      ],
+      "contradictors": [
+        "direct_verdict_advocate"
+      ],
+      "inputs": [
+        "evaluation rubric",
+        "candidate output",
+        "judge prompt with CoT instruction"
+      ],
+      "outputs": [
+        "judge rationale text",
+        "final verdict/score",
+        "rationale quality log"
+      ],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "JUDGE_MODEL_SELECT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.65,
+        "user_value": 0.7,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.3,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.5,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.71,
+        "final_importance": 0.6
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "judge model updated or rationale quality drops",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "CoT reasoning reduces judge score variance and enables auditing",
+          "example": "rationale-before-verdict reduces score variance by ~0.3 on 1-10 scale"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Longer prompts increase latency and token cost; rationale can post-hoc justify wrong verdicts",
+          "example": "CoT adds 2-3x token cost per judgment"
+        }
+      ],
+      "failure_modes": [
+        "reasoning disconnected from final verdict",
+        "judge fabricates plausible-sounding but wrong rationale"
+      ],
+      "acceptance_tests": [
+        "rationale cites specific output elements",
+        "verdict consistent with rationale direction >0.90"
+      ],
+      "revisit_triggers": [
+        "rationale-verdict inconsistency rate >10%",
+        "cost budget pressure"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "REFERENCE_BASED",
+      "topic": "reference_based_eval",
+      "definition": "Choose and implement reference-based (ground-truth comparison) versus reference-free (criteria-only) judge evaluation, managing tradeoffs in cost, coverage, and judge capability.",
+      "node_type": "work_unit",
+      "group": "evaluation_design",
+      "scope_boundary": {
+        "included": [
+          "reference answer construction",
+          "reference-guided scoring",
+          "reference-free rubric design",
+          "hybrid approaches"
+        ],
+        "excluded": [
+          "human preference collection",
+          "model-specific answer formats"
+        ]
+      },
+      "academic_fields": [
+        "nlp"
+      ],
+      "subfields": [
+        "evaluation_design",
+        "benchmark_design"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "domain_expert"
+      ],
+      "contradictors": [
+        "reference_free_only_advocate"
+      ],
+      "inputs": [
+        "task specification",
+        "availability of ground truth",
+        "judge model capability"
+      ],
+      "outputs": [
+        "evaluation mode decision",
+        "reference set if needed",
+        "scoring protocol"
+      ],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "JUDGE_MODEL_SELECT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.68,
+        "user_value": 0.65,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.57,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.67,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "task domain shifts or ground truth availability changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Reference answers anchor judge scores for factual tasks, reducing hallucination tolerance",
+          "example": "math/coding tasks with reference answers catch subtle errors judges miss without ground truth"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Reference construction is expensive and may introduce author bias",
+          "example": "writing reference answers for 500 open-ended questions requires 50+ expert hours"
+        }
+      ],
+      "failure_modes": [
+        "using reference-based eval for creative tasks where multiple valid answers exist",
+        "stale references for time-sensitive factual questions"
+      ],
+      "acceptance_tests": [
+        "reference answers validated by independent domain expert",
+        "reference-free and reference-based scores agree within 0.5 on calibration set"
+      ],
+      "revisit_triggers": [
+        "ground truth becomes stale",
+        "task type changes to creative/open-ended"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "MULTI_DIM_SCORING",
+      "topic": "multi_dimensional_scoring",
+      "definition": "Define multiple quality dimensions (accuracy, helpfulness, safety, coherence), score each independently, and aggregate via weighted combination for holistic model assessment.",
+      "node_type": "work_unit",
+      "group": "scoring_systems",
+      "scope_boundary": {
+        "included": [
+          "dimension weighting",
+          "dimension independence testing",
+          "aggregation formula",
+          "dimension-specific reports"
+        ],
+        "excluded": [
+          "single-score evaluation",
+          "model training objectives"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "nlp"
+      ],
+      "subfields": [
+        "evaluation_design",
+        "metric_aggregation"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "product_manager"
+      ],
+      "contradictors": [
+        "single_score_advocate"
+      ],
+      "inputs": [
+        "rubric dimensions",
+        "per-dimension judge scores",
+        "stakeholder priority weights"
+      ],
+      "outputs": [
+        "dimension scores",
+        "weighted aggregate score",
+        "dimension correlation matrix"
+      ],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "POINTWISE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.45,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.58,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.65,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.43,
+        "update_signal": "dimension weights revised or new quality requirement added",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Dimension separation reveals specific failure modes and guides targeted improvement",
+          "example": "separating safety from helpfulness allows focused fine-tuning per dimension"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Weight choice is subjective and context-dependent; stakeholders disagree",
+          "example": "safety-vs-helpfulness weight debate delays evaluation finalization"
+        }
+      ],
+      "failure_modes": [
+        "high dimension correlation makes separate scores redundant",
+        "aggregation weights not documented leading to irreproducibility"
+      ],
+      "acceptance_tests": [
+        "inter-dimension correlation <0.70 across all pairs",
+        "weight rationale documented and stakeholder-approved"
+      ],
+      "revisit_triggers": [
+        "stakeholder priorities shift",
+        "new safety requirement added",
+        "dimension correlation exceeds 0.80"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SAFETY_EVAL",
+      "topic": "safety_evaluation",
+      "definition": "Evaluate model outputs for harmful content, refusal appropriateness, jailbreak resistance, and alignment with safety policies using specialized safety judges and red-teaming.",
+      "node_type": "work_unit",
+      "group": "safety_evaluation",
+      "scope_boundary": {
+        "included": [
+          "harm classification",
+          "refusal appropriateness",
+          "jailbreak resistance",
+          "safety policy alignment"
+        ],
+        "excluded": [
+          "general quality scoring",
+          "model training safety"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "ai_safety"
+      ],
+      "subfields": [
+        "safety_evaluation",
+        "red_teaming"
+      ],
+      "specialists": [
+        "safety_researcher",
+        "red_team_engineer"
+      ],
+      "contradictors": [
+        "general_quality_only_advocate"
+      ],
+      "inputs": [
+        "adversarial prompts",
+        "model outputs",
+        "safety policy spec",
+        "safety classifier"
+      ],
+      "outputs": [
+        "harm rate",
+        "refusal accuracy",
+        "safety score",
+        "red-team findings"
+      ],
+      "dependencies": [
+        "JUDGE_PARADIGM",
+        "RUBRIC_DESIGN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.75,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.65,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.72,
+        "risk_score": 0.76,
+        "confidence_score": 0.48,
+        "revisit_pressure": 0.47,
+        "lock_score": 0.54,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.85,
+        "uncertainty_interval": [
+          0.22,
+          0.6
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "policy change or new harm category identified",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Specialized safety judges outperform general judges on harm detection",
+          "example": "fine-tuned safety classifiers achieve 0.92+ F1 vs 0.70 for general judge on harm detection"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Safety evaluation arms race: red-team prompts become public, enabling adversarial tuning",
+          "example": "published jailbreaks quickly become training signal for gaming"
+        }
+      ],
+      "failure_modes": [
+        "using general judge for harm detection below capability threshold",
+        "over-refusal inflating safety score while harming helpfulness"
+      ],
+      "acceptance_tests": [
+        "false negative rate on known harm categories <2%",
+        "over-refusal rate on benign inputs <5%"
+      ],
+      "revisit_triggers": [
+        "new jailbreak technique discovered",
+        "policy update changes harm categories",
+        "model fine-tuned on safety data"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "COST_LATENCY",
+      "topic": "eval_cost_latency",
+      "definition": "Balance evaluation thoroughness against API cost and latency by selecting judge model tier, batching, caching, and sampling strategies.",
+      "node_type": "work_unit",
+      "group": "operational_engineering",
+      "scope_boundary": {
+        "included": [
+          "judge model tiering",
+          "batch evaluation",
+          "response caching",
+          "stratified sampling"
+        ],
+        "excluded": [
+          "evaluation design decisions",
+          "model selection"
+        ]
+      },
+      "academic_fields": [
+        "ml_engineering",
+        "economics"
+      ],
+      "subfields": [
+        "eval_engineering",
+        "cost_optimization"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "platform_engineer"
+      ],
+      "contradictors": [
+        "unlimited_budget_advocate"
+      ],
+      "inputs": [
+        "evaluation volume",
+        "judge model pricing",
+        "latency requirements",
+        "quality tolerance"
+      ],
+      "outputs": [
+        "cost estimate",
+        "evaluation pipeline config",
+        "sampling strategy"
+      ],
+      "dependencies": [
+        "JUDGE_MODEL_SELECT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.72,
+        "user_value": 0.55,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.58,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.53,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.7,
+        "final_importance": 0.6
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.44,
+        "update_signal": "API pricing changes or volume spike",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stratified sampling with 30% of full set achieves 95% of ranking signal at 30% cost",
+          "example": "early stopping when Elo CI stabilizes saves 40% of arena compute"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Aggressive sampling misses tail failures on rare but high-risk query types",
+          "example": "10% sample misses 0.5% harm rate failures that matter for safety"
+        }
+      ],
+      "failure_modes": [
+        "caching stale judge outputs after model update",
+        "over-sampling easy queries that add no discriminative value"
+      ],
+      "acceptance_tests": [
+        "sampled evaluation reproduces full-set ranking within 2 Elo points",
+        "cost per evaluation cycle within approved budget"
+      ],
+      "revisit_triggers": [
+        "API pricing change",
+        "evaluation volume scales 10x",
+        "quality-cost tradeoff re-prioritized"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EVAL_PIPELINE",
+      "topic": "eval_pipeline_engineering",
+      "definition": "Build and maintain the automated evaluation pipeline: prompt construction, judge API calls, result parsing, debiasing, aggregation, and reporting.",
+      "node_type": "work_unit",
+      "group": "operational_engineering",
+      "scope_boundary": {
+        "included": [
+          "pipeline orchestration",
+          "prompt templating",
+          "result aggregation",
+          "report generation",
+          "retry logic"
+        ],
+        "excluded": [
+          "judge model internals",
+          "storage architecture"
+        ]
+      },
+      "academic_fields": [
+        "ml_engineering",
+        "software_engineering"
+      ],
+      "subfields": [
+        "eval_engineering",
+        "mlops"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "mlops_engineer"
+      ],
+      "contradictors": [
+        "manual_evaluation_advocate"
+      ],
+      "inputs": [
+        "evaluation dataset",
+        "judge model API",
+        "bias debiasing modules",
+        "report templates"
+      ],
+      "outputs": [
+        "automated evaluation reports",
+        "score database",
+        "pipeline monitoring dashboard"
+      ],
+      "dependencies": [
+        "COST_LATENCY",
+        "POSITION_BIAS",
+        "VERBOSITY_BIAS",
+        "CHAIN_OF_THOUGHT_JUDGE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.78,
+        "user_value": 0.65,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.64,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.66,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "judge API changes or pipeline reproducibility check fails",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Automated pipeline enables daily evaluation enabling rapid model iteration",
+          "example": "daily eval runs catch regressions within 24h of model update"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Pipeline complexity creates silent failure modes: stale caches, prompt version drift",
+          "example": "wrong prompt template version used for 2 weeks before audit caught it"
+        }
+      ],
+      "failure_modes": [
+        "prompt version mismatch across runs",
+        "result aggregation bug inflating scores",
+        "retry logic masking judge errors"
+      ],
+      "acceptance_tests": [
+        "pipeline reproduces reference scores within 0.1 on fixed eval set",
+        "prompt version logged and validated per run"
+      ],
+      "revisit_triggers": [
+        "judge API change",
+        "evaluation dataset updated",
+        "bias debiasing module updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DOMAIN_SPEC_EVAL",
+      "topic": "domain_specific_evaluation",
+      "definition": "Design evaluation protocols for specialized domains (coding, math, medical, legal) requiring domain-expert judges, domain-specific rubrics, and reference solutions.",
+      "node_type": "work_unit",
+      "group": "evaluation_design",
+      "scope_boundary": {
+        "included": [
+          "domain expert judge panels",
+          "domain rubric adaptation",
+          "functional correctness testing",
+          "domain-specific metrics"
+        ],
+        "excluded": [
+          "general-purpose judge evaluation",
+          "model training"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "domain_expertise"
+      ],
+      "subfields": [
+        "benchmark_design",
+        "domain_adaptation"
+      ],
+      "specialists": [
+        "domain_expert",
+        "eval_researcher"
+      ],
+      "contradictors": [
+        "general_judge_only_advocate"
+      ],
+      "inputs": [
+        "domain task specification",
+        "domain expert judges",
+        "domain-specific test cases",
+        "ground truth solutions"
+      ],
+      "outputs": [
+        "domain evaluation protocol",
+        "domain-specific rubric",
+        "functional correctness test suite"
+      ],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "REFERENCE_BASED"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.55,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.66,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.6,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.22,
+          0.55
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "domain standards change or expert agreement drops",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Functional correctness testing for coding/math removes judge subjectivity entirely",
+          "example": "unit test pass rate is ground truth for code generation quality"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Domain expert availability limits scalability; expert disagreement on edge cases",
+          "example": "hiring medical domain evaluators for clinical NLP costs 5-10x general annotation"
+        }
+      ],
+      "failure_modes": [
+        "using general rubric for domain-specific task where criteria don't apply",
+        "ground truth solutions contain errors propagated to evaluation"
+      ],
+      "acceptance_tests": [
+        "domain expert validates rubric against 20 real task examples",
+        "functional test suite achieves >95% coverage of acceptance criteria"
+      ],
+      "revisit_triggers": [
+        "domain standards update",
+        "new task type added to domain",
+        "expert disagreement rate >20%"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "INTER_RATER",
+      "topic": "inter_rater_reliability",
+      "definition": "Measure and improve agreement between multiple human annotators or judge instances using Cohen's kappa, Krippendorff's alpha, and disagreement analysis.",
+      "node_type": "work_unit",
+      "group": "quality_assurance",
+      "scope_boundary": {
+        "included": [
+          "inter-rater agreement metrics",
+          "disagreement analysis",
+          "annotator calibration sessions",
+          "guideline revision"
+        ],
+        "excluded": [
+          "single annotator evaluation",
+          "model training labels"
+        ]
+      },
+      "academic_fields": [
+        "statistics"
+      ],
+      "subfields": [
+        "annotation",
+        "quality_assurance"
+      ],
+      "specialists": [
+        "annotation_lead",
+        "statistician"
+      ],
+      "contradictors": [
+        "single_rater_advocate"
+      ],
+      "inputs": [
+        "multi-rater annotation sets",
+        "rubric",
+        "annotation guidelines"
+      ],
+      "outputs": [
+        "Cohen kappa / Krippendorff alpha",
+        "disagreement analysis report",
+        "revised guidelines"
+      ],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "HUMAN_CALIBRATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.65,
+        "user_value": 0.68,
+        "technical_complexity": 0.52,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.55,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.68,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "annotator cohort changes or rubric revised",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Kappa-driven guideline revision cycles improve agreement from 0.55 to 0.80 within 3 rounds",
+          "example": "iterative calibration is fastest path to reliable labels"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High agreement can mask systematic shared bias if all annotators share background",
+          "example": "all annotators from same culture may agree on culturally biased verdicts"
+        }
+      ],
+      "failure_modes": [
+        "treating high agreement as ground truth without diversity check",
+        "conflating chance agreement with genuine reliability"
+      ],
+      "acceptance_tests": [
+        "Cohen kappa >0.70 on pilot annotation batch",
+        "disagreement rate on clear cases <5%"
+      ],
+      "revisit_triggers": [
+        "rubric change",
+        "new annotator cohort",
+        "kappa drops below 0.65"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EVAL_REPORTING",
+      "topic": "eval_reporting",
+      "definition": "Produce structured evaluation reports with confidence intervals, limitations, and actionable findings for engineering, product, and leadership stakeholders.",
+      "node_type": "work_unit",
+      "group": "communication",
+      "scope_boundary": {
+        "included": [
+          "evaluation report structure",
+          "confidence intervals",
+          "limitation disclosure",
+          "actionable recommendations"
+        ],
+        "excluded": [
+          "model training",
+          "evaluation pipeline internals"
+        ]
+      },
+      "academic_fields": [
+        "statistics",
+        "communication"
+      ],
+      "subfields": [
+        "reporting",
+        "stakeholder_management"
+      ],
+      "specialists": [
+        "eval_researcher",
+        "product_manager"
+      ],
+      "contradictors": [
+        "metric_dump_advocate"
+      ],
+      "inputs": [
+        "evaluation results",
+        "confidence intervals",
+        "bias audit findings",
+        "stakeholder context"
+      ],
+      "outputs": [
+        "evaluation report",
+        "executive summary",
+        "model improvement recommendations"
+      ],
+      "dependencies": [
+        "MULTI_DIM_SCORING",
+        "HUMAN_CALIBRATION",
+        "GOODHART"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.3,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.48,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.73,
+        "final_importance": 0.6
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.85,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "reporting format requirements change or CI methodology updated",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Confidence intervals and limitations prevent overinterpretation of small score differences",
+          "example": "reporting CI prevents spurious model selection based on noise"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stakeholders ignore nuanced limitations and treat point estimates as ground truth",
+          "example": "'Model A scores 4.2 vs 4.1' decision ignores overlapping CIs"
+        }
+      ],
+      "failure_modes": [
+        "suppressing limitations to satisfy stakeholder narrative",
+        "omitting CI from reports to appear decisive"
+      ],
+      "acceptance_tests": [
+        "every score includes 95% CI",
+        "limitations section present and peer-reviewed"
+      ],
+      "revisit_triggers": [
+        "stakeholder requirements change",
+        "new evaluation dimension added"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "JUDGE_PARADIGM",
+      "to": "POINTWISE",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_002",
+      "from": "JUDGE_PARADIGM",
+      "to": "PAIRWISE",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.88,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.33,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_003",
+      "from": "JUDGE_PARADIGM",
+      "to": "RUBRIC_DESIGN",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.33,
+      "prior_relation_strength": 0.85,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_004",
+      "from": "JUDGE_PARADIGM",
+      "to": "BENCHMARK_CONTAM",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_005",
+      "from": "JUDGE_PARADIGM",
+      "to": "GOODHART",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_006",
+      "from": "PAIRWISE",
+      "to": "POSITION_BIAS",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.88,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.36,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_007",
+      "from": "PAIRWISE",
+      "to": "ELO_ARENA",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.85,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_008",
+      "from": "PAIRWISE",
+      "to": "SELF_PREF",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_009",
+      "from": "RUBRIC_DESIGN",
+      "to": "POINTWISE",
+      "edge_type": "causal",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_010",
+      "from": "RUBRIC_DESIGN",
+      "to": "VERBOSITY_BIAS",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.75,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_011",
+      "from": "RUBRIC_DESIGN",
+      "to": "MULTI_DIM_SCORING",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_012",
+      "from": "RUBRIC_DESIGN",
+      "to": "SAFETY_EVAL",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_013",
+      "from": "RUBRIC_DESIGN",
+      "to": "DOMAIN_SPEC_EVAL",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_014",
+      "from": "RUBRIC_DESIGN",
+      "to": "REFERENCE_BASED",
+      "edge_type": "causal",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.75,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_015",
+      "from": "JUDGE_MODEL_SELECT",
+      "to": "CHAIN_OF_THOUGHT_JUDGE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_016",
+      "from": "JUDGE_MODEL_SELECT",
+      "to": "EVAL_PIPELINE",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_017",
+      "from": "JUDGE_MODEL_SELECT",
+      "to": "COST_LATENCY",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.85,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_018",
+      "from": "SELF_PREF",
+      "to": "JUDGE_MODEL_SELECT",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_019",
+      "from": "HUMAN_CALIBRATION",
+      "to": "GOODHART",
+      "edge_type": "feedback",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.75,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_020",
+      "from": "HUMAN_CALIBRATION",
+      "to": "EVAL_REPORTING",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.1,
+      "edge_score": 0.1,
+      "edge_heat": 0.23,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_021",
+      "from": "HUMAN_CALIBRATION",
+      "to": "INTER_RATER",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_022",
+      "from": "MT_BENCH",
+      "to": "ARENA_PROTOCOL",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.55,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.55,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.32,
+      "edge_score": 0.32,
+      "edge_heat": 0.43,
+      "prior_relation_strength": 0.65,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0,
+      "resolution_rule": "use MT-Bench for controlled multi-turn assessment and Arena for live user preference; do not substitute one for the other"
+    },
+    {
+      "id": "EDGE_023",
+      "from": "ELO_ARENA",
+      "to": "ARENA_PROTOCOL",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_024",
+      "from": "POSITION_BIAS",
+      "to": "EVAL_PIPELINE",
+      "edge_type": "sequence",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_025",
+      "from": "VERBOSITY_BIAS",
+      "to": "EVAL_PIPELINE",
+      "edge_type": "sequence",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25,
+      "prior_relation_strength": 0.75,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_026",
+      "from": "CHAIN_OF_THOUGHT_JUDGE",
+      "to": "EVAL_PIPELINE",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.1,
+      "edge_score": 0.1,
+      "edge_heat": 0.23,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_027",
+      "from": "COST_LATENCY",
+      "to": "EVAL_PIPELINE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_028",
+      "from": "MULTI_DIM_SCORING",
+      "to": "EVAL_REPORTING",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_029",
+      "from": "GOODHART",
+      "to": "HUMAN_CALIBRATION",
+      "edge_type": "feedback",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_030",
+      "from": "REFERENCE_BASED",
+      "to": "MT_BENCH",
+      "edge_type": "causal",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.1,
+      "edge_score": 0.1,
+      "edge_heat": 0.23,
+      "prior_relation_strength": 0.7,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_031",
+      "from": "DOMAIN_SPEC_EVAL",
+      "to": "SAFETY_EVAL",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_032",
+      "from": "INTER_RATER",
+      "to": "RUBRIC_DESIGN",
+      "edge_type": "conflict",
+      "relation_strength": 0.7,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.45,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.3,
+      "edge_score": 0.3,
+      "edge_heat": 0.4,
+      "prior_relation_strength": 0.7,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0,
+      "resolution_rule": "low inter-rater agreement drives rubric revision; iterate rubric before scaling annotation"
+    },
+    {
+      "id": "EDGE_033",
+      "from": "BENCHMARK_CONTAM",
+      "to": "GOODHART",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.24,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_034",
+      "from": "SAFETY_EVAL",
+      "to": "EVAL_REPORTING",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_035",
+      "from": "POINTWISE",
+      "to": "MULTI_DIM_SCORING",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_036",
+      "from": "PAIRWISE",
+      "to": "MT_BENCH",
+      "edge_type": "causal",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.09,
+      "edge_score": 0.09,
+      "edge_heat": 0.22,
+      "prior_relation_strength": 0.68,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_037",
+      "from": "JUDGE_PARADIGM",
+      "to": "JUDGE_MODEL_SELECT",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.33,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0
+    },
+    {
+      "id": "EDGE_038",
+      "from": "JUDGE_PARADIGM",
+      "to": "SELF_PREF",
+      "edge_type": "conflict",
+      "relation_strength": 0.8,
+      "signed_tension": -0.3,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.35,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.28,
+      "edge_score": 0.28,
+      "edge_heat": 0.39,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "uncertainty_range_width": 0.0,
+      "resolution_rule": "self-preference is an inherent risk of the judge paradigm; mitigate via judge diversity and human calibration"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "axis": "cost_vs_quality",
+      "description": "Judge evaluation thoroughness (strong model, CoT, swap, multi-judge) increases cost and latency in direct proportion to quality gains.",
+      "poles": [
+        "cost_minimization",
+        "evaluation_quality_maximization"
+      ],
+      "affected_nodes": [
+        "JUDGE_MODEL_SELECT",
+        "CHAIN_OF_THOUGHT_JUDGE",
+        "COST_LATENCY",
+        "EVAL_PIPELINE"
+      ],
+      "resolution_heuristic": "Use strongest judge for high-stakes evals; tiered model for rapid iteration; cache deterministic outputs."
+    },
+    {
+      "id": "CA_02",
+      "axis": "automated_vs_human_eval",
+      "description": "Automated LLM judge scales cheaply but drifts; human evaluation is ground truth but slow and expensive.",
+      "poles": [
+        "fully_automated",
+        "fully_human"
+      ],
+      "affected_nodes": [
+        "JUDGE_PARADIGM",
+        "HUMAN_CALIBRATION",
+        "INTER_RATER"
+      ],
+      "resolution_heuristic": "Automate at scale with periodic human spot-check calibration; trigger full human re-eval when drift detected."
+    },
+    {
+      "id": "CA_03",
+      "axis": "self_preference_vs_capability",
+      "description": "Most capable judges tend to share training distribution with candidates, amplifying self-preference bias.",
+      "poles": [
+        "strongest_judge_for_quality",
+        "diverse_judge_for_fairness"
+      ],
+      "affected_nodes": [
+        "SELF_PREF",
+        "JUDGE_MODEL_SELECT"
+      ],
+      "resolution_heuristic": "Ensemble judges from multiple providers; report self-preference delta alongside scores."
+    },
+    {
+      "id": "CA_04",
+      "axis": "static_benchmark_vs_live_arena",
+      "description": "Static benchmarks enable controlled comparison but contaminate over time; live arenas avoid contamination but have volunteer bias.",
+      "poles": [
+        "static_benchmark",
+        "live_arena"
+      ],
+      "affected_nodes": [
+        "MT_BENCH",
+        "ARENA_PROTOCOL",
+        "BENCHMARK_CONTAM"
+      ],
+      "resolution_heuristic": "Use static benchmark for controlled ablation; arena for community trust; rotate benchmark questions annually."
+    },
+    {
+      "id": "CA_05",
+      "axis": "pointwise_vs_pairwise",
+      "description": "Pointwise enables absolute comparison across time; pairwise has higher agreement but O(n^2) cost and position bias.",
+      "poles": [
+        "pointwise_absolute",
+        "pairwise_comparative"
+      ],
+      "affected_nodes": [
+        "POINTWISE",
+        "PAIRWISE",
+        "POSITION_BIAS"
+      ],
+      "resolution_heuristic": "Default to pairwise with swap for preference tasks; use pointwise for longitudinal tracking and regression detection."
+    },
+    {
+      "id": "CA_06",
+      "axis": "reference_based_vs_reference_free",
+      "description": "Reference-based evaluation is more reliable for factual tasks but expensive to construct; reference-free scales but misses subtle errors.",
+      "poles": [
+        "reference_based",
+        "reference_free"
+      ],
+      "affected_nodes": [
+        "REFERENCE_BASED",
+        "MT_BENCH",
+        "DOMAIN_SPEC_EVAL"
+      ],
+      "resolution_heuristic": "Use reference-based for factual/coding tasks; reference-free for open-ended creative or conversational tasks."
+    },
+    {
+      "id": "CA_07",
+      "axis": "goodhart_gaming_vs_metric_utility",
+      "description": "Any judge metric used as a training signal risks Goodhart's Law gaming, degrading its validity as a quality proxy.",
+      "poles": [
+        "single_metric_optimization",
+        "diverse_evaluation_suite"
+      ],
+      "affected_nodes": [
+        "GOODHART",
+        "HUMAN_CALIBRATION",
+        "EVAL_REPORTING"
+      ],
+      "resolution_heuristic": "Never use a single judge score as the sole training signal; maintain uncorrelated human evaluation as ground truth anchor."
+    },
+    {
+      "id": "CA_08",
+      "axis": "safety_vs_helpfulness_tradeoff",
+      "description": "Maximizing safety scores tends to increase over-refusal, reducing helpfulness scores; joint optimization is required.",
+      "poles": [
+        "safety_maximization",
+        "helpfulness_maximization"
+      ],
+      "affected_nodes": [
+        "SAFETY_EVAL",
+        "MULTI_DIM_SCORING",
+        "RUBRIC_DESIGN"
+      ],
+      "resolution_heuristic": "Score safety and helpfulness independently; require both to meet floor thresholds before aggregation."
+    },
+    {
+      "id": "CA_09",
+      "axis": "evaluation_speed_vs_stability",
+      "description": "Fast evaluation (small samples, weak judge, no CoT) enables rapid iteration but produces noisy rankings with wide confidence intervals.",
+      "poles": [
+        "speed",
+        "stability"
+      ],
+      "affected_nodes": [
+        "COST_LATENCY",
+        "ELO_ARENA",
+        "EVAL_PIPELINE"
+      ],
+      "resolution_heuristic": "Run fast eval for internal iteration; full stable eval before external reporting or model release decisions."
+    },
+    {
+      "id": "CA_10",
+      "axis": "generalist_vs_domain_specific_evaluation",
+      "description": "General evaluation metrics miss domain-specific quality criteria; domain-specific evals are more accurate but less transferable.",
+      "poles": [
+        "generalist_evaluation",
+        "domain_specific_evaluation"
+      ],
+      "affected_nodes": [
+        "DOMAIN_SPEC_EVAL",
+        "RUBRIC_DESIGN",
+        "JUDGE_MODEL_SELECT"
+      ],
+      "resolution_heuristic": "Use general eval as baseline; supplement with domain-specific functional tests for high-stakes domain deployments."
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "scenario": "Instruction-tuned judge evaluating outputs from same base model",
+      "trigger": "judge and candidate share base model weights",
+      "risk": "self-preference inflates scores by 10-20%, invalidating comparison",
+      "mitigation": "Use judge from different provider family; report self-preference delta",
+      "affected_nodes": [
+        "SELF_PREF",
+        "JUDGE_MODEL_SELECT"
+      ],
+      "severity": "high"
+    },
+    {
+      "id": "EC_02",
+      "scenario": "Benchmark questions appear verbatim in candidate training data",
+      "trigger": "evaluation dataset published online prior to model training cutoff",
+      "risk": "inflated scores do not reflect generalization; ranking corruption",
+      "mitigation": "N-gram overlap detection; canary probing; hold-out questions never published",
+      "affected_nodes": [
+        "BENCHMARK_CONTAM",
+        "MT_BENCH"
+      ],
+      "severity": "high"
+    },
+    {
+      "id": "EC_03",
+      "scenario": "Judge model updated by provider mid-evaluation campaign",
+      "trigger": "provider silently updates judge model API endpoint",
+      "risk": "score distribution shifts, making pre- and post-update results incomparable",
+      "mitigation": "Pin judge model version; validate on fixed calibration set before each run",
+      "affected_nodes": [
+        "EVAL_PIPELINE",
+        "JUDGE_MODEL_SELECT"
+      ],
+      "severity": "high"
+    },
+    {
+      "id": "EC_04",
+      "scenario": "All outputs cluster at top of Likert scale (score bunching)",
+      "trigger": "strong models all score 4.5-5.0 on 5-point rubric",
+      "risk": "insufficient discrimination to rank models or detect regressions",
+      "mitigation": "Switch to pairwise comparison or extend scale to 10-point",
+      "affected_nodes": [
+        "POINTWISE",
+        "RUBRIC_DESIGN"
+      ],
+      "severity": "medium"
+    },
+    {
+      "id": "EC_05",
+      "scenario": "Adversarial voting in open arena",
+      "trigger": "model developer or competitor submits strategic votes to manipulate leaderboard",
+      "risk": "Elo ratings reflect gaming rather than quality",
+      "mitigation": "Anomaly detection on voting patterns; IP deduplication; rate limiting",
+      "affected_nodes": [
+        "ARENA_PROTOCOL",
+        "ELO_ARENA"
+      ],
+      "severity": "high"
+    },
+    {
+      "id": "EC_06",
+      "scenario": "Model trained explicitly to maximize judge score",
+      "trigger": "RLHF reward model is the same model used as evaluation judge",
+      "risk": "Goodhart's Law: model games judge scoring style without quality improvement",
+      "mitigation": "Rotate judge model; maintain separate held-out human evaluation",
+      "affected_nodes": [
+        "GOODHART",
+        "SELF_PREF"
+      ],
+      "severity": "high"
+    },
+    {
+      "id": "EC_07",
+      "scenario": "Safety over-refusal masking as high safety score",
+      "trigger": "model refuses most borderline queries; safety judge rewards refusals",
+      "risk": "model appears safe but is unhelpful; helpfulness blindspot in evaluation",
+      "mitigation": "Measure both harm rate and over-refusal rate; require both to meet thresholds",
+      "affected_nodes": [
+        "SAFETY_EVAL",
+        "MULTI_DIM_SCORING"
+      ],
+      "severity": "high"
+    },
+    {
+      "id": "EC_08",
+      "scenario": "Low inter-annotator agreement due to ambiguous rubric",
+      "trigger": "new annotator cohort achieves kappa < 0.50 on pilot",
+      "risk": "labels too noisy to train on or use as evaluation ground truth",
+      "mitigation": "Pause annotation; revise rubric with disagreement examples; re-pilot",
+      "affected_nodes": [
+        "INTER_RATER",
+        "RUBRIC_DESIGN"
+      ],
+      "severity": "medium"
+    },
+    {
+      "id": "EC_09",
+      "scenario": "Domain expert judges disagree on correct answer",
+      "trigger": "medical or legal task with genuine expert disagreement",
+      "risk": "ground truth labels are unreliable; evaluation conclusions overstated",
+      "mitigation": "Recruit 3+ domain experts; report disagreement rate; avoid binary labels on contested cases",
+      "affected_nodes": [
+        "DOMAIN_SPEC_EVAL",
+        "INTER_RATER"
+      ],
+      "severity": "medium"
+    },
+    {
+      "id": "EC_10",
+      "scenario": "Verbosity bias dominates pairwise win rate",
+      "trigger": "longer outputs win 70%+ of pairwise matches irrespective of quality",
+      "risk": "models optimize output length rather than quality",
+      "mitigation": "Length-controlled pairwise; length-stratified win rate reporting",
+      "affected_nodes": [
+        "VERBOSITY_BIAS",
+        "PAIRWISE"
+      ],
+      "severity": "medium"
+    },
+    {
+      "id": "EC_11",
+      "scenario": "Cold-start model in arena with insufficient matches",
+      "trigger": "new model enters arena with fewer than 200 matches",
+      "risk": "Elo CI too wide to draw ranking conclusions; early match order has outsized effect",
+      "mitigation": "Warm-start with 100+ seeded matches before public leaderboard listing; report CI width",
+      "affected_nodes": [
+        "ELO_ARENA",
+        "ARENA_PROTOCOL"
+      ],
+      "severity": "medium"
+    },
+    {
+      "id": "EC_12",
+      "scenario": "Non-English evaluation with English-centric judge",
+      "trigger": "evaluating outputs in low-resource language with English-pretrained judge",
+      "risk": "judge capability degrades; quality differences not detected",
+      "mitigation": "Use multilingual judge or native-speaker human evaluation for low-resource languages",
+      "affected_nodes": [
+        "JUDGE_MODEL_SELECT",
+        "DOMAIN_SPEC_EVAL"
+      ],
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "action": "Define evaluation goals and stakeholder requirements",
+      "inputs": [
+        "task spec",
+        "quality dimensions",
+        "budget"
+      ],
+      "outputs": [
+        "evaluation design brief"
+      ],
+      "responsible": [
+        "eval_researcher",
+        "product_manager"
+      ],
+      "gate": "stakeholder sign-off on evaluation scope"
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "action": "Design rubric and quality dimensions",
+      "inputs": [
+        "evaluation design brief",
+        "sample outputs"
+      ],
+      "outputs": [
+        "rubric",
+        "grade anchors"
+      ],
+      "responsible": [
+        "eval_researcher",
+        "domain_expert"
+      ],
+      "gate": "inter-rater kappa >0.70 on pilot"
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "action": "Select and validate judge model",
+      "inputs": [
+        "rubric",
+        "human calibration sample",
+        "cost budget"
+      ],
+      "outputs": [
+        "judge model selection",
+        "validation report"
+      ],
+      "responsible": [
+        "eval_engineer"
+      ],
+      "gate": "judge-human correlation >0.80"
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "action": "Design evaluation mode (pointwise/pairwise) and debiasing strategy",
+      "inputs": [
+        "judge model",
+        "evaluation goals",
+        "volume"
+      ],
+      "outputs": [
+        "evaluation protocol",
+        "debiasing config"
+      ],
+      "responsible": [
+        "eval_engineer"
+      ],
+      "gate": "protocol reviewed and approved"
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "action": "Build and test evaluation pipeline",
+      "inputs": [
+        "evaluation protocol",
+        "judge API",
+        "debiasing modules"
+      ],
+      "outputs": [
+        "pipeline",
+        "reproducibility test results"
+      ],
+      "responsible": [
+        "ml_engineer"
+      ],
+      "gate": "pipeline reproduces reference scores within 0.1"
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "action": "Run bias audits (position, verbosity, self-preference)",
+      "inputs": [
+        "evaluation pipeline",
+        "pilot dataset"
+      ],
+      "outputs": [
+        "bias audit report",
+        "debiasing adjustments"
+      ],
+      "responsible": [
+        "eval_engineer",
+        "bias_analyst"
+      ],
+      "gate": "all bias metrics within acceptable bounds"
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "action": "Run contamination check on evaluation dataset",
+      "inputs": [
+        "benchmark questions",
+        "candidate model training metadata"
+      ],
+      "outputs": [
+        "contamination report",
+        "clean test subset"
+      ],
+      "responsible": [
+        "data_engineer",
+        "eval_researcher"
+      ],
+      "gate": "n-gram overlap <5% on final test set"
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "action": "Execute evaluation at scale",
+      "inputs": [
+        "clean test set",
+        "evaluation pipeline",
+        "candidate models"
+      ],
+      "outputs": [
+        "raw scores",
+        "verdict logs",
+        "rationale texts"
+      ],
+      "responsible": [
+        "ml_engineer"
+      ],
+      "gate": "all candidates evaluated; no pipeline errors"
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "action": "Aggregate scores, compute Elo/win rates, run statistical analysis",
+      "inputs": [
+        "raw scores",
+        "verdict logs"
+      ],
+      "outputs": [
+        "aggregated scores",
+        "CIs",
+        "Elo ratings"
+      ],
+      "responsible": [
+        "eval_researcher",
+        "statistician"
+      ],
+      "gate": "CI width within acceptable bounds"
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "action": "Human spot-check calibration",
+      "inputs": [
+        "sample of judge verdicts",
+        "human annotators"
+      ],
+      "outputs": [
+        "human-judge agreement report",
+        "drift alert"
+      ],
+      "responsible": [
+        "annotation_lead"
+      ],
+      "gate": "human-judge Pearson >0.80"
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "action": "Generate evaluation report with limitations",
+      "inputs": [
+        "aggregated scores",
+        "CI",
+        "bias audit",
+        "human calibration"
+      ],
+      "outputs": [
+        "evaluation report",
+        "executive summary"
+      ],
+      "responsible": [
+        "eval_researcher",
+        "product_manager"
+      ],
+      "gate": "limitations section peer-reviewed"
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "action": "Monitor for Goodhart gaming and schedule next calibration",
+      "inputs": [
+        "evaluation score trends",
+        "human quality signals"
+      ],
+      "outputs": [
+        "monitoring dashboard",
+        "next calibration schedule"
+      ],
+      "responsible": [
+        "eval_researcher"
+      ],
+      "gate": "monitoring alerts configured and tested"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "rule": "Bias audit must precede large-scale evaluation",
+      "condition": "any pairwise or pointwise evaluation at scale",
+      "dominant_node": "POSITION_BIAS",
+      "dominated_nodes": [
+        "EVAL_PIPELINE"
+      ],
+      "rationale": "Undetected bias invalidates all downstream scores; audit first is non-negotiable"
+    },
+    {
+      "id": "DR_02",
+      "rule": "Human calibration gates evaluation report publication",
+      "condition": "evaluation report intended for external audience or model release decision",
+      "dominant_node": "HUMAN_CALIBRATION",
+      "dominated_nodes": [
+        "EVAL_REPORTING"
+      ],
+      "rationale": "Without human ground-truth anchor, automated scores may reflect drift rather than quality"
+    },
+    {
+      "id": "DR_03",
+      "rule": "Contamination check precedes benchmark evaluation",
+      "condition": "evaluating a newly trained model on any benchmark",
+      "dominant_node": "BENCHMARK_CONTAM",
+      "dominated_nodes": [
+        "MT_BENCH",
+        "ARENA_PROTOCOL"
+      ],
+      "rationale": "Contaminated scores are invalid; check first prevents wasted evaluation compute"
+    },
+    {
+      "id": "DR_04",
+      "rule": "Rubric design precedes pointwise and multi-dimensional scoring",
+      "condition": "any pointwise or multi-dimensional evaluation",
+      "dominant_node": "RUBRIC_DESIGN",
+      "dominated_nodes": [
+        "POINTWISE",
+        "MULTI_DIM_SCORING"
+      ],
+      "rationale": "Scoring without defined rubric produces unreliable and non-reproducible results"
+    },
+    {
+      "id": "DR_05",
+      "rule": "Judge model selection must include self-preference audit",
+      "condition": "judge and candidate from same provider or base model family",
+      "dominant_node": "SELF_PREF",
+      "dominated_nodes": [
+        "JUDGE_MODEL_SELECT"
+      ],
+      "rationale": "Self-preference bias of 10-20% renders single-family judge comparison invalid"
+    },
+    {
+      "id": "DR_06",
+      "rule": "Safety evaluation requires specialized safety judge, not general judge",
+      "condition": "evaluation includes harm, refusal, or jailbreak assessment",
+      "dominant_node": "SAFETY_EVAL",
+      "dominated_nodes": [
+        "JUDGE_PARADIGM"
+      ],
+      "rationale": "General judges miss subtle harm patterns; false negative rate unacceptably high for safety-critical use"
+    },
+    {
+      "id": "DR_07",
+      "rule": "Goodhart monitoring must activate before using judge scores as training signal",
+      "condition": "judge scores fed into any reward model or RLHF loop",
+      "dominant_node": "GOODHART",
+      "dominated_nodes": [
+        "EVAL_REPORTING"
+      ],
+      "rationale": "Without monitoring, Goodhart gaming degrades model quality while inflating scores"
+    },
+    {
+      "id": "DR_08",
+      "rule": "Inter-rater agreement must reach kappa >0.70 before scaling annotation",
+      "condition": "human annotation for evaluation label collection",
+      "dominant_node": "INTER_RATER",
+      "dominated_nodes": [
+        "HUMAN_CALIBRATION"
+      ],
+      "rationale": "Low-agreement labels add noise; scaling before threshold wastes budget and corrupts labels"
+    },
+    {
+      "id": "DR_09",
+      "rule": "Domain-specific evaluation required for high-stakes domain deployments",
+      "condition": "model deployed in medical, legal, or safety-critical domain",
+      "dominant_node": "DOMAIN_SPEC_EVAL",
+      "dominated_nodes": [
+        "JUDGE_PARADIGM"
+      ],
+      "rationale": "General evaluation misses domain-specific failure modes that matter most for deployment risk"
+    },
+    {
+      "id": "DR_10",
+      "rule": "Reference-based evaluation preferred for factual and coding tasks",
+      "condition": "task has objectively correct or verifiable answers",
+      "dominant_node": "REFERENCE_BASED",
+      "dominated_nodes": [
+        "POINTWISE"
+      ],
+      "rationale": "Reference-free evaluation of factual tasks misses subtle errors that domain experts catch"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "ARR_01",
+      "rule": "Do not redesign rubric after large-scale annotation has begun",
+      "trigger": "urge to change rubric mid-campaign",
+      "prevention": "pilot with 50 samples and achieve kappa >0.70 before scaling",
+      "cost_if_violated": "all collected labels must be re-annotated at full cost"
+    },
+    {
+      "id": "ARR_02",
+      "rule": "Do not change judge model mid-evaluation campaign without version locking",
+      "trigger": "provider releases updated model during campaign",
+      "prevention": "pin model version at campaign start; validate on calibration set each run",
+      "cost_if_violated": "pre/post results incomparable; full re-evaluation required"
+    },
+    {
+      "id": "ARR_03",
+      "rule": "Do not publish benchmark questions before model training cutoff",
+      "trigger": "sharing benchmark for community feedback",
+      "prevention": "hold evaluation questions under embargo until after training cutoff",
+      "cost_if_violated": "contamination invalidates all future evaluations on that benchmark"
+    },
+    {
+      "id": "ARR_04",
+      "rule": "Do not skip swap augmentation in pairwise evaluation",
+      "trigger": "cost pressure to halve pairwise API calls",
+      "prevention": "build swap augmentation into pipeline default; require explicit override to disable",
+      "cost_if_violated": "position bias corrupts win rates; retrospective debiasing is lossy"
+    },
+    {
+      "id": "ARR_05",
+      "rule": "Do not use judge scores as sole training reward without human calibration",
+      "trigger": "reward model trained directly on judge verdicts",
+      "prevention": "require human calibration report before judge scores enter any training loop",
+      "cost_if_violated": "Goodhart gaming degrades model quality while inflating scores"
+    },
+    {
+      "id": "ARR_06",
+      "rule": "Do not aggregate multi-dimensional scores before validating dimension independence",
+      "trigger": "stakeholder requests single aggregate score before correlation analysis",
+      "prevention": "compute and report dimension correlations before weighting; flag correlated dimensions",
+      "cost_if_violated": "correlated dimensions double-count; aggregate scores mislead model selection"
+    },
+    {
+      "id": "ARR_07",
+      "rule": "Do not launch arena before adversarial voting detection is operational",
+      "trigger": "pressure to launch leaderboard quickly",
+      "prevention": "implement vote anomaly detection before public launch",
+      "cost_if_violated": "strategic voting corrupts Elo; retroactive correction requires full re-computation"
+    },
+    {
+      "id": "ARR_08",
+      "rule": "Do not skip contamination check for newly trained models",
+      "trigger": "fast iteration culture skipping pre-eval checks",
+      "prevention": "contamination check is mandatory pipeline step before any benchmark evaluation",
+      "cost_if_violated": "inflated scores invalidate release decision; public credibility damage if discovered post-release"
+    },
+    {
+      "id": "ARR_09",
+      "rule": "Do not omit confidence intervals from evaluation reports",
+      "trigger": "stakeholder preference for clean point estimates",
+      "prevention": "CI computation and inclusion is non-negotiable in report template",
+      "cost_if_violated": "spurious model selection decisions based on noise within CI overlap"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "trigger": "human-judge agreement drops below 0.75",
+      "action": "pause automated evaluation; run emergency calibration batch; inspect for judge model change or rubric drift",
+      "frequency": "continuous monitoring",
+      "responsible": "eval_researcher"
+    },
+    {
+      "id": "IP_02",
+      "trigger": "position bias swap-consistency below 0.85",
+      "action": "investigate judge prompt for ordering cues; update debiasing module; re-run affected evaluations",
+      "frequency": "per evaluation campaign",
+      "responsible": "eval_engineer"
+    },
+    {
+      "id": "IP_03",
+      "trigger": "verbosity-quality correlation exceeds 0.40",
+      "action": "add length-controlled evaluation variant; update prompt to discourage length bias; re-audit with length-stratified sample",
+      "frequency": "per evaluation campaign",
+      "responsible": "eval_engineer"
+    },
+    {
+      "id": "IP_04",
+      "trigger": "benchmark n-gram contamination exceeds 5%",
+      "action": "remove contaminated questions; add replacement questions from held-out reserve; document which questions removed",
+      "frequency": "per new model evaluation",
+      "responsible": "data_engineer"
+    },
+    {
+      "id": "IP_05",
+      "trigger": "Elo CI width exceeds 50 points after 500 matches",
+      "action": "continue match collection; investigate match distribution for category skew; do not publish ranking",
+      "frequency": "ongoing arena operation",
+      "responsible": "arena_designer"
+    },
+    {
+      "id": "IP_06",
+      "trigger": "inter-rater kappa below 0.65 on annotation batch",
+      "action": "halt annotation; convene calibration session; revise rubric with disagreement examples; re-pilot",
+      "frequency": "per annotation batch",
+      "responsible": "annotation_lead"
+    },
+    {
+      "id": "IP_07",
+      "trigger": "judge score trend diverges from human ratings by >0.15",
+      "action": "run full human re-calibration; inspect for Goodhart gaming pattern; consider judge rotation",
+      "frequency": "monthly monitoring",
+      "responsible": "eval_researcher"
+    },
+    {
+      "id": "IP_08",
+      "trigger": "safety false negative rate exceeds 2% on known harm categories",
+      "action": "retrain or replace safety judge; expand red-team test suite; hold model release",
+      "frequency": "per safety evaluation cycle",
+      "responsible": "safety_researcher"
+    },
+    {
+      "id": "IP_09",
+      "trigger": "self-preference delta exceeds 5% relative to cross-family baseline",
+      "action": "switch to ensemble of diverse-family judges; document bias in report",
+      "frequency": "per new judge model deployment",
+      "responsible": "eval_engineer"
+    },
+    {
+      "id": "IP_10",
+      "trigger": "evaluation pipeline fails reproducibility check (>0.1 score delta)",
+      "action": "audit prompt version log; check cache validity; re-run on fixed calibration set; root-cause before proceeding",
+      "frequency": "per evaluation run",
+      "responsible": "ml_engineer"
+    }
+  ],
+  "priority_order": [
+    "JUDGE_PARADIGM",
+    "RUBRIC_DESIGN",
+    "JUDGE_MODEL_SELECT",
+    "SELF_PREF",
+    "BENCHMARK_CONTAM",
+    "HUMAN_CALIBRATION",
+    "SAFETY_EVAL",
+    "GOODHART",
+    "PAIRWISE",
+    "POSITION_BIAS",
+    "POINTWISE",
+    "VERBOSITY_BIAS",
+    "ELO_ARENA",
+    "INTER_RATER",
+    "MULTI_DIM_SCORING",
+    "MT_BENCH",
+    "ARENA_PROTOCOL",
+    "DOMAIN_SPEC_EVAL",
+    "REFERENCE_BASED",
+    "CHAIN_OF_THOUGHT_JUDGE",
+    "EVAL_PIPELINE",
+    "COST_LATENCY",
+    "EVAL_REPORTING"
+  ],
+  "priority_rationale": "Priority ordered by: (1) foundational setup (paradigm, rubric, judge selection) before any evaluation; (2) bias and integrity checks before scale; (3) human calibration before reporting; (4) specialized frameworks; (5) operational/reporting infrastructure.",
+  "validation_protocol": {
+    "structural_check": "all required top-level keys present and correctly typed",
+    "node_count_check": "19-24 nodes required",
+    "edge_count_check": "32-40 edges required",
+    "conflict_axes_check": "8-10 conflict_axes required",
+    "edge_cases_check": "10-12 edge_cases required",
+    "workflow_check": "9-12 workflow steps required",
+    "competency_questions_check": "10-14 competency questions required",
+    "dominance_rules_check": "7-12 dominance rules required",
+    "anti_rework_rules_check": "7-12 anti-rework rules required",
+    "iteration_protocol_check": "6-10 iteration protocol entries required",
+    "high_risk_node_obligations": "nodes with risk_if_wrong>=0.80 must have non-empty acceptance_tests and human_review_required=true",
+    "high_coupling_node_obligations": "nodes with cross_topic_coupling>=0.75 must have non-empty revisit_triggers",
+    "conflict_edge_obligations": "edges with signed_tension<0 must have resolution_rule",
+    "source_registry_check": "SRC_HEURISTIC_PRIOR must be in source_registry",
+    "priority_order_completeness": "priority_order must list every node id exactly once",
+    "reference_resolution": "every evidence_ref, competency_question_ref, conflict_axis_ref must resolve"
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_schema_semantics_bias_audit_completeness_and_scoring_workflow_quality",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "single model output, pointwise rubric, GPT-4 judge",
+        "expected_properties": [
+          "rubric score computable",
+          "judge rationale present"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_002",
+        "case_type": "bias_probe",
+        "input_summary": "pairwise pair with known position swap inconsistency",
+        "expected_properties": [
+          "position bias detected",
+          "swap-consistency below threshold triggers alert"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_003",
+        "case_type": "contamination_probe",
+        "input_summary": "benchmark question in training data n-gram overlap",
+        "expected_properties": [
+          "contamination detected",
+          "question removed from eval set"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_004",
+        "case_type": "goodhart_monitoring",
+        "input_summary": "judge score trends diverge from human ratings over 3 cycles",
+        "expected_properties": [
+          "drift alert triggered",
+          "human re-calibration initiated"
+        ]
+      }
+    ],
+    "metrics": [
+      "human_judge_correlation",
+      "swap_consistency_rate",
+      "contamination_rate",
+      "bias_delta"
+    ],
+    "regression_policy": "block evaluation report if human-judge correlation drops below 0.75 or position bias swap-consistency below 0.82",
+    "minimum_pass_conditions": [
+      "human-judge Pearson >0.80",
+      "position-swap consistency >0.85",
+      "n-gram contamination <5%",
+      "self-preference delta <5%"
+    ]
+  },
+  "validation_report": {
+    "last_validated": "not_yet_validated",
+    "validator_version": "kb_validator",
+    "mode": "dense",
+    "overall_status": "pending"
+  },
+  "change_control": {
+    "version": "1.0.0",
+    "last_modified": "2026-06-23",
+    "change_log": [
+      {
+        "version": "1.0.0",
+        "date": "2026-06-23",
+        "description": "Initial generation of eval__judge KB",
+        "author": "model"
+      }
+    ]
+  },
+  "traceability_matrix": {
+    "nodes_to_competency_questions": {
+      "JUDGE_PARADIGM": [
+        "CQ_01"
+      ],
+      "POINTWISE": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "PAIRWISE": [
+        "CQ_01",
+        "CQ_04"
+      ],
+      "ELO_ARENA": [
+        "CQ_05"
+      ],
+      "RUBRIC_DESIGN": [
+        "CQ_03"
+      ],
+      "POSITION_BIAS": [
+        "CQ_04",
+        "CQ_06"
+      ],
+      "VERBOSITY_BIAS": [
+        "CQ_06"
+      ],
+      "SELF_PREF": [
+        "CQ_07"
+      ],
+      "HUMAN_CALIBRATION": [
+        "CQ_02",
+        "CQ_08",
+        "CQ_10"
+      ],
+      "BENCHMARK_CONTAM": [
+        "CQ_09"
+      ],
+      "GOODHART": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "MT_BENCH": [],
+      "ARENA_PROTOCOL": [
+        "CQ_05"
+      ],
+      "JUDGE_MODEL_SELECT": [
+        "CQ_02",
+        "CQ_07"
+      ],
+      "CHAIN_OF_THOUGHT_JUDGE": [],
+      "REFERENCE_BASED": [],
+      "MULTI_DIM_SCORING": [
+        "CQ_03",
+        "CQ_12"
+      ],
+      "SAFETY_EVAL": [
+        "CQ_12"
+      ],
+      "COST_LATENCY": [
+        "CQ_11"
+      ],
+      "EVAL_PIPELINE": [
+        "CQ_11"
+      ],
+      "DOMAIN_SPEC_EVAL": [],
+      "INTER_RATER": [
+        "CQ_08"
+      ],
+      "EVAL_REPORTING": [
+        "CQ_10",
+        "CQ_13"
+      ]
+    },
+    "conflict_axes_to_nodes": {
+      "CA_01": [
+        "JUDGE_MODEL_SELECT",
+        "CHAIN_OF_THOUGHT_JUDGE",
+        "COST_LATENCY",
+        "EVAL_PIPELINE"
+      ],
+      "CA_02": [
+        "JUDGE_PARADIGM",
+        "HUMAN_CALIBRATION",
+        "INTER_RATER"
+      ],
+      "CA_03": [
+        "SELF_PREF",
+        "JUDGE_MODEL_SELECT"
+      ],
+      "CA_04": [
+        "MT_BENCH",
+        "ARENA_PROTOCOL",
+        "BENCHMARK_CONTAM"
+      ],
+      "CA_05": [
+        "POINTWISE",
+        "PAIRWISE",
+        "POSITION_BIAS"
+      ],
+      "CA_06": [
+        "REFERENCE_BASED",
+        "MT_BENCH",
+        "DOMAIN_SPEC_EVAL"
+      ],
+      "CA_07": [
+        "GOODHART",
+        "HUMAN_CALIBRATION",
+        "EVAL_REPORTING"
+      ],
+      "CA_08": [
+        "SAFETY_EVAL",
+        "MULTI_DIM_SCORING",
+        "RUBRIC_DESIGN"
+      ],
+      "CA_09": [
+        "COST_LATENCY",
+        "ELO_ARENA",
+        "EVAL_PIPELINE"
+      ],
+      "CA_10": [
+        "DOMAIN_SPEC_EVAL",
+        "RUBRIC_DESIGN",
+        "JUDGE_MODEL_SELECT"
+      ]
+    }
+  }
+}
