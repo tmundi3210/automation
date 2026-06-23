@@ -1,0 +1,5657 @@
+{
+  "domain": "tool_grounded_strict_format_numeric_reasoning",
+  "domain_label": "Tool-Grounded & Strict-Format Numeric Reasoning (math__tool_math)",
+  "purpose": "session_bounded_stepwise_execution_for_program_aided_math_tool_math_with_strict_output_schema_and_answer_verification",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "subdomain scope is program-aided math (PAL/PoT), CAS-exact computation (SymPy), strict numeric output schema, and answer verification",
+    "evaluation is exact-match centric (or tolerance-bounded numeric equality) on math benchmarks",
+    "code execution via sandboxed Python interpreter is the primary computation mechanism"
+  ],
+  "exclusions": [
+    "neural arithmetic units and differentiable programming",
+    "training data generation beyond (problem, code, answer) triple curation",
+    "model serving infrastructure and GPU optimization",
+    "multi-modal math (diagram understanding, geometry image parsing)",
+    "formal proof systems (Lean, Coq, Isabelle)"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "How does the PAL framework prevent LLM arithmetic hallucination?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "PAL_FRAMEWORK node defines delegation of computation to Python interpreter",
+      "covered_by": [
+        "PAL_FRAMEWORK",
+        "SANDBOX_EXECUTOR"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What is the difference between PAL and PoT and when should each be used?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "PAL_FRAMEWORK and POT_FRAMEWORK distinguish code-only vs annotated approaches",
+      "covered_by": [
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK",
+        "LATENCY_COST_TRADEOFF"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "When should SymPy CAS be used instead of Python numeric arithmetic?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "SYMPY_CAS and TOOL_SELECTION define routing policy for exact vs approximate",
+      "covered_by": [
+        "SYMPY_CAS",
+        "TOOL_SELECTION",
+        "PRECISION_TOLERANCE"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How is the strict numeric output schema enforced to prevent free-text number hallucination?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "STRICT_OUTPUT_SCHEMA and HALLUCINATION_GUARD define enforcement mechanism",
+      "covered_by": [
+        "STRICT_OUTPUT_SCHEMA",
+        "HALLUCINATION_GUARD",
+        "NUMERIC_OUTPUT_SCHEMA"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How does the system extract, normalize, and validate the final numeric answer from code execution?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "NUMERIC_OUTPUT_SCHEMA defines pipeline from stdout to canonical answer",
+      "covered_by": [
+        "NUMERIC_OUTPUT_SCHEMA",
+        "PRECISION_TOLERANCE",
+        "UNIT_FORMAT_VALIDATOR"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What numeric precision and tolerance policy prevents false failures from floating-point representation?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PRECISION_TOLERANCE defines per-type tolerance policy",
+      "covered_by": [
+        "PRECISION_TOLERANCE",
+        "SYMPY_CAS",
+        "ANSWER_VERIFIER"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How are units validated to catch dimensionally-wrong answers?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "UNIT_FORMAT_VALIDATOR defines unit ontology and validation",
+      "covered_by": [
+        "UNIT_FORMAT_VALIDATOR",
+        "STRICT_OUTPUT_SCHEMA"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How does the system recover from code execution failures?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "CODE_ERROR_RECOVERY defines retry strategy with error reflection",
+      "covered_by": [
+        "CODE_ERROR_RECOVERY",
+        "SANDBOX_EXECUTOR",
+        "ANSWER_VERIFIER"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is answer correctness verified beyond schema compliance?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "ANSWER_VERIFIER defines back-substitution and self-consistency methods",
+      "covered_by": [
+        "ANSWER_VERIFIER",
+        "REGRESSION_SUITE"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How does the regression suite guard against regressions from system updates?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "REGRESSION_SUITE defines versioned fixture bank and coverage policy",
+      "covered_by": [
+        "REGRESSION_SUITE",
+        "BENCHMARK_EVAL"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How is benchmark contamination detected and what happens when it is found?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "GOODHART_RISK defines contamination detection and remediation",
+      "covered_by": [
+        "GOODHART_RISK",
+        "BENCHMARK_EVAL",
+        "DATASET_CURATION"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How are training datasets curated to ensure program-answer pair quality?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "DATASET_CURATION defines curation pipeline with human verification",
+      "covered_by": [
+        "DATASET_CURATION",
+        "FINE_TUNE_PAL"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "What security controls prevent LLM-generated code from causing harm in production?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SANDBOX_EXECUTOR defines import allowlist and resource limits",
+      "covered_by": [
+        "SANDBOX_EXECUTOR",
+        "HALLUCINATION_GUARD"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "How is the latency-cost-accuracy tradeoff managed for production deployment?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "LATENCY_COST_TRADEOFF defines operating point selection",
+      "covered_by": [
+        "LATENCY_COST_TRADEOFF",
+        "PRODUCTION_MONITOR",
+        "ANSWER_VERIFIER"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "PAL",
+      "definition": "Program-Aided Language Models; LLM generates Python code to compute math answers",
+      "synonyms": [
+        "program-aided language model"
+      ],
+      "not_same_as": [
+        "chain-of-thought",
+        "PoT"
+      ],
+      "used_by_nodes": [
+        "PAL_FRAMEWORK",
+        "PROMPT_TEMPLATE_PAL"
+      ]
+    },
+    {
+      "term": "PoT",
+      "definition": "Program of Thoughts; interleaved reasoning comments and executable Python code",
+      "synonyms": [
+        "program of thoughts"
+      ],
+      "not_same_as": [
+        "PAL",
+        "chain-of-thought"
+      ],
+      "used_by_nodes": [
+        "POT_FRAMEWORK"
+      ]
+    },
+    {
+      "term": "SymPy",
+      "definition": "Python library for exact symbolic mathematics and computer algebra",
+      "synonyms": [
+        "symbolic python",
+        "CAS"
+      ],
+      "not_same_as": [
+        "numpy",
+        "scipy"
+      ],
+      "used_by_nodes": [
+        "SYMPY_CAS"
+      ]
+    },
+    {
+      "term": "strict_output_schema",
+      "definition": "Machine-parseable format specification requiring numeric answer with unit and format; no prose",
+      "synonyms": [
+        "structured output",
+        "no-free-text mode"
+      ],
+      "not_same_as": [
+        "chain-of-thought output",
+        "free-text answer"
+      ],
+      "used_by_nodes": [
+        "STRICT_OUTPUT_SCHEMA",
+        "HALLUCINATION_GUARD"
+      ]
+    },
+    {
+      "term": "self_consistency",
+      "definition": "Sampling N code solutions and taking majority vote on the extracted numeric answer",
+      "synonyms": [
+        "majority voting",
+        "SC decoding"
+      ],
+      "not_same_as": [
+        "single-shot inference",
+        "back-substitution"
+      ],
+      "used_by_nodes": [
+        "ANSWER_VERIFIER"
+      ]
+    },
+    {
+      "term": "back_substitution",
+      "definition": "Plugging computed answer back into original equation to verify it satisfies the constraint",
+      "synonyms": [
+        "solution verification",
+        "check by substitution"
+      ],
+      "not_same_as": [
+        "self-consistency",
+        "schema validation"
+      ],
+      "used_by_nodes": [
+        "ANSWER_VERIFIER"
+      ]
+    },
+    {
+      "term": "goodhart_contamination",
+      "definition": "Overfitting to benchmark metrics through contamination or optimization pressure; benchmark score diverges from true capability",
+      "synonyms": [
+        "benchmark contamination",
+        "goodhart effect"
+      ],
+      "not_same_as": [
+        "generalization",
+        "distribution shift"
+      ],
+      "used_by_nodes": [
+        "GOODHART_RISK",
+        "BENCHMARK_EVAL"
+      ]
+    },
+    {
+      "term": "sandbox",
+      "definition": "Isolated execution environment with resource limits, import allowlist, and no filesystem/network access for running LLM-generated code",
+      "synonyms": [
+        "code sandbox",
+        "restricted execution"
+      ],
+      "not_same_as": [
+        "virtual machine",
+        "bare metal execution"
+      ],
+      "used_by_nodes": [
+        "SANDBOX_EXECUTOR"
+      ]
+    },
+    {
+      "term": "numeric_tolerance",
+      "definition": "Acceptable difference between computed and reference numeric answer for comparison purposes",
+      "synonyms": [
+        "atol",
+        "rtol",
+        "comparison tolerance"
+      ],
+      "not_same_as": [
+        "schema format",
+        "unit validation"
+      ],
+      "used_by_nodes": [
+        "PRECISION_TOLERANCE"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "STRICT_OUTPUT_SCHEMA",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "SYMPY_CAS",
+      "PRECISION_TOLERANCE",
+      "ANSWER_VERIFIER"
+    ],
+    "probabilistic_modeling": [
+      "ANSWER_VERIFIER",
+      "GOODHART_RISK"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "HALLUCINATION_GUARD",
+      "SANDBOX_EXECUTOR",
+      "GOODHART_RISK"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "REGRESSION_SUITE",
+      "BENCHMARK_EVAL"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "PROMPT_TEMPLATE_PAL",
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "PAL_FRAMEWORK",
+      "POT_FRAMEWORK",
+      "PROBLEM_DECOMP",
+      "TOOL_SELECTION"
+    ],
+    "software_schema_engineering": [
+      "STRICT_OUTPUT_SCHEMA",
+      "schema_contract"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for tool-grounded math reasoning work units in absence of supplied datasets; informed by PAL (Gao et al. 2022) and PoT (Chen et al. 2022) papers",
+      "citation_or_locator": "Gao et al. 2022 (PAL: Program-aided Language Models); Chen et al. 2022 (Program of Thoughts Prompting)",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors informed by PAL/PoT literature"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "PAL_FRAMEWORK",
+      "topic": "program_aided_lm_framework",
+      "definition": "Implement the PAL paradigm: LLM generates Python code to solve math tasks; Python interpreter executes for exact numeric output; LLM never does arithmetic itself.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "problem-to-code translation",
+          "Python execution",
+          "result extraction from stdout"
+        ],
+        "excluded": [
+          "prompt engineering details",
+          "model fine-tuning",
+          "symbolic CAS backends"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "software_engineering"
+      ],
+      "subfields": [
+        "program_synthesis",
+        "neural_symbolic"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "llm_practitioner"
+      ],
+      "contradictors": [
+        "free_text_math_advocate"
+      ],
+      "inputs": [
+        "math problem statement",
+        "LLM",
+        "Python interpreter"
+      ],
+      "outputs": [
+        "Python code string",
+        "numeric answer",
+        "execution trace"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [
+        "POT_FRAMEWORK"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.85,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.55,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.69,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.66,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.1,
+          0.4
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "switch to non-Python CAS or model generates non-executable output",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Eliminates arithmetic hallucination by delegating computation to a deterministic interpreter",
+          "example": "PAL on GSM8K outperforms chain-of-thought by delegating arithmetic to Python"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Requires sandboxed code execution environment; adds latency and infra complexity",
+          "example": "Docker sandbox adds ~200ms per query"
+        }
+      ],
+      "failure_modes": [
+        "LLM generates syntactically invalid Python",
+        "interpreter timeout on infinite loops",
+        "import of disallowed modules"
+      ],
+      "acceptance_tests": [
+        "generated code executes without exception on fixture problems",
+        "numeric output matches reference answer within tolerance"
+      ],
+      "revisit_triggers": [
+        "problem class shifts to require non-Python libraries",
+        "sandbox policy tightens"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "POT_FRAMEWORK",
+      "topic": "program_of_thoughts_framework",
+      "definition": "Implement the PoT variant (Chen et al. 2022): LLM generates multi-step chain of computations as code comments interleaved with executable Python, separating reasoning steps from computation.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "interleaved comment-code reasoning",
+          "step-level attribution",
+          "PoT prompt templates"
+        ],
+        "excluded": [
+          "PAL-only single-block code",
+          "symbolic solvers",
+          "neural arithmetic units"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence"
+      ],
+      "subfields": [
+        "program_synthesis",
+        "chain_of_thought"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "llm_practitioner"
+      ],
+      "contradictors": [
+        "cot_only_advocate"
+      ],
+      "inputs": [
+        "math problem",
+        "PoT prompt template",
+        "Python interpreter"
+      ],
+      "outputs": [
+        "annotated code with reasoning",
+        "numeric answer"
+      ],
+      "dependencies": [
+        "PAL_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "PAL_FRAMEWORK"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.45,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.62,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.65,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "reasoning annotation style changes or PoT template updated",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Step-level comments make reasoning auditable and error-localizable",
+          "example": "comment per step lets reviewers spot where reasoning diverged from computation"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Longer prompts increase cost and may exceed context window on complex problems",
+          "example": "multi-step annotation can use 3× tokens vs. PAL"
+        }
+      ],
+      "failure_modes": [
+        "comments diverge from actual computation path",
+        "step order inconsistencies"
+      ],
+      "acceptance_tests": [
+        "each reasoning step maps to a corresponding code block",
+        "final variable matches expected output"
+      ],
+      "revisit_triggers": [
+        "model starts condensing steps to save tokens",
+        "problem requires branching logic"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SYMPY_CAS",
+      "topic": "sympy_cas_exact_engine",
+      "definition": "Integrate SymPy as the computation backend for exact symbolic and algebraic operations: solve equations, simplify expressions, compute limits/derivatives, and avoid floating-point rounding.",
+      "node_type": "work_unit",
+      "group": "computation_backends",
+      "scope_boundary": {
+        "included": [
+          "SymPy solve/simplify/integrate",
+          "exact rational arithmetic",
+          "symbolic algebra"
+        ],
+        "excluded": [
+          "numerical approximation libraries",
+          "SageMath",
+          "Mathematica CAS"
+        ]
+      },
+      "academic_fields": [
+        "mathematics",
+        "software_engineering"
+      ],
+      "subfields": [
+        "computer_algebra_systems",
+        "symbolic_computation"
+      ],
+      "specialists": [
+        "math_software_engineer",
+        "llm_practitioner"
+      ],
+      "contradictors": [
+        "numpy_only_advocate"
+      ],
+      "inputs": [
+        "algebraic problem",
+        "SymPy library",
+        "LLM code generator"
+      ],
+      "outputs": [
+        "exact symbolic answer",
+        "SymPy expression tree"
+      ],
+      "dependencies": [
+        "PAL_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "NUMERIC_OUTPUT_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.75,
+        "user_value": 0.72,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.62,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.63,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "SymPy version upgrade or switch to alternative CAS",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Exact rational arithmetic eliminates floating-point accumulation errors",
+          "example": "SymPy gives Rational(1,3) not 0.3333..."
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "SymPy solve() can time out on large polynomial systems; not all problems are symbolically tractable",
+          "example": "groebner basis on degree-8 polynomial hangs >30s"
+        }
+      ],
+      "failure_modes": [
+        "LLM imports numpy instead of sympy for symbolic tasks",
+        "SymPy timeout on underdetermined systems"
+      ],
+      "acceptance_tests": [
+        "SymPy-generated answer matches exact reference on 10 algebraic fixtures",
+        "no floating-point equality checks used when exact answer required"
+      ],
+      "revisit_triggers": [
+        "problem shifts to numerical ODE integration where SymPy is too slow",
+        "CAS library version breaks API"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "STRICT_OUTPUT_SCHEMA",
+      "topic": "strict_numeric_output_schema",
+      "definition": "Define and enforce a machine-parseable output schema for numeric answers: single number, unit, format (integer/decimal/fraction), no prose explanation appended. All tool-math responses must conform.",
+      "node_type": "work_unit",
+      "group": "output_governance",
+      "scope_boundary": {
+        "included": [
+          "answer format spec",
+          "unit normalization",
+          "integer vs decimal vs fraction policy"
+        ],
+        "excluded": [
+          "free-text answers with embedded numbers",
+          "multi-answer outputs",
+          "LaTeX formatting"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "linguistics"
+      ],
+      "subfields": [
+        "schema_design",
+        "output_validation"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "product_engineer"
+      ],
+      "contradictors": [
+        "narrative_explanation_advocate"
+      ],
+      "inputs": [
+        "problem type",
+        "domain unit conventions",
+        "answer extractor spec"
+      ],
+      "outputs": [
+        "output schema spec",
+        "format validation regex",
+        "unit conversion table"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.67,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.65,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.1,
+          0.38
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "new answer type (complex, vector) added to problem corpus",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Machine-parseable schema enables automated answer checking without NLP extraction",
+          "example": "regex match on structured output gives 100% parse rate vs ~85% on free-text"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Overly strict schema breaks on legitimate edge cases (complex numbers, vectors, sets)",
+          "example": "schema requiring float fails on set-valued answers like {1,2,3}"
+        }
+      ],
+      "failure_modes": [
+        "schema too narrow for problem class",
+        "unit ambiguity when problem omits units",
+        "precision format mismatch"
+      ],
+      "acceptance_tests": [
+        "all fixture answers pass schema validation",
+        "schema rejects known-bad formats without false negatives"
+      ],
+      "revisit_triggers": [
+        "new problem domain with non-scalar answers introduced",
+        "unit system changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "NUMERIC_OUTPUT_SCHEMA",
+      "topic": "numeric_answer_extraction",
+      "definition": "Extract the final numeric answer from code stdout or variable, normalize to canonical form (e.g., simplify fractions, strip trailing zeros, apply unit), and validate against schema before emitting.",
+      "node_type": "work_unit",
+      "group": "output_governance",
+      "scope_boundary": {
+        "included": [
+          "stdout parsing",
+          "variable extraction",
+          "fraction/decimal normalization",
+          "unit application"
+        ],
+        "excluded": [
+          "answer generation",
+          "answer explanation",
+          "multi-step rationale text"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering"
+      ],
+      "subfields": [
+        "parsing",
+        "normalization"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "raw_output_advocate"
+      ],
+      "inputs": [
+        "code execution stdout",
+        "answer variable",
+        "strict output schema"
+      ],
+      "outputs": [
+        "canonical numeric string",
+        "unit-tagged value",
+        "validation pass/fail"
+      ],
+      "dependencies": [
+        "STRICT_OUTPUT_SCHEMA",
+        "PAL_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "ANSWER_VERIFIER"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.76,
+        "user_value": 0.74,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.61,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.65,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.12,
+          0.4
+        ],
+        "posterior_importance": 0.54,
+        "update_signal": "normalization rules revised or new problem domains onboarded",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Normalization decouples format representation from correctness check",
+          "example": "0.5 and 1/2 both normalize to same canonical before comparison"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Normalization rules must cover all edge cases or silently corrupt answer",
+          "example": "0.10 incorrectly stripped to 0.1 causing unit mismatch"
+        }
+      ],
+      "failure_modes": [
+        "trailing-zero stripping changes answer precision",
+        "fraction to decimal loss of exactness",
+        "unit not applied before comparison"
+      ],
+      "acceptance_tests": [
+        "normalized form of known fixture answers matches reference canonical",
+        "extraction raises explicit error rather than returning None"
+      ],
+      "revisit_triggers": [
+        "answer format spec changes",
+        "new problem domain adds new unit classes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ANSWER_VERIFIER",
+      "topic": "answer_verification",
+      "definition": "Verify the extracted numeric answer using independent checks: back-substitution into equation, re-execution with different code path, or majority vote across N sampled code generations.",
+      "node_type": "work_unit",
+      "group": "verification",
+      "scope_boundary": {
+        "included": [
+          "back-substitution",
+          "self-consistency voting",
+          "dual-code verification"
+        ],
+        "excluded": [
+          "human annotation",
+          "symbolic proof",
+          "solution explanation"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "mathematics"
+      ],
+      "subfields": [
+        "program_synthesis",
+        "verification"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "qa_engineer"
+      ],
+      "contradictors": [
+        "single_shot_advocate"
+      ],
+      "inputs": [
+        "extracted numeric answer",
+        "problem statement",
+        "generated code",
+        "Python interpreter"
+      ],
+      "outputs": [
+        "verification result (pass/fail)",
+        "confidence signal",
+        "flagged anomalies"
+      ],
+      "dependencies": [
+        "NUMERIC_OUTPUT_SCHEMA",
+        "PAL_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "HALLUCINATION_GUARD"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.8,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.42,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.64,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.64,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "new problem class where back-substitution is ill-defined",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Back-substitution catches errors that normalization cannot (wrong equation)",
+          "example": "plug x=3 back into 2x+1=7: 7=7 confirms answer"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Self-consistency voting at N=5 multiplies inference cost 5×; expensive at scale",
+          "example": "N=5 samples costs 5× API fee per query"
+        }
+      ],
+      "failure_modes": [
+        "majority vote masks systematic bias if all generations share same wrong assumption",
+        "back-substitution only checks algebraic consistency, not problem formulation correctness"
+      ],
+      "acceptance_tests": [
+        "verifier catches known-wrong answer in fixture test bank",
+        "back-substitution passes for all correct fixture answers"
+      ],
+      "revisit_triggers": [
+        "problem class where back-substitution is undecidable",
+        "voting N increases beyond budget"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "HALLUCINATION_GUARD",
+      "topic": "hallucination_guard",
+      "definition": "Enforce a no-free-text numeric mode: LLM output must contain only code and/or a structured answer token; any prose numeric claim outside schema is rejected as potential hallucination.",
+      "node_type": "work_unit",
+      "group": "output_governance",
+      "scope_boundary": {
+        "included": [
+          "output mode enforcement",
+          "prose numeric rejection",
+          "structured answer token"
+        ],
+        "excluded": [
+          "chain-of-thought text",
+          "explanation suppression for users",
+          "model training"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence"
+      ],
+      "subfields": [
+        "output_control",
+        "safety"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "product_engineer"
+      ],
+      "contradictors": [
+        "cot_explanation_advocate"
+      ],
+      "inputs": [
+        "LLM response",
+        "strict output schema",
+        "answer extraction pipeline"
+      ],
+      "outputs": [
+        "clean structured answer",
+        "hallucination rejection log"
+      ],
+      "dependencies": [
+        "STRICT_OUTPUT_SCHEMA",
+        "ANSWER_VERIFIER"
+      ],
+      "must_not_finalize_before": [
+        "UNIT_FORMAT_VALIDATOR"
+      ],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.8,
+        "user_value": 0.75,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.62,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.69,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.64,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.1,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.1,
+          0.38
+        ],
+        "posterior_importance": 0.58,
+        "update_signal": "output schema revised to allow optional explanation field",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Eliminates free-text numbers that cannot be reliably extracted or verified",
+          "example": "JSON-only mode gives 0% spurious number extraction"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Strict mode prevents model from signaling uncertainty or special cases in natural language",
+          "example": "model cannot flag ambiguous problem statement"
+        }
+      ],
+      "failure_modes": [
+        "model finds loopholes (embeds number in variable name)",
+        "schema parser has regex that matches prose accidentally"
+      ],
+      "acceptance_tests": [
+        "no prose numeric values appear outside schema tags in 100% of fixture outputs",
+        "rejection log captures all schema violations"
+      ],
+      "revisit_triggers": [
+        "user need for explanation increases",
+        "new output format allows optional commentary field"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "UNIT_FORMAT_VALIDATOR",
+      "topic": "unit_format_validation",
+      "definition": "Validate that the emitted answer carries the correct unit (SI, Imperial, dimensionless) and numeric format (integer, float with specified precision, fraction) required by the problem domain.",
+      "node_type": "work_unit",
+      "group": "output_governance",
+      "scope_boundary": {
+        "included": [
+          "unit ontology",
+          "format precision spec",
+          "dimensionality checking",
+          "SI conversion"
+        ],
+        "excluded": [
+          "answer value correctness",
+          "problem parsing",
+          "code generation"
+        ]
+      },
+      "academic_fields": [
+        "mathematics",
+        "software_engineering"
+      ],
+      "subfields": [
+        "unit_systems",
+        "format_validation"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "unit_agnostic_advocate"
+      ],
+      "inputs": [
+        "extracted answer",
+        "unit requirement from problem",
+        "format spec"
+      ],
+      "outputs": [
+        "unit-validated answer",
+        "validation error report"
+      ],
+      "dependencies": [
+        "NUMERIC_OUTPUT_SCHEMA"
+      ],
+      "must_not_finalize_before": [
+        "STRICT_OUTPUT_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.75,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.5,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.63,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.65,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.12,
+          0.4
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "new unit classes added or precision requirements revised",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Catches unit errors that are numerically correct but dimensionally wrong",
+          "example": "answer 9.8 kg rejected when problem asks for Newtons"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Unit ontology must be maintained as problem domains expand",
+          "example": "adding financial units requires ontology update"
+        }
+      ],
+      "failure_modes": [
+        "unit omitted when required",
+        "imperial vs metric ambiguity",
+        "precision too coarse for problem"
+      ],
+      "acceptance_tests": [
+        "validator rejects known-wrong unit on 10 fixture cases",
+        "dimensionless problems pass without unit tag"
+      ],
+      "revisit_triggers": [
+        "new problem domain adds novel units",
+        "precision requirement changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SANDBOX_EXECUTOR",
+      "topic": "sandboxed_code_execution",
+      "definition": "Provide a secure, resource-limited code execution environment for LLM-generated Python: enforce import allowlist, CPU/memory/timeout limits, and prevent filesystem/network access.",
+      "node_type": "work_unit",
+      "group": "infrastructure",
+      "scope_boundary": {
+        "included": [
+          "Python sandbox",
+          "import allowlist",
+          "resource limits",
+          "timeout enforcement",
+          "stdout capture"
+        ],
+        "excluded": [
+          "model inference infrastructure",
+          "prompt construction",
+          "answer parsing"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "security"
+      ],
+      "subfields": [
+        "sandboxing",
+        "container_security"
+      ],
+      "specialists": [
+        "devops_engineer",
+        "security_engineer"
+      ],
+      "contradictors": [
+        "unrestricted_execution_advocate"
+      ],
+      "inputs": [
+        "LLM-generated Python code",
+        "security policy",
+        "resource budget"
+      ],
+      "outputs": [
+        "execution result (stdout/stderr)",
+        "exit code",
+        "resource usage stats"
+      ],
+      "dependencies": [
+        "PAL_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "ANSWER_VERIFIER"
+      ],
+      "competency_question_refs": [
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.8,
+        "user_value": 0.65,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.65,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.73,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.57,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.15,
+          0.5
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "sandbox library updated or security policy changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents code injection, infinite loops, and data exfiltration from generated code",
+          "example": "allowlist blocks requests, os.system, subprocess"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.68,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Sandbox startup overhead (~100-300ms) compounds with high query volume",
+          "example": "10k queries/day × 200ms overhead = 33min extra wall-clock"
+        }
+      ],
+      "failure_modes": [
+        "sandbox escape via ctypes or cffi",
+        "timeout too short for legitimate complex computation",
+        "allowlist blocks needed math library"
+      ],
+      "acceptance_tests": [
+        "arbitrary code injection attempt fails safely",
+        "timeout fires correctly at configured limit",
+        "allowed SymPy operations complete within timeout"
+      ],
+      "revisit_triggers": [
+        "new library required by problem class is blocked",
+        "security policy changes sandbox API"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PROMPT_TEMPLATE_PAL",
+      "topic": "pal_prompt_template_engineering",
+      "definition": "Design few-shot prompt templates that reliably elicit syntactically correct, runnable Python code for math problems: format of examples, variable naming conventions, answer extraction comment.",
+      "node_type": "work_unit",
+      "group": "prompt_engineering",
+      "scope_boundary": {
+        "included": [
+          "few-shot example selection",
+          "code style conventions",
+          "answer variable naming",
+          "context ordering"
+        ],
+        "excluded": [
+          "model fine-tuning",
+          "output schema enforcement",
+          "sandbox configuration"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "linguistics"
+      ],
+      "subfields": [
+        "few_shot_prompting",
+        "in_context_learning"
+      ],
+      "specialists": [
+        "prompt_engineer",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "zero_shot_advocate"
+      ],
+      "inputs": [
+        "problem taxonomy",
+        "few-shot examples",
+        "LLM",
+        "code style guide"
+      ],
+      "outputs": [
+        "PAL prompt template",
+        "PoT prompt template",
+        "example bank"
+      ],
+      "dependencies": [
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "SYMPY_CAS"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.38,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.59,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.68,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.12,
+          0.4
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "model upgrade requires re-calibrating few-shot examples",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Well-engineered few-shot examples dramatically improve code syntactic correctness",
+          "example": "5 curated examples raise parse success from 72% to 94%"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Few-shot examples consume significant context tokens, reducing space for problem",
+          "example": "5 examples at 150 tokens each = 750 token overhead per query"
+        }
+      ],
+      "failure_modes": [
+        "examples do not cover the problem's domain causing hallucinated libraries",
+        "answer variable name inconsistency breaks extractor"
+      ],
+      "acceptance_tests": [
+        "template produces syntactically valid Python on 95% of fixture problems",
+        "answer variable is consistently named per spec"
+      ],
+      "revisit_triggers": [
+        "new problem domain requires new examples beyond context window",
+        "model capability changes alter what examples are needed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "BENCHMARK_EVAL",
+      "topic": "math_benchmark_evaluation",
+      "definition": "Evaluate tool-math system on standard benchmarks (GSM8K, MATH, SVAMP, ASDiv) using exact-match and normalized numeric equality; track per-category accuracy to identify failure modes.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "GSM8K",
+          "MATH dataset",
+          "SVAMP",
+          "ASDiv",
+          "exact-match scoring",
+          "per-category breakdown"
+        ],
+        "excluded": [
+          "human evaluation",
+          "open-ended generalization",
+          "training data curation"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "mathematics"
+      ],
+      "subfields": [
+        "benchmarking",
+        "nlp_evaluation"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "research_scientist"
+      ],
+      "contradictors": [
+        "production_metric_only_advocate"
+      ],
+      "inputs": [
+        "tool-math system",
+        "benchmark datasets",
+        "evaluation harness"
+      ],
+      "outputs": [
+        "accuracy per benchmark",
+        "error analysis report",
+        "category breakdown"
+      ],
+      "dependencies": [
+        "PAL_FRAMEWORK",
+        "NUMERIC_OUTPUT_SCHEMA",
+        "ANSWER_VERIFIER"
+      ],
+      "must_not_finalize_before": [
+        "GOODHART_RISK"
+      ],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.6,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.65,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "benchmark dataset updated or contamination discovered",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Standardized benchmarks enable cross-system comparison and track progress",
+          "example": "GSM8K solve rate is de-facto PAL capability signal"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Benchmark contamination inflates scores when training data overlaps with test split",
+          "example": "MATH test contamination inflates solve rate by estimated 5-15%"
+        }
+      ],
+      "failure_modes": [
+        "contamination inflating benchmark score",
+        "overfitting to benchmark format",
+        "category imbalance masking weaknesses"
+      ],
+      "acceptance_tests": [
+        "benchmark runner produces per-problem pass/fail log",
+        "contamination check run before reporting results"
+      ],
+      "revisit_triggers": [
+        "new benchmark releases",
+        "contamination discovered in training data"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "GOODHART_RISK",
+      "topic": "goodhart_contamination_risk",
+      "definition": "Manage the risk that optimizing for specific math benchmarks leads to overfitting benchmark format/templates, contamination of test splits, and divergence between benchmark score and real-world utility.",
+      "node_type": "work_unit",
+      "group": "risk_management",
+      "scope_boundary": {
+        "included": [
+          "contamination detection",
+          "held-out test sets",
+          "distribution shift monitoring",
+          "goodhart safeguards"
+        ],
+        "excluded": [
+          "model architecture",
+          "training procedures",
+          "benchmark dataset construction"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "epistemology"
+      ],
+      "subfields": [
+        "bias_detection",
+        "evaluation_methodology"
+      ],
+      "specialists": [
+        "research_scientist",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "benchmark_maximizer"
+      ],
+      "inputs": [
+        "training corpus",
+        "benchmark datasets",
+        "contamination detection tools"
+      ],
+      "outputs": [
+        "contamination report",
+        "held-out validation results",
+        "goodhart alert policy"
+      ],
+      "dependencies": [
+        "BENCHMARK_EVAL"
+      ],
+      "must_not_finalize_before": [
+        "BENCHMARK_EVAL"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.75,
+        "user_value": 0.65,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.58,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.68,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.39,
+        "lock_score": 0.56,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "new benchmark released or training data augmented with web content",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Proactive contamination detection prevents inflated scores misleading stakeholders",
+          "example": "n-gram overlap check catches 89% of MATH test set contamination"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.68,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Contamination detection is imperfect; semantic contamination evades n-gram checks",
+          "example": "rephrased problems still contaminate but evade overlap detector"
+        }
+      ],
+      "failure_modes": [
+        "semantic contamination undetected by surface overlap",
+        "goodhart pressure causes training data curation toward benchmark"
+      ],
+      "acceptance_tests": [
+        "contamination check runs before any public reporting",
+        "held-out private test set maintained separate from development"
+      ],
+      "revisit_triggers": [
+        "training data grows to include web-scraped math contests",
+        "benchmark data leaks through augmentation pipeline"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CODE_ERROR_RECOVERY",
+      "topic": "code_error_recovery_retry",
+      "definition": "Handle code execution failures (SyntaxError, NameError, timeout) by: prompting LLM to self-correct with error message, retrying with simplified prompt, or falling back to direct chain-of-thought.",
+      "node_type": "work_unit",
+      "group": "resilience",
+      "scope_boundary": {
+        "included": [
+          "error message reflection",
+          "self-correction prompting",
+          "retry budget",
+          "CoT fallback"
+        ],
+        "excluded": [
+          "sandbox security",
+          "model training",
+          "answer verification"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "software_engineering"
+      ],
+      "subfields": [
+        "error_handling",
+        "retry_logic"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "no_fallback_advocate"
+      ],
+      "inputs": [
+        "execution error message",
+        "retry budget",
+        "LLM",
+        "original problem"
+      ],
+      "outputs": [
+        "corrected code",
+        "fallback CoT answer",
+        "retry log"
+      ],
+      "dependencies": [
+        "SANDBOX_EXECUTOR",
+        "PAL_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "ANSWER_VERIFIER"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.7,
+        "user_value": 0.72,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.38,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.56,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.66,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "production error rate changes or SLA tightens",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Error reflection with error message enables LLM self-correction without human intervention",
+          "example": "showing TypeError message to LLM fixes ~60% of type errors on retry"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Retry loop multiplies latency and cost; unbounded retries unacceptable in production",
+          "example": "3 retries × 2s execution = 6s+ per failed query"
+        }
+      ],
+      "failure_modes": [
+        "infinite retry loop on deterministic error",
+        "CoT fallback produces free-text number violating schema"
+      ],
+      "acceptance_tests": [
+        "retry budget enforced; system returns error after N attempts",
+        "CoT fallback output still passes schema validation"
+      ],
+      "revisit_triggers": [
+        "error taxonomy expands with new execution environments",
+        "retry budget revised based on latency SLA"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LATENCY_COST_TRADEOFF",
+      "topic": "latency_cost_accuracy_tradeoff",
+      "definition": "Quantify and optimize the tradeoff: PAL adds interpreter latency; SymPy adds CAS time; N-sample voting multiplies cost; sandbox overhead is fixed. Choose operating point for production SLA.",
+      "node_type": "work_unit",
+      "group": "system_design",
+      "scope_boundary": {
+        "included": [
+          "latency profiling",
+          "cost modeling",
+          "accuracy vs N-sample",
+          "SLA constraints"
+        ],
+        "excluded": [
+          "model selection",
+          "infrastructure provisioning",
+          "benchmark evaluation"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "economics"
+      ],
+      "subfields": [
+        "performance_engineering",
+        "cost_optimization"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "product_engineer"
+      ],
+      "contradictors": [
+        "accuracy_only_advocate"
+      ],
+      "inputs": [
+        "latency measurements",
+        "API pricing",
+        "accuracy vs N curve",
+        "SLA requirements"
+      ],
+      "outputs": [
+        "operating point recommendation",
+        "cost model",
+        "latency budget allocation"
+      ],
+      "dependencies": [
+        "SANDBOX_EXECUTOR",
+        "ANSWER_VERIFIER",
+        "SYMPY_CAS"
+      ],
+      "must_not_finalize_before": [
+        "CODE_ERROR_RECOVERY"
+      ],
+      "competency_question_refs": [
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.8,
+        "user_value": 0.68,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.59,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.64,
+        "final_importance": 0.67
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "production traffic profile or pricing model changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit operating-point analysis prevents runaway costs from over-engineering accuracy",
+          "example": "N=3 vs N=1 gains 2% accuracy for 3× cost; N=1 chosen for SLA"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tradeoff curve is problem-distribution-dependent; operating point may not generalize",
+          "example": "optimal N on GSM8K may differ from production query mix"
+        }
+      ],
+      "failure_modes": [
+        "ignoring sandbox startup in latency budget",
+        "assuming homogeneous problem difficulty"
+      ],
+      "acceptance_tests": [
+        "latency budget allocation validated against production percentile targets",
+        "cost model shows P95 query cost within budget"
+      ],
+      "revisit_triggers": [
+        "SLA tightens after model upgrade",
+        "query volume spikes requiring re-evaluation"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PROBLEM_DECOMP",
+      "topic": "problem_decomposition_routing",
+      "definition": "Decompose complex multi-step math problems into subproblems; route each to appropriate solver (PAL Python, SymPy CAS, direct arithmetic); recombine subresults into final answer.",
+      "node_type": "work_unit",
+      "group": "orchestration",
+      "scope_boundary": {
+        "included": [
+          "subproblem identification",
+          "solver routing",
+          "result composition",
+          "dependency graph of steps"
+        ],
+        "excluded": [
+          "single-step problems",
+          "model architecture",
+          "training"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "mathematics"
+      ],
+      "subfields": [
+        "orchestration",
+        "divide_and_conquer"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "monolithic_solver_advocate"
+      ],
+      "inputs": [
+        "multi-step problem statement",
+        "solver registry",
+        "LLM planner"
+      ],
+      "outputs": [
+        "subproblem breakdown",
+        "routing decisions",
+        "composed final answer"
+      ],
+      "dependencies": [
+        "PAL_FRAMEWORK",
+        "SYMPY_CAS"
+      ],
+      "must_not_finalize_before": [
+        "ANSWER_VERIFIER"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.68,
+        "user_value": 0.72,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.42,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.64,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.6,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.41,
+        "update_signal": "new problem class requires new solver type",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Decomposition allows each subproblem to use the best solver, improving accuracy on compound problems",
+          "example": "geometry sub + algebra sub each routed to SymPy; combined answer 8% more accurate"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.68,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Decomposition errors propagate: wrong subproblem split causes incorrect final answer",
+          "example": "splitting 'total cost with tax' before computing tax base introduces error"
+        }
+      ],
+      "failure_modes": [
+        "incorrect decomposition splits an atomic step",
+        "circular dependency between subproblems",
+        "subresult unit mismatch on composition"
+      ],
+      "acceptance_tests": [
+        "composed answer matches direct-solve reference on 10 multi-step fixtures",
+        "dependency graph of subproblems is acyclic"
+      ],
+      "revisit_triggers": [
+        "problem class requires interleaved symbolic/numeric solving not captured by routing rules",
+        "decomposer LLM changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PRECISION_TOLERANCE",
+      "topic": "numeric_precision_tolerance_policy",
+      "definition": "Specify and enforce numeric comparison tolerances: exact integer match, absolute tolerance for floats, relative tolerance for large numbers; prevent false failures from floating-point representation.",
+      "node_type": "work_unit",
+      "group": "output_governance",
+      "scope_boundary": {
+        "included": [
+          "absolute tolerance",
+          "relative tolerance",
+          "integer exact match",
+          "float comparison policy"
+        ],
+        "excluded": [
+          "symbolic exactness (SymPy domain)",
+          "answer schema format",
+          "unit validation"
+        ]
+      },
+      "academic_fields": [
+        "mathematics",
+        "software_engineering"
+      ],
+      "subfields": [
+        "numerical_analysis",
+        "testing"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "qa_engineer"
+      ],
+      "contradictors": [
+        "exact_match_only_advocate"
+      ],
+      "inputs": [
+        "answer type",
+        "expected precision",
+        "tolerance spec"
+      ],
+      "outputs": [
+        "comparison function",
+        "tolerance configuration",
+        "pass/fail verdict"
+      ],
+      "dependencies": [
+        "NUMERIC_OUTPUT_SCHEMA",
+        "SYMPY_CAS"
+      ],
+      "must_not_finalize_before": [
+        "UNIT_FORMAT_VALIDATOR"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.68,
+        "user_value": 0.72,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.58,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.67,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.1,
+          0.38
+        ],
+        "posterior_importance": 0.5,
+        "update_signal": "problem domain introduces new numeric representation requirements",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tolerance policy prevents false negatives from floating-point representation differences",
+          "example": "1.4999999 and 1.5 compare equal under atol=1e-6"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tolerance too large masks genuine errors near the boundary",
+          "example": "atol=0.01 treats 9.99 as equal to 10.0 in a precision-sensitive context"
+        }
+      ],
+      "failure_modes": [
+        "tolerance too loose accepting wrong answers",
+        "tolerance applied to exact integer problems causing false passes",
+        "relative tolerance undefined for zero denominator"
+      ],
+      "acceptance_tests": [
+        "tolerance configuration reviewed for each answer type class",
+        "edge cases (zero, infinity, negative) covered in fixture set"
+      ],
+      "revisit_triggers": [
+        "problem domain changes precision requirements",
+        "SymPy exact answer compared with float answer requires policy"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "TOOL_SELECTION",
+      "topic": "tool_selection_strategy",
+      "definition": "Decide per-problem or per-problem-class which computation tool to invoke: direct LLM arithmetic (tiny/trivial), Python interpreter (procedural/numeric), SymPy CAS (symbolic/algebraic), external API (domain-specific).",
+      "node_type": "work_unit",
+      "group": "orchestration",
+      "scope_boundary": {
+        "included": [
+          "tool capability mapping",
+          "problem classification",
+          "routing policy",
+          "fallback chain"
+        ],
+        "excluded": [
+          "model training",
+          "benchmark evaluation",
+          "answer schema"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "systems_engineering"
+      ],
+      "subfields": [
+        "routing",
+        "orchestration"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "single_tool_advocate"
+      ],
+      "inputs": [
+        "problem statement",
+        "tool capability registry",
+        "problem classifier"
+      ],
+      "outputs": [
+        "tool selection decision",
+        "routing log"
+      ],
+      "dependencies": [
+        "PROBLEM_DECOMP",
+        "PAL_FRAMEWORK",
+        "SYMPY_CAS"
+      ],
+      "must_not_finalize_before": [
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.4,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.62,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.63,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "tool capability changes or problem taxonomy updated",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Routing trivial arithmetic to direct LLM avoids sandbox overhead for simple cases",
+          "example": "2+2=4 answered directly; SymPy reserved for 3x²+2x-8=0"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Routing errors send symbolic problems to numeric solver causing precision loss",
+          "example": "routing algebra to numpy float instead of SymPy loses exactness"
+        }
+      ],
+      "failure_modes": [
+        "problem misclassified as simpler than it is",
+        "classifier latency exceeds savings from routing"
+      ],
+      "acceptance_tests": [
+        "routing correctly directs 95% of fixture problems to appropriate tool",
+        "misrouted problems are flagged rather than silently wrong"
+      ],
+      "revisit_triggers": [
+        "new tool added to registry",
+        "problem taxonomy revised"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DATASET_CURATION",
+      "topic": "math_dataset_curation",
+      "definition": "Curate and augment training/evaluation datasets of math problems with (problem, program, answer) triples; ensure diversity across categories, difficulty levels, and avoid benchmark contamination.",
+      "node_type": "work_unit",
+      "group": "data_management",
+      "scope_boundary": {
+        "included": [
+          "(problem, code, answer) triple creation",
+          "difficulty stratification",
+          "category balance",
+          "decontamination"
+        ],
+        "excluded": [
+          "model architecture",
+          "inference optimization",
+          "sandbox security"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "data_engineering"
+      ],
+      "subfields": [
+        "dataset_creation",
+        "data_quality"
+      ],
+      "specialists": [
+        "data_engineer",
+        "research_scientist"
+      ],
+      "contradictors": [
+        "scrape_and_use_advocate"
+      ],
+      "inputs": [
+        "raw math problem sources",
+        "human annotators",
+        "decontamination pipeline"
+      ],
+      "outputs": [
+        "curated dataset",
+        "category/difficulty breakdown",
+        "contamination report"
+      ],
+      "dependencies": [
+        "GOODHART_RISK",
+        "BENCHMARK_EVAL"
+      ],
+      "must_not_finalize_before": [
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK"
+      ],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.75,
+        "user_value": 0.68,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.6,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.68,
+        "confidence_score": 0.48,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.58,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "benchmark dataset updated or annotation error rate changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Curated (problem, program, answer) triples with verified execution enable reliable supervised fine-tuning",
+          "example": "GSM8K-like triples with verified Python programs yield SFT gains of 8-15%"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Manual curation is expensive; automated generation risks including incorrect programs",
+          "example": "auto-generated programs have ~15% error rate requiring human verification"
+        }
+      ],
+      "failure_modes": [
+        "incorrect program-answer pairs in training data",
+        "category imbalance over-representing easy problems",
+        "contamination from benchmark sources"
+      ],
+      "acceptance_tests": [
+        "random sample of 100 curated triples verified by human",
+        "decontamination overlap check passes before dataset frozen"
+      ],
+      "revisit_triggers": [
+        "benchmark updates require re-decontamination",
+        "annotator error rate increases with difficulty"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FINE_TUNE_PAL",
+      "topic": "fine_tuning_pal_code_generation",
+      "definition": "Fine-tune a base LLM on (problem, Python-solution, answer) triples to improve code generation quality, syntactic correctness, and domain-specific variable naming for math tool-use.",
+      "node_type": "work_unit",
+      "group": "model_training",
+      "scope_boundary": {
+        "included": [
+          "SFT on program-answer pairs",
+          "PEFT/LoRA for code-math",
+          "code correctness reward",
+          "domain vocabulary"
+        ],
+        "excluded": [
+          "base model selection",
+          "inference optimization",
+          "sandbox security"
+        ]
+      },
+      "academic_fields": [
+        "artificial_intelligence",
+        "machine_learning"
+      ],
+      "subfields": [
+        "supervised_fine_tuning",
+        "peft"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "research_scientist"
+      ],
+      "contradictors": [
+        "zero_shot_generalist_advocate"
+      ],
+      "inputs": [
+        "curated (problem, code, answer) dataset",
+        "base LLM",
+        "compute budget"
+      ],
+      "outputs": [
+        "fine-tuned PAL model",
+        "training logs",
+        "eval accuracy on held-out set"
+      ],
+      "dependencies": [
+        "DATASET_CURATION",
+        "PAL_FRAMEWORK"
+      ],
+      "must_not_finalize_before": [
+        "BENCHMARK_EVAL"
+      ],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.72,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.73,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.56,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.43,
+        "update_signal": "base model updated or dataset distribution shifts significantly",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fine-tuning on verified programs dramatically improves code syntax correctness from base model",
+          "example": "SFT on 50k PAL triples raises parse success from 72% to 96%"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.68,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fine-tuning is expensive, tied to a base model version, and may degrade general reasoning",
+          "example": "LoRA fine-tune costs $200-$2000 GPU-hours; base model upgrade requires re-fine-tuning"
+        }
+      ],
+      "failure_modes": [
+        "catastrophic forgetting of general math reasoning",
+        "overfitting to training problem distribution",
+        "base model license restrictions on fine-tuned derivatives"
+      ],
+      "acceptance_tests": [
+        "fine-tuned model improves on held-out benchmark vs base model",
+        "fine-tuned model does not regress on general math fixtures"
+      ],
+      "revisit_triggers": [
+        "base model version changes",
+        "dataset distribution shifts",
+        "compute budget reduced"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "REGRESSION_SUITE",
+      "topic": "regression_test_suite",
+      "definition": "Maintain a versioned regression test suite of math problems with expected answers, covering all problem types, edge cases (zero, negative, fraction, very large numbers), and schema validation checks.",
+      "node_type": "work_unit",
+      "group": "quality_assurance",
+      "scope_boundary": {
+        "included": [
+          "regression fixtures",
+          "edge case coverage",
+          "schema compliance tests",
+          "version locking"
+        ],
+        "excluded": [
+          "benchmark evaluation",
+          "production monitoring",
+          "model training"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering"
+      ],
+      "subfields": [
+        "testing",
+        "qa"
+      ],
+      "specialists": [
+        "qa_engineer",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "ad_hoc_testing_advocate"
+      ],
+      "inputs": [
+        "problem fixture bank",
+        "expected answers",
+        "tool-math pipeline"
+      ],
+      "outputs": [
+        "regression pass/fail report",
+        "coverage metrics",
+        "schema validation results"
+      ],
+      "dependencies": [
+        "STRICT_OUTPUT_SCHEMA",
+        "NUMERIC_OUTPUT_SCHEMA",
+        "ANSWER_VERIFIER",
+        "UNIT_FORMAT_VALIDATOR"
+      ],
+      "must_not_finalize_before": [
+        "BENCHMARK_EVAL"
+      ],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.7,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.35,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.57,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.7,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.1,
+          0.38
+        ],
+        "posterior_importance": 0.58,
+        "update_signal": "system component updated or new problem types onboarded",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Regression suite catches regressions from model updates, schema changes, and library upgrades",
+          "example": "regression run caught SymPy API break in 23/50 tests after version upgrade"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Maintaining regression fixtures is ongoing effort; stale fixtures give false confidence",
+          "example": "fixtures not updated for new problem types create blind spots"
+        }
+      ],
+      "failure_modes": [
+        "stale fixtures not covering new problem types",
+        "flaky tests from floating-point non-determinism",
+        "regression masking by overfitting to fixture set"
+      ],
+      "acceptance_tests": [
+        "regression suite runs in CI with <5min execution time",
+        "100% of high-risk schema paths covered by at least one fixture"
+      ],
+      "revisit_triggers": [
+        "new problem types added to system",
+        "schema revised requiring fixture updates"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PRODUCTION_MONITOR",
+      "topic": "production_monitoring_drift_detection",
+      "definition": "Monitor production tool-math pipeline for answer distribution drift, error rate changes, latency degradation, and sandbox failure rates; alert and trigger re-evaluation when thresholds crossed.",
+      "node_type": "work_unit",
+      "group": "operations",
+      "scope_boundary": {
+        "included": [
+          "error rate monitoring",
+          "latency percentile tracking",
+          "answer distribution drift",
+          "sandbox failure rate"
+        ],
+        "excluded": [
+          "model training",
+          "benchmark evaluation",
+          "dataset curation"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "statistics"
+      ],
+      "subfields": [
+        "monitoring",
+        "observability"
+      ],
+      "specialists": [
+        "devops_engineer",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "offline_evaluation_only_advocate"
+      ],
+      "inputs": [
+        "production query logs",
+        "tool-math pipeline metrics",
+        "alerting system"
+      ],
+      "outputs": [
+        "alert policies",
+        "drift detection reports",
+        "SLA compliance dashboard"
+      ],
+      "dependencies": [
+        "SANDBOX_EXECUTOR",
+        "ANSWER_VERIFIER",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "must_not_finalize_before": [
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "competency_question_refs": [
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.78,
+        "user_value": 0.65,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.35,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.55,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.66,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "production traffic characteristics change or SLA revised",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Real-time monitoring catches distribution shifts that offline benchmarks miss",
+          "example": "error spike from new problem type detected 4h after deployment"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Production monitoring requires logging infrastructure and may log sensitive problem data",
+          "example": "logging math problems may expose user data in regulated domains"
+        }
+      ],
+      "failure_modes": [
+        "drift goes undetected until significant accuracy drop",
+        "alert thresholds too sensitive causing alert fatigue"
+      ],
+      "acceptance_tests": [
+        "alert fires within 1h of simulated error rate spike in staging",
+        "latency P95 tracked and compared against SLA"
+      ],
+      "revisit_triggers": [
+        "production traffic distribution changes",
+        "regulatory constraints on logging change"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "PAL_FRAMEWORK",
+      "to": "STRICT_OUTPUT_SCHEMA",
+      "edge_type": "causal",
+      "relation_strength": 0.9,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_002",
+      "from": "PAL_FRAMEWORK",
+      "to": "SANDBOX_EXECUTOR",
+      "edge_type": "causal",
+      "relation_strength": 0.95,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.9,
+      "edge_priority": 0.22,
+      "edge_score": 0.22,
+      "edge_heat": 0.36
+    },
+    {
+      "id": "EDGE_003",
+      "from": "PAL_FRAMEWORK",
+      "to": "NUMERIC_OUTPUT_SCHEMA",
+      "edge_type": "causal",
+      "relation_strength": 0.88,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_004",
+      "from": "SYMPY_CAS",
+      "to": "NUMERIC_OUTPUT_SCHEMA",
+      "edge_type": "causal",
+      "relation_strength": 0.85,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_005",
+      "from": "SANDBOX_EXECUTOR",
+      "to": "CODE_ERROR_RECOVERY",
+      "edge_type": "causal",
+      "relation_strength": 0.88,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_006",
+      "from": "SANDBOX_EXECUTOR",
+      "to": "ANSWER_VERIFIER",
+      "edge_type": "causal",
+      "relation_strength": 0.85,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_007",
+      "from": "DATASET_CURATION",
+      "to": "FINE_TUNE_PAL",
+      "edge_type": "causal",
+      "relation_strength": 0.88,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_008",
+      "from": "FINE_TUNE_PAL",
+      "to": "PAL_FRAMEWORK",
+      "edge_type": "causal",
+      "relation_strength": 0.82,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_009",
+      "from": "STRICT_OUTPUT_SCHEMA",
+      "to": "NUMERIC_OUTPUT_SCHEMA",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_010",
+      "from": "STRICT_OUTPUT_SCHEMA",
+      "to": "HALLUCINATION_GUARD",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_011",
+      "from": "STRICT_OUTPUT_SCHEMA",
+      "to": "UNIT_FORMAT_VALIDATOR",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_012",
+      "from": "NUMERIC_OUTPUT_SCHEMA",
+      "to": "ANSWER_VERIFIER",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_013",
+      "from": "NUMERIC_OUTPUT_SCHEMA",
+      "to": "UNIT_FORMAT_VALIDATOR",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_014",
+      "from": "NUMERIC_OUTPUT_SCHEMA",
+      "to": "PRECISION_TOLERANCE",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_015",
+      "from": "PAL_FRAMEWORK",
+      "to": "PROMPT_TEMPLATE_PAL",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_016",
+      "from": "POT_FRAMEWORK",
+      "to": "PROMPT_TEMPLATE_PAL",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_017",
+      "from": "DATASET_CURATION",
+      "to": "FINE_TUNE_PAL",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_018",
+      "from": "PAL_FRAMEWORK",
+      "to": "PROBLEM_DECOMP",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_019",
+      "from": "SYMPY_CAS",
+      "to": "PROBLEM_DECOMP",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_020",
+      "from": "PAL_FRAMEWORK",
+      "to": "TOOL_SELECTION",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_021",
+      "from": "SYMPY_CAS",
+      "to": "TOOL_SELECTION",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_022",
+      "from": "SANDBOX_EXECUTOR",
+      "to": "LATENCY_COST_TRADEOFF",
+      "edge_type": "constraint",
+      "relation_strength": 0.8,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_023",
+      "from": "LATENCY_COST_TRADEOFF",
+      "to": "ANSWER_VERIFIER",
+      "edge_type": "constraint",
+      "relation_strength": 0.8,
+      "signed_tension": -0.15,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.22,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.33,
+      "resolution_rule": "latency budget limits N for voting; must be negotiated explicitly"
+    },
+    {
+      "id": "EDGE_024",
+      "from": "GOODHART_RISK",
+      "to": "DATASET_CURATION",
+      "edge_type": "constraint",
+      "relation_strength": 0.8,
+      "signed_tension": 0.12,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_025",
+      "from": "PRECISION_TOLERANCE",
+      "to": "ANSWER_VERIFIER",
+      "edge_type": "constraint",
+      "relation_strength": 0.82,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_026",
+      "from": "PRECISION_TOLERANCE",
+      "to": "UNIT_FORMAT_VALIDATOR",
+      "edge_type": "constraint",
+      "relation_strength": 0.78,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_027",
+      "from": "HALLUCINATION_GUARD",
+      "to": "STRICT_OUTPUT_SCHEMA",
+      "edge_type": "constraint",
+      "relation_strength": 0.9,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.88,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_028",
+      "from": "GOODHART_RISK",
+      "to": "BENCHMARK_EVAL",
+      "edge_type": "conflict",
+      "relation_strength": 0.75,
+      "signed_tension": -0.3,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.4,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.28,
+      "edge_score": 0.28,
+      "edge_heat": 0.4,
+      "resolution_rule": "if contamination confirmed, benchmark results must be invalidated and re-run on clean split"
+    },
+    {
+      "id": "EDGE_029",
+      "from": "HALLUCINATION_GUARD",
+      "to": "CODE_ERROR_RECOVERY",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.2,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.3,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.34,
+      "resolution_rule": "CoT fallback in error recovery must still pass hallucination guard schema check"
+    },
+    {
+      "id": "EDGE_030",
+      "from": "LATENCY_COST_TRADEOFF",
+      "to": "SYMPY_CAS",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.18,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.32,
+      "resolution_rule": "SymPy exact computation can exceed latency budget; use timeout with fallback"
+    },
+    {
+      "id": "EDGE_031",
+      "from": "BENCHMARK_EVAL",
+      "to": "GOODHART_RISK",
+      "edge_type": "feedback",
+      "relation_strength": 0.82,
+      "signed_tension": 0.15,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.22,
+      "edge_score": 0.22,
+      "edge_heat": 0.36
+    },
+    {
+      "id": "EDGE_032",
+      "from": "PRODUCTION_MONITOR",
+      "to": "LATENCY_COST_TRADEOFF",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_033",
+      "from": "PRODUCTION_MONITOR",
+      "to": "CODE_ERROR_RECOVERY",
+      "edge_type": "feedback",
+      "relation_strength": 0.78,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_034",
+      "from": "ANSWER_VERIFIER",
+      "to": "PAL_FRAMEWORK",
+      "edge_type": "feedback",
+      "relation_strength": 0.78,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_035",
+      "from": "STRICT_OUTPUT_SCHEMA",
+      "to": "PAL_FRAMEWORK",
+      "edge_type": "sequence",
+      "relation_strength": 0.88,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_036",
+      "from": "DATASET_CURATION",
+      "to": "BENCHMARK_EVAL",
+      "edge_type": "sequence",
+      "relation_strength": 0.8,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_037",
+      "from": "FINE_TUNE_PAL",
+      "to": "BENCHMARK_EVAL",
+      "edge_type": "sequence",
+      "relation_strength": 0.85,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_038",
+      "from": "REGRESSION_SUITE",
+      "to": "PRODUCTION_MONITOR",
+      "edge_type": "sequence",
+      "relation_strength": 0.82,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_039",
+      "from": "PAL_FRAMEWORK",
+      "to": "POT_FRAMEWORK",
+      "edge_type": "similarity",
+      "relation_strength": 0.8,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_040",
+      "from": "REGRESSION_SUITE",
+      "to": "BENCHMARK_EVAL",
+      "edge_type": "similarity",
+      "relation_strength": 0.78,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.26
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "name": "exact_vs_approximate",
+      "description": "SymPy exact arithmetic vs numpy float approximation; exact is correct but slower and may timeout for large problems",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "SYMPY_CAS",
+        "PAL_FRAMEWORK",
+        "PRECISION_TOLERANCE"
+      ],
+      "resolution_hint": "default to SymPy; fall back to numpy only when CAS timeout documented"
+    },
+    {
+      "id": "CA_02",
+      "name": "accuracy_vs_latency",
+      "description": "N-sample self-consistency voting improves accuracy but multiplies latency and cost linearly",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "ANSWER_VERIFIER",
+        "LATENCY_COST_TRADEOFF",
+        "SANDBOX_EXECUTOR"
+      ],
+      "resolution_hint": "set N by SLA budget; expose N as configurable parameter not hardcoded"
+    },
+    {
+      "id": "CA_03",
+      "name": "strict_schema_vs_expressiveness",
+      "description": "no-free-text mode eliminates hallucination but prevents model from signaling uncertainty or edge cases",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "HALLUCINATION_GUARD",
+        "STRICT_OUTPUT_SCHEMA",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "resolution_hint": "add optional structured uncertainty flag to schema without prose numbers"
+    },
+    {
+      "id": "CA_04",
+      "name": "benchmark_optimization_vs_goodhart",
+      "description": "optimizing for benchmark scores incentivizes contamination and overfitting to benchmark formats",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "BENCHMARK_EVAL",
+        "GOODHART_RISK",
+        "DATASET_CURATION"
+      ],
+      "resolution_hint": "hold out private test set; measure on OOD problems before claiming benchmark SOTA"
+    },
+    {
+      "id": "CA_05",
+      "name": "sandbox_security_vs_expressiveness",
+      "description": "strict import allowlist prevents code injection but may block legitimate math libraries needed for novel problem types",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "SANDBOX_EXECUTOR",
+        "SYMPY_CAS",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "resolution_hint": "maintain allowlist per problem domain; expand with security review process"
+    },
+    {
+      "id": "CA_06",
+      "name": "fine_tuning_cost_vs_generality",
+      "description": "fine-tuning on PAL triples improves task accuracy but is expensive, tied to base model, and may degrade general reasoning",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "FINE_TUNE_PAL",
+        "PAL_FRAMEWORK",
+        "BENCHMARK_EVAL"
+      ],
+      "resolution_hint": "use LoRA/PEFT to limit forgetting; gate fine-tuning on ROI analysis"
+    },
+    {
+      "id": "CA_07",
+      "name": "pal_vs_pot_verbosity",
+      "description": "PoT's annotated reasoning is more auditable but uses significantly more tokens than PAL's code-only approach",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK",
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "resolution_hint": "use PAL for production latency-sensitive paths; PoT for debugging and audit trails"
+    },
+    {
+      "id": "CA_08",
+      "name": "decomposition_accuracy_vs_error_propagation",
+      "description": "problem decomposition improves handling of complex problems but introduces error propagation risk from subproblem misidentification",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "PROBLEM_DECOMP",
+        "ANSWER_VERIFIER",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "resolution_hint": "verify each subresult before composition; flag decomposition failures explicitly"
+    },
+    {
+      "id": "CA_09",
+      "name": "dataset_curation_cost_vs_quality",
+      "description": "high-quality curated (problem, program, answer) triples require expensive human verification but automated curation has high error rate",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "DATASET_CURATION",
+        "FINE_TUNE_PAL",
+        "GOODHART_RISK"
+      ],
+      "resolution_hint": "use automated generation with selective human verification on high-difficulty examples"
+    },
+    {
+      "id": "CA_10",
+      "name": "tolerance_strictness_vs_false_failures",
+      "description": "strict exact-match comparison prevents false passes but causes false failures from float representation; tolerance too loose allows wrong answers near boundary",
+      "tension_polarity": "negative",
+      "nodes_involved": [
+        "PRECISION_TOLERANCE",
+        "ANSWER_VERIFIER",
+        "UNIT_FORMAT_VALIDATOR"
+      ],
+      "resolution_hint": "use exact match for integer answers; configure per-domain tolerance for floats"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "description": "SymPy times out on large polynomial system (degree >= 7)",
+      "affected_nodes": [
+        "SYMPY_CAS",
+        "CODE_ERROR_RECOVERY",
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "mitigation": "set per-call SymPy timeout; fall back to numerical solver with explicit precision warning",
+      "severity": "high"
+    },
+    {
+      "id": "EC_02",
+      "description": "LLM generates Python that imports disallowed module (requests, os)",
+      "affected_nodes": [
+        "SANDBOX_EXECUTOR",
+        "CODE_ERROR_RECOVERY",
+        "HALLUCINATION_GUARD"
+      ],
+      "mitigation": "sandbox blocks import; error recovery reprompts with allowlist hint",
+      "severity": "critical"
+    },
+    {
+      "id": "EC_03",
+      "description": "Problem requires set-valued or interval answer incompatible with scalar schema",
+      "affected_nodes": [
+        "STRICT_OUTPUT_SCHEMA",
+        "NUMERIC_OUTPUT_SCHEMA",
+        "UNIT_FORMAT_VALIDATOR"
+      ],
+      "mitigation": "extend schema with set/interval types for relevant problem classes before deployment",
+      "severity": "high"
+    },
+    {
+      "id": "EC_04",
+      "description": "Self-consistency voting majority is wrong due to shared systematic bias in generated code",
+      "affected_nodes": [
+        "ANSWER_VERIFIER",
+        "PAL_FRAMEWORK",
+        "FINE_TUNE_PAL"
+      ],
+      "mitigation": "include diversity-promoting sampling temperature variation; validate majority against back-substitution",
+      "severity": "high"
+    },
+    {
+      "id": "EC_05",
+      "description": "Benchmark test split contaminated in training data",
+      "affected_nodes": [
+        "GOODHART_RISK",
+        "BENCHMARK_EVAL",
+        "DATASET_CURATION"
+      ],
+      "mitigation": "run n-gram and semantic decontamination before training; maintain private hold-out",
+      "severity": "critical"
+    },
+    {
+      "id": "EC_06",
+      "description": "Unit ambiguity: problem states 'weight' without specifying kg vs lbs",
+      "affected_nodes": [
+        "UNIT_FORMAT_VALIDATOR",
+        "STRICT_OUTPUT_SCHEMA",
+        "PROBLEM_DECOMP"
+      ],
+      "mitigation": "schema requires problem pre-processor to resolve unit ambiguity before code generation",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_07",
+      "description": "Very large integer (>10^18) causes overflow in Python int or numpy but not SymPy",
+      "affected_nodes": [
+        "SYMPY_CAS",
+        "PAL_FRAMEWORK",
+        "PRECISION_TOLERANCE"
+      ],
+      "mitigation": "route large-integer problems to SymPy; block numpy int64 for such problems",
+      "severity": "high"
+    },
+    {
+      "id": "EC_08",
+      "description": "Retry loop on SyntaxError becomes infinite when LLM regenerates same broken code",
+      "affected_nodes": [
+        "CODE_ERROR_RECOVERY",
+        "SANDBOX_EXECUTOR",
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "mitigation": "hash previous attempts; refuse to retry identical code; escalate to CoT fallback",
+      "severity": "high"
+    },
+    {
+      "id": "EC_09",
+      "description": "Fine-tuned model overfits to training distribution, failing OOD math problem types",
+      "affected_nodes": [
+        "FINE_TUNE_PAL",
+        "BENCHMARK_EVAL",
+        "GOODHART_RISK"
+      ],
+      "mitigation": "include OOD problem types in validation set; use early stopping on OOD validation loss",
+      "severity": "high"
+    },
+    {
+      "id": "EC_10",
+      "description": "Problem decomposer creates circular dependency between subproblems",
+      "affected_nodes": [
+        "PROBLEM_DECOMP",
+        "ANSWER_VERIFIER",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "mitigation": "validate subproblem dependency graph is DAG before execution; raise explicit error on cycle",
+      "severity": "high"
+    },
+    {
+      "id": "EC_11",
+      "description": "Floating-point comparison at tolerance boundary causes non-deterministic test results",
+      "affected_nodes": [
+        "PRECISION_TOLERANCE",
+        "REGRESSION_SUITE",
+        "ANSWER_VERIFIER"
+      ],
+      "mitigation": "use exact rational arithmetic for boundary cases; document all tolerance values explicitly",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_12",
+      "description": "Production query distribution shifts (new problem type) causing silent accuracy drop",
+      "affected_nodes": [
+        "PRODUCTION_MONITOR",
+        "BENCHMARK_EVAL",
+        "TOOL_SELECTION"
+      ],
+      "mitigation": "monitor answer distribution entropy and error rate; alert on statistical drift",
+      "severity": "high"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "action": "define_output_schema",
+      "description": "Specify strict numeric output schema and unit conventions before any code generation or evaluation",
+      "responsible_nodes": [
+        "STRICT_OUTPUT_SCHEMA",
+        "UNIT_FORMAT_VALIDATOR"
+      ],
+      "outputs": [
+        "schema spec",
+        "unit table"
+      ],
+      "gate": "schema validated against known answer types",
+      "depends_on": []
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "action": "configure_sandbox",
+      "description": "Configure sandboxed Python execution environment with import allowlist, resource limits, timeout policy",
+      "responsible_nodes": [
+        "SANDBOX_EXECUTOR"
+      ],
+      "outputs": [
+        "sandbox configuration",
+        "security policy doc"
+      ],
+      "gate": "sandbox blocks known-bad code and allows known-good code",
+      "depends_on": [
+        "WF_01"
+      ]
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "action": "engineer_prompt_templates",
+      "description": "Design and validate PAL/PoT few-shot prompt templates for target problem domains",
+      "responsible_nodes": [
+        "PROMPT_TEMPLATE_PAL",
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK"
+      ],
+      "outputs": [
+        "prompt template bank",
+        "example set"
+      ],
+      "gate": "templates produce syntactically valid Python on 95% of fixture problems",
+      "depends_on": [
+        "WF_01",
+        "WF_02"
+      ]
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "action": "integrate_sympy_cas",
+      "description": "Integrate SymPy as exact computation backend; configure timeout and fallback to numeric where appropriate",
+      "responsible_nodes": [
+        "SYMPY_CAS",
+        "TOOL_SELECTION"
+      ],
+      "outputs": [
+        "SymPy integration module",
+        "timeout policy"
+      ],
+      "gate": "SymPy produces exact answers for algebraic fixture set within timeout",
+      "depends_on": [
+        "WF_02",
+        "WF_03"
+      ]
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "action": "implement_answer_pipeline",
+      "description": "Implement extraction, normalization, tolerance check, unit validation, and schema compliance pipeline",
+      "responsible_nodes": [
+        "NUMERIC_OUTPUT_SCHEMA",
+        "PRECISION_TOLERANCE",
+        "UNIT_FORMAT_VALIDATOR",
+        "HALLUCINATION_GUARD"
+      ],
+      "outputs": [
+        "answer processing pipeline",
+        "validation report"
+      ],
+      "gate": "all fixture answers extracted and validated without false pass/fail",
+      "depends_on": [
+        "WF_01",
+        "WF_04"
+      ]
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "action": "implement_verification",
+      "description": "Implement answer verification (back-substitution, self-consistency voting) with configurable N and retry budget",
+      "responsible_nodes": [
+        "ANSWER_VERIFIER",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "outputs": [
+        "verifier module",
+        "retry policy"
+      ],
+      "gate": "verifier catches all known-wrong answers in fixture bank",
+      "depends_on": [
+        "WF_05"
+      ]
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "action": "curate_dataset",
+      "description": "Curate (problem, program, answer) training triples with decontamination check and human verification sample",
+      "responsible_nodes": [
+        "DATASET_CURATION",
+        "GOODHART_RISK"
+      ],
+      "outputs": [
+        "curated dataset",
+        "contamination report"
+      ],
+      "gate": "random 100-sample human review passes; decontamination check passes",
+      "depends_on": [
+        "WF_01"
+      ]
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "action": "fine_tune_model",
+      "description": "Fine-tune base LLM on curated PAL triples using PEFT/LoRA; validate on held-out benchmark",
+      "responsible_nodes": [
+        "FINE_TUNE_PAL",
+        "BENCHMARK_EVAL"
+      ],
+      "outputs": [
+        "fine-tuned model weights",
+        "training logs",
+        "eval report"
+      ],
+      "gate": "fine-tuned model improves on held-out benchmark without regressing on general math",
+      "depends_on": [
+        "WF_07",
+        "WF_03"
+      ]
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "action": "implement_orchestration",
+      "description": "Implement problem decomposition and tool selection routing for complex multi-step problems",
+      "responsible_nodes": [
+        "PROBLEM_DECOMP",
+        "TOOL_SELECTION"
+      ],
+      "outputs": [
+        "routing policy",
+        "decomposition module"
+      ],
+      "gate": "routing correctly directs 95% of fixtures; decomposer produces DAG subproblems",
+      "depends_on": [
+        "WF_04",
+        "WF_06"
+      ]
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "action": "benchmark_evaluation",
+      "description": "Evaluate complete pipeline on GSM8K, MATH, SVAMP benchmarks; run Goodhart contamination check first",
+      "responsible_nodes": [
+        "BENCHMARK_EVAL",
+        "GOODHART_RISK"
+      ],
+      "outputs": [
+        "benchmark accuracy report",
+        "category breakdown",
+        "contamination report"
+      ],
+      "gate": "contamination check passes before results published",
+      "depends_on": [
+        "WF_08",
+        "WF_09"
+      ]
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "action": "build_regression_suite",
+      "description": "Build and run regression test suite covering all schema paths, edge cases, and problem categories",
+      "responsible_nodes": [
+        "REGRESSION_SUITE"
+      ],
+      "outputs": [
+        "regression test suite",
+        "coverage report"
+      ],
+      "gate": "100% of high-risk schema paths covered; suite runs in <5min",
+      "depends_on": [
+        "WF_05",
+        "WF_06",
+        "WF_10"
+      ]
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "action": "deploy_with_monitoring",
+      "description": "Deploy to production with latency/cost operating point set; configure drift detection and alerting",
+      "responsible_nodes": [
+        "PRODUCTION_MONITOR",
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "outputs": [
+        "deployment config",
+        "alert policies",
+        "SLA dashboard"
+      ],
+      "gate": "staging stress test passes SLA; drift detection fires on simulated spike",
+      "depends_on": [
+        "WF_11"
+      ]
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "rule": "PAL_FRAMEWORK dominates free-text numeric generation for all math tasks requiring multi-step computation",
+      "condition": "task involves arithmetic, algebra, or calculus with more than 1 computation step",
+      "dominant_node": "PAL_FRAMEWORK",
+      "dominated_approach": "free_text_chain_of_thought_arithmetic",
+      "rationale": "delegation to Python interpreter eliminates arithmetic hallucination"
+    },
+    {
+      "id": "DR_02",
+      "rule": "SYMPY_CAS dominates numpy for algebraic and symbolic problems",
+      "condition": "problem requires exact rational arithmetic, symbolic algebra, or equation solving",
+      "dominant_node": "SYMPY_CAS",
+      "dominated_approach": "numpy_float_arithmetic",
+      "rationale": "SymPy provides exact answers avoiding floating-point accumulation"
+    },
+    {
+      "id": "DR_03",
+      "rule": "STRICT_OUTPUT_SCHEMA dominates all output formatting decisions",
+      "condition": "any numeric answer is being emitted to downstream consumer",
+      "dominant_node": "STRICT_OUTPUT_SCHEMA",
+      "dominated_approach": "ad_hoc_numeric_formatting",
+      "rationale": "schema compliance is prerequisite for automated answer checking"
+    },
+    {
+      "id": "DR_04",
+      "rule": "HALLUCINATION_GUARD dominates when prose numeric values are detected",
+      "condition": "any prose numeric value appears outside schema-designated fields",
+      "dominant_node": "HALLUCINATION_GUARD",
+      "dominated_approach": "numeric_extraction_from_prose",
+      "rationale": "prose number extraction has unacceptably high error rate vs schema-structured output"
+    },
+    {
+      "id": "DR_05",
+      "rule": "SANDBOX_EXECUTOR dominates when any untrusted LLM-generated code is executed",
+      "condition": "code was generated by LLM rather than authored by human engineer",
+      "dominant_node": "SANDBOX_EXECUTOR",
+      "dominated_approach": "direct_exec_without_sandbox",
+      "rationale": "LLM-generated code must be treated as untrusted input regardless of apparent safety"
+    },
+    {
+      "id": "DR_06",
+      "rule": "GOODHART_RISK check dominates before publishing any benchmark results",
+      "condition": "benchmark evaluation results are being reported externally or used for model selection",
+      "dominant_node": "GOODHART_RISK",
+      "dominated_approach": "naive_benchmark_reporting",
+      "rationale": "contaminated benchmark results cause incorrect model selection decisions"
+    },
+    {
+      "id": "DR_07",
+      "rule": "ANSWER_VERIFIER dominates single-shot answer acceptance for high-stakes problems",
+      "condition": "problem is high-stakes (financial, medical, engineering) or answer is flagged as uncertain",
+      "dominant_node": "ANSWER_VERIFIER",
+      "dominated_approach": "single_shot_accept",
+      "rationale": "back-substitution provides independent correctness signal beyond schema compliance"
+    },
+    {
+      "id": "DR_08",
+      "rule": "PRECISION_TOLERANCE policy dominates equality checks between numeric values",
+      "condition": "any two numeric values are being compared for equality in answer checking",
+      "dominant_node": "PRECISION_TOLERANCE",
+      "dominated_approach": "raw_equality_operator",
+      "rationale": "raw float equality causes false failures from representation differences"
+    },
+    {
+      "id": "DR_09",
+      "rule": "DATASET_CURATION decontamination dominates before any fine-tuning run",
+      "condition": "training data includes any source that may overlap with benchmark test splits",
+      "dominant_node": "DATASET_CURATION",
+      "dominated_approach": "fine_tune_without_decontamination",
+      "rationale": "contaminated fine-tuning data causes benchmark score inflation masking real performance"
+    },
+    {
+      "id": "DR_10",
+      "rule": "REGRESSION_SUITE CI gate dominates before any code deployment",
+      "condition": "any component of the tool-math pipeline is being updated or replaced",
+      "dominant_node": "REGRESSION_SUITE",
+      "dominated_approach": "manual_spot_check_before_deploy",
+      "rationale": "regression suite catches silent breakages faster and more comprehensively than manual review"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "ARR_01",
+      "rule": "Do not re-implement arithmetic inside the LLM response; always delegate to Python",
+      "prevents_rework_on": [
+        "PAL_FRAMEWORK",
+        "HALLUCINATION_GUARD"
+      ],
+      "trigger": "anyone proposes LLM should compute arithmetic in text rather than code"
+    },
+    {
+      "id": "ARR_02",
+      "rule": "Do not change output schema after answer extraction pipeline is tested; schema changes require full regression re-run",
+      "prevents_rework_on": [
+        "STRICT_OUTPUT_SCHEMA",
+        "NUMERIC_OUTPUT_SCHEMA",
+        "REGRESSION_SUITE"
+      ],
+      "trigger": "schema change proposed without triggering regression suite re-run"
+    },
+    {
+      "id": "ARR_03",
+      "rule": "Do not tune tolerance parameters without documenting which problem types they apply to",
+      "prevents_rework_on": [
+        "PRECISION_TOLERANCE",
+        "ANSWER_VERIFIER"
+      ],
+      "trigger": "global tolerance changed without per-type documentation"
+    },
+    {
+      "id": "ARR_04",
+      "rule": "Do not expand sandbox import allowlist without security review",
+      "prevents_rework_on": [
+        "SANDBOX_EXECUTOR",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "trigger": "new library requested for addition to allowlist"
+    },
+    {
+      "id": "ARR_05",
+      "rule": "Do not publish benchmark results before running Goodhart contamination check",
+      "prevents_rework_on": [
+        "BENCHMARK_EVAL",
+        "GOODHART_RISK"
+      ],
+      "trigger": "benchmark evaluation complete and results being prepared for sharing"
+    },
+    {
+      "id": "ARR_06",
+      "rule": "Do not fine-tune on a dataset that has not passed decontamination",
+      "prevents_rework_on": [
+        "FINE_TUNE_PAL",
+        "DATASET_CURATION",
+        "GOODHART_RISK"
+      ],
+      "trigger": "fine-tuning run is being scheduled"
+    },
+    {
+      "id": "ARR_07",
+      "rule": "Do not hard-code N for self-consistency voting; always expose as configurable parameter",
+      "prevents_rework_on": [
+        "ANSWER_VERIFIER",
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "trigger": "N is hard-coded during implementation"
+    },
+    {
+      "id": "ARR_08",
+      "rule": "Do not use raw Python equality (==) for float answer comparison; always use tolerance policy",
+      "prevents_rework_on": [
+        "PRECISION_TOLERANCE",
+        "REGRESSION_SUITE"
+      ],
+      "trigger": "equality check is being written for numeric answer comparison"
+    },
+    {
+      "id": "ARR_09",
+      "rule": "Do not add prose explanation to model output without extending schema to structured optional field",
+      "prevents_rework_on": [
+        "HALLUCINATION_GUARD",
+        "STRICT_OUTPUT_SCHEMA"
+      ],
+      "trigger": "user requests explanation alongside numeric answer"
+    },
+    {
+      "id": "ARR_10",
+      "rule": "Do not deploy without staging regression suite passing; no manual exception process",
+      "prevents_rework_on": [
+        "REGRESSION_SUITE",
+        "PRODUCTION_MONITOR"
+      ],
+      "trigger": "deployment is being planned"
+    },
+    {
+      "id": "ARR_11",
+      "rule": "Do not route symbolic algebra problems to numpy; always route to SymPy",
+      "prevents_rework_on": [
+        "SYMPY_CAS",
+        "TOOL_SELECTION",
+        "PRECISION_TOLERANCE"
+      ],
+      "trigger": "tool routing policy is being configured"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "name": "schema_first",
+      "description": "Output schema and unit convention must be finalized before any code generation or evaluation begins; no exceptions",
+      "trigger": "starting a new math tool-math deployment or problem domain",
+      "action": "run WF_01 (schema definition) to completion with human sign-off",
+      "exit_condition": "schema spec reviewed and accepted_tests defined",
+      "affected_nodes": [
+        "STRICT_OUTPUT_SCHEMA",
+        "UNIT_FORMAT_VALIDATOR"
+      ]
+    },
+    {
+      "id": "IP_02",
+      "name": "sandbox_before_execution",
+      "description": "Sandbox configuration must be validated before any LLM-generated code is executed, even in development",
+      "trigger": "new execution environment or sandbox policy change",
+      "action": "run sandbox smoke tests against allowlist and blocklist",
+      "exit_condition": "allowlist and blocklist both verified by security review",
+      "affected_nodes": [
+        "SANDBOX_EXECUTOR"
+      ]
+    },
+    {
+      "id": "IP_03",
+      "name": "contamination_check_before_train",
+      "description": "Run decontamination check before every fine-tuning run regardless of assumed data provenance",
+      "trigger": "new training dataset version or augmentation applied",
+      "action": "run n-gram and semantic overlap check against all benchmark test splits",
+      "exit_condition": "contamination report shows <1% overlap with any test split",
+      "affected_nodes": [
+        "DATASET_CURATION",
+        "GOODHART_RISK",
+        "FINE_TUNE_PAL"
+      ]
+    },
+    {
+      "id": "IP_04",
+      "name": "regression_before_deploy",
+      "description": "Full regression suite must pass before any component deployment; failing suite blocks deployment",
+      "trigger": "any code change to any pipeline component",
+      "action": "run complete regression suite including schema, edge cases, and category tests",
+      "exit_condition": "regression suite passes with zero regressions",
+      "affected_nodes": [
+        "REGRESSION_SUITE",
+        "PRODUCTION_MONITOR"
+      ]
+    },
+    {
+      "id": "IP_05",
+      "name": "tolerance_review_on_domain_change",
+      "description": "Precision tolerance policy must be reviewed whenever a new problem domain is added",
+      "trigger": "new problem domain onboarded",
+      "action": "enumerate answer types in new domain; update tolerance config per type",
+      "exit_condition": "new domain's answer types all covered by tolerance policy",
+      "affected_nodes": [
+        "PRECISION_TOLERANCE",
+        "UNIT_FORMAT_VALIDATOR",
+        "STRICT_OUTPUT_SCHEMA"
+      ]
+    },
+    {
+      "id": "IP_06",
+      "name": "benchmark_contamination_gate",
+      "description": "Contamination check must be run and passed before benchmark results are reported or used for model selection",
+      "trigger": "benchmark evaluation complete",
+      "action": "run GOODHART_RISK contamination analysis; hold private test set comparison",
+      "exit_condition": "contamination report clean; private test set confirms benchmark result",
+      "affected_nodes": [
+        "BENCHMARK_EVAL",
+        "GOODHART_RISK"
+      ]
+    },
+    {
+      "id": "IP_07",
+      "name": "latency_cost_review_on_n_change",
+      "description": "Operating point (N for voting, retry budget) must be re-validated against SLA when changed",
+      "trigger": "N or retry budget changed",
+      "action": "run latency profiling in staging at new N; compare cost model",
+      "exit_condition": "P95 latency within SLA budget at new N",
+      "affected_nodes": [
+        "ANSWER_VERIFIER",
+        "LATENCY_COST_TRADEOFF",
+        "SANDBOX_EXECUTOR"
+      ]
+    },
+    {
+      "id": "IP_08",
+      "name": "tool_routing_update_on_new_domain",
+      "description": "Tool selection routing policy must be updated when new problem domain or solver added",
+      "trigger": "new problem type or computation tool added to system",
+      "action": "update routing policy; add fixtures for new domain; verify routing on fixtures",
+      "exit_condition": "routing achieves >=95% correct direction on new domain fixtures",
+      "affected_nodes": [
+        "TOOL_SELECTION",
+        "PROBLEM_DECOMP",
+        "SYMPY_CAS"
+      ]
+    },
+    {
+      "id": "IP_09",
+      "name": "production_drift_response",
+      "description": "When production monitoring detects statistical drift, trigger offline benchmark re-evaluation and potential retraining",
+      "trigger": "drift alert fired in production monitoring",
+      "action": "run offline benchmark on production sample; compare to baseline; decide retrain or schema update",
+      "exit_condition": "root cause identified and remediation plan approved",
+      "affected_nodes": [
+        "PRODUCTION_MONITOR",
+        "BENCHMARK_EVAL",
+        "FINE_TUNE_PAL"
+      ]
+    }
+  ],
+  "priority_order": [
+    "PAL_FRAMEWORK",
+    "STRICT_OUTPUT_SCHEMA",
+    "HALLUCINATION_GUARD",
+    "SANDBOX_EXECUTOR",
+    "ANSWER_VERIFIER",
+    "BENCHMARK_EVAL",
+    "NUMERIC_OUTPUT_SCHEMA",
+    "POT_FRAMEWORK",
+    "SYMPY_CAS",
+    "DATASET_CURATION",
+    "GOODHART_RISK",
+    "REGRESSION_SUITE",
+    "UNIT_FORMAT_VALIDATOR",
+    "FINE_TUNE_PAL",
+    "PROMPT_TEMPLATE_PAL",
+    "PROBLEM_DECOMP",
+    "TOOL_SELECTION",
+    "CODE_ERROR_RECOVERY",
+    "LATENCY_COST_TRADEOFF",
+    "PRECISION_TOLERANCE",
+    "PRODUCTION_MONITOR"
+  ],
+  "priority_rationale": "Ordered by criticality and risk_if_wrong; PAL_FRAMEWORK and STRICT_OUTPUT_SCHEMA are foundational; HALLUCINATION_GUARD and SANDBOX_EXECUTOR are safety-critical; evaluation and governance nodes follow; operational and optimization nodes last.",
+  "validation_protocol": {
+    "structural_checks": [
+      "all required top-level keys present",
+      "node ids unique",
+      "edge ids unique in EDGE_NNN format",
+      "all edge from/to resolve to node ids"
+    ],
+    "metric_checks": [
+      "all base metrics in [0,1]",
+      "derived metrics set to 0 before formula tool run",
+      "probabilistic_layer observed_impact=0.0"
+    ],
+    "ref_checks": [
+      "all competency_question_refs resolve to competency_questions ids",
+      "all evidence_refs resolve to source_registry ids",
+      "all conflict_axis_refs resolve to conflict_axes ids"
+    ],
+    "obligation_checks": [
+      "high-risk nodes (risk_if_wrong>=0.80) have non-empty acceptance_tests",
+      "high-risk nodes have human_review_required=true",
+      "high-coupling nodes (cross_topic_coupling>=0.75) have revisit_triggers"
+    ],
+    "edge_checks": [
+      "conflict edges have signed_tension<0 and resolution_rule",
+      "dependency edges form DAG",
+      "edge types are legal"
+    ],
+    "priority_checks": [
+      "priority_order lists every node id exactly once"
+    ]
+  },
+  "validation_report": {
+    "status": "pending_formula_tool",
+    "checks_passed": [],
+    "checks_failed": [],
+    "repair_count": 0
+  },
+  "change_control": {
+    "version": "1.0.0",
+    "change_log": [
+      {
+        "version": "1.0.0",
+        "date": "2026-06-23",
+        "changes": "initial generation for math__tool_math subdomain"
+      }
+    ],
+    "review_required_for": [
+      "schema changes",
+      "new node addition",
+      "edge type changes",
+      "priority_order reordering"
+    ]
+  },
+  "traceability_matrix": {
+    "node_to_competency_question": {
+      "PAL_FRAMEWORK": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "POT_FRAMEWORK": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "SYMPY_CAS": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "STRICT_OUTPUT_SCHEMA": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "NUMERIC_OUTPUT_SCHEMA": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "ANSWER_VERIFIER": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "HALLUCINATION_GUARD": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "UNIT_FORMAT_VALIDATOR": [
+        "CQ_07",
+        "CQ_12"
+      ],
+      "SANDBOX_EXECUTOR": [
+        "CQ_13"
+      ],
+      "PROMPT_TEMPLATE_PAL": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "BENCHMARK_EVAL": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "GOODHART_RISK": [
+        "CQ_11"
+      ],
+      "CODE_ERROR_RECOVERY": [
+        "CQ_08",
+        "CQ_13"
+      ],
+      "LATENCY_COST_TRADEOFF": [
+        "CQ_14"
+      ],
+      "PROBLEM_DECOMP": [
+        "CQ_02",
+        "CQ_08"
+      ],
+      "PRECISION_TOLERANCE": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "TOOL_SELECTION": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "DATASET_CURATION": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "FINE_TUNE_PAL": [
+        "CQ_12",
+        "CQ_14"
+      ],
+      "REGRESSION_SUITE": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "PRODUCTION_MONITOR": [
+        "CQ_14"
+      ]
+    },
+    "conflict_axis_to_nodes": {
+      "CA_01": [
+        "SYMPY_CAS",
+        "PAL_FRAMEWORK",
+        "PRECISION_TOLERANCE"
+      ],
+      "CA_02": [
+        "ANSWER_VERIFIER",
+        "LATENCY_COST_TRADEOFF",
+        "SANDBOX_EXECUTOR"
+      ],
+      "CA_03": [
+        "HALLUCINATION_GUARD",
+        "STRICT_OUTPUT_SCHEMA",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "CA_04": [
+        "BENCHMARK_EVAL",
+        "GOODHART_RISK",
+        "DATASET_CURATION"
+      ],
+      "CA_05": [
+        "SANDBOX_EXECUTOR",
+        "SYMPY_CAS",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "CA_06": [
+        "FINE_TUNE_PAL",
+        "PAL_FRAMEWORK",
+        "BENCHMARK_EVAL"
+      ],
+      "CA_07": [
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK",
+        "LATENCY_COST_TRADEOFF"
+      ],
+      "CA_08": [
+        "PROBLEM_DECOMP",
+        "ANSWER_VERIFIER",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "CA_09": [
+        "DATASET_CURATION",
+        "FINE_TUNE_PAL",
+        "GOODHART_RISK"
+      ],
+      "CA_10": [
+        "PRECISION_TOLERANCE",
+        "ANSWER_VERIFIER",
+        "UNIT_FORMAT_VALIDATOR"
+      ]
+    },
+    "workflow_step_to_nodes": {
+      "WF_01": [
+        "STRICT_OUTPUT_SCHEMA",
+        "UNIT_FORMAT_VALIDATOR"
+      ],
+      "WF_02": [
+        "SANDBOX_EXECUTOR"
+      ],
+      "WF_03": [
+        "PROMPT_TEMPLATE_PAL",
+        "PAL_FRAMEWORK",
+        "POT_FRAMEWORK"
+      ],
+      "WF_04": [
+        "SYMPY_CAS",
+        "TOOL_SELECTION"
+      ],
+      "WF_05": [
+        "NUMERIC_OUTPUT_SCHEMA",
+        "PRECISION_TOLERANCE",
+        "UNIT_FORMAT_VALIDATOR",
+        "HALLUCINATION_GUARD"
+      ],
+      "WF_06": [
+        "ANSWER_VERIFIER",
+        "CODE_ERROR_RECOVERY"
+      ],
+      "WF_07": [
+        "DATASET_CURATION",
+        "GOODHART_RISK"
+      ],
+      "WF_08": [
+        "FINE_TUNE_PAL",
+        "BENCHMARK_EVAL"
+      ],
+      "WF_09": [
+        "PROBLEM_DECOMP",
+        "TOOL_SELECTION"
+      ],
+      "WF_10": [
+        "BENCHMARK_EVAL",
+        "GOODHART_RISK"
+      ],
+      "WF_11": [
+        "REGRESSION_SUITE"
+      ],
+      "WF_12": [
+        "PRODUCTION_MONITOR",
+        "LATENCY_COST_TRADEOFF"
+      ]
+    }
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_schema_semantics_tool_execution_and_answer_correctness_for_program_aided_math",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "single arithmetic problem, PAL code generation, Python execution",
+        "expected_properties": [
+          "valid Python generated",
+          "numeric answer extracted",
+          "schema passes"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_002",
+        "case_type": "exact_symbolic",
+        "input_summary": "algebraic equation solving via SymPy",
+        "expected_properties": [
+          "SymPy exact answer",
+          "no float approximation",
+          "unit validated"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_003",
+        "case_type": "hallucination_probe",
+        "input_summary": "LLM attempts to embed numeric answer in prose",
+        "expected_properties": [
+          "hallucination_guard fires",
+          "prose number rejected",
+          "schema error logged"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_004",
+        "case_type": "contamination_probe",
+        "input_summary": "training data contains benchmark test problem",
+        "expected_properties": [
+          "decontamination check flags overlap",
+          "benchmark run blocked until cleaned"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_005",
+        "case_type": "sandbox_injection",
+        "input_summary": "generated code attempts to import requests",
+        "expected_properties": [
+          "sandbox blocks import",
+          "execution fails safely",
+          "error recovery triggered"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,5589 @@
+{
+  "domain": "steer__format_ctrl",
+  "domain_label": "Format, Verbosity & Persona Control (terse machine I/O)",
+  "purpose": "session_bounded_stepwise_execution_for_format_verbosity_and_persona_control_of_specialist_llms_for_machine_to_machine_io",
+  "parent_domain": "Controllability, Steering & Representation Engineering",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "target deployment is machine-to-machine I/O where output tokens are consumed programmatically not by humans",
+    "constrained decoding (Willard & Louf 2023 Outlines approach) is available as an inference-time option",
+    "base model is a transformer decoder fine-tuneable via LoRA/full SFT; ToS review is always required"
+  ],
+  "exclusions": [
+    "human-facing chat verbosity and tone control outside machine I/O context",
+    "RLHF/DPO preference alignment for output quality beyond format",
+    "retrieval-augmented generation and knowledge grounding",
+    "hardware-level inference optimization (quantization, batching, KV cache)",
+    "safety refusal behavior beyond structured abstention"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What output schema contract governs the format that all enforcement mechanisms and evaluations align to?",
+      "must_be_answerable_from": [
+        "nodes",
+        "glossary"
+      ],
+      "acceptance_condition": "FORMAT_SPEC defines schema, field semantics, enum tables, null policy",
+      "covered_by": [
+        "FORMAT_SPEC",
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How is format compliance measured and what pass/fail thresholds gate deployment?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "EVAL_FORMAT defines parse rate and boilerplate metrics; FORMAT_REGRESSION defines CI gate",
+      "covered_by": [
+        "EVAL_FORMAT",
+        "FORMAT_REGRESSION"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What mechanism provides hard syntactic format guarantees at inference time?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "CONSTRAINED_DECODE and LOGIT_BIAS describe grammar masking and token forcing",
+      "covered_by": [
+        "CONSTRAINED_DECODE",
+        "LOGIT_BIAS"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What recovery strategy handles format failures that pass through enforcement?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "OUTPUT_PARSE_PIPELINE covers parse-error recovery and retry",
+      "covered_by": [
+        "OUTPUT_PARSE_PIPELINE",
+        "STOP_SEQ"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How is output verbosity reduced without expensive runtime mechanisms?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "STOP_SEQ and PROMPT_TEMPLATE describe zero-training verbosity controls; VERBOSITY_SFT describes SFT approach",
+      "covered_by": [
+        "STOP_SEQ",
+        "PROMPT_TEMPLATE",
+        "VERBOSITY_SFT"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How is SFT used to produce dense, machine-facing outputs with no boilerplate?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "VERBOSITY_SFT, DATA_CURATION_DENSE, and PEFT_FORMAT describe the SFT pipeline",
+      "covered_by": [
+        "VERBOSITY_SFT",
+        "DATA_CURATION_DENSE",
+        "PEFT_FORMAT"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is a machine-facing persona installed without system-prompt token overhead?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PERSONA_CTRL describes persona baking via SFT; REPR_ENG covers representation-level steering",
+      "covered_by": [
+        "PERSONA_CTRL",
+        "REPR_ENG"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How are multiple output schemas served efficiently from a single model?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "PEFT_FORMAT and MULTI_SCHEMA_ROUTING describe adapter-per-schema + routing",
+      "covered_by": [
+        "PEFT_FORMAT",
+        "MULTI_SCHEMA_ROUTING"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How does the system detect and signal low-confidence outputs without hallucinating?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "ABSTENTION_CALIB describes structured abstention and ECE calibration; SEMANTIC_RETENTION covers detection",
+      "covered_by": [
+        "ABSTENTION_CALIB",
+        "SEMANTIC_RETENTION"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How is semantic information loss detected when output is compressed for token efficiency?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "SEMANTIC_RETENTION and TOKEN_EFFICIENCY define retention metric and compression Pareto",
+      "covered_by": [
+        "SEMANTIC_RETENTION",
+        "TOKEN_EFFICIENCY",
+        "EVAL_FORMAT"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How is the context window token budget allocated across instructions, examples, and output?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "CONTEXT_WINDOW_BUDGET defines allocation policy and truncation hierarchy",
+      "covered_by": [
+        "CONTEXT_WINDOW_BUDGET",
+        "PROMPT_TEMPLATE",
+        "TOKEN_EFFICIENCY"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How is inference latency overhead from format enforcement monitored and bounded?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "FORMAT_INFERENCE_LATENCY defines SLA and CONSTRAINED_DECODE overhead; CA_01 covers tradeoff",
+      "covered_by": [
+        "FORMAT_INFERENCE_LATENCY",
+        "CONSTRAINED_DECODE",
+        "MULTI_SCHEMA_ROUTING"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How is Goodhart's Law risk managed when optimizing format compliance metrics?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "GOODHART_FORMAT and CA_07 describe joint metric gate",
+      "covered_by": [
+        "GOODHART_FORMAT",
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "What must be verified about the base model before committing SFT compute for format specialization?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "LICENSE_COMPLIANCE node and WF_01 define prerequisite license gate",
+      "covered_by": [
+        "LICENSE_COMPLIANCE"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "constrained_decoding",
+      "definition": "token-by-token restriction of autoregressive generation to grammar-legal continuations via logit masking",
+      "synonyms": [
+        "grammar-constrained decoding",
+        "structured generation"
+      ],
+      "not_same_as": [
+        "logit bias",
+        "prompt engineering"
+      ],
+      "used_by_nodes": [
+        "CONSTRAINED_DECODE"
+      ]
+    },
+    {
+      "term": "conversion_loss",
+      "definition": "semantic information lost when compressing a verbose model output into a compact structured representation",
+      "synonyms": [
+        "semantic loss",
+        "information loss"
+      ],
+      "not_same_as": [
+        "parse error",
+        "format non-compliance"
+      ],
+      "used_by_nodes": [
+        "TOKEN_EFFICIENCY",
+        "SEMANTIC_RETENTION"
+      ]
+    },
+    {
+      "term": "boilerplate",
+      "definition": "chat-style preamble, apology, hedging, or explanation added by the model beyond the required structured output",
+      "synonyms": [
+        "preamble",
+        "filler text"
+      ],
+      "not_same_as": [
+        "required hedging",
+        "calibrated abstention"
+      ],
+      "used_by_nodes": [
+        "VERBOSITY_SFT",
+        "EVAL_FORMAT"
+      ]
+    },
+    {
+      "term": "calibrated_abstention",
+      "definition": "model emits a structured null/abstain signal when internal confidence is below threshold, rather than hallucinating",
+      "synonyms": [
+        "structured abstention",
+        "confidence-gated output"
+      ],
+      "not_same_as": [
+        "refusal",
+        "silence",
+        "hallucination"
+      ],
+      "used_by_nodes": [
+        "ABSTENTION_CALIB"
+      ]
+    },
+    {
+      "term": "parse_rate",
+      "definition": "fraction of generated outputs that are syntactically valid according to the target schema",
+      "synonyms": [
+        "schema validity rate"
+      ],
+      "not_same_as": [
+        "semantic correctness",
+        "semantic retention"
+      ],
+      "used_by_nodes": [
+        "EVAL_FORMAT",
+        "FORMAT_REGRESSION",
+        "GOODHART_FORMAT"
+      ]
+    },
+    {
+      "term": "steering_vector",
+      "definition": "activation delta added to a model's hidden states to steer output format style without weight updates",
+      "synonyms": [
+        "activation addition",
+        "reading vector"
+      ],
+      "not_same_as": [
+        "logit bias",
+        "SFT",
+        "LoRA"
+      ],
+      "used_by_nodes": [
+        "REPR_ENG"
+      ]
+    },
+    {
+      "term": "dense_io_pair",
+      "definition": "SFT training example with maximally compact structured output and no boilerplate; optimized for machine-to-machine information density",
+      "synonyms": [
+        "terse pair",
+        "machine-facing pair"
+      ],
+      "not_same_as": [
+        "chat pair",
+        "conversational pair"
+      ],
+      "used_by_nodes": [
+        "DATA_CURATION_DENSE",
+        "VERBOSITY_SFT"
+      ]
+    },
+    {
+      "term": "ECE",
+      "definition": "expected calibration error; measures alignment between model's expressed confidence and actual accuracy",
+      "synonyms": [
+        "calibration error"
+      ],
+      "not_same_as": [
+        "accuracy",
+        "F1"
+      ],
+      "used_by_nodes": [
+        "ABSTENTION_CALIB"
+      ]
+    },
+    {
+      "term": "format_adapter",
+      "definition": "lightweight PEFT (LoRA/IA3) adapter trained to specialize a base model's output to a particular schema or format style",
+      "synonyms": [
+        "LoRA format adapter"
+      ],
+      "not_same_as": [
+        "full fine-tune checkpoint",
+        "grammar",
+        "prompt"
+      ],
+      "used_by_nodes": [
+        "PEFT_FORMAT",
+        "MULTI_SCHEMA_ROUTING"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "FORMAT_SPEC",
+      "SCHEMA_VERSION",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model",
+      "TOKEN_EFFICIENCY",
+      "EVAL_FORMAT"
+    ],
+    "probabilistic_modeling": [
+      "ABSTENTION_CALIB",
+      "REPR_ENG"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "GOODHART_FORMAT",
+      "LICENSE_COMPLIANCE"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "EVAL_FORMAT",
+      "FORMAT_REGRESSION",
+      "SEMANTIC_RETENTION"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "PROMPT_TEMPLATE",
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow",
+      "MULTI_SCHEMA_ROUTING"
+    ],
+    "software_schema_engineering": [
+      "schema_contract",
+      "SCHEMA_VERSION",
+      "FORMAT_SPEC"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for format, verbosity, and persona control work units in absence of supplied datasets",
+      "citation_or_locator": "",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    },
+    {
+      "source_id": "SRC_WILLARD_LOUF_2023",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "Willard & Louf 2023 (Outlines) — constrained decoding via FSM over token vocabulary; key reference for grammar-constrained generation approach",
+      "citation_or_locator": "Willard B.T. & Louf R. 2023. Efficient Guided Generation for LLMs. arXiv:2307.09702",
+      "supports": [
+        "grammar-constrained decoding design",
+        "FSM compilation approach",
+        "tokenizer-grammar alignment"
+      ],
+      "does_not_support": [
+        "observed benchmark numbers without reproduction",
+        "claims beyond constrained decoding scope"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "published_paper",
+        "activity": "citation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "original paper results not reproduced here; used as design reference only"
+      ]
+    },
+    {
+      "source_id": "SRC_TUNSTALL_NLP_TRANSFORMERS",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "Tunstall, Werra, Wolf — NLP with Transformers (O'Reilly); reference for generation control (stop sequences, max_new_tokens, temperature, top-p)",
+      "citation_or_locator": "Tunstall L., von Werra L., Wolf T. 2022. Natural Language Processing with Transformers. O'Reilly Media.",
+      "supports": [
+        "stop sequence configuration",
+        "generation control parameters",
+        "length cap best practices"
+      ],
+      "does_not_support": [
+        "observed benchmark numbers",
+        "constrained decoding specifics"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "published_book",
+        "activity": "citation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "used as design reference; specific page numbers not reproduced here"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "FORMAT_SPEC",
+      "topic": "format_specification_and_schema_design",
+      "definition": "Define machine-facing output schemas (JSON, YAML, structured fields) and format contracts that downstream consumers depend on; includes enumerating legal value sets, field semantics, and null handling.",
+      "node_type": "work_unit",
+      "group": "format_foundations",
+      "scope_boundary": {
+        "included": [
+          "JSON schema",
+          "YAML schema",
+          "enum tables",
+          "null policy"
+        ],
+        "excluded": [
+          "decoding grammar internals",
+          "SFT dataset curation"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "downstream consumer spec",
+        "task description",
+        "field cardinality requirements"
+      ],
+      "outputs": [
+        "output schema doc",
+        "field enum tables",
+        "null policy"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.85,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.7,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.72,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.59,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "consumer API or schema version changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Establishes single source of truth for all format-enforcement downstream",
+          "example": "JSON schema v2020-12 used as contract for constrained decoder grammar"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Schema too rigid stifles model generalization on edge inputs",
+          "example": "strict enum rejects valid rare values not foreseen in spec"
+        }
+      ],
+      "failure_modes": [
+        "under-specified nullable fields cause silent truncation",
+        "schema version drift breaks consumer parsers"
+      ],
+      "acceptance_tests": [
+        "schema round-trips losslessly through all downstream consumers",
+        "null/missing field policy documented and tested"
+      ],
+      "revisit_triggers": [
+        "downstream consumer schema changed",
+        "new field type or cardinality requirement introduced"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CONSTRAINED_DECODE",
+      "topic": "grammar_constrained_decoding",
+      "definition": "Enforce syntactic format constraints during autoregressive decoding by restricting the next-token distribution to a grammar-derived mask (FSM/CFG over legal continuations) — e.g., Outlines/lm-format-enforcer approach (Willard & Louf 2023).",
+      "node_type": "work_unit",
+      "group": "format_enforcement",
+      "scope_boundary": {
+        "included": [
+          "FSM token masks",
+          "CFG compilation",
+          "Outlines/lm-format-enforcer",
+          "logit bias"
+        ],
+        "excluded": [
+          "semantic correctness of content",
+          "fine-tuning for format",
+          "stop sequences"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "output schema / regex / CFG",
+        "tokenizer vocabulary",
+        "logit vector"
+      ],
+      "outputs": [
+        "grammar-masked logit distribution",
+        "guaranteed-valid output tokens"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.85,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.55,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.68,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.67,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.85,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.12,
+          0.4
+        ],
+        "posterior_importance": 0.63,
+        "update_signal": "tokenizer or base model replaced; schema changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Provides hard structural guarantee — decoder cannot emit syntactically invalid output",
+          "example": "Outlines converts JSON Schema to token-level FSM; invalid paths get -inf logit mask"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Grammar compilation latency and cache size grow with schema complexity",
+          "example": "CFG with >50 fields compiles slowly; cache must be pre-warmed per schema"
+        }
+      ],
+      "failure_modes": [
+        "grammar state explosion on recursive or highly nested schemas",
+        "tokenizer-grammar misalignment causes false-negative mask on valid continuations"
+      ],
+      "acceptance_tests": [
+        "masked decoder produces parseable JSON on 100 consecutive test prompts",
+        "grammar compilation time <500ms for target schema set",
+        "no valid token incorrectly masked"
+      ],
+      "revisit_triggers": [
+        "schema changes requiring grammar recompile",
+        "tokenizer vocabulary updated (model upgrade)",
+        "new recursive schema type introduced"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "STOP_SEQ",
+      "topic": "stop_sequence_and_length_cap_control",
+      "definition": "Configure stop sequences, max_new_tokens caps, and truncation policies to prevent runaway generation and enforce output length budgets for token-efficient machine I/O.",
+      "node_type": "work_unit",
+      "group": "format_enforcement",
+      "scope_boundary": {
+        "included": [
+          "stop sequences",
+          "max_new_tokens",
+          "truncation policy",
+          "length cap"
+        ],
+        "excluded": [
+          "grammar-level enforcement",
+          "prompt construction"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "generation config",
+        "output length budget",
+        "delimiter spec"
+      ],
+      "outputs": [
+        "generation config with stops and length caps",
+        "truncation policy doc"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.38,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.55,
+        "irreversibility": 0.3,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.28,
+        "risk_score": 0.45,
+        "confidence_score": 0.6,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.76,
+        "final_importance": 0.59
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.75,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.1,
+          0.32
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "output schema delimiter set changes; context window resized",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Cheapest mechanism to bound output length and delimit structured sections",
+          "example": "stop='</answer>' cuts multi-turn bleed at negligible cost"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stop sequences fail when model generates them inside valid content",
+          "example": "model outputs '<end>' inside a code block, halting generation prematurely"
+        }
+      ],
+      "failure_modes": [
+        "stop token appearing in valid content causing premature halt",
+        "max_tokens too low truncates required fields"
+      ],
+      "acceptance_tests": [
+        "stop-sequence coverage verified across all expected output formats",
+        "length distribution of valid outputs measured; cap set at 99th pctile+10%"
+      ],
+      "revisit_triggers": [
+        "output schema adds new delimiter tokens",
+        "length budget changes due to context window shift"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "VERBOSITY_SFT",
+      "topic": "sft_for_verbosity_and_boilerplate_removal",
+      "definition": "Curate dense I/O SFT pairs (input→compact structured output, no preamble/apology/explanation) and fine-tune a base model to suppress chat-style boilerplate; reduces token waste for machine-to-machine I/O.",
+      "node_type": "work_unit",
+      "group": "sft_persona",
+      "scope_boundary": {
+        "included": [
+          "boilerplate removal",
+          "terse SFT pairs",
+          "dense I/O fine-tuning",
+          "machine-facing persona"
+        ],
+        "excluded": [
+          "grammar-constrained decoding",
+          "RLHF preference alignment",
+          "prompt engineering"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "raw instruction-following dataset",
+        "target verbosity spec",
+        "dense I/O example pairs"
+      ],
+      "outputs": [
+        "SFT dataset of terse I/O pairs",
+        "fine-tuned checkpoint",
+        "verbosity regression test suite"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.62,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.65,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.6,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "verbosity target changes or safety review flags suppressed hedging",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "SFT directly shapes generation distribution toward compact machine output; generalizes better than prompt hacks",
+          "example": "model trained on 5K dense pairs drops average response length 60% with <1% content loss"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Overfit terse SFT data degrades hedging and refusal capabilities needed for safety",
+          "example": "model loses calibrated uncertainty expression after aggressive brevity SFT"
+        }
+      ],
+      "failure_modes": [
+        "training on overly terse pairs suppresses valid hedging and abstention",
+        "distribution mismatch between SFT pairs and production inputs causes style regression"
+      ],
+      "acceptance_tests": [
+        "length reduction >40% on held-out machine I/O prompts vs base model",
+        "content retention F1 >0.95 on semantic equivalence eval",
+        "chat boilerplate rate <2% on 200-sample eval"
+      ],
+      "revisit_triggers": [
+        "production input distribution shifts materially",
+        "safety/alignment review flags suppressed uncertainty language",
+        "verbosity spec updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PERSONA_CTRL",
+      "topic": "persona_and_role_control_via_sft",
+      "definition": "Remove or install a specific persona (assistant voice, disclaimer policy, role) through targeted SFT rather than system-prompt injection; enables persistent machine-facing identity with zero prompt overhead.",
+      "node_type": "work_unit",
+      "group": "sft_persona",
+      "scope_boundary": {
+        "included": [
+          "role baking via SFT",
+          "disclaimer removal",
+          "assistant voice SFT"
+        ],
+        "excluded": [
+          "runtime system-prompt injection",
+          "RLHF reward shaping"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "persona specification",
+        "system-prompt-free SFT pairs",
+        "base checkpoint"
+      ],
+      "outputs": [
+        "persona-embedded checkpoint",
+        "persona regression test set"
+      ],
+      "dependencies": [
+        "VERBOSITY_SFT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.7,
+        "user_value": 0.65,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.58,
+        "irreversibility": 0.65,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.6,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.59,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.39,
+        "update_signal": "new persona requirement or multi-tenant deployment",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Bakes persona into weights so no system-prompt tokens consumed at inference",
+          "example": "zero system-prompt overhead in production; saves ~200 tokens per call"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Hard-coded persona resists dynamic override and complicates multi-tenant deployments",
+          "example": "single-persona model cannot serve different client voice requirements without re-finetune"
+        }
+      ],
+      "failure_modes": [
+        "persona bleeds through system-prompt override at inference time",
+        "training-time persona interferes with task-specific instruction following"
+      ],
+      "acceptance_tests": [
+        "persona absent from all 200 random production outputs without system prompt",
+        "task instruction following accuracy unchanged vs base within 2%"
+      ],
+      "revisit_triggers": [
+        "new persona or multi-tenant requirement introduced",
+        "safety policy changes persona constraints"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ABSTENTION_CALIB",
+      "topic": "calibrated_abstention_on_low_confidence",
+      "definition": "Train and configure the model to emit a structured abstention signal (e.g., {\"answer\":null,\"reason\":\"low_confidence\"}) rather than hallucinate when internal confidence is low; includes confidence elicitation via logit entropy or verbalized probability.",
+      "node_type": "work_unit",
+      "group": "calibration",
+      "scope_boundary": {
+        "included": [
+          "structured abstention",
+          "logit entropy",
+          "ECE calibration",
+          "verbalized probability"
+        ],
+        "excluded": [
+          "hallucination detection post-hoc",
+          "output filtering"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "confidence threshold spec",
+        "abstention format schema",
+        "SFT/calibration pairs"
+      ],
+      "outputs": [
+        "calibrated model checkpoint",
+        "abstention rate and ECE eval report",
+        "abstention schema"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC",
+        "VERBOSITY_SFT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.85,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.55,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.69,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.57,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.58
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "new task domain or calibration threshold revision",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents silent hallucination by converting uncertainty into machine-readable null signal",
+          "example": "structured null with reason field allows orchestrator to route to fallback"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Miscalibrated threshold causes excess abstention and utility loss",
+          "example": "threshold too low causes 40% abstention rate; downstream pipeline stalls"
+        }
+      ],
+      "failure_modes": [
+        "over-abstention on medium-confidence inputs reducing throughput",
+        "under-abstention on genuinely uncertain outputs causing hallucination",
+        "entropy-based threshold unstable across task types"
+      ],
+      "acceptance_tests": [
+        "ECE <0.10 on held-out calibration set",
+        "abstention rate <15% on confident-domain queries",
+        "structured abstention output parses correctly 100%"
+      ],
+      "revisit_triggers": [
+        "new task domain with different confidence distribution",
+        "calibration threshold revised after downstream error analysis"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "LOGIT_BIAS",
+      "topic": "logit_bias_and_token_forcing",
+      "definition": "Apply logit bias (positive or negative weights to specific token IDs) at inference to steer or forbid tokens without grammar recompile; use for lightweight format nudging, token suppression, and controlled vocabulary restriction.",
+      "node_type": "work_unit",
+      "group": "format_enforcement",
+      "scope_boundary": {
+        "included": [
+          "logit bias",
+          "token suppression",
+          "controlled vocabulary",
+          "token forcing"
+        ],
+        "excluded": [
+          "grammar FSM",
+          "SFT training",
+          "stop sequences"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "token id list",
+        "bias magnitude config",
+        "tokenizer vocab"
+      ],
+      "outputs": [
+        "bias-augmented generation config",
+        "token suppression test report"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.55,
+        "business_value": 0.6,
+        "user_value": 0.55,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.5,
+        "cross_topic_coupling": 0.48,
+        "irreversibility": 0.25,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.3,
+        "risk_score": 0.4,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.29,
+        "lock_score": 0.74,
+        "final_importance": 0.5
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.55,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.38,
+        "uncertainty_interval": [
+          0.12,
+          0.38
+        ],
+        "posterior_importance": 0.37,
+        "update_signal": "tokenizer or model updated; schema changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Runtime token steering with zero training cost; easily iterable",
+          "example": "adding -100 bias to '```' forces model off markdown in JSON-only mode"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Logit bias is fragile — multi-token constructs need all constituent tokens biased; easy to miss",
+          "example": "biasing single 'null' token misses '_null_' multi-token variant"
+        }
+      ],
+      "failure_modes": [
+        "partial bias on multi-token sequences leaves escape paths",
+        "large negative bias causes probability mass redistribution to semantically wrong tokens"
+      ],
+      "acceptance_tests": [
+        "suppressed token absent from 500 generated samples",
+        "no semantic degradation measured on held-out content eval"
+      ],
+      "revisit_triggers": [
+        "model or tokenizer updated (token IDs change)",
+        "schema changes require different token suppression set"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PROMPT_TEMPLATE",
+      "topic": "prompt_template_and_system_instruction_design",
+      "definition": "Design system and user prompt templates that compactly convey format requirements (e.g., 'respond only with JSON matching schema X') without persona boilerplate; minimizes instruction token overhead while maximizing format compliance rate.",
+      "node_type": "work_unit",
+      "group": "prompt_design",
+      "scope_boundary": {
+        "included": [
+          "system prompt format instructions",
+          "template library",
+          "token overhead"
+        ],
+        "excluded": [
+          "SFT training",
+          "grammar enforcement",
+          "logit bias"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "format schema",
+        "instruction writing guidelines",
+        "model capability profile"
+      ],
+      "outputs": [
+        "prompt template library",
+        "format compliance eval results",
+        "token overhead report"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.7,
+        "user_value": 0.68,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.55,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.25,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.44,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.74,
+        "final_importance": 0.58
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.85,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.12,
+          0.38
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "context window budget changes or model instruction-following behavior shifts",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Zero-training-cost format enforcement; fastest iteration loop for new schemas",
+          "example": "single-line 'Output only JSON' reduces markdown wrapping from 85% to 12%"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prompt-based format control is brittle for complex nested schemas; model ignores deep schema constraints",
+          "example": "model ignores 3rd-level nesting constraints on 22% of samples"
+        }
+      ],
+      "failure_modes": [
+        "verbose prompt templates consume context budget needed for content",
+        "model ignores format instructions on long documents where context is saturated"
+      ],
+      "acceptance_tests": [
+        "format compliance rate >90% on target schema",
+        "instruction token count <5% of context window budget"
+      ],
+      "revisit_triggers": [
+        "context window budget shifts",
+        "new schema requires additional instruction tokens",
+        "model updated with different instruction-following behavior"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EVAL_FORMAT",
+      "topic": "format_compliance_evaluation",
+      "definition": "Measure format compliance (parse rate, schema validity, boilerplate rate, length distribution) on held-out prompt sets using automated parsers and schema validators; defines pass/fail thresholds for CI/CD gates.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "parse rate",
+          "schema validity",
+          "boilerplate rate",
+          "length distribution",
+          "CI gate"
+        ],
+        "excluded": [
+          "semantic content eval",
+          "BLEU/ROUGE",
+          "model training"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "held-out prompt set",
+        "format schema",
+        "generated outputs"
+      ],
+      "outputs": [
+        "format compliance report",
+        "parse rate metric",
+        "boilerplate rate metric",
+        "CI gate config"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC",
+        "CONSTRAINED_DECODE",
+        "VERBOSITY_SFT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.35,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.55,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.7,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "schema changes or model checkpoint updated",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Provides objective gating metric for format quality; prevents regressions in CI",
+          "example": "JSON parse rate drops from 99% to 71% caught before deployment"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Eval covers syntax not semantics; high parse rate can coexist with wrong content",
+          "example": "100% parse rate but field values semantically wrong undetected by format eval alone"
+        }
+      ],
+      "failure_modes": [
+        "eval set not representative of production prompt distribution",
+        "parse thresholds set too low mask progressive format degradation"
+      ],
+      "acceptance_tests": [
+        "parse rate >98% on target schema",
+        "boilerplate rate <3% on machine I/O eval set",
+        "CI gate blocks deployment if thresholds fail"
+      ],
+      "revisit_triggers": [
+        "output schema changes",
+        "new production prompt distribution detected",
+        "SFT data or model checkpoint updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "TOKEN_EFFICIENCY",
+      "topic": "token_efficiency_and_conversion_loss_minimization",
+      "definition": "Measure and minimize conversion loss: the gap between information content in the prompt/context and information preserved in the structured output; optimize token budget allocation across instruction, context, and output to minimize semantic loss per output token.",
+      "node_type": "work_unit",
+      "group": "efficiency",
+      "scope_boundary": {
+        "included": [
+          "conversion loss",
+          "token budget",
+          "semantic retention",
+          "output compression"
+        ],
+        "excluded": [
+          "prompt caching",
+          "KV cache engineering",
+          "hardware-level optimization"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "output length distribution",
+        "semantic retention eval",
+        "context window budget"
+      ],
+      "outputs": [
+        "token efficiency report",
+        "conversion loss metric",
+        "budget allocation recommendation"
+      ],
+      "dependencies": [
+        "VERBOSITY_SFT",
+        "STOP_SEQ",
+        "EVAL_FORMAT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.85,
+        "user_value": 0.8,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.58,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.65,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "context window or pricing model changes; output schema revised",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Directly addresses machine-to-machine I/O cost; lower output tokens reduce latency and cost proportionally",
+          "example": "reducing avg output from 380 to 140 tokens cuts inference cost 63% with <2% semantic loss"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Aggressive compression risks semantic loss on information-dense inputs; hard to detect without semantic eval",
+          "example": "removing 'qualifier' fields saves tokens but makes downstream decisions ambiguous"
+        }
+      ],
+      "failure_modes": [
+        "false efficiency from removing semantically load-bearing fields",
+        "token counting on prompt side ignores output token cost compounding across multi-turn pipelines"
+      ],
+      "acceptance_tests": [
+        "semantic retention F1 >0.93 at target compression ratio",
+        "output token reduction >30% vs untuned baseline on target task set"
+      ],
+      "revisit_triggers": [
+        "context window or pricing model changes",
+        "downstream consumer requires richer output fields"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "REPR_ENG",
+      "topic": "representation_engineering_for_format_steering",
+      "definition": "Apply representation engineering (activation addition, reading vectors, steering vectors) to modify the model's internal representation to steer output format style (terse vs verbose, JSON-first vs prose) without weight updates.",
+      "node_type": "work_unit",
+      "group": "steering",
+      "scope_boundary": {
+        "included": [
+          "activation addition",
+          "steering vectors",
+          "reading vectors",
+          "contrastive pairs"
+        ],
+        "excluded": [
+          "LoRA/SFT weight updates",
+          "logit bias at output layer",
+          "prompt engineering"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "base model activations",
+        "contrastive format prompt pairs",
+        "steering vector extraction pipeline"
+      ],
+      "outputs": [
+        "format steering vector",
+        "activation-patched inference config",
+        "format bias eval"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.68,
+        "user_value": 0.62,
+        "technical_complexity": 0.8,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.42,
+        "confidence": 0.52,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.6,
+        "confidence_score": 0.44,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.59,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.36,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.52,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.22,
+          0.58
+        ],
+        "posterior_importance": 0.34,
+        "update_signal": "model architecture or family changes; new format style required",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables runtime format switching without re-finetuning; lower cost than per-format checkpoint",
+          "example": "single steering vector shifts verbose→terse at layer 20 with <0.5% task accuracy loss"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Steering vectors may generalize poorly across domains; require re-extraction per model family",
+          "example": "vector extracted on code domain does not transfer to medical domain format control"
+        }
+      ],
+      "failure_modes": [
+        "steering vector extracted from wrong layer causes incoherent outputs",
+        "additive steering conflicts with grammar constraint causing token mask conflicts"
+      ],
+      "acceptance_tests": [
+        "format compliance maintained >90% with steering vector applied",
+        "task accuracy delta <2% vs baseline on held-out eval"
+      ],
+      "revisit_triggers": [
+        "model architecture changes (new model family)",
+        "new format style target required beyond initial vector set"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SCHEMA_VERSION",
+      "topic": "schema_versioning_and_backward_compatibility",
+      "definition": "Manage schema evolution (additive fields, deprecation, breaking changes) with explicit version fields in output, migration scripts, and consumer compatibility contracts to prevent silent breakage in multi-stage pipelines.",
+      "node_type": "work_unit",
+      "group": "format_foundations",
+      "scope_boundary": {
+        "included": [
+          "schema versioning",
+          "backward compatibility",
+          "migration scripts",
+          "version field"
+        ],
+        "excluded": [
+          "content semantics",
+          "model training",
+          "prompt design"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "current schema version",
+        "change log",
+        "consumer compatibility matrix"
+      ],
+      "outputs": [
+        "versioned schema registry",
+        "migration scripts",
+        "compatibility test suite"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.72,
+        "user_value": 0.65,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.6,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.59,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.65,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.44,
+        "update_signal": "field added, deprecated, or type changed in schema",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents silent breakage in multi-stage pipelines when output format evolves",
+          "example": "version field allows consumers to dispatch on schema version without redeployment"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-engineering versioning adds latency from version negotiation and bloats output tokens",
+          "example": "3-byte version field consumes 1% of tight token budget"
+        }
+      ],
+      "failure_modes": [
+        "breaking schema change not flagged as major version causes downstream parse errors",
+        "migration script not tested on edge-case null values"
+      ],
+      "acceptance_tests": [
+        "all consumers process old and new schema versions without error",
+        "breaking changes increment major version and trigger consumer notification"
+      ],
+      "revisit_triggers": [
+        "new field added or type changed",
+        "consumer deprecation deadline passed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PEFT_FORMAT",
+      "topic": "peft_adapter_for_format_specialization",
+      "definition": "Train a lightweight LoRA/IA3 adapter on format-compliance SFT data, enabling format specialization without full fine-tune; multiple format adapters can be hot-swapped on a shared base for multi-schema deployment.",
+      "node_type": "work_unit",
+      "group": "sft_persona",
+      "scope_boundary": {
+        "included": [
+          "LoRA format adapter",
+          "IA3",
+          "PEFT hot-swap",
+          "adapter rank selection"
+        ],
+        "excluded": [
+          "full fine-tune",
+          "prompt engineering",
+          "grammar enforcement"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "base model checkpoint",
+        "format SFT data",
+        "LoRA rank and target modules config"
+      ],
+      "outputs": [
+        "format LoRA adapter weights",
+        "adapter eval report",
+        "merge or hot-swap config"
+      ],
+      "dependencies": [
+        "VERBOSITY_SFT",
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.6,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.63,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "base model updated or format spec changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "PEFT allows multiple format styles on one base; each adapter ~10-50MB vs full checkpoint",
+          "example": "swap JSON adapter vs YAML adapter at runtime without serving two full 7B checkpoints"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adapter interference if format dimensions entangled with content dimensions in shared layers",
+          "example": "LoRA targeting attention-only misses MLP-driven boilerplate generation; incomplete format control"
+        }
+      ],
+      "failure_modes": [
+        "rank too low leaves residual boilerplate in output",
+        "adapter trained on too-narrow data distribution fails on prompt paraphrases"
+      ],
+      "acceptance_tests": [
+        "format compliance improvement >20pp over base model",
+        "adapter size <5% of base model parameter count",
+        "hot-swap latency <100ms"
+      ],
+      "revisit_triggers": [
+        "base model updated (adapter must be re-trained)",
+        "format spec changes requiring adapter re-training"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DATA_CURATION_DENSE",
+      "topic": "dense_io_pair_curation_for_machine_output",
+      "definition": "Collect and filter SFT training pairs where outputs are maximally dense machine-readable content (no hedges, no preambles, no apologies); apply quality filters (semantic retention, parse validity, length ratio) before training.",
+      "node_type": "work_unit",
+      "group": "data_curation",
+      "scope_boundary": {
+        "included": [
+          "dense I/O pair collection",
+          "quality filtering",
+          "semantic retention",
+          "length ratio"
+        ],
+        "excluded": [
+          "preference annotation",
+          "RLHF reward modeling",
+          "grammar compilation"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "raw instruction-response dataset",
+        "quality filter pipeline",
+        "format schema"
+      ],
+      "outputs": [
+        "curated dense I/O SFT dataset",
+        "curation quality report",
+        "rejection analysis"
+      ],
+      "dependencies": [
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.75,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.52,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.61,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.61,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "production input distribution shifts; new schema added",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High-quality dense pairs are the main lever for verbosity reduction; garbage in = verbose out",
+          "example": "filtering 40K pairs to 8K high-density pairs reduces verbosity more than increasing training steps on unfiltered data"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-filtering removes naturally hedged content needed for calibrated abstention",
+          "example": "removing all 'I think' phrases eliminates valid low-confidence signals"
+        }
+      ],
+      "failure_modes": [
+        "semantic retention filter too aggressive removes valid qualifier fields",
+        "length ratio filter biased toward short inputs not representative of production"
+      ],
+      "acceptance_tests": [
+        "curation pipeline tested with 500-sample spot check",
+        "rejected pair analysis documented",
+        "curated dataset parse rate 100%"
+      ],
+      "revisit_triggers": [
+        "production prompt distribution shifts requiring re-curation",
+        "new output schema requires additional pair types"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "OUTPUT_PARSE_PIPELINE",
+      "topic": "output_parsing_and_error_recovery_pipeline",
+      "definition": "Build the post-generation parsing pipeline that validates structured output, detects parse errors, and applies recovery strategies (retry with stricter prompt, extract partial JSON, invoke constrained decode fallback) to maximize end-to-end yield.",
+      "node_type": "work_unit",
+      "group": "infrastructure",
+      "scope_boundary": {
+        "included": [
+          "parse validation",
+          "error recovery",
+          "partial JSON",
+          "retry policy"
+        ],
+        "excluded": [
+          "model training",
+          "format spec design",
+          "CI/CD gating"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "generated output text",
+        "format schema",
+        "retry policy config"
+      ],
+      "outputs": [
+        "parsed structured object",
+        "parse error log",
+        "recovery strategy result"
+      ],
+      "dependencies": [
+        "CONSTRAINED_DECODE",
+        "STOP_SEQ",
+        "EVAL_FORMAT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.4,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.57,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.66,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "new parse error class in production; schema changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Defense-in-depth: even with grammar enforcement, recovery pipeline catches edge failures",
+          "example": "partial JSON extraction recovers 94% of nearly-valid outputs without re-generation"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-stage recovery increases latency and complexity; masks upstream format enforcement failures",
+          "example": "slow retry loop adds 800ms p99 latency on parse failure"
+        }
+      ],
+      "failure_modes": [
+        "silent partial parse success returns wrong schema with no error signal",
+        "retry loop hits rate limits under production load"
+      ],
+      "acceptance_tests": [
+        "recovery pipeline handles top-5 error classes without human intervention",
+        "parse yield after recovery >99% on eval set",
+        "latency overhead <200ms at p95"
+      ],
+      "revisit_triggers": [
+        "new error class observed in production",
+        "schema changes requiring new recovery strategies"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "FORMAT_REGRESSION",
+      "topic": "format_regression_testing_and_ci_gate",
+      "definition": "Implement automated regression tests that run on every model checkpoint update or schema change, flagging format compliance drops >threshold and blocking deployment; includes canary eval on real production prompts.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "regression testing",
+          "CI gate",
+          "canary eval",
+          "deployment blocking"
+        ],
+        "excluded": [
+          "format design",
+          "SFT training",
+          "grammar compilation"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "model checkpoint",
+        "eval prompt set",
+        "format compliance thresholds",
+        "CI/CD pipeline"
+      ],
+      "outputs": [
+        "regression test report",
+        "go/no-go deployment gate",
+        "canary eval summary"
+      ],
+      "dependencies": [
+        "EVAL_FORMAT",
+        "OUTPUT_PARSE_PIPELINE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.8,
+        "user_value": 0.75,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.38,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.56,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.68,
+        "final_importance": 0.67
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.25,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "model checkpoint updated or schema changed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents format regressions shipping to production; closes the train-then-forget loop",
+          "example": "CI gate catches 3 format regressions per quarter before they reach users"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "CI eval set staleness causes false passes when production prompt distribution drifts",
+          "example": "eval set from 6 months ago misses new prompt patterns; gate passes but production fails"
+        }
+      ],
+      "failure_modes": [
+        "eval set staleness causing false CI pass",
+        "threshold set too leniently misses gradual format degradation"
+      ],
+      "acceptance_tests": [
+        "CI gate blocks deployment when parse rate drops >3%",
+        "canary eval covers latest 2 weeks of production prompts"
+      ],
+      "revisit_triggers": [
+        "production prompt distribution drifts",
+        "format compliance SLA changes",
+        "new schema deployed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "MULTI_SCHEMA_ROUTING",
+      "topic": "multi_schema_format_routing",
+      "definition": "Route incoming requests to the appropriate format-specialized model or adapter based on the required output schema; includes schema detection from request metadata and latency/cost-aware adapter selection.",
+      "node_type": "work_unit",
+      "group": "infrastructure",
+      "scope_boundary": {
+        "included": [
+          "schema routing",
+          "adapter selection",
+          "multi-schema serving",
+          "registry"
+        ],
+        "excluded": [
+          "model training",
+          "schema design",
+          "format compliance eval"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "request schema tag",
+        "adapter registry",
+        "cost/latency SLA config"
+      ],
+      "outputs": [
+        "routing decision",
+        "selected adapter or model endpoint",
+        "routing latency report"
+      ],
+      "dependencies": [
+        "PEFT_FORMAT",
+        "FORMAT_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.72,
+        "user_value": 0.68,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.4,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.55,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.66,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "new schema type added or adapter registry updated",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables single serving infrastructure to support multiple output schemas without separate deployments",
+          "example": "one 7B base + 4 LoRA adapters serves JSON/YAML/CSV/Markdown schemas with 90% cost reduction vs 4 full models"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Routing error sends request to wrong adapter; format mismatch causes silent downstream failure",
+          "example": "YAML adapter receives JSON schema request; output superficially valid but keys wrong"
+        }
+      ],
+      "failure_modes": [
+        "routing based on stale schema registry misroutes after schema update",
+        "adapter hot-swap latency violates real-time SLA"
+      ],
+      "acceptance_tests": [
+        "routing accuracy >99.5% on labeled test requests",
+        "adapter swap latency <50ms p99",
+        "routing error rate monitored and alerted"
+      ],
+      "revisit_triggers": [
+        "new schema type added",
+        "adapter registry updated",
+        "latency SLA changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CONTEXT_WINDOW_BUDGET",
+      "topic": "context_window_budget_management",
+      "definition": "Allocate tokens across system instruction, in-context examples (few-shot for format), input content, and output reserve within the context window limit; prioritize content over instruction overhead for dense machine I/O.",
+      "node_type": "work_unit",
+      "group": "efficiency",
+      "scope_boundary": {
+        "included": [
+          "token allocation",
+          "few-shot budget",
+          "instruction overhead",
+          "truncation priority"
+        ],
+        "excluded": [
+          "KV cache",
+          "model architecture",
+          "format schema design"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "context window limit",
+        "instruction token count",
+        "few-shot example count",
+        "input content length"
+      ],
+      "outputs": [
+        "token allocation policy",
+        "truncation hierarchy doc",
+        "few-shot count recommendation"
+      ],
+      "dependencies": [
+        "TOKEN_EFFICIENCY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.72,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.3,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.5,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.7,
+        "final_importance": 0.62
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.25,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "context window limit changes or instruction set expanded",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit budget prevents instruction bloat from consuming output capacity",
+          "example": "policy: max 10% of window for instructions ensures 90% for content in 4K window"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fixed allocation policy fails on variable-length inputs requiring dynamic adjustment",
+          "example": "fixed 400-token instruction overhead leaves only 24 tokens for output on long document inputs"
+        }
+      ],
+      "failure_modes": [
+        "fixed allocation policy fails on variable-length inputs",
+        "few-shot examples for format consume more budget than they improve compliance"
+      ],
+      "acceptance_tests": [
+        "token allocation policy documented with priority order",
+        "dynamic truncation tested on inputs at 50%,90%,100% of window limit"
+      ],
+      "revisit_triggers": [
+        "context window limit changes (model upgrade)",
+        "instruction set expanded",
+        "new few-shot examples added"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SEMANTIC_RETENTION",
+      "topic": "semantic_retention_evaluation",
+      "definition": "Measure how much semantic information from the input is preserved in the compact structured output; uses field-level recall, information-theoretic metrics, or NLI-based entailment to detect lossy compression.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "information retention",
+          "field-level recall",
+          "NLI entailment",
+          "lossy compression detection"
+        ],
+        "excluded": [
+          "format compliance",
+          "grammar enforcement",
+          "token counting"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "input content",
+        "structured output",
+        "reference answer or field checklist"
+      ],
+      "outputs": [
+        "semantic retention score",
+        "field-level recall report",
+        "lossy field identification"
+      ],
+      "dependencies": [
+        "TOKEN_EFFICIENCY",
+        "EVAL_FORMAT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.35,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.58,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.62,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "new task domain or compression ratio target changed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Closes the gap between syntactic format compliance and actual information preservation",
+          "example": "parse rate 99% but semantic retention 72%; retention eval catches silent information loss"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "NLI-based retention eval can be fooled by surface form matches that miss meaning",
+          "example": "entailment model marks paraphrase as retained but downstream task fails on field value"
+        }
+      ],
+      "failure_modes": [
+        "retention metric sensitive to phrasing not meaning",
+        "field checklist incomplete for novel input types"
+      ],
+      "acceptance_tests": [
+        "semantic retention F1 >0.90 on target task",
+        "lossy field rate <5% on production sample eval"
+      ],
+      "revisit_triggers": [
+        "new task domain introduced",
+        "compression ratio target changed",
+        "output schema revised"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "GOODHART_FORMAT",
+      "topic": "goodhart_risk_in_format_metrics",
+      "definition": "Identify and mitigate Goodhart's Law failures in format optimization: models that achieve near-100% parse rate while degrading content quality; requires joint optimization of format compliance and semantic correctness metrics.",
+      "node_type": "work_unit",
+      "group": "risk_and_governance",
+      "scope_boundary": {
+        "included": [
+          "Goodhart failures",
+          "joint metric",
+          "parse rate gaming",
+          "semantic quality gate"
+        ],
+        "excluded": [
+          "format design",
+          "model training specifics",
+          "benchmark contamination"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "format compliance metric",
+        "semantic quality metric",
+        "joint eval framework"
+      ],
+      "outputs": [
+        "Goodhart risk assessment",
+        "joint metric dashboard",
+        "threshold co-optimization policy"
+      ],
+      "dependencies": [
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.78,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.63,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.59,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "new format optimization objective or semantic quality baseline shifts",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents optimizing format metric at expense of actual utility; common failure mode in SFT for format",
+          "example": "model achieves 99% parse rate by emitting empty required fields that parse but convey nothing"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Joint metric optimization increases eval cost and slows feedback loop",
+          "example": "dual metric CI gate doubles eval runtime; slows deployment cadence"
+        }
+      ],
+      "failure_modes": [
+        "format SFT causes model to game parse rate with minimal content",
+        "parse rate and semantic retention inversely coupled during aggressive format training"
+      ],
+      "acceptance_tests": [
+        "joint metric gate enforced in CI",
+        "Goodhart failure patterns documented and monitored",
+        "semantic quality maintained within 5% of pre-format-SFT baseline"
+      ],
+      "revisit_triggers": [
+        "new format optimization objective introduced",
+        "semantic quality baseline shifts after model update"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FORMAT_INFERENCE_LATENCY",
+      "topic": "format_enforcement_inference_latency",
+      "definition": "Profile and manage latency overhead from format enforcement mechanisms (grammar compilation cache miss, token masking per step, adapter swap); enforce SLA on format-related overhead as fraction of total inference time.",
+      "node_type": "work_unit",
+      "group": "infrastructure",
+      "scope_boundary": {
+        "included": [
+          "grammar cache",
+          "mask overhead per step",
+          "adapter swap latency",
+          "SLA monitoring"
+        ],
+        "excluded": [
+          "model training",
+          "format design",
+          "CI/CD pipeline"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "grammar cache",
+        "adapter swap latency profile",
+        "per-step mask overhead"
+      ],
+      "outputs": [
+        "latency overhead report",
+        "SLA compliance status",
+        "optimization priority list"
+      ],
+      "dependencies": [
+        "CONSTRAINED_DECODE",
+        "PEFT_FORMAT",
+        "OUTPUT_PARSE_PIPELINE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.62,
+        "business_value": 0.68,
+        "user_value": 0.65,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.58,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.35,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.52,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.66,
+        "final_importance": 0.61
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.62,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.4,
+        "update_signal": "hardware infra changes or schema distribution shifts",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents format enforcement from dominating inference time in high-throughput pipelines",
+          "example": "pre-warmed grammar cache reduces constrained decoding overhead from 35% to 3% of total latency"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Latency optimization pressure leads to disabling grammar enforcement; removes hard format guarantees",
+          "example": "cache disabled for memory; reverts to unconstrained decode; parse rate drops 15%"
+        }
+      ],
+      "failure_modes": [
+        "grammar cache miss on novel schema at peak load causes latency spike",
+        "adapter swap synchronization blocks request queue"
+      ],
+      "acceptance_tests": [
+        "format enforcement overhead <10% of p99 inference latency",
+        "grammar cache hit rate >95% in production"
+      ],
+      "revisit_triggers": [
+        "production traffic schema distribution changes (new schema types increase cache misses)",
+        "hardware infra changes affecting memory for grammar cache"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LICENSE_COMPLIANCE",
+      "topic": "base_model_license_and_tos_for_format_sft",
+      "definition": "Verify base model license and ToS permit fine-tuning for format specialization (some licenses restrict commercial SFT or derivative distribution); document compliance decision before committing to a fine-tuning path.",
+      "node_type": "work_unit",
+      "group": "risk_and_governance",
+      "scope_boundary": {
+        "included": [
+          "license review",
+          "ToS compliance",
+          "SFT permission",
+          "commercial use check"
+        ],
+        "excluded": [
+          "model training execution",
+          "format schema design",
+          "evaluation"
+        ]
+      },
+      "academic_fields": [
+        "llm_engineering"
+      ],
+      "subfields": [
+        "format_control"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "base model license text",
+        "intended use case (commercial/research)",
+        "SFT plan"
+      ],
+      "outputs": [
+        "license compliance decision doc",
+        "permitted use confirmation",
+        "risk escalation if restricted"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.6,
+        "technical_complexity": 0.3,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.55,
+        "irreversibility": 0.82,
+        "confidence": 0.75,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.65,
+        "confidence_score": 0.6,
+        "revisit_pressure": 0.29,
+        "lock_score": 0.66,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.23,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.75,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.12,
+          0.35
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "base model license updated or deployment jurisdiction changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "License non-compliance discovered post-SFT forces checkpoint deletion and project restart; check upfront",
+          "example": "Llama 2 commercial license restrictions discovered after 3-week SFT run; checkpoint unusable"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.4,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Upfront license review adds overhead and may require legal counsel",
+          "example": "legal review adds 1-week delay to project start"
+        }
+      ],
+      "failure_modes": [
+        "assuming permissive license without reading ToS",
+        "fine-tuning restriction buried in supplemental ToS not in main license file"
+      ],
+      "acceptance_tests": [
+        "license compliance decision documented before any SFT compute begins",
+        "legal or policy review completed for commercial deployments"
+      ],
+      "revisit_triggers": [
+        "base model license updated by provider",
+        "deployment jurisdiction changes (different license implications)"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "FORMAT_SPEC",
+      "to": "CONSTRAINED_DECODE",
+      "edge_type": "dependency",
+      "label": "format schema is source grammar for constrained decoder",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_score": 0.16,
+      "edge_priority": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_002",
+      "from": "FORMAT_SPEC",
+      "to": "STOP_SEQ",
+      "edge_type": "dependency",
+      "label": "schema delimiters inform stop sequence selection",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "edge_score": 0.11,
+      "edge_priority": 0.11,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_003",
+      "from": "FORMAT_SPEC",
+      "to": "VERBOSITY_SFT",
+      "edge_type": "dependency",
+      "label": "schema defines target output structure for SFT data curation",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "edge_score": 0.17,
+      "edge_priority": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_004",
+      "from": "FORMAT_SPEC",
+      "to": "PROMPT_TEMPLATE",
+      "edge_type": "dependency",
+      "label": "schema content required to author format instructions",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_score": 0.13,
+      "edge_priority": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_005",
+      "from": "FORMAT_SPEC",
+      "to": "LOGIT_BIAS",
+      "edge_type": "dependency",
+      "label": "schema forbidden tokens informs logit bias set",
+      "relation_strength": 0.65,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "edge_score": 0.09,
+      "edge_priority": 0.09,
+      "edge_heat": 0.21
+    },
+    {
+      "id": "EDGE_006",
+      "from": "FORMAT_SPEC",
+      "to": "SCHEMA_VERSION",
+      "edge_type": "dependency",
+      "label": "schema content determines version management requirements",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_score": 0.12,
+      "edge_priority": 0.12,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_007",
+      "from": "CONSTRAINED_DECODE",
+      "to": "EVAL_FORMAT",
+      "edge_type": "dependency",
+      "label": "constrained decode output fed into format compliance eval",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "edge_score": 0.14,
+      "edge_priority": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_008",
+      "from": "VERBOSITY_SFT",
+      "to": "EVAL_FORMAT",
+      "edge_type": "dependency",
+      "label": "SFT checkpoint output evaluated for format compliance",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_score": 0.15,
+      "edge_priority": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_009",
+      "from": "VERBOSITY_SFT",
+      "to": "TOKEN_EFFICIENCY",
+      "edge_type": "causal",
+      "label": "verbosity reduction directly improves token efficiency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "edge_score": 0.13,
+      "edge_priority": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_010",
+      "from": "VERBOSITY_SFT",
+      "to": "PEFT_FORMAT",
+      "edge_type": "dependency",
+      "label": "PEFT adapter trained on same dense I/O SFT data",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.75,
+      "edge_score": 0.14,
+      "edge_priority": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_011",
+      "from": "VERBOSITY_SFT",
+      "to": "ABSTENTION_CALIB",
+      "edge_type": "conflict",
+      "label": "aggressive verbosity SFT suppresses hedging needed for calibrated abstention; resolution: train with mixed abstention-positive pairs",
+      "relation_strength": 0.7,
+      "signed_tension": -0.65,
+      "expected_rework_cost": 0.55,
+      "conflict_probability": 0.62,
+      "causal_confidence": 0.72,
+      "edge_score": 0.43,
+      "edge_priority": 0.43,
+      "edge_heat": 0.53,
+      "resolution_rule": "maintain held-out abstention-positive examples in SFT mix; evaluate abstention rate and ECE jointly after verbosity SFT"
+    },
+    {
+      "id": "EDGE_012",
+      "from": "DATA_CURATION_DENSE",
+      "to": "VERBOSITY_SFT",
+      "edge_type": "dependency",
+      "label": "curated dense pairs are direct training input for verbosity SFT",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.88,
+      "edge_score": 0.15,
+      "edge_priority": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_013",
+      "from": "DATA_CURATION_DENSE",
+      "to": "PEFT_FORMAT",
+      "edge_type": "dependency",
+      "label": "same curated pairs used for PEFT adapter training",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_score": 0.13,
+      "edge_priority": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_014",
+      "from": "PEFT_FORMAT",
+      "to": "MULTI_SCHEMA_ROUTING",
+      "edge_type": "causal",
+      "label": "each PEFT adapter corresponds to a routable schema endpoint",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_score": 0.13,
+      "edge_priority": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_015",
+      "from": "EVAL_FORMAT",
+      "to": "FORMAT_REGRESSION",
+      "edge_type": "dependency",
+      "label": "format eval metrics and thresholds feed regression test CI gate",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "edge_score": 0.14,
+      "edge_priority": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_016",
+      "from": "EVAL_FORMAT",
+      "to": "GOODHART_FORMAT",
+      "edge_type": "dependency",
+      "label": "format compliance metric is subject to Goodhart gaming; joint eval needed",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.78,
+      "edge_score": 0.16,
+      "edge_priority": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_017",
+      "from": "EVAL_FORMAT",
+      "to": "SEMANTIC_RETENTION",
+      "edge_type": "dependency",
+      "label": "format eval and semantic retention must be co-evaluated",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_score": 0.14,
+      "edge_priority": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_020",
+      "from": "SEMANTIC_RETENTION",
+      "to": "GOODHART_FORMAT",
+      "edge_type": "causal",
+      "label": "retention metric is the anti-Goodhart signal for format optimization",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_score": 0.12,
+      "edge_priority": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_021",
+      "from": "GOODHART_FORMAT",
+      "to": "FORMAT_REGRESSION",
+      "edge_type": "dependency",
+      "label": "Goodhart checks must be included in CI regression gate",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.72,
+      "edge_score": 0.12,
+      "edge_priority": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_022",
+      "from": "CONSTRAINED_DECODE",
+      "to": "OUTPUT_PARSE_PIPELINE",
+      "edge_type": "causal",
+      "label": "constrained decode reduces parse errors; pipeline handles residual failures",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "edge_score": 0.12,
+      "edge_priority": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_023",
+      "from": "STOP_SEQ",
+      "to": "OUTPUT_PARSE_PIPELINE",
+      "edge_type": "causal",
+      "label": "stop sequences define output boundaries used by parser",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.75,
+      "edge_score": 0.1,
+      "edge_priority": 0.1,
+      "edge_heat": 0.22
+    },
+    {
+      "id": "EDGE_024",
+      "from": "OUTPUT_PARSE_PIPELINE",
+      "to": "FORMAT_REGRESSION",
+      "edge_type": "dependency",
+      "label": "parse yield from pipeline is a key regression metric",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "edge_score": 0.12,
+      "edge_priority": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_025",
+      "from": "CONSTRAINED_DECODE",
+      "to": "FORMAT_INFERENCE_LATENCY",
+      "edge_type": "conflict",
+      "label": "grammar-constrained decoding adds per-step masking overhead; resolution: pre-warm grammar cache and profile overhead budget separately",
+      "relation_strength": 0.75,
+      "signed_tension": -0.55,
+      "expected_rework_cost": 0.45,
+      "conflict_probability": 0.55,
+      "causal_confidence": 0.7,
+      "edge_score": 0.4,
+      "edge_priority": 0.4,
+      "edge_heat": 0.5,
+      "resolution_rule": "pre-warm grammar cache at serving startup; enforce latency SLA as separate gate from format compliance"
+    },
+    {
+      "id": "EDGE_026",
+      "from": "PEFT_FORMAT",
+      "to": "FORMAT_INFERENCE_LATENCY",
+      "edge_type": "conflict",
+      "label": "adapter hot-swap adds latency not present in single-model serving; resolution: maintain adapter in GPU memory for hot schemas",
+      "relation_strength": 0.65,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.38,
+      "conflict_probability": 0.48,
+      "causal_confidence": 0.65,
+      "edge_score": 0.3,
+      "edge_priority": 0.3,
+      "edge_heat": 0.41,
+      "resolution_rule": "keep top-N most-used adapters resident in GPU memory; swap only cold adapters"
+    },
+    {
+      "id": "EDGE_027",
+      "from": "REPR_ENG",
+      "to": "CONSTRAINED_DECODE",
+      "edge_type": "conflict",
+      "label": "steering vectors and grammar masks may conflict when vector pushes toward masked tokens; resolution: apply steering before logit masking in order",
+      "relation_strength": 0.6,
+      "signed_tension": -0.5,
+      "expected_rework_cost": 0.42,
+      "conflict_probability": 0.52,
+      "causal_confidence": 0.6,
+      "edge_score": 0.29,
+      "edge_priority": 0.29,
+      "edge_heat": 0.41,
+      "resolution_rule": "apply representation steering at hidden state level before final logit projection; grammar mask applied after projection"
+    },
+    {
+      "id": "EDGE_028",
+      "from": "LICENSE_COMPLIANCE",
+      "to": "VERBOSITY_SFT",
+      "edge_type": "dependency",
+      "label": "license must be verified before SFT compute is committed",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.1,
+      "conflict_probability": 0.05,
+      "causal_confidence": 0.88,
+      "edge_score": 0.12,
+      "edge_priority": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_029",
+      "from": "LICENSE_COMPLIANCE",
+      "to": "PEFT_FORMAT",
+      "edge_type": "dependency",
+      "label": "license must permit derivative fine-tuning before PEFT training",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.1,
+      "conflict_probability": 0.05,
+      "causal_confidence": 0.88,
+      "edge_score": 0.11,
+      "edge_priority": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_030",
+      "from": "SCHEMA_VERSION",
+      "to": "OUTPUT_PARSE_PIPELINE",
+      "edge_type": "dependency",
+      "label": "parser must handle all active schema versions",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.7,
+      "edge_score": 0.12,
+      "edge_priority": 0.12,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_031",
+      "from": "SCHEMA_VERSION",
+      "to": "MULTI_SCHEMA_ROUTING",
+      "edge_type": "dependency",
+      "label": "routing registry maps schema versions to adapter endpoints",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.7,
+      "edge_score": 0.1,
+      "edge_priority": 0.1,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_032",
+      "from": "VERBOSITY_SFT",
+      "to": "PERSONA_CTRL",
+      "edge_type": "dependency",
+      "label": "persona-removal SFT built on same dense I/O pairs as verbosity SFT",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.68,
+      "edge_score": 0.11,
+      "edge_priority": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_033",
+      "from": "ABSTENTION_CALIB",
+      "to": "SEMANTIC_RETENTION",
+      "edge_type": "causal",
+      "label": "abstention on low-confidence inputs improves downstream semantic retention by filtering hallucinated fields",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.7,
+      "edge_score": 0.1,
+      "edge_priority": 0.1,
+      "edge_heat": 0.23
+    },
+    {
+      "id": "EDGE_034",
+      "from": "PROMPT_TEMPLATE",
+      "to": "CONSTRAINED_DECODE",
+      "edge_type": "conflict",
+      "label": "prompt-only format control conflicts with grammar enforcement when instructions produce tokens outside grammar; resolution: treat grammar as hard constraint overriding prompt",
+      "relation_strength": 0.55,
+      "signed_tension": -0.4,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.42,
+      "causal_confidence": 0.58,
+      "edge_score": 0.22,
+      "edge_priority": 0.22,
+      "edge_heat": 0.34,
+      "resolution_rule": "grammar mask is authoritative; prompt instructions act as soft steering only; document override policy"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "TOKEN_EFFICIENCY",
+      "to": "SEMANTIC_RETENTION",
+      "edge_type": "conflict",
+      "label": "aggressive token reduction conflicts with semantic retention; resolution: set joint threshold (compression ratio, retention F1) and use Pareto frontier",
+      "relation_strength": 0.75,
+      "signed_tension": -0.6,
+      "expected_rework_cost": 0.48,
+      "conflict_probability": 0.58,
+      "causal_confidence": 0.72,
+      "edge_score": 0.43,
+      "edge_priority": 0.43,
+      "edge_heat": 0.52,
+      "resolution_rule": "optimize on Pareto frontier of token reduction vs retention F1; reject solutions below retention F1=0.90 regardless of token savings"
+    },
+    {
+      "id": "EDGE_036",
+      "from": "CONTEXT_WINDOW_BUDGET",
+      "to": "TOKEN_EFFICIENCY",
+      "edge_type": "causal",
+      "label": "explicit budget management enables measurement of actual token efficiency gains",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.68,
+      "edge_score": 0.1,
+      "edge_priority": 0.1,
+      "edge_heat": 0.23
+    },
+    {
+      "id": "EDGE_037",
+      "from": "REPR_ENG",
+      "to": "VERBOSITY_SFT",
+      "edge_type": "conflict",
+      "label": "steering vectors for verbosity may interfere with SFT-learned distribution; test joint effect before combining",
+      "relation_strength": 0.55,
+      "signed_tension": -0.42,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.45,
+      "causal_confidence": 0.55,
+      "edge_score": 0.24,
+      "edge_priority": 0.24,
+      "edge_heat": 0.36,
+      "resolution_rule": "ablate steering vector contribution independently before combining with SFT checkpoint; use format compliance eval to detect interference"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "axis": "format_guarantee_vs_inference_latency",
+      "description": "Hard format guarantees (grammar-constrained decoding) add per-step masking overhead; relaxing to soft enforcement (prompt+SFT) reduces latency but loses guarantees.",
+      "nodes_involved": [
+        "CONSTRAINED_DECODE",
+        "FORMAT_INFERENCE_LATENCY",
+        "PROMPT_TEMPLATE"
+      ],
+      "tension_type": "tradeoff",
+      "severity": 0.72,
+      "resolution_heuristic": "use grammar enforcement for high-risk structured fields; prompt-only for low-risk free-text sub-fields; pre-warm cache to minimize overhead"
+    },
+    {
+      "id": "CA_02",
+      "axis": "verbosity_reduction_vs_calibrated_abstention",
+      "description": "Aggressive brevity SFT suppresses hedging language that encodes uncertainty; calibrated abstention requires model to express low confidence.",
+      "nodes_involved": [
+        "VERBOSITY_SFT",
+        "ABSTENTION_CALIB",
+        "DATA_CURATION_DENSE"
+      ],
+      "tension_type": "conflict",
+      "severity": 0.78,
+      "resolution_heuristic": "include abstention-positive (structured null+reason) pairs in SFT mix; evaluate ECE jointly with verbosity metric"
+    },
+    {
+      "id": "CA_03",
+      "axis": "token_efficiency_vs_semantic_retention",
+      "description": "Maximizing token compression risks dropping semantically load-bearing fields; joint optimization required.",
+      "nodes_involved": [
+        "TOKEN_EFFICIENCY",
+        "SEMANTIC_RETENTION",
+        "DATA_CURATION_DENSE"
+      ],
+      "tension_type": "tradeoff",
+      "severity": 0.75,
+      "resolution_heuristic": "set minimum semantic retention F1=0.90 as hard constraint; optimize token reduction on feasible frontier only"
+    },
+    {
+      "id": "CA_04",
+      "axis": "schema_rigidity_vs_model_generalization",
+      "description": "Strict schemas (closed enum, required fields) guarantee parsability but prevent model from expressing valid edge-case content.",
+      "nodes_involved": [
+        "FORMAT_SPEC",
+        "CONSTRAINED_DECODE",
+        "GOODHART_FORMAT"
+      ],
+      "tension_type": "tradeoff",
+      "severity": 0.65,
+      "resolution_heuristic": "use open-ended string fields for edge-case content; apply enums only to fields with closed value sets"
+    },
+    {
+      "id": "CA_05",
+      "axis": "grammar_enforcement_vs_representation_steering",
+      "description": "Representation steering vectors push hidden states toward format targets but may conflict with token-level grammar masks applied at logit layer.",
+      "nodes_involved": [
+        "REPR_ENG",
+        "CONSTRAINED_DECODE"
+      ],
+      "tension_type": "conflict",
+      "severity": 0.58,
+      "resolution_heuristic": "apply steering at hidden state level before logit projection; grammar mask is downstream hard constraint and takes priority"
+    },
+    {
+      "id": "CA_06",
+      "axis": "persona_baking_vs_multi_tenant_flexibility",
+      "description": "Baking a specific persona into SFT weights eliminates runtime overhead but prevents dynamic persona switching for multi-tenant deployments.",
+      "nodes_involved": [
+        "PERSONA_CTRL",
+        "PEFT_FORMAT",
+        "MULTI_SCHEMA_ROUTING"
+      ],
+      "tension_type": "conflict",
+      "severity": 0.62,
+      "resolution_heuristic": "use PEFT adapter per persona for multi-tenant; bake persona in weights only for single-tenant deployments with stable identity requirement"
+    },
+    {
+      "id": "CA_07",
+      "axis": "format_optimization_goodhart_risk",
+      "description": "Optimizing format compliance metrics (parse rate) can cause model to game metric by emitting syntactically valid but semantically empty outputs.",
+      "nodes_involved": [
+        "GOODHART_FORMAT",
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ],
+      "tension_type": "conflict",
+      "severity": 0.8,
+      "resolution_heuristic": "gate on joint metric: parse rate AND semantic retention F1; never gate on parse rate alone"
+    },
+    {
+      "id": "CA_08",
+      "axis": "base_model_license_vs_sft_commitment",
+      "description": "Committing GPU compute to SFT before license review risks non-compliant checkpoints that must be deleted; irreversibility is high.",
+      "nodes_involved": [
+        "LICENSE_COMPLIANCE",
+        "VERBOSITY_SFT",
+        "PEFT_FORMAT"
+      ],
+      "tension_type": "conflict",
+      "severity": 0.85,
+      "resolution_heuristic": "license compliance check is a hard prerequisite gate before any SFT or PEFT compute; no exceptions"
+    },
+    {
+      "id": "CA_09",
+      "axis": "constrained_decode_vs_prompt_format_instructions",
+      "description": "When grammar enforcement overrides prompt-based format instructions, model behavior may surprise users who expect prompt to be authoritative.",
+      "nodes_involved": [
+        "CONSTRAINED_DECODE",
+        "PROMPT_TEMPLATE"
+      ],
+      "tension_type": "tradeoff",
+      "severity": 0.52,
+      "resolution_heuristic": "document grammar-as-hard-constraint policy; prompt instructions act as soft steering; grammar override is explicit and logged"
+    },
+    {
+      "id": "CA_10",
+      "axis": "eval_set_staleness_vs_ci_gate_reliability",
+      "description": "CI eval sets become stale as production prompt distribution drifts; stale eval gives false CI passes while production format fails.",
+      "nodes_involved": [
+        "FORMAT_REGRESSION",
+        "EVAL_FORMAT"
+      ],
+      "tension_type": "conflict",
+      "severity": 0.68,
+      "resolution_heuristic": "refresh canary eval set from last 2 weeks of production prompts on each CI run; flag staleness if distribution shift detected"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "description": "Recursive or self-referential JSON schema causes grammar state explosion, making FSM compilation infeasible at runtime.",
+      "trigger": "output schema contains recursive $ref or unbounded nesting depth",
+      "affected_nodes": [
+        "CONSTRAINED_DECODE",
+        "FORMAT_SPEC"
+      ],
+      "recommended_action": "flatten recursive schemas to bounded depth; use JSON string field with post-parse validation for recursive sub-structures",
+      "severity": "high"
+    },
+    {
+      "id": "EC_02",
+      "description": "Model generates stop sequence inside a valid string field value, causing premature truncation of required output.",
+      "trigger": "stop token string appears in domain-specific content (e.g., XML tags in code output)",
+      "affected_nodes": [
+        "STOP_SEQ",
+        "OUTPUT_PARSE_PIPELINE"
+      ],
+      "recommended_action": "use schema-derived unique delimiters unlikely to appear in content; add output_parse_pipeline recovery for premature stop detection",
+      "severity": "high"
+    },
+    {
+      "id": "EC_03",
+      "description": "Tokenizer update in base model changes token IDs, invalidating pre-compiled grammar FSM and logit bias token mappings.",
+      "trigger": "base model or tokenizer updated (new BPE vocab)",
+      "affected_nodes": [
+        "CONSTRAINED_DECODE",
+        "LOGIT_BIAS"
+      ],
+      "recommended_action": "version-lock grammar cache and logit bias configs to tokenizer hash; auto-invalidate and recompile on tokenizer change",
+      "severity": "high"
+    },
+    {
+      "id": "EC_04",
+      "description": "Aggressive verbosity SFT on domain-narrow data causes out-of-domain format regression: model produces correct format on training distribution but reverts to verbose output on novel inputs.",
+      "trigger": "production prompt distribution shifts outside SFT training distribution",
+      "affected_nodes": [
+        "VERBOSITY_SFT",
+        "DATA_CURATION_DENSE",
+        "FORMAT_REGRESSION"
+      ],
+      "recommended_action": "curate diverse SFT data; include canary prompts from multiple domains; monitor format compliance by input domain in production",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_05",
+      "description": "Calibrated abstention threshold miscalibrated for a new task domain: model abstains too frequently, reducing useful throughput below acceptable levels.",
+      "trigger": "model deployed on new task domain with different entropy distribution",
+      "affected_nodes": [
+        "ABSTENTION_CALIB"
+      ],
+      "recommended_action": "re-calibrate abstention threshold per task domain; maintain per-domain ECE dashboards",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_06",
+      "description": "PEFT adapter hot-swap under high concurrency causes race condition where request receives mismatched adapter during swap.",
+      "trigger": "concurrent requests during adapter swap for new schema type",
+      "affected_nodes": [
+        "PEFT_FORMAT",
+        "MULTI_SCHEMA_ROUTING",
+        "FORMAT_INFERENCE_LATENCY"
+      ],
+      "recommended_action": "use atomic adapter swap with request queuing; maintain N+1 adapter slots to allow zero-downtime swap",
+      "severity": "high"
+    },
+    {
+      "id": "EC_07",
+      "description": "Representation steering vector extracted from a different task domain does not generalize to production inputs, causing incoherent format steering.",
+      "trigger": "steering vector extracted on code domain applied to medical/legal text",
+      "affected_nodes": [
+        "REPR_ENG"
+      ],
+      "recommended_action": "extract and validate steering vectors per deployment domain; do not assume cross-domain transfer",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_08",
+      "description": "Schema version mismatch between model checkpoint (trained on v1) and consumer (expecting v2) causes silent field-mapping errors undetected by parse rate metric.",
+      "trigger": "schema version incremented without corresponding model retraining",
+      "affected_nodes": [
+        "SCHEMA_VERSION",
+        "OUTPUT_PARSE_PIPELINE",
+        "FORMAT_REGRESSION"
+      ],
+      "recommended_action": "include schema version field in model output; add version-aware test cases in CI regression gate",
+      "severity": "high"
+    },
+    {
+      "id": "EC_09",
+      "description": "Goodhart failure: model achieves 100% parse rate by emitting required field keys with empty string values, satisfying schema validator but conveying no information.",
+      "trigger": "format SFT optimized on parse rate without semantic retention joint metric",
+      "affected_nodes": [
+        "GOODHART_FORMAT",
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ],
+      "recommended_action": "add non-empty field value check to format eval; gate on semantic retention F1 jointly with parse rate",
+      "severity": "high"
+    },
+    {
+      "id": "EC_10",
+      "description": "Context window budget overflow: fixed instruction+few-shot overhead exceeds available tokens on max-length production inputs, causing output truncation before required fields are generated.",
+      "trigger": "production input length at 95th+ percentile combined with fixed-overhead prompt template",
+      "affected_nodes": [
+        "CONTEXT_WINDOW_BUDGET",
+        "PROMPT_TEMPLATE",
+        "STOP_SEQ"
+      ],
+      "recommended_action": "implement dynamic instruction truncation hierarchy; measure token overflow rate in production; set alert threshold",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_11",
+      "description": "License non-compliance discovered after GPU-hours of SFT; checkpoint must be deleted and project restarted on a compliant base model.",
+      "trigger": "license review skipped or incomplete before SFT begins",
+      "affected_nodes": [
+        "LICENSE_COMPLIANCE",
+        "VERBOSITY_SFT",
+        "PEFT_FORMAT"
+      ],
+      "recommended_action": "license compliance is a mandatory blocking gate before any fine-tuning compute; document approval in project record",
+      "severity": "critical"
+    },
+    {
+      "id": "EC_12",
+      "description": "Multi-schema routing sends request to wrong adapter because schema tag was absent or ambiguous in request metadata.",
+      "trigger": "upstream system sends requests without schema tag or with deprecated tag",
+      "affected_nodes": [
+        "MULTI_SCHEMA_ROUTING",
+        "OUTPUT_PARSE_PIPELINE"
+      ],
+      "recommended_action": "implement schema detection fallback using output schema inference from request content; log and alert on tag-absent requests",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "action": "verify_license_compliance",
+      "node_refs": [
+        "LICENSE_COMPLIANCE"
+      ],
+      "description": "Confirm base model license permits intended fine-tuning and commercial use before committing any compute.",
+      "gate": "license compliance decision documented and approved"
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "action": "define_format_schema",
+      "node_refs": [
+        "FORMAT_SPEC"
+      ],
+      "description": "Author output schema (JSON/YAML), enumerate legal values, define null policy, and establish version v1.",
+      "gate": "schema round-trips through all target consumers without error"
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "action": "author_prompt_templates",
+      "node_refs": [
+        "PROMPT_TEMPLATE",
+        "CONTEXT_WINDOW_BUDGET"
+      ],
+      "description": "Write compact system instructions; measure instruction token overhead; set dynamic truncation policy.",
+      "gate": "instruction token count <10% of context window; format compliance >80% on baseline model"
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "action": "configure_stop_sequences_and_length_caps",
+      "node_refs": [
+        "STOP_SEQ"
+      ],
+      "description": "Select stop sequences from schema delimiters; set max_new_tokens at 99th pctile of valid output length +10%.",
+      "gate": "no premature stops on 500-sample test; length cap not triggered on valid outputs"
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "action": "curate_dense_io_pairs",
+      "node_refs": [
+        "DATA_CURATION_DENSE"
+      ],
+      "description": "Collect and filter SFT pairs for dense machine output; apply semantic retention and parse validity filters.",
+      "gate": "100% parse rate on curated set; semantic retention F1 >0.92"
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "action": "sft_verbosity_and_persona",
+      "node_refs": [
+        "VERBOSITY_SFT",
+        "PERSONA_CTRL"
+      ],
+      "description": "Fine-tune on curated dense pairs to suppress boilerplate and set machine-facing persona; include abstention-positive pairs in mix.",
+      "gate": "verbosity reduction >40%; boilerplate rate <2%; ECE <0.12 on calibration set"
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "action": "train_peft_format_adapters",
+      "node_refs": [
+        "PEFT_FORMAT"
+      ],
+      "description": "Train LoRA adapters per output schema for multi-schema deployment; validate each adapter independently.",
+      "gate": "format compliance >20pp improvement over base; adapter size <5% of base parameters"
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "action": "configure_constrained_decode",
+      "node_refs": [
+        "CONSTRAINED_DECODE"
+      ],
+      "description": "Compile grammar from output schema; pre-warm cache; validate no valid tokens masked; measure masking overhead.",
+      "gate": "grammar cache hit rate >95%; overhead <10% of inference latency; 100 consecutive parse successes"
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "action": "calibrate_abstention",
+      "node_refs": [
+        "ABSTENTION_CALIB"
+      ],
+      "description": "Set and validate confidence threshold for structured abstention; measure ECE and abstention rate on calibration set.",
+      "gate": "ECE <0.10; abstention rate <15% on confident-domain queries"
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "action": "build_output_parse_pipeline",
+      "node_refs": [
+        "OUTPUT_PARSE_PIPELINE"
+      ],
+      "description": "Implement parse validation, error recovery, and retry strategies; test on top-5 error classes.",
+      "gate": "parse yield after recovery >99%; latency overhead <200ms at p95"
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "action": "run_format_and_semantic_eval",
+      "node_refs": [
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION",
+        "TOKEN_EFFICIENCY",
+        "GOODHART_FORMAT"
+      ],
+      "description": "Run joint format compliance and semantic retention eval; check for Goodhart failures; compute token efficiency.",
+      "gate": "parse rate >98%; retention F1 >0.90; token reduction >30%; no Goodhart failure patterns"
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "action": "configure_ci_regression_gate",
+      "node_refs": [
+        "FORMAT_REGRESSION"
+      ],
+      "description": "Wire eval metrics into CI/CD; set deployment-blocking thresholds; configure canary eval refresh from recent production prompts.",
+      "gate": "CI gate blocks on parse rate drop >3%; canary set refreshed from last 2 weeks of production"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "rule": "LICENSE_COMPLIANCE must pass before any SFT or PEFT training compute is committed; no exceptions regardless of schedule pressure.",
+      "rationale": "Non-compliant checkpoint deletion wastes all subsequent compute and may create legal liability.",
+      "applies_to": [
+        "LICENSE_COMPLIANCE",
+        "VERBOSITY_SFT",
+        "PEFT_FORMAT"
+      ],
+      "priority": 1
+    },
+    {
+      "id": "DR_02",
+      "rule": "Grammar-constrained decoding is authoritative over prompt-based format instructions; grammar mask overrides any conflicting prompt instruction.",
+      "rationale": "Hard syntactic guarantees cannot coexist with soft prompt steering as equal-priority mechanisms; grammar must dominate.",
+      "applies_to": [
+        "CONSTRAINED_DECODE",
+        "PROMPT_TEMPLATE"
+      ],
+      "priority": 2
+    },
+    {
+      "id": "DR_03",
+      "rule": "Format compliance metric gate must always be paired with semantic retention F1 gate; parse rate alone is never a sufficient deployment criterion.",
+      "rationale": "Goodhart failure (high parse rate, empty content) is undetectable by parse rate alone.",
+      "applies_to": [
+        "GOODHART_FORMAT",
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ],
+      "priority": 2
+    },
+    {
+      "id": "DR_04",
+      "rule": "Abstention-positive SFT pairs must be included in verbosity SFT data mix before training; do not curate them out as 'non-terse'.",
+      "rationale": "Verbosity SFT without abstention examples eliminates calibrated uncertainty expression needed for reliable machine I/O.",
+      "applies_to": [
+        "VERBOSITY_SFT",
+        "ABSTENTION_CALIB",
+        "DATA_CURATION_DENSE"
+      ],
+      "priority": 3
+    },
+    {
+      "id": "DR_05",
+      "rule": "Grammar cache must be pre-warmed at serving startup for all known schemas; do not compile on first request under load.",
+      "rationale": "Cold grammar compilation under load causes latency spikes that breach SLA and may trigger cascading retries.",
+      "applies_to": [
+        "CONSTRAINED_DECODE",
+        "FORMAT_INFERENCE_LATENCY"
+      ],
+      "priority": 3
+    },
+    {
+      "id": "DR_06",
+      "rule": "Schema version field must be present in every model output; consumers must dispatch on version before parsing fields.",
+      "rationale": "Silent schema version mismatch causes field-mapping errors that are undetectable by syntactic parse rate.",
+      "applies_to": [
+        "SCHEMA_VERSION",
+        "OUTPUT_PARSE_PIPELINE"
+      ],
+      "priority": 3
+    },
+    {
+      "id": "DR_07",
+      "rule": "Token compression ratio target must be bounded below by semantic retention F1>=0.90; no solution on the infeasible side is acceptable regardless of business pressure.",
+      "rationale": "Lossless machine I/O is only valuable if information content is preserved; lossy compression defeats the purpose.",
+      "applies_to": [
+        "TOKEN_EFFICIENCY",
+        "SEMANTIC_RETENTION"
+      ],
+      "priority": 2
+    },
+    {
+      "id": "DR_08",
+      "rule": "PEFT adapter training must be preceded by FORMAT_SPEC finalization; adapters trained on pre-final schema must be retrained after schema changes.",
+      "rationale": "Adapter trained on wrong schema creates format-schema mismatch that produces high parse rate on old schema but fails on new schema.",
+      "applies_to": [
+        "PEFT_FORMAT",
+        "FORMAT_SPEC",
+        "SCHEMA_VERSION"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "DR_09",
+      "rule": "CI format regression gate must refresh canary eval set from recent production prompts at least every 2 weeks; stale eval set overrides must be logged and reviewed.",
+      "rationale": "Stale eval sets give false CI passes while production format degrades; prompt distribution drift is a continuous risk.",
+      "applies_to": [
+        "FORMAT_REGRESSION",
+        "EVAL_FORMAT"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "DR_10",
+      "rule": "Representation steering vectors must be validated per deployment domain before production use; do not assume cross-domain transfer of format steering vectors.",
+      "rationale": "Domain-specific activation patterns mean a vector effective on code format control may be harmful on medical text format control.",
+      "applies_to": [
+        "REPR_ENG"
+      ],
+      "priority": 5
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "AR_01",
+      "rule": "Do not begin SFT data curation before FORMAT_SPEC is finalized; schema changes after curation require full re-curation.",
+      "prevents": "re-curation cost when schema changes post-curation",
+      "applies_to": [
+        "DATA_CURATION_DENSE",
+        "FORMAT_SPEC"
+      ]
+    },
+    {
+      "id": "AR_02",
+      "rule": "Do not deploy a format adapter trained on schema v(N) to serve requests for schema v(N+1); always retrain adapter after schema version increment.",
+      "prevents": "silent field-mapping errors from schema-adapter version mismatch",
+      "applies_to": [
+        "PEFT_FORMAT",
+        "SCHEMA_VERSION"
+      ]
+    },
+    {
+      "id": "AR_03",
+      "rule": "Do not set CI gate thresholds before collecting a calibration sample of >=200 production outputs; threshold set on too-small sample requires revision after production data available.",
+      "prevents": "threshold revision requiring CI reconfiguration and re-baselining",
+      "applies_to": [
+        "FORMAT_REGRESSION",
+        "EVAL_FORMAT"
+      ]
+    },
+    {
+      "id": "AR_04",
+      "rule": "Do not configure logit bias token IDs before tokenizer version is locked; tokenizer update invalidates all token ID mappings.",
+      "prevents": "re-mapping all logit bias configs after tokenizer update",
+      "applies_to": [
+        "LOGIT_BIAS",
+        "CONSTRAINED_DECODE"
+      ]
+    },
+    {
+      "id": "AR_05",
+      "rule": "Do not finalize context window budget allocation before measuring actual instruction token counts from the finalized prompt template; estimate-based allocation frequently requires revision.",
+      "prevents": "context window overflow discovered in production requiring emergency truncation policy update",
+      "applies_to": [
+        "CONTEXT_WINDOW_BUDGET",
+        "PROMPT_TEMPLATE"
+      ]
+    },
+    {
+      "id": "AR_06",
+      "rule": "Do not skip semantic retention eval during format SFT; Goodhart failures discovered post-deployment require full retraining.",
+      "prevents": "full retraining after Goodhart failure discovered in production",
+      "applies_to": [
+        "GOODHART_FORMAT",
+        "VERBOSITY_SFT",
+        "SEMANTIC_RETENTION"
+      ]
+    },
+    {
+      "id": "AR_07",
+      "rule": "Do not merge persona SFT and verbosity SFT into a single training run without first ablating each independently; entangled effects are hard to debug post-training.",
+      "prevents": "debugging entangled persona/verbosity effects requiring separate re-runs",
+      "applies_to": [
+        "PERSONA_CTRL",
+        "VERBOSITY_SFT"
+      ]
+    },
+    {
+      "id": "AR_08",
+      "rule": "Do not configure multi-schema routing before all target adapters are validated; routing a request to an unvalidated adapter produces undetected format failures.",
+      "prevents": "silent format failures on production traffic before adapters are validated",
+      "applies_to": [
+        "MULTI_SCHEMA_ROUTING",
+        "PEFT_FORMAT"
+      ]
+    },
+    {
+      "id": "AR_09",
+      "rule": "Do not assume abstention threshold calibrated on one task domain applies to a new domain; re-calibrate per domain before production deployment.",
+      "prevents": "over-abstention or under-abstention failure discovered in production on new domain",
+      "applies_to": [
+        "ABSTENTION_CALIB"
+      ]
+    },
+    {
+      "id": "AR_10",
+      "rule": "Do not remove stop sequences or relax length caps without first measuring impact on output length distribution and downstream parse pipeline; silent truncation failures are difficult to trace.",
+      "prevents": "downstream parse failures from stop sequence removal discovered across multiple dependent systems",
+      "applies_to": [
+        "STOP_SEQ",
+        "OUTPUT_PARSE_PIPELINE"
+      ]
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "trigger": "format compliance (parse rate) drops >3% from baseline in CI",
+      "action": "run FORMAT_REGRESSION canary; check if schema changed, model updated, or prompt template modified; re-run EVAL_FORMAT on canary",
+      "node_refs": [
+        "FORMAT_REGRESSION",
+        "EVAL_FORMAT"
+      ]
+    },
+    {
+      "id": "IP_02",
+      "trigger": "semantic retention F1 drops below 0.90 on eval set",
+      "action": "run SEMANTIC_RETENTION diagnostic; check if DATA_CURATION_DENSE over-filtered qualifier fields; inspect lossy field list; adjust curation filter or SFT data mix",
+      "node_refs": [
+        "SEMANTIC_RETENTION",
+        "DATA_CURATION_DENSE",
+        "VERBOSITY_SFT"
+      ]
+    },
+    {
+      "id": "IP_03",
+      "trigger": "abstention rate exceeds 20% on confident-domain queries",
+      "action": "re-calibrate ABSTENTION_CALIB threshold; check if VERBOSITY_SFT suppressed uncertainty language; re-run ECE eval on calibration set",
+      "node_refs": [
+        "ABSTENTION_CALIB",
+        "VERBOSITY_SFT"
+      ]
+    },
+    {
+      "id": "IP_04",
+      "trigger": "grammar compilation failure or cache miss rate >10%",
+      "action": "inspect CONSTRAINED_DECODE for schema recursion or complexity growth; pre-warm cache for newly added schemas; profile per-schema compilation time",
+      "node_refs": [
+        "CONSTRAINED_DECODE",
+        "FORMAT_INFERENCE_LATENCY"
+      ]
+    },
+    {
+      "id": "IP_05",
+      "trigger": "output token count regresses to pre-SFT baseline on production sample",
+      "action": "check if new prompt types triggered verbose mode; inspect VERBOSITY_SFT eval on new prompt distribution; consider targeted data augmentation",
+      "node_refs": [
+        "VERBOSITY_SFT",
+        "TOKEN_EFFICIENCY",
+        "DATA_CURATION_DENSE"
+      ]
+    },
+    {
+      "id": "IP_06",
+      "trigger": "Goodhart failure pattern detected (high parse rate, low semantic retention)",
+      "action": "add non-empty field value checks to EVAL_FORMAT; add semantic retention gate to CI; review VERBOSITY_SFT training objective for parse-rate gaming",
+      "node_refs": [
+        "GOODHART_FORMAT",
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ]
+    },
+    {
+      "id": "IP_07",
+      "trigger": "PEFT adapter hot-swap latency exceeds 100ms p99",
+      "action": "profile FORMAT_INFERENCE_LATENCY; increase resident adapter count in GPU memory; optimize adapter swap protocol",
+      "node_refs": [
+        "FORMAT_INFERENCE_LATENCY",
+        "PEFT_FORMAT",
+        "MULTI_SCHEMA_ROUTING"
+      ]
+    },
+    {
+      "id": "IP_08",
+      "trigger": "schema version mismatch errors appear in output parse pipeline logs",
+      "action": "inspect SCHEMA_VERSION registry; verify consumers updated to dispatch on version field; add version-aware test cases to FORMAT_REGRESSION CI",
+      "node_refs": [
+        "SCHEMA_VERSION",
+        "OUTPUT_PARSE_PIPELINE",
+        "FORMAT_REGRESSION"
+      ]
+    },
+    {
+      "id": "IP_09",
+      "trigger": "representation steering vector causes incoherent format outputs on new domain",
+      "action": "re-extract REPR_ENG steering vector on domain-representative contrastive pairs; validate on held-out domain eval before re-deploying",
+      "node_refs": [
+        "REPR_ENG"
+      ]
+    },
+    {
+      "id": "IP_10",
+      "trigger": "context window overflow detected on production inputs at 95th percentile length",
+      "action": "measure CONTEXT_WINDOW_BUDGET utilization by component; implement dynamic truncation hierarchy; reduce PROMPT_TEMPLATE instruction tokens",
+      "node_refs": [
+        "CONTEXT_WINDOW_BUDGET",
+        "PROMPT_TEMPLATE",
+        "STOP_SEQ"
+      ]
+    }
+  ],
+  "priority_order": [
+    "LICENSE_COMPLIANCE",
+    "FORMAT_SPEC",
+    "CONSTRAINED_DECODE",
+    "VERBOSITY_SFT",
+    "DATA_CURATION_DENSE",
+    "ABSTENTION_CALIB",
+    "EVAL_FORMAT",
+    "SEMANTIC_RETENTION",
+    "GOODHART_FORMAT",
+    "TOKEN_EFFICIENCY",
+    "FORMAT_REGRESSION",
+    "PEFT_FORMAT",
+    "OUTPUT_PARSE_PIPELINE",
+    "SCHEMA_VERSION",
+    "PROMPT_TEMPLATE",
+    "CONTEXT_WINDOW_BUDGET",
+    "MULTI_SCHEMA_ROUTING",
+    "STOP_SEQ",
+    "PERSONA_CTRL",
+    "LOGIT_BIAS",
+    "REPR_ENG",
+    "FORMAT_INFERENCE_LATENCY"
+  ],
+  "priority_rationale": "LICENSE_COMPLIANCE first as blocking irreversibility gate; FORMAT_SPEC second as contract all mechanisms depend on; hard enforcement (CONSTRAINED_DECODE) before SFT approaches; SFT pipeline ordered by dependency (data→train→eval); evaluation and risk nodes (GOODHART, SEMANTIC_RETENTION) before operational infrastructure; lightweight mechanisms (STOP_SEQ, LOGIT_BIAS, REPR_ENG) last as iterative overlays",
+  "change_control": {
+    "change_log": [],
+    "version": "1.0.0",
+    "review_policy": "human review required for nodes with risk_if_wrong>=0.80 or irreversibility>=0.70",
+    "approval_required_for": [
+      "schema changes affecting FORMAT_SPEC",
+      "SFT data curation filter changes",
+      "CI gate threshold changes"
+    ]
+  },
+  "traceability_matrix": {
+    "competency_to_node": {
+      "CQ_01": [
+        "FORMAT_SPEC",
+        "SCHEMA_VERSION"
+      ],
+      "CQ_02": [
+        "EVAL_FORMAT",
+        "FORMAT_REGRESSION"
+      ],
+      "CQ_03": [
+        "CONSTRAINED_DECODE",
+        "LOGIT_BIAS"
+      ],
+      "CQ_04": [
+        "OUTPUT_PARSE_PIPELINE",
+        "STOP_SEQ"
+      ],
+      "CQ_05": [
+        "STOP_SEQ",
+        "PROMPT_TEMPLATE",
+        "VERBOSITY_SFT"
+      ],
+      "CQ_06": [
+        "VERBOSITY_SFT",
+        "DATA_CURATION_DENSE",
+        "PEFT_FORMAT"
+      ],
+      "CQ_07": [
+        "PERSONA_CTRL",
+        "REPR_ENG"
+      ],
+      "CQ_08": [
+        "PEFT_FORMAT",
+        "MULTI_SCHEMA_ROUTING"
+      ],
+      "CQ_09": [
+        "ABSTENTION_CALIB",
+        "SEMANTIC_RETENTION"
+      ],
+      "CQ_10": [
+        "SEMANTIC_RETENTION",
+        "TOKEN_EFFICIENCY",
+        "EVAL_FORMAT"
+      ],
+      "CQ_11": [
+        "CONTEXT_WINDOW_BUDGET",
+        "PROMPT_TEMPLATE",
+        "TOKEN_EFFICIENCY"
+      ],
+      "CQ_12": [
+        "FORMAT_INFERENCE_LATENCY",
+        "CONSTRAINED_DECODE",
+        "MULTI_SCHEMA_ROUTING"
+      ],
+      "CQ_13": [
+        "GOODHART_FORMAT",
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ],
+      "CQ_14": [
+        "LICENSE_COMPLIANCE"
+      ]
+    },
+    "node_to_evidence": {
+      "FORMAT_SPEC": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "CONSTRAINED_DECODE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "STOP_SEQ": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "VERBOSITY_SFT": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "PERSONA_CTRL": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "ABSTENTION_CALIB": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "LOGIT_BIAS": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "PROMPT_TEMPLATE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "EVAL_FORMAT": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "TOKEN_EFFICIENCY": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "REPR_ENG": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "SCHEMA_VERSION": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "PEFT_FORMAT": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "DATA_CURATION_DENSE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "OUTPUT_PARSE_PIPELINE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "FORMAT_REGRESSION": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "MULTI_SCHEMA_ROUTING": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "CONTEXT_WINDOW_BUDGET": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "SEMANTIC_RETENTION": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "GOODHART_FORMAT": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "FORMAT_INFERENCE_LATENCY": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "LICENSE_COMPLIANCE": [
+        "SRC_HEURISTIC_PRIOR"
+      ]
+    },
+    "conflict_axis_to_nodes": {
+      "CA_01": [
+        "CONSTRAINED_DECODE",
+        "FORMAT_INFERENCE_LATENCY",
+        "PROMPT_TEMPLATE"
+      ],
+      "CA_02": [
+        "VERBOSITY_SFT",
+        "ABSTENTION_CALIB",
+        "DATA_CURATION_DENSE"
+      ],
+      "CA_03": [
+        "TOKEN_EFFICIENCY",
+        "SEMANTIC_RETENTION",
+        "DATA_CURATION_DENSE"
+      ],
+      "CA_04": [
+        "FORMAT_SPEC",
+        "CONSTRAINED_DECODE",
+        "GOODHART_FORMAT"
+      ],
+      "CA_05": [
+        "REPR_ENG",
+        "CONSTRAINED_DECODE"
+      ],
+      "CA_06": [
+        "PERSONA_CTRL",
+        "PEFT_FORMAT",
+        "MULTI_SCHEMA_ROUTING"
+      ],
+      "CA_07": [
+        "GOODHART_FORMAT",
+        "EVAL_FORMAT",
+        "SEMANTIC_RETENTION"
+      ],
+      "CA_08": [
+        "LICENSE_COMPLIANCE",
+        "VERBOSITY_SFT",
+        "PEFT_FORMAT"
+      ],
+      "CA_09": [
+        "CONSTRAINED_DECODE",
+        "PROMPT_TEMPLATE"
+      ],
+      "CA_10": [
+        "FORMAT_REGRESSION",
+        "EVAL_FORMAT"
+      ]
+    }
+  },
+  "validation_report": {
+    "validation_status": "pending",
+    "last_validated": null,
+    "validator_version": "1.0",
+    "checks_passed": [],
+    "checks_failed": []
+  },
+  "validation_protocol": {
+    "required_checks": [
+      "node_count_in_range_19_24",
+      "edge_count_in_range_32_40",
+      "all_edge_ids_unique",
+      "all_node_ids_unique",
+      "dependency_edges_acyclic",
+      "conflict_edges_have_negative_tension_and_resolution_rule",
+      "high_risk_nodes_have_acceptance_tests_and_human_review",
+      "high_coupling_nodes_have_revisit_triggers",
+      "all_evidence_refs_resolve_to_source_registry",
+      "all_competency_question_refs_resolve",
+      "all_conflict_axis_refs_resolve",
+      "priority_order_contains_every_node_exactly_once",
+      "no_observed_experimental_evidence_labels_without_data",
+      "observed_impact_zero_when_no_data",
+      "SRC_HEURISTIC_PRIOR_in_source_registry"
+    ],
+    "repair_budget": 3
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_format_enforcement_verbosity_reduction_and_semantic_retention_for_machine_io",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "grammar_compliance_probe",
+        "input_summary": "50 schema-constrained prompts; all outputs must parse as valid JSON",
+        "expected_properties": [
+          "parse rate 100%",
+          "no valid token incorrectly masked"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_002",
+        "case_type": "verbosity_regression",
+        "input_summary": "100 machine-IO prompts before and after verbosity SFT",
+        "expected_properties": [
+          "output token reduction >40%",
+          "boilerplate rate <2%"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_003",
+        "case_type": "goodhart_failure_probe",
+        "input_summary": "200 prompts evaluated for parse rate AND semantic retention jointly",
+        "expected_properties": [
+          "parse rate >98%",
+          "semantic retention F1 >0.90",
+          "no empty required fields"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_004",
+        "case_type": "abstention_calibration_check",
+        "input_summary": "calibration set with known high/low confidence inputs",
+        "expected_properties": [
+          "ECE <0.10",
+          "abstention rate <15% on confident domain"
+        ]
+      }
+    ],
+    "metrics": [
+      "json_validity",
+      "schema_conformance",
+      "reference_validity",
+      "formula_consistency",
+      "evidence_label_correctness",
+      "competency_question_coverage",
+      "workflow_gate_integrity",
+      "dependency_cycle_absence",
+      "source_traceability",
+      "anti_rework_rule_coverage"
+    ],
+    "regression_policy": "compare_parse_rate_and_semantic_retention_F1_against_baseline_before_each_model_checkpoint_deployment",
+    "minimum_pass_conditions": [
+      "parse_rate >= 0.98",
+      "semantic_retention_F1 >= 0.90",
+      "abstention_ECE < 0.10",
+      "format_overhead_latency_fraction < 0.10"
+    ]
+  }
+}
