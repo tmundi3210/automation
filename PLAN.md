@@ -99,11 +99,14 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
 - [ ] A.2 deep population (helper) — optional, can precede or follow A.4.
 - [x] A.4 mass generation: 24/24 subdomain dense KBs, all gate-pass; INDEX.json built
       (489 nodes, 930 edges, ~964k tokens total). knowledge_base/knowledge_searcher/.
-- [ ] A.5 derive foundational Knowledge Searcher specialist — **next action (approach gated)**
+- [x] A.5 specialists: 8 per-domain specialists (ir/method/infosci/biblio/evsynth/kr/
+      scholcomm/libarch), all pass specialist_validator; + specialists/ROUTER.json over them
+      (routing verified on 8 sample needs). tools/build_index.py, tools/build_router.py.
+- [x] **PHASE A COMPLETE** — foundational Knowledge Searcher (KBs + specialists + router).
 - [ ] Phase B (awaiting a RAW_IDEA)
 
 ## 8. Next action
-A.4 complete (24/24). Next: A.5 specialist derivation from the 24-KB set. Approach TBD with
-user (one unified Knowledge Searcher specialist vs 8 per-domain vs 24 per-subdomain). 24 KBs
-(~964k tok) exceed one helper context, so derivation will be hierarchical: deterministic
-compact digests (CQs + node topics + workflow per KB) -> helper composes specialist(s).
+Phase A complete. Awaiting a RAW_IDEA to start Phase B: neutralize idea -> academic books +
+taxonomy (consult Knowledge Searcher via ROUTER for where/how to find sources) -> optional
+DOMAIN_ADAPTER schema -> subdomain-grain dense KBs (gate each) -> per-domain specialist(s).
+Reuse: prompts/_a4_subdomain_job.md, prompts/_a5_specialist_job.md, validators/, tools/.
