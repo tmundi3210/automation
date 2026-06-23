@@ -134,13 +134,27 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
        a passing/committed file — that lost a unit once). Commit passes; push.
 
 ## 8. Next action
-Full 12-domain RESEARCH layer complete (Track 1 done). Remaining Phase B work:
-- **Track 2 — runnable scaffold** (the user's "build the scaffold" ask): GPU-portable code
-  grounded in the 12-domain KBs/specialists — phase_b/ingest (PDF->chunk->distill, reuses the
-  gate + tools/compute_kb_formulas.py), training-with-rollback loop, orchestration graph
-  (any-to-any weighted DAG + router + summarizer + token-budget cap), eval harness,
-  model-selection sheet, dense<->human renderer. Real fine-tunes need rented GPUs; this
-  produces architecture + configs + runnable skeleton.
-- **Supply data**: user drops WCO/iCloud transcripts + book PDFs into phase_b/sources/ to wire
-  real ingestion against actual content.
+Track 1 (research) AND Track 2 (scaffold) both COMPLETE.
+- **Track 2 — runnable scaffold DONE** (`phase_b/scaffold/`, offline-runnable, mock backend;
+  GPU/API marked as hook points). Six subsystems, each grounded in its Track-1 specialist:
+  `ingest/` (PDF/text->chunks->seeded KB draft->THE REAL GATE: compute_kb_formulas + kb_validator
+  + distillation work order), `train/` (eval-in-loop training with checkpoint rollback +
+  neutral-last-N prune + lr decay + early stop + JSON lineage; SimulatedTrainer offline,
+  HFTrainerBackend hook), `orch/` (router faithful to ROUTER.json selection_procedure + weighted
+  any-to-any DAG + summarizer context-bound + aggregator value-saturation cap), `eval_harness/`
+  (tool-grounded numeric / choice / LLM-as-judge open scorers + pass@k + contamination flag +
+  score tracking; doubles as the loop's evaluate()), `select/` (hard-filter + objective-dial
+  base-model selector + per-domain map; sheet is a verify-before-use template for volatile
+  frontier data), `render/` (deterministic dense<->human neutral boundary). `common.py`/
+  `backends.py` = shared loaders + pluggable ModelBackend. `run_all.sh` = 12/12 pass offline.
+  `ARCHITECTURE_DECISION_RECORD.md` = the §8 deliverable (build/buy, proven/speculative,
+  vertical-slice-first sequencing). Boundaries enforced in code (steer=format/neutral render
+  only; intent=adaptive UX not diagnosis).
+- **Remaining is EXTERNAL (user/compute), not code:**
+  - **Supply data**: drop WCO/iCloud transcripts + book PDFs into `phase_b/sources/`; then
+    `ingest/pdf_to_chunks.py` + the LLM-authoring pass wire real distillation.
+  - **Rent GPUs** for real fine-tunes/serving (implement the HFTrainerBackend/LocalBackend hooks).
+  - **Refresh** `select/model_sheet.json` from live model cards before any base-model decision.
+- Suggested first real step (from the ADR): a single vertical slice (math or code specialist)
+  end-to-end before scaling breadth; gate breadth on the orch SPEC_BEAT ablation.
 Method + harvest loop for any future KB fan-out: see section 7 OPERATIONAL METHOD.

@@ -48,6 +48,15 @@ Each subsystem's design is grounded in the corresponding Track-1 specialist's KB
 ## State
 - [x] Idea received, neutralized, intent-mapped, boundaries set.
 - [x] Seed taxonomy (12 domains / 25 subdomains) committed + JSON-valid.
-- [ ] User course-correction on first-wave scope + breadth + boundaries.
-- [ ] Track 1 KB fan-out (gated) — NOT started (awaiting go).
-- [ ] Track 2 scaffold — NOT started.
+- [x] User course-correction: research-first, then full 12-domain breadth; boundaries confirmed.
+- [x] **Track 1 KB fan-out COMPLETE** — 25/25 dense KBs gated 35/35, 12 specialists,
+      INDEX + ROUTER. See PLAN.md §7.
+- [x] **Track 2 scaffold COMPLETE** — `phase_b/scaffold/` (offline-runnable, mock backend;
+      GPU/API hooks). Six subsystems grounded in their specialists: ingest (chunk→draft→the
+      gate), train (eval-in-loop rollback + neutral prune), orch (faithful router + weighted
+      any-to-any DAG + summarizer + budget cap), eval_harness (scorers + LLM-judge + tracking),
+      select (constraint base-model selector + per-domain map), render (dense↔human neutral
+      boundary). `run_all.sh` = 12/12 subsystems pass offline. ADR written (build/buy,
+      proven/speculative, vertical-slice-first sequencing). Boundaries enforced in code.
+- [ ] Remaining = EXTERNAL: user drops WCO transcripts/PDFs into `phase_b/sources/`; rent
+      GPUs for real fine-tunes; refresh `select/model_sheet.json` from live model cards.
