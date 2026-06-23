@@ -69,6 +69,14 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
       **DECISION: generate ONE dense KB per SUBDOMAIN/field-grain unit; scale by
       recursive decomposition + parallel fan-out, not by batch size.** RUN_4 (4 domains
       in one KB) unnecessary; available on request.
+      Grain-optimum probe (`calibration/results/GRAIN_OPTIMUM.json`): IR ranking
+      subdomain (20 nodes) decomposed into 3 TOPICS (term-weighting/LTR/feedback;
+      21/21/20 nodes, all PASS, all natural_fill=true 0-padded). Cross-topic node
+      redundancy = 0%; topic union = 62 distinct nodes (3.1x subdomain) with only 20%
+      conceptual overlap. Topic+dense runs hit 39-44k tokens (just under ~45k ceiling).
+      **GRAIN RULE: go as fine as a unit still NATURAL-FILLS a dense KB without padding,
+      and stop before per-KB tokens approach ~45k. dense+topic is the practical finest
+      grain under one response; finer units use standard/compact or underfill.**
 - A.4 Mass generation: 1 domain per dense KB, fan out helpers in parallel, gate each,
       commit each. Low-value/narrow domains may use standard/compact. **PENDING.**
 - A.5 The resulting KB set = the foundational "how to research knowledge" specialist,
@@ -85,16 +93,16 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
 
 ## 7. Current state
 - [x] Repo scaffolded; schema vendored; validators + metrics written; taxonomy seed; job specs.
-- [x] A.3 calibration sweep + granularity analysis (6 helpers, all pass) -> unit =
-      ONE dense KB per SUBDOMAIN/field-grain; see DECISION.json + GRAIN_ANALYSIS.json.
+- [x] A.3 calibration + granularity + grain-optimum probes (9 helpers, all pass) ->
+      grain is the lever; unit = finest grain that NATURAL-FILLS dense (topic for rich
+      areas, subdomain for thin); per-KB token ceiling ~45k. See DECISION/GRAIN_ANALYSIS/GRAIN_OPTIMUM.
 - [ ] A.2 deep population (helper) — optional, can precede or follow A.4.
-- [ ] A.4 mass generation — **next action, gated on user go-ahead**
+- [ ] A.4 mass generation — **next action, gated on user go-ahead (choose depth/cost)**
 - [ ] Phase B (awaiting a RAW_IDEA)
 
 ## 8. Next action
-Unit of generation fixed at ONE dense KB per subdomain/field-grain unit (controlling factor
-= fixed density budget; scale by decomposition + fan-out). Awaiting user go-ahead to either
-(a) run A.2 deep population first, (b) probe even finer grain (field/subfield) to optimize,
-or (c) start A.4 mass generation: fan out one helper per subdomain across the taxonomy
-(~24 dense KBs; standard/compact for narrow/low-value), gate + commit each, then derive the
+Grain rule fixed (natural-fill-driven; dense+topic = finest under one response; ceiling ~45k).
+Awaiting user choice of build depth for A.4: (a) subdomain grain ~24 KBs / ~480 nodes (1x),
+(b) topic grain ~70+ KBs / ~1400 nodes (~3x, runs near ceiling), or (c) adaptive natural-fill
+(finest grain that fills per unit). Then fan out helpers, gate + commit each, and derive the
 foundational Knowledge Searcher specialist (A.5).

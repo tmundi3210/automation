@@ -34,6 +34,16 @@ You are a HELPER executing one KB_GENERATION run. Do NOT chat. Return only the f
     "failed_check_ids":[...],"est_tokens":<n>,"counts":{...},"needs_orchestrator":<bool>,"notes":"<=200 chars"}
 ```
 
+## Grain selection rule (from calibration GRAIN_OPTIMUM.json)
+Pick the FINEST taxonomy grain at which a unit still NATURAL-FILLS a dense KB without
+padding, and keep per-KB output under the ~45k-token single-response ceiling.
+- Helper MUST report: `natural_fill` (>=19 genuinely distinct nodes, no padding), `padded_node_count`, `est_tokens`.
+- Orchestrator response:
+  - `padded_node_count>0` or `natural_fill=false` -> grain too fine: merge unit with a sibling (coarsen) OR rerun in standard mode.
+  - `est_tokens` near/over ~45k WITH full node count -> already optimal grain; do not broaden.
+  - `est_tokens` high but `nodes<19` -> split the unit further.
+- Default: TOPIC grain for rich/high-value areas (3.1x non-redundant coverage vs subdomain, 0% cross-topic overlap observed); subdomain/field grain elsewhere; standard/compact for thin/low-value units.
+
 ## Phase B addendum — specialist creation
 After a group's KB passes the gate, the orchestrator spawns a helper to derive a
 SPECIALIST from that KB:
