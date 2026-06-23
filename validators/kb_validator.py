@@ -1,0 +1,466 @@
+#!/usr/bin/env python3
+"""
+kb_validator.py — deterministic quality + quantity gate for KB_GENERATION outputs
+produced by schema/kb_generator_v1.4.1.txt.
+
+This is the orchestrator's enforcement layer. A helper sub-agent generates a KB
+JSON file; this validator decides pass/fail BEFORE the artifact is accepted.
+
+It checks two independent dimensions:
+  QUANTITY  -> density-mode object counts (nodes, edges, axes, cases, steps, CQs,
+              dominance/anti-rework/iteration items)
+  QUALITY   -> JSON validity, required top-level keys, ID uniqueness, reference
+              integrity (edges/deps/workflow/edge-cases/conflict-axes/sources/CQs),
+              numeric bounds, conflict-edge sign rule, high-risk / high-coupling
+              obligations, uncertainty intervals, dependency-cycle absence,
+              placeholder leakage, evidence-label legality, and formula consistency.
+
+Usage:
+  python3 kb_validator.py KB.json --mode dense [--allow-observed] [--tolerance 0.02]
+                                  [--report out.json] [--quiet]
+
+Exit code 0 = pass (no hard failures), 1 = hard failures, 2 = bad invocation.
+Stdlib only.
+"""
+import argparse
+import json
+import re
+import sys
+
+# ----- density-mode quantity targets (from schema DENSITY MODE section) -----
+DENSITY = {
+    "compact":  {"nodes": (8, 12),  "edges": (12, 20), "conflict_axes": (4, 6),
+                 "edge_cases": (5, 8),  "workflow": (5, 7),  "competency_questions": (5, 8)},
+    "standard": {"nodes": (13, 18), "edges": (20, 32), "conflict_axes": (6, 8),
+                 "edge_cases": (8, 10), "workflow": (7, 10), "competency_questions": (8, 12)},
+    "dense":    {"nodes": (19, 24), "edges": (32, 40), "conflict_axes": (8, 10),
+                 "edge_cases": (10, 12), "workflow": (9, 12), "competency_questions": (10, 14)},
+}
+# applies to all modes (schema: "Always include ..."); relaxed only by compact safety
+GLOBAL_COUNTS = {
+    "dominance_rules": (7, 12),
+    "anti_rework_rules": (7, 12),
+    "iteration_protocol": (6, 10),
+}
+
+REQUIRED_TOP_LEVEL = [
+    "domain", "domain_label", "purpose", "empirical_status", "assumptions",
+    "exclusions", "schema_version", "generation_metadata", "schema_contract",
+    "input_summary", "competency_questions", "glossary", "lens_coverage",
+    "evidence_label_policy", "source_registry", "math_model", "nodes", "edges",
+    "conflict_axes", "edge_cases", "workflow", "priority_order",
+    "priority_rationale", "dominance_rules", "anti_rework_rules",
+    "iteration_protocol", "validation_protocol", "validation_report",
+    "evaluation_suite", "traceability_matrix", "change_control",
+]
+
+LEGAL_EVIDENCE_LABELS = {"heuristic", "expert_estimate", "observed", "experimentally_validated"}
+LEGAL_EDGE_TYPES = {"dependency", "constraint", "conflict", "causal", "sequence", "feedback", "similarity"}
+
+# literal template placeholders that must NOT survive into a populated KB
+PLACEHOLDERS = {
+    "precise_pro", "precise_con", "concrete_example", "concrete_domain_specific_example",
+    "NODE_A", "NODE_B", "SHORT_ID", "precise_relation", "precise_benefit", "precise_risk",
+    "machine_testable_question", "human_readable_domain_name", "normalized_domain_id",
+    "precise_machine_readable_purpose", "compact_topic_name", "one_sentence_operational_definition",
+    "[DOMAIN]", "CHECK_ID", "ARTIFACT_ID", "EDGE_PATTERN_ID", "FAMILY_ID", "SECTION_ID",
+    "which_side_dominates_or_how_to_resolve_when_conflict_constraint_or_feedback_occurs",
+}
+
+EDGE_ID_RE = re.compile(r"^EDGE_\d+$")
+
+
+class Report:
+    def __init__(self):
+        self.checks = []   # (check_id, status, detail) status in pass/fail/warn
+
+    def ok(self, cid, detail=""):
+        self.checks.append((cid, "pass", detail))
+
+    def fail(self, cid, detail=""):
+        self.checks.append((cid, "fail", detail))
+
+    def warn(self, cid, detail=""):
+        self.checks.append((cid, "warn", detail))
+
+    @property
+    def failed(self):
+        return [c for c in self.checks if c[1] == "fail"]
+
+    @property
+    def warned(self):
+        return [c for c in self.checks if c[1] == "warn"]
+
+    def to_dict(self, mode):
+        return {
+            "_directive": "machine-facing validation record; model-parse optimized",
+            "validator": "kb_validator/1.0",
+            "density_mode": mode,
+            "overall_status": "fail" if self.failed else ("pass_with_warnings" if self.warned else "pass"),
+            "summary": {
+                "passed": sum(1 for c in self.checks if c[1] == "pass"),
+                "failed": len(self.failed),
+                "warnings": len(self.warned),
+            },
+            "checks": [{"check_id": a, "status": b, "detail": c} for a, b, c in self.checks],
+        }
+
+
+def normalize(x):
+    return min(1.0, max(0.0, x))
+
+
+def _num(d, k, default=None):
+    v = d.get(k, default)
+    return v if isinstance(v, (int, float)) else default
+
+
+def check_counts(kb, mode, r):
+    tgt = DENSITY[mode]
+    sized = {
+        "nodes": kb.get("nodes", []),
+        "edges": kb.get("edges", []),
+        "conflict_axes": kb.get("conflict_axes", []),
+        "edge_cases": kb.get("edge_cases", []),
+        "workflow": kb.get("workflow", []),
+        "competency_questions": kb.get("competency_questions", []),
+    }
+    for key, (lo, hi) in tgt.items():
+        n = len(sized[key])
+        (r.ok if lo <= n <= hi else r.fail)(f"count.{key}", f"{n} (target {lo}-{hi})")
+    for key, (lo, hi) in GLOBAL_COUNTS.items():
+        n = len(kb.get(key, []))
+        # compact mode may relax these per schema "unless compact mode is required"
+        if mode == "compact" and n < lo:
+            r.warn(f"count.{key}", f"{n} (target {lo}-{hi}, relaxed for compact)")
+        else:
+            (r.ok if lo <= n <= hi else r.fail)(f"count.{key}", f"{n} (target {lo}-{hi})")
+
+
+def check_top_level(kb, r):
+    missing = [k for k in REQUIRED_TOP_LEVEL if k not in kb]
+    (r.ok if not missing else r.fail)("toplevel.required_keys", f"missing={missing}")
+
+
+def check_ids_and_refs(kb, r):
+    nodes = kb.get("nodes", [])
+    node_ids = [n.get("id") for n in nodes]
+    nid_set = set(node_ids)
+    dup_nodes = [x for x in node_ids if node_ids.count(x) > 1]
+    (r.ok if not dup_nodes else r.fail)("nodes.id_unique", f"dups={sorted(set(dup_nodes))}")
+
+    edges = kb.get("edges", [])
+    edge_ids = [e.get("id") for e in edges]
+    dup_edges = [x for x in edge_ids if edge_ids.count(x) > 1]
+    (r.ok if not dup_edges else r.fail)("edges.id_unique", f"dups={sorted(set(dup_edges))}")
+    bad_form = [e for e in edge_ids if not (isinstance(e, str) and EDGE_ID_RE.match(e))]
+    (r.ok if not bad_form else r.warn)("edges.id_form", f"non_EDGE_nnn={bad_form}")
+
+    # edge endpoint validity + conflict sign + resolution rule
+    bad_ep, bad_sign, no_res, bad_type = [], [], [], []
+    for e in edges:
+        eid = e.get("id")
+        if e.get("from") not in nid_set or e.get("to") not in nid_set:
+            bad_ep.append(eid)
+        if e.get("edge_type") not in LEGAL_EDGE_TYPES:
+            bad_type.append(eid)
+        if e.get("edge_type") == "conflict":
+            st = _num(e, "signed_tension")
+            if st is None or st >= 0:
+                bad_sign.append(eid)
+            if not (e.get("resolution_rule") or "").strip():
+                no_res.append(eid)
+    (r.ok if not bad_ep else r.fail)("edges.endpoint_valid", f"bad={bad_ep}")
+    (r.ok if not bad_type else r.fail)("edges.type_legal", f"bad={bad_type}")
+    (r.ok if not bad_sign else r.fail)("edges.conflict_signed_tension_negative", f"bad={bad_sign}")
+    (r.ok if not no_res else r.fail)("edges.conflict_resolution_rule_present", f"bad={no_res}")
+
+    # node dependency + must_not_finalize_before refs
+    bad_dep = []
+    for n in nodes:
+        for ref in n.get("dependencies", []) + n.get("must_not_finalize_before", []):
+            if ref not in nid_set:
+                bad_dep.append((n.get("id"), ref))
+    (r.ok if not bad_dep else r.fail)("nodes.dependency_refs_valid", f"bad={bad_dep}")
+
+    # workflow node refs
+    bad_wf = []
+    for s in kb.get("workflow", []):
+        for ref in s.get("nodes", []):
+            if ref not in nid_set:
+                bad_wf.append((s.get("step"), ref))
+    (r.ok if not bad_wf else r.fail)("workflow.node_refs_valid", f"bad={bad_wf}")
+
+    # edge_case node refs
+    bad_ec = []
+    for c in kb.get("edge_cases", []):
+        for ref in c.get("nodes", []):
+            if ref not in nid_set:
+                bad_ec.append((c.get("id"), ref))
+    (r.ok if not bad_ec else r.fail)("edge_cases.node_refs_valid", f"bad={bad_ec}")
+
+    # conflict axis node refs (only flag uppercase-token refs that look like node IDs)
+    bad_ca = []
+    for a in kb.get("conflict_axes", []):
+        for ref in a.get("side_a", []) + a.get("side_b", []):
+            if isinstance(ref, str) and re.match(r"^[A-Z][A-Z0-9_]+$", ref) and ref not in nid_set:
+                bad_ca.append((a.get("id"), ref))
+    (r.ok if not bad_ca else r.warn)("conflict_axes.node_refs_valid", f"unresolved_idlike={bad_ca}")
+
+    # priority_order: every node exactly once
+    po = kb.get("priority_order", [])
+    po_norm = [p.get("node_id") if isinstance(p, dict) else p for p in po]
+    if sorted([x for x in po_norm if x is not None]) == sorted(node_ids) and len(po_norm) == len(node_ids):
+        r.ok("priority_order.complete", f"{len(po_norm)} nodes")
+    else:
+        r.fail("priority_order.complete",
+               f"po={len(po_norm)} nodes={len(node_ids)} missing={sorted(nid_set-set(po_norm))} extra={sorted(set(po_norm)-nid_set)}")
+
+    # source reference validity (evidence_refs -> source_registry)
+    src_ids = {s.get("source_id") for s in kb.get("source_registry", [])}
+    bad_src = []
+    for n in nodes:
+        for ref in n.get("evidence_refs", []):
+            if ref not in src_ids:
+                bad_src.append(("node", n.get("id"), ref))
+    for e in edges:
+        for ref in e.get("evidence_refs", []):
+            if ref not in src_ids:
+                bad_src.append(("edge", e.get("id"), ref))
+    (r.ok if not bad_src else r.fail)("evidence_refs.resolve", f"bad={bad_src[:20]}")
+
+    # competency-question refs
+    cq_ids = {q.get("id") for q in kb.get("competency_questions", [])}
+    bad_cq = []
+    for n in nodes:
+        for ref in n.get("competency_question_refs", []):
+            if ref not in cq_ids:
+                bad_cq.append((n.get("id"), ref))
+    (r.ok if not bad_cq else r.fail)("competency_question_refs.resolve", f"bad={bad_cq}")
+
+    return nid_set
+
+
+def check_bounds_and_obligations(kb, r, allow_observed):
+    bad_bounds, bad_tension, bad_unc = [], [], []
+    hr_missing, hc_missing = [], []
+    illegal_labels, illegal_observed = [], []
+
+    def scan_numbers(obj, path):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                scan_numbers(v, f"{path}.{k}")
+        elif isinstance(obj, list):
+            for i, v in enumerate(obj):
+                scan_numbers(v, f"{path}[{i}]")
+
+    for n in kb.get("nodes", []):
+        nid = n.get("id")
+        m = n.get("metrics", {})
+        for k, v in m.items():
+            if isinstance(v, (int, float)) and not (0.0 <= v <= 1.0):
+                bad_bounds.append((nid, k, v))
+        # high-risk obligation
+        if _num(m, "risk_if_wrong", 0) >= 0.80:
+            if not n.get("acceptance_tests") or n.get("human_review_required") is not True:
+                hr_missing.append(nid)
+        # high-coupling obligation
+        if _num(m, "cross_topic_coupling", 0) >= 0.75:
+            if not n.get("revisit_triggers"):
+                hc_missing.append(nid)
+        # uncertainty interval
+        pl = n.get("probabilistic_layer", {})
+        ui = pl.get("uncertainty_interval")
+        if not (isinstance(ui, list) and len(ui) == 2 and
+                all(isinstance(x, (int, float)) for x in ui) and
+                0.0 <= ui[0] <= ui[1] <= 1.0):
+            bad_unc.append((nid, ui))
+        # observed/experimental labels without data
+        if not allow_observed:
+            for lab_field in ("metric_labels", "score_derivation_input_labels"):
+                for k, v in n.get(lab_field, {}).items():
+                    if v in ("observed", "experimentally_validated"):
+                        illegal_observed.append((nid, lab_field, k))
+            for k, v in pl.get("value_labels", {}).items():
+                if v in ("observed", "experimentally_validated"):
+                    illegal_observed.append((nid, "value_labels", k))
+
+    for e in kb.get("edges", []):
+        eid = e.get("id")
+        st = _num(e, "signed_tension")
+        if st is not None and not (-1.0 <= st <= 1.0):
+            bad_tension.append((eid, st))
+        for k in ("relation_strength", "edge_score", "edge_heat", "edge_priority",
+                  "prior_relation_strength", "observed_co_occurrence", "causal_confidence",
+                  "conflict_probability", "expected_rework_cost"):
+            v = _num(e, k)
+            if v is not None and not (0.0 <= v <= 1.0):
+                bad_bounds.append((eid, k, v))
+
+    # collect all evidence_label values anywhere they appear at top level objects
+    def collect_labels(obj):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if k in ("evidence_label",) and isinstance(v, str):
+                    if v not in LEGAL_EVIDENCE_LABELS:
+                        illegal_labels.append(v)
+                else:
+                    collect_labels(v)
+        elif isinstance(obj, list):
+            for v in obj:
+                collect_labels(v)
+    collect_labels(kb)
+
+    (r.ok if not bad_bounds else r.fail)("bounds.scores_in_0_1", f"bad={bad_bounds[:20]}")
+    (r.ok if not bad_tension else r.fail)("bounds.signed_tension_in_-1_1", f"bad={bad_tension}")
+    (r.ok if not bad_unc else r.fail)("nodes.uncertainty_interval_valid", f"bad={bad_unc}")
+    (r.ok if not hr_missing else r.fail)("nodes.high_risk_obligations", f"bad={hr_missing}")
+    (r.ok if not hc_missing else r.fail)("nodes.high_coupling_revisit_triggers", f"bad={hc_missing}")
+    (r.ok if not illegal_labels else r.fail)("evidence.labels_legal", f"bad={set(illegal_labels)}")
+    if not allow_observed:
+        (r.ok if not illegal_observed else r.fail)("evidence.no_observed_without_data", f"bad={illegal_observed[:20]}")
+
+
+def check_dependency_acyclicity(kb, r, nid_set):
+    # build dependency graph from edges of type dependency (source -> target)
+    adj = {n: [] for n in nid_set}
+    for e in kb.get("edges", []):
+        if e.get("edge_type") == "dependency":
+            f, t = e.get("from"), e.get("to")
+            if f in adj and t in nid_set:
+                adj[f].append(t)
+    # also node.dependencies (dep is prerequisite -> node): dep -> node
+    for n in kb.get("nodes", []):
+        nid = n.get("id")
+        for dep in n.get("dependencies", []):
+            if dep in adj and nid in nid_set:
+                adj[dep].append(nid)
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color = {n: WHITE for n in adj}
+    cycle = []
+
+    def dfs(u, stack):
+        color[u] = GRAY
+        for v in adj.get(u, []):
+            if color.get(v) == GRAY:
+                cycle.append(stack + [u, v])
+                return True
+            if color.get(v) == WHITE and dfs(v, stack + [u]):
+                return True
+        color[u] = BLACK
+        return False
+
+    for n in adj:
+        if color[n] == WHITE and dfs(n, []):
+            break
+    (r.ok if not cycle else r.fail)("dependency.acyclic", f"cycle={cycle[:1]}")
+
+
+def check_placeholders(raw_text, r):
+    hits = sorted({p for p in PLACEHOLDERS if p in raw_text})
+    (r.ok if not hits else r.fail)("placeholders.none_leaked", f"found={hits}")
+
+
+def check_formulas(kb, r, tol, allow_observed):
+    errs = []
+    for n in kb.get("nodes", []):
+        nid = n.get("id")
+        m = n.get("metrics", {})
+        sdi = n.get("score_derivation_inputs", {})
+        pl = n.get("probabilistic_layer", {})
+        C = _num(m, "criticality", 0); BV = _num(m, "business_value", 0)
+        UV = _num(m, "user_value", 0); TC = _num(m, "technical_complexity", 0)
+        R = _num(m, "risk_if_wrong", 0); X = _num(m, "cross_topic_coupling", 0)
+        IR = _num(m, "irreversibility", 0); CF = _num(m, "confidence", 0)
+        NCP = _num(m, "node_conflict_pressure", 0)
+        AT = _num(sdi, "acceptance_test_pass_rate", 0); DG = _num(sdi, "dependency_gate_pass_rate", 0)
+        UR = _num(sdi, "uncertainty_range_width", 0); RT = _num(sdi, "revisit_trigger_count_normalized", 0)
+        EC = _num(pl, "evidence_confidence", 0); DQ = _num(pl, "data_quality", 0)
+        FR = _num(pl, "failure_rate", 0); DW = _num(pl, "downside_weight", 0)
+        PI = _num(pl, "prior_importance", 0); OI = _num(pl, "observed_impact", 0)
+
+        exp = {
+            "final_importance": normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF),
+            "risk_score": normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF)),
+            "confidence_score": normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG),
+            "revisit_pressure": normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR),
+            "lock_score": normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR)),
+        }
+        for k, ev in exp.items():
+            av = _num(m, k)
+            if av is None or abs(av - ev) > tol:
+                errs.append((nid, k, av, round(ev, 2)))
+        # posterior
+        post = normalize(PI*EC + OI*DQ - FR*DW) if allow_observed else normalize(PI*EC)
+        ap = _num(pl, "posterior_importance")
+        if ap is None or abs(ap - post) > tol:
+            errs.append((nid, "posterior_importance", ap, round(post, 2)))
+        # uncertainty_range_width consistency
+        ui = pl.get("uncertainty_interval")
+        if isinstance(ui, list) and len(ui) == 2 and all(isinstance(x, (int, float)) for x in ui):
+            if UR is None or abs(UR - (ui[1]-ui[0])) > tol:
+                errs.append((nid, "uncertainty_range_width", UR, round(ui[1]-ui[0], 2)))
+
+    for e in kb.get("edges", []):
+        eid = e.get("id")
+        RS = _num(e, "relation_strength", 0); ST = _num(e, "signed_tension", 0)
+        ERC = _num(e, "expected_rework_cost", 0); CP = _num(e, "conflict_probability", 0)
+        CC = _num(e, "causal_confidence", 0)
+        ep = normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))
+        for k, ev in (("edge_priority", ep), ("edge_score", ep),
+                      ("edge_heat", normalize(0.50*ep+0.20*RS+0.15*CP+0.15*ERC))):
+            av = _num(e, k)
+            if av is None or abs(av - ev) > tol:
+                errs.append((eid, k, av, round(ev, 2)))
+
+    (r.ok if not errs else r.fail)("formula.consistency", f"mismatches={errs[:25]} total={len(errs)}")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("kb", help="path to KB JSON file")
+    ap.add_argument("--mode", default="dense", choices=list(DENSITY))
+    ap.add_argument("--allow-observed", action="store_true",
+                    help="permit observed/experimentally_validated labels + observed posterior formula")
+    ap.add_argument("--tolerance", type=float, default=0.02)
+    ap.add_argument("--report", help="write JSON report to this path")
+    ap.add_argument("--quiet", action="store_true")
+    args = ap.parse_args()
+
+    try:
+        raw = open(args.kb, encoding="utf-8").read()
+    except OSError as e:
+        print(f"cannot read {args.kb}: {e}", file=sys.stderr)
+        return 2
+
+    r = Report()
+    try:
+        kb = json.loads(raw)
+    except json.JSONDecodeError as e:
+        r.fail("json.valid", str(e))
+        out = r.to_dict(args.mode)
+        if args.report:
+            open(args.report, "w").write(json.dumps(out, indent=2))
+        if not args.quiet:
+            print(json.dumps(out, indent=2))
+        return 1
+    r.ok("json.valid")
+
+    check_top_level(kb, r)
+    check_counts(kb, args.mode, r)
+    nid_set = check_ids_and_refs(kb, r)
+    check_bounds_and_obligations(kb, r, args.allow_observed)
+    check_dependency_acyclicity(kb, r, nid_set)
+    check_placeholders(raw, r)
+    check_formulas(kb, r, args.tolerance, args.allow_observed)
+
+    out = r.to_dict(args.mode)
+    if args.report:
+        open(args.report, "w").write(json.dumps(out, indent=2))
+    if not args.quiet:
+        print(json.dumps(out, indent=2))
+    return 1 if r.failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
