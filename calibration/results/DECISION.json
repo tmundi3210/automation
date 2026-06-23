@@ -1,0 +1,47 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "experiment": "group_size_calibration",
+  "date": "2026-06-23",
+  "density_mode": "dense",
+  "engine": "schema/kb_generator_v1.4.1.txt",
+  "gate": "validators/kb_validator.py --mode dense (orchestrator re-verified each run)",
+  "runs": [
+    {"label": "run1_ir", "domains": 1, "domain": "information_retrieval_and_search_systems",
+     "validator": "pass", "checks": "35/0/0", "est_tokens": 37127, "nodes": 19, "edges": 39,
+     "tok_per_node": 1954, "domain_specific_nodes": 19, "truncated": false, "self_repair": false},
+    {"label": "run2_method", "domains": 1, "domain": "research_methodology_and_epistemology",
+     "validator": "pass", "checks": "35/0/0", "est_tokens": 25507, "nodes": 21, "edges": 39,
+     "tok_per_node": 1215, "domain_specific_nodes": 21, "truncated": false, "self_repair": false},
+    {"label": "run12_combined", "domains": 2, "domain": "ir + methodology (one integrated KB)",
+     "validator": "pass", "checks": "35/0/0", "est_tokens": 24711, "nodes": 21, "edges": 40,
+     "tok_per_node": 1177, "per_domain_coverage": {"ir": 8, "methodology": 8, "cross": 5},
+     "truncated": false, "self_repair": false}
+  ],
+  "analysis": {
+    "fixed_dense_envelope": "dense mode caps nodes at 19-24 and edges at 32-40 REGARDLESS of how many domains are batched into one KB.",
+    "batching_effect": "2 domains in one KB -> ~8 nodes/domain vs ~19-21 nodes when solo. IR coverage fell 19->8 nodes = ~58% per-domain depth LOSS.",
+    "token_effect": "combined output (24711 tok) ~= ONE KB's worth, NOT two; batching does not raise total output, it SPLITS the fixed budget.",
+    "quality_gate": "all three passed structurally/formula-wise; degradation is in COVERAGE/DEPTH per domain, not in validity.",
+    "output_ceiling": "single dense KB ranged 24.7k-37.1k est tokens, none truncated; ~37k (run1) sits in the upper band of a single-response output. Treat one dense KB as one full heavy session output.",
+    "concurrency": "3 helpers ran in parallel successfully (~10-15 min each); fan-out is the scaling lever."
+  },
+  "decision": {
+    "domains_per_kb": 1,
+    "rule": "ONE coherent domain per dense KB run to preserve full per-domain depth. Do NOT batch multiple domains into a single dense KB.",
+    "scaling_strategy": "parallel_fanout_one_domain_per_dense_kb (run many single-domain helpers concurrently, gate each, commit each)",
+    "mode_policy": {
+      "dense": "high-value / broad domains needing full depth",
+      "standard": "medium-value or moderately narrow domains",
+      "compact": "low-value or very narrow domains (user: low-value things may use other modes)"
+    },
+    "narrow_domain_exception": "if a 'domain' is genuinely narrow (would be over-covered by 19-24 dense nodes), prefer standard/compact for it rather than co-batching two narrow domains into one dense KB.",
+    "run4_executed": false,
+    "run4_skipped_reason": "RUN_4 was user-conditional ('only if quality does not degrade'). Degradation IS demonstrated at 2 domains; the fixed dense node budget guarantees 4 domains -> ~5 nodes/domain (worse). Empirical RUN_4 would only confirm further loss.",
+    "run4_available_on_request": true
+  },
+  "implications_for_pipeline": {
+    "phase_A4_mass_generation": "batch the knowledge_searcher taxonomy as 1 domain per dense KB; fan out helpers in parallel; gate + commit each.",
+    "phase_B": "same unit (1 domain/KB); optional DOMAIN_ADAPTER_SCHEMA_GENERATION per idea to constrain each KB.",
+    "estimated_cost_per_domain": "~25k-37k est output tokens + ~100k-115k helper working tokens per dense KB (from this sweep)."
+  }
+}
