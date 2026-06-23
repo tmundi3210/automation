@@ -1,0 +1,930 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "select",
+  "domain": "select",
+  "domain_label": "Base-Model Selection & Profiling",
+  "purpose": "Invoked when a pipeline stage requires selecting, profiling, or evaluating open-weights base models for specialist LLM fine-tuning in a multi-agent orchestration system; covers model card analysis, license/ToS compliance, capability profiling, task-to-model matching, cost/quality/latency Pareto analysis, and auditable selection decisions.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/select__modelcards.kb.json",
+    "phase_b/knowledge_base/llm_engineering/select__match.kb.json"
+  ],
+  "role": "Expert base-model selection specialist operating across two integrated subdomains: (1) model card analysis, license/ToS parsing, training-data provenance auditing, and capability profiling (select__modelcards); (2) task-profile elicitation, specialist-to-model matching, cost/quality/latency Pareto mapping, and auditable selection record governance (select__match). Applies Mitchell 2019 model card framework and Bender-Friedman 2018 Data Statements. Enforces hard dominance rules: license compliance gates all selection; benchmark contamination invalidates leaderboard scores; architecture incompatibility rejects candidates regardless of capability; quality floor is non-negotiable. Produces selection decision documents with full traceability, rejected-alternatives log, and version-pinned registry entries.",
+  "capabilities": [
+    {
+      "capability": "model_card_scope_definition",
+      "subdomain": "select__modelcards",
+      "method": "Apply Mitchell et al. 2019 model card framework to define required sections: intended use, out-of-scope uses, training data provenance, limitations; produce scope document with stakeholder-approved intended-use/out-of-scope boundaries before any license or capability analysis.",
+      "when_to_use": "First step for any candidate base model; prerequisite to all downstream profiling nodes.",
+      "inputs": [
+        "project requirements",
+        "stakeholder list",
+        "regulatory context"
+      ],
+      "outputs": [
+        "model card template",
+        "scope document with intended-use and out-of-scope examples"
+      ]
+    },
+    {
+      "capability": "llama_license_analysis",
+      "subdomain": "select__modelcards",
+      "method": "Parse Llama 2/3 Community License for MAU threshold (>700M triggers Meta approval), derivative model naming restrictions, commercial use clauses, and fine-tune redistribution rules; produce compliance report and approved-use specification.",
+      "when_to_use": "When Llama 2 or Llama 3 family model is a candidate; flag if deployment scale approaches MAU threshold.",
+      "inputs": [
+        "Llama 2/3 license text",
+        "user-count metrics",
+        "commercial deployment plan"
+      ],
+      "outputs": [
+        "license compliance report",
+        "approved-use specification",
+        "MAU threshold alert threshold"
+      ]
+    },
+    {
+      "capability": "qwen_license_analysis",
+      "subdomain": "select__modelcards",
+      "method": "Parse Tongyi Qianwen License vs Apache 2.0 by model size tier; identify competition restriction clause prohibiting use to train competing foundation models; map PRC data-law overlay for mainland China deployments; produce geographic restriction matrix.",
+      "when_to_use": "When any Qwen model family is a candidate; mandatory before commercial deployment.",
+      "inputs": [
+        "Qwen license text",
+        "deployment geography",
+        "commercial plan"
+      ],
+      "outputs": [
+        "Qwen license compliance report",
+        "geographic restriction matrix",
+        "competition clause memo"
+      ]
+    },
+    {
+      "capability": "mistral_license_analysis",
+      "subdomain": "select__modelcards",
+      "method": "Distinguish Apache 2.0 open-weights Mistral 7B/8x7B (no commercial restrictions, free redistribution) from proprietary Mistral Large (commercial API agreement required, no open weights); note MoE routing weight redistribution compliance for Mixtral.",
+      "when_to_use": "When Mistral or Mixtral family models are candidates.",
+      "inputs": [
+        "Mistral model page",
+        "Apache 2.0 text",
+        "Mistral commercial license"
+      ],
+      "outputs": [
+        "license tier map",
+        "MoE routing IP memo"
+      ]
+    },
+    {
+      "capability": "gemma_license_analysis",
+      "subdomain": "select__modelcards",
+      "method": "Parse Gemma Terms of Use (stricter than Apache 2.0): map prohibited use clauses (misinformation, weapons, surveillance) to deployment use case; document redistribution rules per Gemma 1 vs Gemma 2; verify no deployment-domain overlap with prohibited list.",
+      "when_to_use": "When any Gemma model family is a candidate.",
+      "inputs": [
+        "Gemma Terms of Use",
+        "Gemma prohibited use policy",
+        "deployment context"
+      ],
+      "outputs": [
+        "Gemma compliance checklist",
+        "redistribution restriction memo"
+      ]
+    },
+    {
+      "capability": "training_data_provenance_audit",
+      "subdomain": "select__modelcards",
+      "method": "Apply Bender-Friedman 2018 Data Statements framework: document dataset names, versions, cutoff dates, PII handling, consent status, known contamination events, speaker demographics, language variety, annotator characteristics; flag 'web data' without detail as high-risk; assess contamination for target benchmarks.",
+      "when_to_use": "After model card scope is defined; required before benchmark fitness mapping.",
+      "inputs": [
+        "model card",
+        "technical report",
+        "dataset cards",
+        "known contamination reports"
+      ],
+      "outputs": [
+        "data statement",
+        "cutoff date log",
+        "contamination risk register"
+      ]
+    },
+    {
+      "capability": "context_length_profiling",
+      "subdomain": "select__modelcards",
+      "method": "Record advertised vs empirically verified effective context window; document positional encoding type (RoPE/ALiBi/sinusoidal); run needle-in-haystack test to detect lost-in-the-middle degradation; flag models where effective length < 50% of advertised.",
+      "when_to_use": "When candidate model's context window is a selection criterion; critical for RAG and multi-doc pipelines.",
+      "inputs": [
+        "model card",
+        "technical report",
+        "positional encoding spec"
+      ],
+      "outputs": [
+        "context length profile",
+        "attention degradation report"
+      ]
+    },
+    {
+      "capability": "parameter_size_profiling",
+      "subdomain": "select__modelcards",
+      "method": "Record total and active parameter counts (MoE expert activation count separately); compute GPU VRAM requirements at bf16, int8, int4 (70B fp16 ~140GB VRAM; int4 ~35GB); produce quantization option table; note LoRA rank constraints from param count.",
+      "when_to_use": "Required before inference cost modeling and architecture compatibility checks.",
+      "inputs": [
+        "model card",
+        "config.json",
+        "HuggingFace model page"
+      ],
+      "outputs": [
+        "parameter profile",
+        "GPU memory requirement matrix",
+        "quantization option table"
+      ]
+    },
+    {
+      "capability": "tool_use_support_profiling",
+      "subdomain": "select__modelcards",
+      "method": "Verify presence of tool-use/function-calling special tokens in tokenizer config; assess JSON-mode reliability on representative schemas; document parallel call support; flag models lacking native tool-call tokens for orchestration pipelines.",
+      "when_to_use": "When model will be used in orchestrated multi-agent system requiring structured tool calls.",
+      "inputs": [
+        "model card",
+        "tokenizer config",
+        "tool-call documentation"
+      ],
+      "outputs": [
+        "tool-use support matrix",
+        "JSON-mode reliability score",
+        "special-token inventory"
+      ]
+    },
+    {
+      "capability": "benchmark_fitness_mapping",
+      "subdomain": "select__modelcards",
+      "method": "Map MMLU, HumanEval, MATH, MT-Bench, HellaSwag scores to specialist task axes; apply contamination discount to flagged benchmarks; document Goodhart's law risk (benchmark score optimized during training no longer reflects generalization); require task-specific evaluation as primary signal when contamination confirmed.",
+      "when_to_use": "After training data provenance audit; primary evaluation signal for capability comparison.",
+      "inputs": [
+        "model card",
+        "leaderboard data",
+        "contamination reports",
+        "task spec"
+      ],
+      "outputs": [
+        "benchmark-to-task alignment matrix",
+        "contamination risk flags",
+        "Goodhart risk register"
+      ]
+    },
+    {
+      "capability": "specialist_scope_boundary_definition",
+      "subdomain": "select__modelcards",
+      "method": "Define narrow task scope with positive and negative examples within which fine-tuned specialist outperforms generalist; document task boundary, generalist baseline accuracy, and cost-benefit justification for specialization; set scope-exit monitoring criteria.",
+      "when_to_use": "Required before benchmark mapping is used as selection criteria; gates BENCH_FIT from being used without scope anchor.",
+      "inputs": [
+        "task specification",
+        "capability gap analysis",
+        "cost model"
+      ],
+      "outputs": [
+        "specialist scope document",
+        "generalist comparison baseline",
+        "cost-benefit memo"
+      ]
+    },
+    {
+      "capability": "architecture_compatibility_check",
+      "subdomain": "select__modelcards",
+      "method": "Verify transformer variant (attention mechanism, tokenizer family) against PEFT library support matrix and inference serving stack; check tokenizer vocabulary compatibility with task data; produce incompatibility register; treat hard incompatibility as selection rejection regardless of capability.",
+      "when_to_use": "After parameter profiling; hard gate before any fine-tuning commitment.",
+      "inputs": [
+        "model architecture doc",
+        "PEFT library support matrix",
+        "inference server compatibility list"
+      ],
+      "outputs": [
+        "architecture compatibility matrix",
+        "known incompatibility register"
+      ]
+    },
+    {
+      "capability": "quantization_peft_compatibility",
+      "subdomain": "select__modelcards",
+      "method": "Assess bitsandbytes NF4, GPTQ, AWQ support; compute QLoRA memory reduction (70B: 140GB to ~48GB at 4-bit NF4); document LoRA rank constraints under quantization; measure accuracy delta on task sample before committing to quantized serving cost model.",
+      "when_to_use": "When GPU budget requires quantized fine-tuning or serving; feeds directly into inference cost model.",
+      "inputs": [
+        "model card",
+        "bitsandbytes support matrix",
+        "GPTQ/AWQ availability",
+        "LoRA rank analysis"
+      ],
+      "outputs": [
+        "quantization compatibility matrix",
+        "LoRA rank constraint table",
+        "memory reduction estimate"
+      ]
+    },
+    {
+      "capability": "instruct_vs_base_delta_analysis",
+      "subdomain": "select__modelcards",
+      "method": "Profile RLHF/DPO alignment artifacts: measure instruct vs base accuracy gap on task samples; assess safety refusal rate on task domain (>5% triggers base-model preference; >10% mandates base model + targeted SFT); document chat template format requirements.",
+      "when_to_use": "When choosing between instruct and base model variants of the same family.",
+      "inputs": [
+        "base model card",
+        "instruct model card",
+        "alignment technique doc"
+      ],
+      "outputs": [
+        "instruct vs base delta report",
+        "safety refusal rate assessment",
+        "chat template spec"
+      ]
+    },
+    {
+      "capability": "multilingual_capability_profiling",
+      "subdomain": "select__modelcards",
+      "method": "Compute tokenizer fertility (tokens/word) per target language; fertility >4 predicts poor generation quality and doubles token cost; evaluate Belebele/XCOPA per-language accuracy; confirm script support for target languages; select model by primary language tier weighted by production traffic.",
+      "when_to_use": "When deployment requires non-English language support.",
+      "inputs": [
+        "model card",
+        "tokenizer vocabulary",
+        "multilingual benchmark reports"
+      ],
+      "outputs": [
+        "language coverage matrix",
+        "tokenizer fertility report",
+        "per-language accuracy profile"
+      ]
+    },
+    {
+      "capability": "safety_bias_card_analysis",
+      "subdomain": "select__modelcards",
+      "method": "Extract ToxiGen, BBQ bias scores from model card safety section; summarize red-team findings; catalog known failure modes; document safety mitigations applied during training; treat absence of safety documentation as risk flag not absence of risk.",
+      "when_to_use": "Required before final selection decision; especially critical for sensitive domain deployments.",
+      "inputs": [
+        "model card safety section",
+        "red-team report",
+        "ToxiGen/BBQ results"
+      ],
+      "outputs": [
+        "bias risk register",
+        "safety failure mode catalog",
+        "mitigation documentation"
+      ]
+    },
+    {
+      "capability": "inference_cost_modeling",
+      "subdomain": "select__modelcards",
+      "method": "Compute cost-per-million-tokens at target serving volume using GPU hourly rates, tokens/sec benchmarks, batching profiles; compare API vs self-hosted crossover (<1M tokens/day: API often cheaper); model TCO including quantization and batching efficiency; use p95 not mean latency for SLA verification.",
+      "when_to_use": "Required before final selection decision when operating under budget constraints.",
+      "inputs": [
+        "GPU pricing",
+        "tokens/sec benchmark",
+        "batching profile",
+        "API pricing"
+      ],
+      "outputs": [
+        "cost-per-million-token estimate",
+        "TCO comparison table",
+        "GPU utilization model"
+      ]
+    },
+    {
+      "capability": "orchestration_cost_compounding_model",
+      "subdomain": "select__modelcards",
+      "method": "Model multi-agent call chain cost compounding: N-hop chain multiplies base model cost by N plus coordination overhead; 3-hop chain at 200ms/hop = 600ms total; compute compounded latency budget; model retry rate impact on system cost (higher quality base may lower total chain cost despite higher per-call cost).",
+      "when_to_use": "When base model selection is for a model deployed in multi-agent orchestration chain.",
+      "inputs": [
+        "orchestration architecture doc",
+        "call graph",
+        "per-call latency profile",
+        "cost model"
+      ],
+      "outputs": [
+        "compounded cost model",
+        "latency budget allocation",
+        "orchestration cost sensitivity report"
+      ]
+    },
+    {
+      "capability": "task_profile_elicitation",
+      "subdomain": "select__match",
+      "method": "Elicit and document specialist task profile: input/output schema, context length, P99 latency SLA, throughput envelope, quality rubric; all SLA numbers must have measurement methodology; obtain domain SME approval before any model evaluation begins.",
+      "when_to_use": "First step in select__match workflow; prerequisite to all matching and evaluation nodes.",
+      "inputs": [
+        "domain SME interviews",
+        "existing pipeline specs",
+        "SLA contracts"
+      ],
+      "outputs": [
+        "task profile doc",
+        "quality rubric",
+        "latency/throughput envelope"
+      ]
+    },
+    {
+      "capability": "benchmark_contamination_audit",
+      "subdomain": "select__match",
+      "method": "Audit candidate models for n-gram overlap between training data and evaluation benchmarks; assign contamination risk score per model; flag contaminated benchmarks; require at least one uncontaminated held-out evaluation in selection protocol; substitute alternative benchmark when contamination confirmed.",
+      "when_to_use": "Before using any public benchmark score in model selection decisions.",
+      "inputs": [
+        "model training data cards",
+        "benchmark source datasets",
+        "n-gram overlap tools"
+      ],
+      "outputs": [
+        "contamination risk score per model",
+        "flagged benchmarks",
+        "alternative eval list"
+      ]
+    },
+    {
+      "capability": "license_tos_compliance_verification",
+      "subdomain": "select__match",
+      "method": "Verify candidate license permits: commercial use, fine-tuning, distillation, output commercialization, orchestration pipeline deployment; obtain legal counsel sign-off; document go/no-go compliance decision per model in selection record; treat unresolved compliance as hard selection block.",
+      "when_to_use": "After task profile defined; hard gate before any shortlisting or evaluation spend.",
+      "inputs": [
+        "model license files",
+        "ToS documents",
+        "deployment architecture description"
+      ],
+      "outputs": [
+        "go/no-go compliance decision per model",
+        "legal risk register"
+      ]
+    },
+    {
+      "capability": "cost_quality_latency_pareto_mapping",
+      "subdomain": "select__match",
+      "method": "Map Pareto frontier of shortlisted models across cost-per-token, quality metric, P99 latency; identify dominated models; apply quality floor as hard constraint (non-negotiable gate); apply latency SLA as hard constraint; selectable operating point is intersection of both feasible regions within budget.",
+      "when_to_use": "After contamination audit and license clearance; core analytical step for final shortlist ranking.",
+      "inputs": [
+        "task metric scores per model",
+        "cost-per-1k-token pricing",
+        "P99 latency benchmarks",
+        "monthly token budget"
+      ],
+      "outputs": [
+        "cost/quality Pareto chart",
+        "dominant model set",
+        "budget feasibility assessment"
+      ]
+    },
+    {
+      "capability": "generalist_vs_specialist_evaluation",
+      "subdomain": "select__match",
+      "method": "Test frontier generalist model (few-shot prompting) on same evaluation set before committing to fine-tuning; fine-tune only if quality gap exists AND API cost at projected volume exceeds fine-tuned serving cost; document generalist quality ceiling as baseline.",
+      "when_to_use": "Before initiating fine-tuning pipeline; avoids unnecessary specialization when generalist suffices.",
+      "inputs": [
+        "task evaluation set",
+        "generalist model API access",
+        "quality threshold"
+      ],
+      "outputs": [
+        "generalist baseline score",
+        "fine-tuning-needed decision",
+        "prompt engineering optimum"
+      ]
+    },
+    {
+      "capability": "lora_vs_full_finetune_decision",
+      "subdomain": "select__match",
+      "method": "Decide LoRA/QLoRA vs full fine-tuning based on: task adaptation depth (low-rank sufficient for most narrow tasks), GPU memory budget (LoRA reduces 4-8x: QLoRA 70B on 2x40GB vs 8x80GB full FT), catastrophic forgetting risk, and serving adapter-switching overhead; default to LoRA; escalate to full FT only when quality gap exceeds threshold after rank search.",
+      "when_to_use": "After generalist baseline established and quality gap quantified.",
+      "inputs": [
+        "task adaptation depth estimate",
+        "GPU memory budget",
+        "forgetting risk assessment",
+        "serving overhead constraints"
+      ],
+      "outputs": [
+        "PEFT vs full-FT decision record",
+        "LoRA rank/alpha config",
+        "training cost estimate"
+      ]
+    },
+    {
+      "capability": "base_model_shortlisting",
+      "subdomain": "select__match",
+      "method": "Produce ranked shortlist of 3-5 base models per specialist that pass: license gate, cost/latency budget, quality-gap filter, and contamination check; document exclusion rationale for rejected candidates; include parameter count tiers and architecture families.",
+      "when_to_use": "After license, contamination, and Pareto analysis; input to final selection decision.",
+      "inputs": [
+        "license/ToS decisions",
+        "cost/quality Pareto",
+        "task profile",
+        "contamination audit"
+      ],
+      "outputs": [
+        "shortlist doc with ranked candidates",
+        "exclusion rationale log"
+      ]
+    },
+    {
+      "capability": "param_count_tier_analysis",
+      "subdomain": "select__match",
+      "method": "Stratify candidate models by parameter count tier (3B/7B/13B/34B/70B+) to infer latency, memory, cost class; for MoE models use active parameters not total for serving cost estimates; map tier to GPU SKU requirements.",
+      "when_to_use": "During shortlisting and Pareto mapping when hardware budget constrains model size.",
+      "inputs": [
+        "model family list",
+        "hardware budget",
+        "task quality requirement"
+      ],
+      "outputs": [
+        "tier-classified candidate list",
+        "per-tier cost and latency class estimate"
+      ]
+    },
+    {
+      "capability": "quantization_impact_assessment",
+      "subdomain": "select__match",
+      "method": "Measure quantization accuracy delta (INT4 vs fp16) on task-specific eval sample before finalizing cost model; acceptable quantization level = highest compression keeping eval score above quality floor; INT4 aggressive quantization risks quality floor breach on reasoning-heavy tasks; MoE models exhibit higher quantization sensitivity.",
+      "when_to_use": "When quantized serving is planned; feeds into serving overhead model and throughput cost.",
+      "inputs": [
+        "shortlisted model weights",
+        "quantization configs",
+        "task eval sample"
+      ],
+      "outputs": [
+        "quantization-induced accuracy delta",
+        "recommended quantization level",
+        "serving memory profile"
+      ]
+    },
+    {
+      "capability": "throughput_cost_modeling",
+      "subdomain": "select__match",
+      "method": "Compute tokens/second throughput per GPU SKU at target batch size; model batching efficiency cliff; calculate cost-per-request at SLA-constrained batch size; derive monthly GPU cost at projected request volume.",
+      "when_to_use": "Required for all serving cost models; feeds multi-specialist cost aggregate.",
+      "inputs": [
+        "GPU SKU specs",
+        "tokens/sec benchmarks at target batch size",
+        "request volume projection"
+      ],
+      "outputs": [
+        "throughput profile",
+        "cost-per-request estimate",
+        "monthly GPU cost"
+      ]
+    },
+    {
+      "capability": "multi_specialist_cost_modeling",
+      "subdomain": "select__match",
+      "method": "Aggregate serving cost and latency across all specialist models in orchestration chain; model fallback to generalist at modeled failure rate; compute chain-level P99 latency; system-level budget constraints gate individual specialist selection; re-optimize jointly if system budget violated.",
+      "when_to_use": "When multiple specialist models are deployed in a single orchestration pipeline.",
+      "inputs": [
+        "per-specialist throughput cost",
+        "fallback policy",
+        "latency SLA",
+        "chain topology"
+      ],
+      "outputs": [
+        "system-level cost model",
+        "chain P99 latency estimate",
+        "system budget feasibility verdict"
+      ]
+    },
+    {
+      "capability": "domain_specific_pretraining_assessment",
+      "subdomain": "select__match",
+      "method": "Assess domain-pretrained base models (e.g. medical, legal, code) for in-domain uplift using held-out task eval; quantify uplift vs general-purpose base; prefer domain model only if measured uplift justifies ecosystem support overhead and smaller community; treat high benchmark score with low task-specific score as pretraining corpus misalignment.",
+      "when_to_use": "When a domain-specialized base model is available as alternative to general-purpose base.",
+      "inputs": [
+        "domain model card",
+        "general base eval scores",
+        "task-specific held-out eval"
+      ],
+      "outputs": [
+        "domain uplift quantification",
+        "domain vs general base recommendation"
+      ]
+    },
+    {
+      "capability": "knowledge_distillation_policy",
+      "subdomain": "select__match",
+      "method": "Verify teacher model ToS permits distillation before generating synthetic training data (OpenAI ToS prohibits; many Apache 2.0 models permit); document approved distillation approach (Orca-style, Chain-of-Thought rationale); verify synthetic data quality on held-out eval before training use.",
+      "when_to_use": "When synthetic training data from a teacher model is planned as part of specialist training.",
+      "inputs": [
+        "teacher model ToS",
+        "distillation technique options",
+        "task eval dataset"
+      ],
+      "outputs": [
+        "distillation policy document",
+        "synthetic data generation plan",
+        "ToS compliance record"
+      ]
+    },
+    {
+      "capability": "fallback_policy_definition",
+      "subdomain": "select__match",
+      "method": "Define specialist failure fallback chain: primary specialist -> secondary specialist or generalist API fallback; model fallback cost including incidence rate; set circuit breaker on fallback rate; bound maximum system cost under incident scenario.",
+      "when_to_use": "Required for all production specialist deployments in orchestration chains.",
+      "inputs": [
+        "specialist quality floor",
+        "generalist API cost",
+        "target fallback rate"
+      ],
+      "outputs": [
+        "fallback policy document",
+        "fallback cost bound",
+        "circuit breaker threshold"
+      ]
+    },
+    {
+      "capability": "goodhart_guard",
+      "subdomain": "select__match",
+      "method": "Detect Goodhart's Law effects: require at least one evaluation dataset not in public benchmarks; measure correlation between benchmark leaderboard rank and task-specific held-out eval score; downweight benchmark score 3x relative to task-specific eval in selection; replace contaminated benchmarks with held-out alternatives.",
+      "when_to_use": "Throughout evaluation pipeline; applied as guard condition over all benchmark-based selection signals.",
+      "inputs": [
+        "model leaderboard scores",
+        "held-out task eval results",
+        "contamination audit"
+      ],
+      "outputs": [
+        "Goodhart risk assessment",
+        "benchmark vs task-eval correlation",
+        "guard conditions"
+      ]
+    },
+    {
+      "capability": "serving_overhead_model",
+      "subdomain": "select__match",
+      "method": "Model GPU memory at max context length including KV-cache; estimate multi-LoRA adapter-switching overhead (vLLM framework dependent); compute batching efficiency at P99 context length; flag memory overflow scenarios before model selection is finalized.",
+      "when_to_use": "After LoRA vs full FT decision; hard gate before finalizing serving cost model.",
+      "inputs": [
+        "model weight size",
+        "KV-cache size estimate",
+        "adapter count",
+        "serving framework"
+      ],
+      "outputs": [
+        "GPU memory requirement per model",
+        "batching efficiency estimate",
+        "multi-LoRA switching overhead"
+      ]
+    },
+    {
+      "capability": "selection_record_and_auditability",
+      "subdomain": "select__match",
+      "method": "Produce auditable selection record: selected model with rationale, rejected candidates with exclusion reasons, go/no-go checklist, compliance sign-offs; pin model to specific commit hash in model registry; define re-evaluation trigger policy (trigger-based: major release, cost shift >20%, quality regression preferred over calendar cadence).",
+      "when_to_use": "Terminal step of selection workflow; required for compliance audits and future re-evaluation.",
+      "inputs": [
+        "all profiling outputs",
+        "shortlist",
+        "Pareto analysis",
+        "compliance decisions"
+      ],
+      "outputs": [
+        "selection decision document",
+        "pinned model registry entry",
+        "re-evaluation trigger policy"
+      ]
+    }
+  ],
+  "decision_procedure": [
+    "1. TASK_PROFILE_FIRST: Elicit and lock task profile (I/O schema, context, latency SLA, quality bar, throughput) before examining any models. All downstream filters reference this profile.",
+    "2. LICENSE_GATE: Parse license/ToS for all candidate models. Apply hard dominance rule: unresolved license compliance blocks selection regardless of capability or cost advantage. Llama: check MAU threshold cliff. Qwen: check competition clause and PRC overlay. Mistral: distinguish Apache 2.0 vs proprietary tier. Gemma: map prohibited-use clauses to deployment context.",
+    "3. MODEL_CARD_AND_PROVENANCE: For compliant candidates, parse model card per Mitchell 2019 framework. Audit training data provenance via Bender-Friedman 2018 Data Statements. Record cutoff date, corpus names, PII handling. Build contamination risk register for target benchmarks.",
+    "4. ARCHITECTURE_HARD_GATE: Verify transformer architecture compatibility with PEFT library and inference server. Incompatibility is a hard rejection; skip capability profiling for incompatible candidates.",
+    "5. CAPABILITY_PROFILING: Profile: context length (advertised vs needle-in-haystack empirical), parameter count and GPU VRAM at bf16/int4, tool-use token support, multilingual fertility for target languages, instruct vs base refusal rate, benchmark fitness mapped to task axes.",
+    "6. BENCHMARK_CONTAMINATION_AND_GOODHART_GUARD: Apply contamination discount to all benchmark scores. Require held-out task-specific evaluation as primary signal. Weight task-specific eval 3x benchmark leaderboard. Replace contaminated benchmarks with held-out alternatives.",
+    "7. SPECIALIST_SCOPE_BOUNDARY: Define narrow task scope with positive/negative examples before using benchmark data in selection. Anchor scope to task definition, not leaderboard rank.",
+    "8. GENERALIST_BASELINE: Test best generalist prompt-engineered model on task eval. Fine-tune only if quality gap exists AND frontier API cost at projected volume exceeds self-hosted specialist serving cost.",
+    "9. PARETO_MAPPING: Compute cost/quality/latency Pareto frontier across compliant, compatible, shortlisted candidates. Quality floor and latency SLA are hard constraints; selectable region is intersection of both feasible sets.",
+    "10. QUANTIZATION_AND_SERVING_OVERHEAD: Measure quantization accuracy delta on task sample. Model GPU memory including KV-cache and multi-LoRA overhead. Cost model must include quantization tier actually deployable above quality floor.",
+    "11. ORCHESTRATION_COST_COMPOUNDING: For models in multi-agent chains, model full chain cost including N-hop multiplier and retry rate. Higher quality base may lower total system cost despite higher per-call cost.",
+    "12. LORA_VS_FULL_FT_DECISION: Default to LoRA; escalate to full FT only after rank search fails to close quality gap. Verify serving adapter-switching latency within SLA.",
+    "13. DISTILLATION_POLICY: If synthetic data planned, verify teacher ToS permits distillation before generating data. Hard block if ToS prohibits.",
+    "14. SELECTION_DECISION_AND_RECORD: Synthesize all profiling outputs into selection decision. Require: license rationale, capability evidence, cost model, safety assessment, rejected-alternatives log, go/no-go checklist. Pin to commit hash. Define re-evaluation triggers.",
+    "15. RE_EVALUATION_CADENCE: Set trigger-based (not calendar) re-evaluation: major model release by dominant provider, cost shift >20%, quality regression in production, task scope change."
+  ],
+  "workflow": [
+    {
+      "phase": "foundations",
+      "objective": "Lock task requirements and eliminate legally blocked candidates before any evaluation spend",
+      "entry": [
+        "project requirements defined",
+        "candidate model list available"
+      ],
+      "exit": [
+        "task profile approved by domain SME",
+        "all license compliance decisions documented with legal sign-off"
+      ],
+      "gates": [
+        "task profile must include measurement methodology for all SLA numbers",
+        "unresolved license blocks must be cleared before proceeding"
+      ]
+    },
+    {
+      "phase": "model_card_and_provenance",
+      "objective": "Establish training data provenance, cutoff dates, contamination risk, and safety/bias profile for compliant candidates",
+      "entry": [
+        "task profile locked",
+        "license-compliant candidate set finalized"
+      ],
+      "exit": [
+        "data statement produced per Bender-Friedman 2018 for each candidate",
+        "contamination risk register populated for target benchmarks"
+      ],
+      "gates": [
+        "knowledge cutoff date must be recorded",
+        "contamination risk for target benchmarks must be assessed before using benchmark scores"
+      ]
+    },
+    {
+      "phase": "capability_profiling",
+      "objective": "Profile each candidate on context length, parameters/VRAM, tool-use, multilingual fertility, instruct/base delta, benchmark fitness",
+      "entry": [
+        "provenance audit complete",
+        "architecture compatibility verified (hard gate)"
+      ],
+      "exit": [
+        "capability profile matrix populated for all candidates",
+        "benchmark-to-task alignment matrix produced with contamination flags"
+      ],
+      "gates": [
+        "hard incompatibility with PEFT library or inference server rejects candidate",
+        "effective context length must be empirically verified not just advertised"
+      ]
+    },
+    {
+      "phase": "matching_and_pareto_analysis",
+      "objective": "Map specialist task to model candidates via Pareto analysis; establish generalist baseline; decide LoRA vs full FT",
+      "entry": [
+        "capability profiles complete",
+        "benchmark contamination audit complete"
+      ],
+      "exit": [
+        "Pareto chart covering at least 3 models with finance budget sign-off",
+        "generalist baseline documented",
+        "LoRA vs full FT decision record"
+      ],
+      "gates": [
+        "quality floor is non-negotiable gate; cost optimization applies only within quality-achieving set",
+        "latency SLA and quality floor are both hard constraints"
+      ]
+    },
+    {
+      "phase": "cost_and_serving_modeling",
+      "objective": "Compute full system cost including quantization, orchestration chain compounding, serving overhead, and fallback cost",
+      "entry": [
+        "shortlist produced",
+        "LoRA vs full FT decided"
+      ],
+      "exit": [
+        "cost-per-million-token calculated for target volume",
+        "chain P99 latency within UX SLA verified",
+        "fallback cost bounded"
+      ],
+      "gates": [
+        "cost model must include orchestration compounding for multi-agent deployments",
+        "quantization accuracy delta must be measured on task sample before committing to quantized cost model"
+      ]
+    },
+    {
+      "phase": "selection_decision_and_governance",
+      "objective": "Produce auditable selection decision with traceability, version pin, and re-evaluation triggers",
+      "entry": [
+        "all profiling dimensions complete",
+        "cost model signed off"
+      ],
+      "exit": [
+        "selection decision approved by ml_architect, legal_counsel, product_manager",
+        "model pinned to commit hash in registry",
+        "re-evaluation triggers defined"
+      ],
+      "gates": [
+        "selection document must include rejected alternatives with exclusion rationale",
+        "distillation policy must have ToS compliance record before synthetic data generation"
+      ]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "Llama MAU count approaches 80% of 700M threshold",
+      "action": "human_review",
+      "reason": "Crossing MAU threshold triggers mandatory Meta commercial license negotiation; requires legal and product leadership decision before threshold breach"
+    },
+    {
+      "condition": "Qwen no-competition clause conflicts with product roadmap involving foundation model training",
+      "action": "human_review",
+      "reason": "Competition clause scope determination requires legal counsel; automated resolution not sufficient for contractual risk"
+    },
+    {
+      "condition": "Gemma prohibited use policy overlaps with deployment use case (e.g. security research, surveillance-adjacent applications)",
+      "action": "human_review",
+      "reason": "Prohibited use clause mapping requires legal review to determine if use case falls within restriction"
+    },
+    {
+      "condition": "Benchmark contamination discovered post-selection for model already in production",
+      "action": "flag",
+      "reason": "Selection was based on inflated scores; requires immediate re-evaluation against uncontaminated held-out eval; selection may need revision"
+    },
+    {
+      "condition": "Instruct model safety refusal rate exceeds 10% on task domain",
+      "action": "flag",
+      "reason": "Alignment tax materially degrades task accuracy; automatic recommendation to fall back to base model with targeted SFT"
+    },
+    {
+      "condition": "Architecture incompatibility with required PEFT library confirmed",
+      "action": "flag",
+      "reason": "Hard rejection of candidate; selection must proceed with remaining candidates or sourcing alternative"
+    },
+    {
+      "condition": "Quantization accuracy delta exceeds 5% absolute on task evaluation",
+      "action": "flag",
+      "reason": "Quantized cost model is invalid; full-precision requirement changes GPU budget substantially; requires re-planning"
+    },
+    {
+      "condition": "Orchestration chain P95 latency exceeds UX SLA under load test",
+      "action": "human_review",
+      "reason": "SLA breach requires product leadership decision: accept latency degradation, switch to smaller/faster model, or redesign chain"
+    },
+    {
+      "condition": "Teacher model ToS prohibits distillation but synthetic data pipeline has been initiated",
+      "action": "human_review",
+      "reason": "Legal violation risk; requires immediate halt and legal review before any synthetic data is used in training"
+    },
+    {
+      "condition": "Multi-specialist fallback rate to expensive generalist exceeds 3x modeled rate during incident",
+      "action": "flag",
+      "reason": "System cost budget may be exceeded; circuit breaker should be triggered; fallback policy requires revision"
+    },
+    {
+      "condition": "Selected model weights removed or ToS changed by provider post-selection",
+      "action": "human_review",
+      "reason": "Emergency re-selection required; activate secondary shortlist candidate; update decision record"
+    },
+    {
+      "condition": "Model card absent or missing model_details and intended_use sections",
+      "action": "flag",
+      "reason": "Cannot perform structured provenance or safety analysis; require minimum card sections as gate or third-party audit"
+    }
+  ],
+  "validation_checklist": [
+    "Task profile document is approved by domain SME and all SLA numbers have measurement methodology",
+    "All candidate model licenses have been parsed and legal sign-off obtained; unresolved compliance issues block selection",
+    "Llama MAU threshold clause identified and documented with monitoring alert at 80% threshold",
+    "Qwen license tier correctly mapped per model size; competition clause documented; PRC overlay noted if mainland China deployment",
+    "Gemma prohibited use clauses mapped to deployment checklist; no overlap with intended use case",
+    "Model card contains all Mitchell 2019 sections: intended use, out-of-scope, training data, limitations, evaluation results",
+    "Training data provenance documented: cutoff date, primary corpus names, PII handling, contamination events",
+    "Contamination risk assessed for all benchmarks used in selection; at least one uncontaminated held-out eval included",
+    "Effective context length verified empirically via needle-in-haystack test (not just advertised length)",
+    "Parameter profile includes total and active parameters (MoE expert activation count), GPU VRAM at bf16 and int4",
+    "Architecture verified against PEFT library support matrix; hard incompatibilities result in candidate rejection",
+    "Quantization accuracy delta measured on task sample before finalizing cost model on quantized configuration",
+    "Tool-use token presence verified in tokenizer config; JSON-mode reliability tested on sample schema",
+    "Tokenizer fertility measured for all target non-English languages; >4 tokens/word flagged as quality risk",
+    "Instruct vs base accuracy gap and safety refusal rate measured on task-domain samples",
+    "Benchmark scores mapped to specialist task axes with contamination flags; Goodhart risk documented",
+    "Specialist scope boundary defined with positive and negative task examples; generalist baseline accuracy recorded",
+    "Generalist model evaluated before fine-tuning commitment; fine-tuning justified by quality gap AND cost",
+    "Pareto chart covers at least 3 models; finance budget feasibility signed off",
+    "Cost model includes orchestration chain compounding for multi-agent deployments",
+    "LoRA vs full FT decision justified by rank selection rationale and memory budget verification",
+    "Fallback policy documented with fallback cost bound and circuit breaker threshold",
+    "Selection decision document includes rejected alternatives with exclusion rationale and go/no-go checklist",
+    "Selected model pinned to specific commit hash in model registry with version update policy",
+    "Re-evaluation triggers defined (major release, cost shift >20%, quality regression) and monitoring established"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "license_openness_vs_legal_risk",
+      "resolution": "License compliance is a hard gate overriding all capability and cost considerations. Prefer Apache 2.0 when available. Evaluate Llama MAU threshold vs Qwen competition clause against deployment plan; select license with fewer binding constraints. Unresolved compliance blocks selection decision."
+    },
+    {
+      "tradeoff": "benchmark_performance_vs_contamination_risk",
+      "resolution": "Contamination confirmed disqualifies benchmark score; mark as invalid; require task-specific evaluation. Goodhart guard: weight task-specific held-out eval 3x benchmark leaderboard. Leaderboard rank alone never sufficient for selection."
+    },
+    {
+      "tradeoff": "model_size_vs_inference_cost",
+      "resolution": "Compute Pareto frontier of accuracy vs inference cost at target throughput; default to smallest model meeting accuracy threshold and latency SLA. Quality floor and latency SLA are both non-negotiable hard constraints; selectable region is their intersection."
+    },
+    {
+      "tradeoff": "specialist_scope_narrowness_vs_brittleness",
+      "resolution": "Define scope with positive and negative examples; anchor scope to task definition not benchmark rank. Set scope-exit monitoring in production. Over-narrowing increases brittleness; under-narrowing erodes specialist advantage."
+    },
+    {
+      "tradeoff": "quantization_efficiency_vs_accuracy_degradation",
+      "resolution": "Profile quantization accuracy delta on task sample before committing. Acceptable quantization level = highest compression maintaining score above quality floor. MoE and multilingual models exhibit higher quantization sensitivity."
+    },
+    {
+      "tradeoff": "instruct_alignment_vs_task_accuracy",
+      "resolution": "Measure refusal rate on task domain: >5% prefer base model with targeted SFT; >10% mandate base model. Safety refusal rate >10% gates instruct model selection; base model wins regardless of instruct accuracy delta."
+    },
+    {
+      "tradeoff": "training_data_openness_vs_provenance_uncertainty",
+      "resolution": "Treat undisclosed training data ('web data' without detail) as high contamination risk. Require task-specific evaluation before relying on benchmark scores. Absent data statement is risk flag not absence of risk."
+    },
+    {
+      "tradeoff": "orchestration_cost_compounding_vs_model_quality",
+      "resolution": "Model full chain cost including retry rate before comparing models. Higher quality base may lower total system cost despite higher per-call cost by reducing retries and error-correction calls. System-level cost and latency constraints gate individual specialist selection."
+    },
+    {
+      "tradeoff": "generalist_api_vs_fine_tuned_specialist",
+      "resolution": "Fine-tune only if quality gap exists AND API cost at projected volume exceeds fine-tuned serving cost. Generalist prompt-engineering evaluated first; fine-tuning is not default path."
+    },
+    {
+      "tradeoff": "lora_vs_full_finetune",
+      "resolution": "Default to LoRA (4-8x memory reduction). Escalate to full FT only when LoRA quality gap exceeds threshold after rank search. Serving adapter-switching latency verified within SLA before committing to multi-LoRA approach."
+    },
+    {
+      "tradeoff": "distillation_gain_vs_tos_risk",
+      "resolution": "Teacher model ToS compliance is a hard block; synthetic data policy cannot override license prohibition. Distillation proceeds only from ToS-permitting teachers."
+    },
+    {
+      "tradeoff": "model_selection_stability_vs_refresh_cadence",
+      "resolution": "Trigger-based re-evaluation (major release, cost shift >20%, quality regression, task scope change) preferred over calendar cadence. Excessive re-evaluation frequency creates engineering churn without proportional benefit."
+    },
+    {
+      "tradeoff": "multilingual_coverage_vs_english_optimization",
+      "resolution": "Select model by primary language tier weighted by production traffic. Use fertility analysis (>4 tokens/word = quality risk) to detect hidden gaps before evaluation. English-optimized models not assumed to generalize."
+    },
+    {
+      "tradeoff": "domain_pretrained_vs_general_base",
+      "resolution": "Use domain-pretrained model only if measured task-specific eval uplift justifies ecosystem support overhead and smaller community. High benchmark score with low task-specific score signals pretraining corpus misalignment; prefer general base."
+    }
+  ],
+  "glossary": [
+    {
+      "term": "model_card",
+      "definition": "Structured documentation artifact per Mitchell et al. 2019 describing intended use, out-of-scope uses, training data provenance, evaluation results, and limitations; required foundation for base model selection."
+    },
+    {
+      "term": "data_statement",
+      "definition": "Per Bender & Friedman 2018: documentation framework capturing speaker demographics, language variety, annotator characteristics, and speech situation for training datasets; used to audit provenance and predict demographic bias gaps."
+    },
+    {
+      "term": "goodharts_law",
+      "definition": "When a measure becomes a target it ceases to be a good measure; benchmark scores optimized during training or vendor evaluation no longer reflect real-world capability; mitigated by held-out task-specific eval."
+    },
+    {
+      "term": "benchmark_contamination",
+      "definition": "Presence of evaluation benchmark examples in model training data causing inflated scores not reflecting generalization; detected via n-gram overlap analysis; contaminated benchmarks disqualified from selection."
+    },
+    {
+      "term": "tokenizer_fertility",
+      "definition": "Average tokens per word for a given language in a specific tokenizer; >4 tokens/word indicates language is underrepresented in training, predicts poor generation quality, and doubles effective token cost."
+    },
+    {
+      "term": "mau_threshold",
+      "definition": "Monthly active user count threshold in Llama license (>700M MAU) above which commercial license negotiation with Meta is required; crossing triggers a hard legal cliff."
+    },
+    {
+      "term": "alignment_tax",
+      "definition": "Accuracy cost on task performance due to safety RLHF/DPO alignment causing refusals or conservative responses in task domains adjacent to safety boundaries; measured as refusal rate on task domain samples."
+    },
+    {
+      "term": "quality_floor",
+      "definition": "Minimum acceptable task metric score below which no model is deployable regardless of cost or latency advantage; non-negotiable hard constraint that gates all cost optimization."
+    },
+    {
+      "term": "pareto_frontier",
+      "definition": "Set of model options where no alternative dominates on both cost and quality simultaneously; defines feasible tradeoff region for model selection given budget constraints."
+    },
+    {
+      "term": "orchestration_cost_compounding",
+      "definition": "Multiplication of per-call latency and cost through multi-agent chains; N-hop chain multiplies base model cost by N plus coordination overhead; higher quality base may reduce total chain cost via lower retry rate."
+    },
+    {
+      "term": "specialist_model",
+      "definition": "Fine-tuned model optimized for a narrow, well-defined task domain within an orchestrated multi-model system; outperforms generalist only within its defined task scope boundary."
+    },
+    {
+      "term": "lora",
+      "definition": "Low-rank adaptation: parameter-efficient fine-tuning injecting small rank-decomposed weight matrices into frozen base model layers; reduces GPU memory 4-8x vs full fine-tuning; default fine-tuning method unless quality gap requires full FT."
+    },
+    {
+      "term": "knowledge_distillation",
+      "definition": "Training a smaller student model on outputs from a larger teacher model to transfer capability without full pretraining cost; requires verification that teacher model ToS permits distillation before initiating."
+    },
+    {
+      "term": "task_profile",
+      "definition": "Structured specification of a specialist's input/output format, quality requirements, latency SLA, throughput, and context length constraints; prerequisite first step that all downstream model selection filters reference."
+    },
+    {
+      "term": "tongyi_qianwen_license",
+      "definition": "Alibaba license for larger Qwen models containing a no-competition clause prohibiting use to train competing foundation models; smaller Qwen variants use Apache 2.0 permitting broad commercial use."
+    }
+  ],
+  "competency_questions_covered": [
+    "What sections must a model card contain to support base model selection for specialist LLM fine-tuning?",
+    "What out-of-scope and intended-use boundaries must be documented before license analysis begins?",
+    "What are the key license restrictions in the Llama 2/3, Qwen Tongyi, Mistral, and Gemma license families?",
+    "How is legal compliance determined for commercial deployment of each open-weights model family?",
+    "How is training data provenance audited and what Data Statements fields are required?",
+    "How is benchmark contamination risk assessed and mitigated during model selection?",
+    "How are context length, parameter count, and GPU memory requirements profiled for candidate models?",
+    "How is the effective context window verified empirically beyond the advertised length?",
+    "How is architecture compatibility with PEFT and inference serving verified before model selection?",
+    "What is the instruct vs base model delta and when does the alignment tax justify using the base model?",
+    "How does multilingual tokenizer fertility predict generation quality for non-English languages?",
+    "How are benchmark scores mapped to narrow specialist task requirements vs broad generalist capability?",
+    "How does per-model inference cost compound through multi-agent orchestration chains?",
+    "What criteria drive the final base model selection decision and how is it documented?",
+    "What task profile constraints gate which base models are eligible for each specialist?",
+    "How is the minimum acceptable quality bar set and enforced in the model selection process?",
+    "How is the cost/quality/latency Pareto frontier mapped and which operating point is chosen?",
+    "When should a fine-tuned small specialist beat a large generalist and what evidence is required?",
+    "How is the decision between LoRA and full fine-tuning made given GPU budget and task requirements?",
+    "What is the fallback policy when a specialist model fails and how are fallback costs bounded?",
+    "How is domain-specific pretraining assessed and when does it justify choosing a domain base model?",
+    "How is knowledge distillation policy constrained by teacher model licensing and ToS?",
+    "How are multi-specialist orchestration cost and latency modeled across the full specialist chain?",
+    "How is the model selection record made auditable and how are re-evaluation triggers defined?",
+    "How does quantization impact quality and serving cost, and how is the acceptable quantization level determined?"
+  ]
+}

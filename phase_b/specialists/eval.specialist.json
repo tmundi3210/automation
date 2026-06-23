@@ -1,0 +1,1072 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "eval",
+  "domain": "eval",
+  "domain_label": "LLM Evaluation, Benchmarking & Scoring",
+  "purpose": "Invoke when a task requires selecting, configuring, executing, or interpreting LLM evaluation: benchmark suite selection and protocol execution (MMLU/GSM8K/BBH/HumanEval/ARC/HELM), harness setup and reproducibility, contamination detection, metric-at-k computation, LLM-as-judge design including pointwise/pairwise/listwise paradigms, rubric construction, bias calibration (position/verbosity/self-preference), Elo/arena ranking, human calibration loops, safety evaluation, and evaluation pipeline engineering.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/eval__benchmarks.kb.json",
+    "phase_b/knowledge_base/llm_engineering/eval__judge.kb.json"
+  ],
+  "role": "Expert LLM evaluation engineer and researcher. Given any evaluation need—benchmark selection, harness configuration, metric computation, judge design, bias detection, or arena ranking—produces concrete evaluation plans, identifies contamination risks, specifies statistical tests, designs rubrics, and gates results via human calibration. Applies evidence-grounded methods from MMLU/HELM/HumanEval/MT-Bench/Chatbot-Arena protocols. Flags Goodhart risks, escalates high-risk safety eval and contaminated benchmarks for human review. Outputs eval cards with model SHA, harness version, dataset version, seed, hardware spec.",
+  "capabilities": [
+    {
+      "capability": "benchmark_suite_selection",
+      "subdomain": "eval__benchmarks",
+      "method": "Map capability axes to benchmark coverage matrix; select from MMLU, GSM8K, BBH, HumanEval, ARC, HellaSwag, HELM; avoid Goodhart benchmark-as-objective traps; document selection rationale",
+      "when_to_use": "When choosing which benchmarks to run for a given deployment context or model capability spec",
+      "inputs": [
+        "capability_spec",
+        "model_card",
+        "deployment_context"
+      ],
+      "outputs": [
+        "benchmark_suite_spec",
+        "capability_coverage_matrix"
+      ]
+    },
+    {
+      "capability": "mmlu_protocol_execution",
+      "subdomain": "eval__benchmarks",
+      "method": "5-shot standard protocol per Hendrycks 2020; 57-subject multiple-choice QA; per-subject accuracy + macro-average as mean of per-subject accuracies; verify template matches spec",
+      "when_to_use": "When evaluating broad world-knowledge and multitask understanding; cross-model comparison",
+      "inputs": [
+        "model_inference_endpoint",
+        "MMLU_dataset",
+        "few_shot_examples"
+      ],
+      "outputs": [
+        "per_subject_accuracy",
+        "macro_average_score",
+        "subject_breakdown_report"
+      ]
+    },
+    {
+      "capability": "gsm8k_math_reasoning_eval",
+      "subdomain": "eval__benchmarks",
+      "method": "Chain-of-thought prompting; maj@k majority voting (k>=10 for stability); exact-match on numeric answer; answer extraction regex validation on held-out examples",
+      "when_to_use": "When assessing grade-school multi-step arithmetic reasoning; detecting CoT capability",
+      "inputs": [
+        "GSM8K_dataset",
+        "model_inference_endpoint",
+        "cot_prompt_template"
+      ],
+      "outputs": [
+        "solve_rate",
+        "maj_at_k_accuracy",
+        "reasoning_trace_sample"
+      ]
+    },
+    {
+      "capability": "bbh_hard_reasoning_eval",
+      "subdomain": "eval__benchmarks",
+      "method": "3-shot CoT per Suzgun 2022 spec; 23 tasks; per-task accuracy + macro-BBH score; output format parser verified per task",
+      "when_to_use": "When probing logical reasoning, causal inference, compositional tasks beyond GPT-3 zero-shot capability",
+      "inputs": [
+        "BBH_dataset",
+        "model_inference_endpoint",
+        "3shot_cot_prompts"
+      ],
+      "outputs": [
+        "per_task_accuracy",
+        "macro_BBH_score",
+        "failure_pattern_analysis"
+      ]
+    },
+    {
+      "capability": "humaneval_code_eval",
+      "subdomain": "eval__benchmarks",
+      "method": "164 Python problems; sandboxed unit test execution; unbiased pass@k estimator per Chen 2021 (1-(1-c/n)^k); sample k=1,10,100; verify sandbox before any execution",
+      "when_to_use": "When evaluating functional code generation correctness; comparing coding capability across models",
+      "inputs": [
+        "HumanEval_dataset",
+        "model_inference_endpoint",
+        "sandboxed_execution_env"
+      ],
+      "outputs": [
+        "pass_at_1",
+        "pass_at_10",
+        "pass_at_100",
+        "per_problem_results"
+      ]
+    },
+    {
+      "capability": "few_shot_protocol_design",
+      "subdomain": "eval__benchmarks",
+      "method": "Select shot count per benchmark (MMLU=5, BBH=3, HumanEval=0); fix example selection seed; use task-appropriate template; specify instruction-tuned model adaptation rule; document all choices",
+      "when_to_use": "When standardizing evaluation protocol across multiple models for fair comparison",
+      "inputs": [
+        "benchmark_suite",
+        "model_type_spec",
+        "comparison_baseline"
+      ],
+      "outputs": [
+        "standardized_prompt_templates",
+        "shot_count_spec",
+        "protocol_documentation"
+      ]
+    },
+    {
+      "capability": "lm_eval_harness_deployment",
+      "subdomain": "eval__benchmarks",
+      "method": "EleutherAI lm-evaluation-harness; version-pin harness + datasets; configure task YAML; integrate HuggingFace/API/vLLM model; batch inference; output standardized JSON results",
+      "when_to_use": "When executing reproducible standardized benchmark evaluation runs",
+      "inputs": [
+        "model_checkpoint_or_api",
+        "task_config_yaml",
+        "compute_resources"
+      ],
+      "outputs": [
+        "standardized_eval_results_json",
+        "per_task_metrics",
+        "eval_log"
+      ]
+    },
+    {
+      "capability": "helm_framework_evaluation",
+      "subdomain": "eval__benchmarks",
+      "method": "HELM (Liang 2022): holistic multi-scenario evaluation adding calibration, fairness, toxicity, efficiency dimensions beyond accuracy; use when regulatory or safety compliance requires multi-dimensional reporting",
+      "when_to_use": "When accuracy-only leaderboard is insufficient; regulatory/compliance requires fairness+toxicity+calibration reporting",
+      "inputs": [
+        "model_inference_endpoint",
+        "HELM_scenario_configs",
+        "calibration_data"
+      ],
+      "outputs": [
+        "HELM_multi_metric_report",
+        "calibration_ECE",
+        "fairness_scores",
+        "toxicity_rates"
+      ]
+    },
+    {
+      "capability": "contamination_detection",
+      "subdomain": "eval__benchmarks",
+      "method": "N-gram overlap (>=8-gram, threshold >5% flags contamination); canary probing (verbatim vs paraphrased accuracy delta); training corpus metadata scan; result: contamination risk report per benchmark question",
+      "when_to_use": "Before any benchmark evaluation; when model training data scope changed; when benchmark questions are publicly available",
+      "inputs": [
+        "training_corpus_metadata",
+        "benchmark_test_questions",
+        "model_outputs_verbatim_vs_paraphrased"
+      ],
+      "outputs": [
+        "contamination_risk_report",
+        "clean_held_out_subset",
+        "contamination_score_per_question"
+      ]
+    },
+    {
+      "capability": "contamination_mitigation",
+      "subdomain": "eval__benchmarks",
+      "method": "Exclude contaminated questions; rotate to private held-out set; use dynamic/generated benchmarks; document mitigation in eval card",
+      "when_to_use": "When contamination_detection flags overlap >5% or canary probe above baseline",
+      "inputs": [
+        "contamination_risk_report",
+        "holdout_benchmark_pool"
+      ],
+      "outputs": [
+        "clean_eval_set",
+        "contamination_mitigation_report"
+      ]
+    },
+    {
+      "capability": "metric_at_k_computation",
+      "subdomain": "eval__benchmarks",
+      "method": "pass@k: unbiased Chen 2021 estimator; maj@k: majority vote across k samples; select k by deployment budget (k=1 for production latency, k=100 for research ceiling); use McNemar test for 2-model comparison on binary outcomes",
+      "when_to_use": "When computing k-sample evaluation metrics for code or reasoning benchmarks",
+      "inputs": [
+        "model_samples_per_problem",
+        "unit_test_results",
+        "k_budget"
+      ],
+      "outputs": [
+        "pass_at_k_score",
+        "maj_at_k_score",
+        "confidence_interval"
+      ]
+    },
+    {
+      "capability": "statistical_significance_testing",
+      "subdomain": "eval__benchmarks",
+      "method": "McNemar test for paired binary outcomes (HumanEval 164 problems); bootstrap CI for large sets; power analysis: n=2000 for 80% power to detect 2% accuracy difference; report effect size + p-value",
+      "when_to_use": "When comparing two model scores on same benchmark; before claiming statistical difference",
+      "inputs": [
+        "per_problem_binary_outcomes_modelA",
+        "per_problem_binary_outcomes_modelB"
+      ],
+      "outputs": [
+        "p_value",
+        "effect_size",
+        "confidence_interval",
+        "recommendation"
+      ]
+    },
+    {
+      "capability": "held_out_testset_design",
+      "subdomain": "eval__benchmarks",
+      "method": "Power analysis for n (80% power, alpha=0.05 for target delta); annotator IAA >=0.75 Cohen kappa; never expose to model selection or hyperparameter tuning; version and hash dataset",
+      "when_to_use": "When designing custom evaluation benchmarks for specific deployment tasks",
+      "inputs": [
+        "target_accuracy_delta",
+        "capability_domain",
+        "annotation_guidelines"
+      ],
+      "outputs": [
+        "held_out_testset",
+        "power_analysis_report",
+        "IAA_report"
+      ]
+    },
+    {
+      "capability": "heldout_benchmark_design",
+      "subdomain": "eval__benchmarks",
+      "method": "Map deployment capability axes; construct items per axis; target IAA>=0.75; run pilot; iterate on annotation guidelines; version-lock final set",
+      "when_to_use": "When existing public benchmarks do not cover deployment-specific capability axes (e.g., clinical QA)",
+      "inputs": [
+        "deployment_task_spec",
+        "domain_expert_annotators"
+      ],
+      "outputs": [
+        "custom_benchmark_spec",
+        "pilot_IAA_report",
+        "finalized_testset"
+      ]
+    },
+    {
+      "capability": "multitask_aggregate_scoring",
+      "subdomain": "eval__benchmarks",
+      "method": "Chance-normalize per-task scores; compute macro-average; alert on per-task regression >threshold even if aggregate improves; report per-task breakdown alongside aggregate",
+      "when_to_use": "When combining multiple benchmark scores into a single comparative metric",
+      "inputs": [
+        "per_task_scores",
+        "chance_baselines",
+        "regression_threshold"
+      ],
+      "outputs": [
+        "aggregate_score",
+        "per_task_regression_alerts",
+        "normalized_score_breakdown"
+      ]
+    },
+    {
+      "capability": "eval_pipeline_ci_integration",
+      "subdomain": "eval__benchmarks",
+      "method": "Gate model releases on regression tests; pin harness+dataset versions; automate triggers on model checkpoint; fail CI on per-task regression exceeding threshold; log eval card with model SHA",
+      "when_to_use": "When integrating evaluation into model development CI/CD to prevent regressive releases",
+      "inputs": [
+        "model_checkpoint",
+        "benchmark_config",
+        "regression_thresholds"
+      ],
+      "outputs": [
+        "ci_gate_result",
+        "regression_report",
+        "eval_card"
+      ]
+    },
+    {
+      "capability": "eval_reproducibility_documentation",
+      "subdomain": "eval__benchmarks",
+      "method": "Eval card fields: model SHA, harness version, dataset version+hash, random seeds, hardware spec, batch size, temperature; store alongside results JSON",
+      "when_to_use": "After every evaluation run; required for publication or cross-lab comparison",
+      "inputs": [
+        "eval_run_config",
+        "model_metadata",
+        "hardware_spec"
+      ],
+      "outputs": [
+        "eval_card",
+        "reproducibility_checklist"
+      ]
+    },
+    {
+      "capability": "calibration_evaluation",
+      "subdomain": "eval__benchmarks",
+      "method": "Expected Calibration Error (ECE): bin predictions by confidence; measure average gap vs empirical accuracy; target ECE<0.05 for well-calibrated model; reliability diagram",
+      "when_to_use": "When model confidence estimates matter for downstream decision-making (medical, legal)",
+      "inputs": [
+        "model_confidence_scores",
+        "binary_correctness_labels"
+      ],
+      "outputs": [
+        "ECE_score",
+        "reliability_diagram",
+        "calibration_report"
+      ]
+    },
+    {
+      "capability": "leaderboard_interpretation",
+      "subdomain": "eval__benchmarks",
+      "method": "Check benchmark saturation (score >85% = low discriminative power); verify protocol consistency (same shot/template); flag Goodhart risk if benchmark used in training objective; prefer holistic multi-benchmark summary",
+      "when_to_use": "When interpreting published leaderboard scores or comparing models across labs",
+      "inputs": [
+        "leaderboard_scores",
+        "protocol_metadata",
+        "training_objective_info"
+      ],
+      "outputs": [
+        "interpretation_report",
+        "goodhart_risk_flags",
+        "protocol_consistency_check"
+      ]
+    },
+    {
+      "capability": "llm_judge_paradigm_selection",
+      "subdomain": "eval__judge",
+      "method": "Select pointwise (absolute rubric, longitudinal comparison), pairwise (A/B preference, higher IRR on subjective), or listwise (ranking across >2 outputs); pairwise requires swap-consistency >0.85; select based on task type and comparison needs",
+      "when_to_use": "When setting up LLM-as-judge evaluation to replace or supplement human annotation at scale",
+      "inputs": [
+        "candidate_outputs",
+        "evaluation_criteria",
+        "comparison_type"
+      ],
+      "outputs": [
+        "judge_paradigm_choice",
+        "judge_prompt_template",
+        "preference_labels"
+      ]
+    },
+    {
+      "capability": "pointwise_scoring",
+      "subdomain": "eval__judge",
+      "method": "Score each output on 1-5 or 1-10 Likert rubric independently; require score variance >0.5 across quality levels; use CoT judge for rationale; enables longitudinal comparison without re-running all pairs",
+      "when_to_use": "When absolute quality estimates needed; longitudinal tracking; single-model assessment",
+      "inputs": [
+        "candidate_output",
+        "evaluation_rubric",
+        "judge_prompt"
+      ],
+      "outputs": [
+        "numeric_score_per_dimension",
+        "score_rationale"
+      ]
+    },
+    {
+      "capability": "pairwise_preference_evaluation",
+      "subdomain": "eval__judge",
+      "method": "Present A/B pairs with randomized position; require swap-consistency >0.82; treat inconsistent pairs as ties; aggregate to win/loss/tie matrix; feed into Elo computation",
+      "when_to_use": "When comparing two models; building arena rankings; high-IRR judgment on subjective tasks",
+      "inputs": [
+        "two_candidate_outputs",
+        "judge_prompt",
+        "position_randomization_seed"
+      ],
+      "outputs": [
+        "preference_verdict",
+        "win_loss_tie_matrix"
+      ]
+    },
+    {
+      "capability": "elo_arena_ranking",
+      "subdomain": "eval__judge",
+      "method": "Elo/Bradley-Terry rating from pairwise match outcomes; 95% CI width <50 Elo points requires ~1000 matches; bootstrapped CI; handle non-stationarity by deprecating historical matches post model update",
+      "when_to_use": "When aggregating pairwise verdicts into continuous model skill rating for leaderboard",
+      "inputs": [
+        "pairwise_match_outcomes",
+        "initial_ratings",
+        "K_factor_config"
+      ],
+      "outputs": [
+        "model_elo_scores",
+        "ranking_with_CI",
+        "leaderboard"
+      ]
+    },
+    {
+      "capability": "rubric_design",
+      "subdomain": "eval__judge",
+      "method": "Operationalize quality dimensions (accuracy, coherence, safety, instruction-following) into scorable anchors; require IAA >0.75 Cohen kappa on pilot; each grade level >=2 anchor examples; inter-dimension correlation <0.70",
+      "when_to_use": "When designing evaluation criteria for new task domain or updating existing judge prompts",
+      "inputs": [
+        "task_specification",
+        "stakeholder_quality_criteria",
+        "sample_outputs_per_quality_level"
+      ],
+      "outputs": [
+        "rubric_document",
+        "judge_prompt_template",
+        "grade_anchor_examples"
+      ]
+    },
+    {
+      "capability": "position_bias_detection_correction",
+      "subdomain": "eval__judge",
+      "method": "Run swap augmentation (2x calls); measure first-position win rate (target [0.45,0.55]); compute swap-consistency rate (target >0.85); treat inconsistent verdict pairs as ties; report bias audit before large-scale run",
+      "when_to_use": "Before any pairwise evaluation at scale; whenever judge model changes",
+      "inputs": [
+        "pairwise_verdict_log",
+        "swap_pair_outputs",
+        "judge_model"
+      ],
+      "outputs": [
+        "position_bias_estimate",
+        "debiased_verdicts",
+        "swap_consistency_report"
+      ]
+    },
+    {
+      "capability": "verbosity_bias_detection_correction",
+      "subdomain": "eval__judge",
+      "method": "Compute Spearman correlation of response length vs judge score; target rho <0.30 post-debiasing; length-stratified win rates within 5% of mean; add explicit length-neutrality instruction to judge prompt",
+      "when_to_use": "When evaluating open-ended generation tasks where longer responses may game the judge",
+      "inputs": [
+        "judge_verdict_log",
+        "response_lengths",
+        "quality_labels"
+      ],
+      "outputs": [
+        "length_quality_correlation_report",
+        "debiased_scoring_prompt",
+        "length_stratified_metrics"
+      ]
+    },
+    {
+      "capability": "self_preference_bias_control",
+      "subdomain": "eval__judge",
+      "method": "Measure win-rate delta when judge and candidate share model family vs cross-family; target delta <5%; use 3-judge ensemble from different providers to average out self-preference; majority vote on disagreements",
+      "when_to_use": "When judge and any candidate model share provider family or training data overlap",
+      "inputs": [
+        "pairwise_verdicts_segmented_by_judge_candidate_family",
+        "human_preference_labels"
+      ],
+      "outputs": [
+        "self_preference_delta_score",
+        "judge_diversity_recommendation"
+      ]
+    },
+    {
+      "capability": "human_calibration_loop",
+      "subdomain": "eval__judge",
+      "method": "Stratified sample 200 judge verdicts; human annotation by independent annotators; compute Pearson correlation target >0.80; run before major eval report; repeat on judge model update; alert if agreement <0.75",
+      "when_to_use": "Periodically to detect silent judge drift; mandatory before publishing evaluation results; after judge model update",
+      "inputs": [
+        "stratified_sample_of_judge_verdicts",
+        "human_annotators",
+        "annotation_guidelines"
+      ],
+      "outputs": [
+        "human_judge_agreement_report",
+        "calibration_delta",
+        "drift_alert"
+      ]
+    },
+    {
+      "capability": "mt_bench_evaluation",
+      "subdomain": "eval__judge",
+      "method": "MT-Bench (Zheng 2023): 80 curated multi-turn questions across 8 categories; GPT-4 as judge with reference answers; pointwise 1-10 scoring; per-category and aggregate score; detect turn-2 degradation",
+      "when_to_use": "When evaluating instruction-following and multi-turn conversation quality",
+      "inputs": [
+        "MT_Bench_question_set",
+        "candidate_model",
+        "GPT_4_judge",
+        "reference_answers"
+      ],
+      "outputs": [
+        "per_category_scores",
+        "overall_MT_Bench_score",
+        "multi_turn_degradation_analysis"
+      ]
+    },
+    {
+      "capability": "chatbot_arena_protocol",
+      "subdomain": "eval__judge",
+      "method": "Anonymous pairwise voting by real users; crowd-sourced Elo ranking; audit for adversarial voting; validate query distribution vs target demographic; requires 500+ votes per model for CI stability",
+      "when_to_use": "When real-user preference signal is needed beyond synthetic benchmarks; for large-scale public ranking",
+      "inputs": [
+        "user_submitted_queries",
+        "model_outputs",
+        "voter_preference_labels"
+      ],
+      "outputs": [
+        "elo_leaderboard",
+        "category_specific_rankings",
+        "battle_statistics"
+      ]
+    },
+    {
+      "capability": "judge_model_selection_validation",
+      "subdomain": "eval__judge",
+      "method": "Benchmark judge candidates on human-preference pilot set; require judge-human Pearson >0.80; validate cost-per-call within budget; confirm self-preference delta <5%; prefer cross-family judge for proprietary candidate models",
+      "when_to_use": "When choosing judge model for new evaluation system or replacing deprecated judge",
+      "inputs": [
+        "candidate_judge_models",
+        "human_preference_sample",
+        "task_domain_spec",
+        "cost_budget"
+      ],
+      "outputs": [
+        "selected_judge_model",
+        "judge_validation_report",
+        "cost_estimate"
+      ]
+    },
+    {
+      "capability": "chain_of_thought_judge_prompting",
+      "subdomain": "eval__judge",
+      "method": "Prompt judge to produce step-by-step reasoning before final verdict; verify rationale-verdict consistency >0.90; extract structured rationale for audit; flag disconnect between reasoning and verdict",
+      "when_to_use": "When judge score auditability is required; to reduce score variance on complex judgments",
+      "inputs": [
+        "evaluation_rubric",
+        "candidate_output",
+        "judge_prompt_with_CoT_instruction"
+      ],
+      "outputs": [
+        "judge_rationale_text",
+        "final_verdict_score",
+        "rationale_quality_log"
+      ]
+    },
+    {
+      "capability": "reference_based_vs_free_eval",
+      "subdomain": "eval__judge",
+      "method": "Reference-based: provide ground-truth for factual/math/code tasks; reference-free: criteria-only for creative/open-ended; hybrid: reference as optional anchor; validate reference by independent domain expert",
+      "when_to_use": "When deciding evaluation mode for a new task; factual tasks strongly benefit from references",
+      "inputs": [
+        "task_specification",
+        "ground_truth_availability",
+        "judge_model_capability"
+      ],
+      "outputs": [
+        "evaluation_mode_decision",
+        "reference_set",
+        "scoring_protocol"
+      ]
+    },
+    {
+      "capability": "multi_dimensional_scoring",
+      "subdomain": "eval__judge",
+      "method": "Define dimensions (accuracy, helpfulness, safety, coherence); score independently; verify inter-dimension correlation <0.70; aggregate via stakeholder-approved weighted sum; document weights",
+      "when_to_use": "When holistic model assessment needed; separating safety from helpfulness signals",
+      "inputs": [
+        "rubric_dimensions",
+        "per_dimension_judge_scores",
+        "stakeholder_priority_weights"
+      ],
+      "outputs": [
+        "dimension_scores",
+        "weighted_aggregate_score",
+        "dimension_correlation_matrix"
+      ]
+    },
+    {
+      "capability": "safety_evaluation",
+      "subdomain": "eval__judge",
+      "method": "Specialized safety judge/classifier for harm detection; red-team with adversarial prompts; measure harm rate, refusal accuracy, jailbreak resistance; target false-negative rate <2% on known harm categories; over-refusal <5% on benign inputs",
+      "when_to_use": "Before any public model deployment; when policy changes; when new jailbreak techniques discovered",
+      "inputs": [
+        "adversarial_prompts",
+        "model_outputs",
+        "safety_policy_spec",
+        "safety_classifier"
+      ],
+      "outputs": [
+        "harm_rate",
+        "refusal_accuracy",
+        "safety_score",
+        "red_team_findings"
+      ]
+    },
+    {
+      "capability": "goodhart_monitoring",
+      "subdomain": "eval__judge",
+      "method": "Track multiple uncorrelated metrics (judge score + ROUGE + human rating + task accuracy); alert when human quality diverges >0.15 from judge score trend over 3 cycles; diversify metric suite to prevent gaming",
+      "when_to_use": "When model is explicitly trained on judge scores as reward signal; long-term production monitoring",
+      "inputs": [
+        "model_outputs_over_time",
+        "judge_score_trends",
+        "human_quality_assessments"
+      ],
+      "outputs": [
+        "metric_quality_correlation_report",
+        "gaming_detection_alert",
+        "diversified_metric_suite"
+      ]
+    },
+    {
+      "capability": "benchmark_contamination_judge_domain",
+      "subdomain": "eval__judge",
+      "method": "N-gram overlap detection (<5% target); canary probe: accuracy on verbatim vs paraphrased should not differ significantly above baseline; rotate held-out questions when contamination confirmed; use dynamic benchmark generation",
+      "when_to_use": "Before evaluating any new model; when benchmark questions become public; after new training run",
+      "inputs": [
+        "training_corpus_metadata",
+        "benchmark_test_questions",
+        "model_outputs_verbatim_vs_paraphrased"
+      ],
+      "outputs": [
+        "contamination_risk_report",
+        "clean_held_out_test_subset",
+        "contamination_score_per_question"
+      ]
+    },
+    {
+      "capability": "eval_cost_latency_optimization",
+      "subdomain": "eval__judge",
+      "method": "Judge model tiering (small judge for screening, large for flagged cases); batch evaluation; cache judge outputs (invalidate on model update); stratified 30% sample achieves 95% ranking signal; early stopping when Elo CI stabilizes",
+      "when_to_use": "When evaluation volume is large or budget-constrained; scaling evaluation pipelines",
+      "inputs": [
+        "evaluation_volume",
+        "judge_model_pricing",
+        "latency_requirements",
+        "quality_tolerance"
+      ],
+      "outputs": [
+        "cost_estimate",
+        "evaluation_pipeline_config",
+        "sampling_strategy"
+      ]
+    },
+    {
+      "capability": "eval_pipeline_engineering",
+      "subdomain": "eval__judge",
+      "method": "Orchestrate prompt construction, judge API calls, result parsing, debiasing (position+verbosity), aggregation, and report generation; include retry logic; monitor dashboard; pin all versions",
+      "when_to_use": "When building or maintaining automated LLM evaluation infrastructure",
+      "inputs": [
+        "evaluation_dataset",
+        "judge_model_API",
+        "bias_debiasing_modules",
+        "report_templates"
+      ],
+      "outputs": [
+        "automated_evaluation_reports",
+        "score_database",
+        "pipeline_monitoring_dashboard"
+      ]
+    },
+    {
+      "capability": "inter_rater_agreement_measurement",
+      "subdomain": "eval__judge",
+      "method": "Cohen kappa for categorical labels; Krippendorff alpha for ordinal; require kappa >0.75 for annotation acceptance; measure agreement between human annotators and between human and judge",
+      "when_to_use": "When validating annotation quality; before finalizing rubric; during human calibration",
+      "inputs": [
+        "annotation_sets_from_multiple_raters",
+        "annotation_guidelines"
+      ],
+      "outputs": [
+        "cohen_kappa",
+        "krippendorff_alpha",
+        "disagreement_analysis"
+      ]
+    },
+    {
+      "capability": "eval_reporting_with_uncertainty",
+      "subdomain": "eval__judge",
+      "method": "Include 95% CI on all reported scores; document limitations (protocol choices, contamination risk, judge bias); state evaluation date and model version; disclose judge model and prompt template",
+      "when_to_use": "When publishing or sharing evaluation results internally or externally",
+      "inputs": [
+        "evaluation_scores",
+        "CI_estimates",
+        "methodology_docs"
+      ],
+      "outputs": [
+        "evaluation_report_with_CI",
+        "limitations_disclosure",
+        "methodology_appendix"
+      ]
+    }
+  ],
+  "decision_procedure": [
+    "1. CLARIFY_EVAL_GOAL: identify evaluation type (benchmark performance vs quality scoring vs safety vs CI gate) and deployment context",
+    "2. CONTAMINATION_CHECK: before any benchmark run, execute contamination_detection; if n-gram overlap >5% or canary probe positive, invoke contamination_mitigation; flag if unresolved",
+    "3. BENCHMARK_SELECTION: if goal is capability assessment, run benchmark_suite_selection; map capability axes to benchmark coverage matrix; select MMLU/GSM8K/BBH/HumanEval/HELM as appropriate",
+    "4. PROTOCOL_SPECIFICATION: run few_shot_protocol_design; pin shot count, template, seed; distinguish base vs instruction-tuned model handling",
+    "5. HARNESS_SETUP: deploy lm_eval_harness_deployment with version-pinned config; if holistic multi-metric needed, use helm_framework_evaluation",
+    "6. JUDGE_DESIGN (if open-ended outputs): select judge paradigm (pointwise for longitudinal, pairwise for ranking); run judge_model_selection_validation; design rubric with rubric_design; apply chain_of_thought_judge_prompting",
+    "7. BIAS_AUDIT: run position_bias_detection_correction + verbosity_bias_detection_correction + self_preference_bias_control before any large-scale judge evaluation",
+    "8. EXECUTE_EVAL: run evaluation; for code benchmarks use metric_at_k_computation; for multi-benchmark use multitask_aggregate_scoring with regression alerts",
+    "9. STATISTICAL_VALIDATION: run statistical_significance_testing for any cross-model comparison; use McNemar for binary paired, bootstrap CI for continuous",
+    "10. HUMAN_CALIBRATION: run human_calibration_loop on stratified sample; require Pearson >0.80; block result publication if agreement <0.75",
+    "11. SAFETY_GATE: if deployment-bound, run safety_evaluation; require false-negative <2% on harm categories",
+    "12. GOODHART_MONITOR: if model trained on judge scores, activate goodhart_monitoring; alert on human-judge divergence >0.15",
+    "13. REPRODUCIBILITY: generate eval card with model SHA, harness version, dataset hash, seeds, hardware; invoke eval_reproducibility_documentation",
+    "14. ESCALATE_IF: human_review_required nodes triggered (BENCH_SELECTION, HUMANEVAL_PROTOCOL, FEWSHOT_ZEROSHOT, JUDGE_PARADIGM, RUBRIC_DESIGN, POSITION_BIAS, SELF_PREF, HUMAN_CALIBRATION, BENCHMARK_CONTAM, GOODHART, JUDGE_MODEL_SELECT, SAFETY_EVAL)"
+  ],
+  "workflow": [
+    {
+      "phase": "evaluation_scoping",
+      "objective": "Define evaluation goals, capability axes, model types, compute budget, and output requirements",
+      "entry": [
+        "evaluation_request",
+        "model_card_or_checkpoint",
+        "deployment_context"
+      ],
+      "exit": [
+        "evaluation_plan_doc",
+        "benchmark_suite_spec",
+        "protocol_decisions"
+      ],
+      "gates": [
+        "capability_axes_fully_specified",
+        "benchmark_selection_rationale_documented",
+        "compute_budget_within_limits"
+      ]
+    },
+    {
+      "phase": "contamination_and_integrity_check",
+      "objective": "Detect training data contamination in all selected benchmarks before running evaluation",
+      "entry": [
+        "benchmark_suite_spec",
+        "training_corpus_metadata"
+      ],
+      "exit": [
+        "contamination_risk_report",
+        "clean_benchmark_subset"
+      ],
+      "gates": [
+        "n_gram_overlap_below_5pct",
+        "canary_probe_not_above_baseline",
+        "held_out_testset_never_used_in_training"
+      ]
+    },
+    {
+      "phase": "harness_configuration_and_execution",
+      "objective": "Configure lm-eval-harness or HELM; pin versions; execute benchmark runs; collect raw results",
+      "entry": [
+        "clean_benchmark_subset",
+        "standardized_prompt_templates",
+        "model_endpoint"
+      ],
+      "exit": [
+        "standardized_eval_results_json",
+        "per_task_metrics",
+        "eval_log"
+      ],
+      "gates": [
+        "harness_version_pinned",
+        "dataset_version_pinned",
+        "random_seeds_fixed",
+        "all_tasks_complete"
+      ]
+    },
+    {
+      "phase": "judge_design_and_calibration",
+      "objective": "Select judge paradigm, model, and rubric; run bias audits; validate against human preferences",
+      "entry": [
+        "candidate_outputs_for_open_ended_tasks",
+        "evaluation_criteria"
+      ],
+      "exit": [
+        "validated_judge_config",
+        "bias_audit_reports",
+        "human_calibration_report"
+      ],
+      "gates": [
+        "position_swap_consistency_above_0_85",
+        "verbosity_rho_below_0_30",
+        "self_pref_delta_below_5pct",
+        "human_judge_pearson_above_0_80"
+      ]
+    },
+    {
+      "phase": "metric_computation_and_aggregation",
+      "objective": "Compute task-specific metrics (pass@k, maj@k, macro-average, ECE, Elo); aggregate multi-task scores; run statistical tests",
+      "entry": [
+        "raw_eval_results",
+        "sampling_parameters"
+      ],
+      "exit": [
+        "per_task_scores",
+        "aggregate_scores",
+        "statistical_significance_report"
+      ],
+      "gates": [
+        "pass_at_k_uses_unbiased_estimator",
+        "macro_average_computed_correctly",
+        "regression_alerts_checked",
+        "significance_test_applied"
+      ]
+    },
+    {
+      "phase": "safety_and_goodhart_gate",
+      "objective": "Run safety evaluation; check for metric gaming; escalate failures",
+      "entry": [
+        "model_outputs",
+        "safety_policy_spec",
+        "judge_score_trends"
+      ],
+      "exit": [
+        "safety_report",
+        "goodhart_monitoring_report"
+      ],
+      "gates": [
+        "false_negative_rate_below_2pct",
+        "over_refusal_below_5pct",
+        "human_judge_divergence_within_0_15"
+      ]
+    },
+    {
+      "phase": "reporting_and_reproducibility",
+      "objective": "Generate eval card, CI-annotated report, limitations disclosure; store all artifacts",
+      "entry": [
+        "all_evaluation_scores",
+        "CI_estimates",
+        "methodology_docs"
+      ],
+      "exit": [
+        "eval_card",
+        "evaluation_report_with_CI",
+        "limitations_disclosure"
+      ],
+      "gates": [
+        "eval_card_has_model_sha",
+        "eval_card_has_harness_version",
+        "eval_card_has_dataset_hash",
+        "95pct_CI_included_in_report"
+      ]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "Benchmark contamination n-gram overlap >5% or canary probe significantly above chance baseline",
+      "action": "human_review",
+      "reason": "Contaminated benchmark scores are invalid; human decision needed on whether to proceed with clean subset or abort"
+    },
+    {
+      "condition": "Benchmark selection for clinical, legal, or safety-critical deployment",
+      "action": "human_review",
+      "reason": "BENCH_SELECTION node human_review_required=true; high risk_if_wrong=0.88; wrong benchmark proxy causes deployment failures"
+    },
+    {
+      "condition": "HumanEval contamination confirmed in model training data",
+      "action": "human_review",
+      "reason": "HUMANEVAL_PROTOCOL human_review_required=true; contaminated code benchmark scores invalid for comparison"
+    },
+    {
+      "condition": "Few-shot/zero-shot protocol inconsistency across models being compared",
+      "action": "human_review",
+      "reason": "FEWSHOT_ZEROSHOT human_review_required=true; risk_if_wrong=0.85; protocol inconsistency invalidates comparison"
+    },
+    {
+      "condition": "Judge-human Pearson correlation drops below 0.75 on calibration sample",
+      "action": "human_review",
+      "reason": "HUMAN_CALIBRATION human_review_required=true; judge drift detected; automated scores not trustworthy"
+    },
+    {
+      "condition": "Position bias audit fails: first-position win rate outside [0.45,0.55]",
+      "action": "human_review",
+      "reason": "POSITION_BIAS human_review_required=true; pairwise verdicts corrupted by ordering artifact"
+    },
+    {
+      "condition": "Self-preference delta >5% relative to cross-family baseline",
+      "action": "human_review",
+      "reason": "SELF_PREF human_review_required=true; single-family judge compromises evaluation neutrality"
+    },
+    {
+      "condition": "LLM judge paradigm selected without validation against human preferences",
+      "action": "human_review",
+      "reason": "JUDGE_PARADIGM human_review_required=true; unvalidated judge produces systematically biased scores"
+    },
+    {
+      "condition": "Rubric pilot IAA below 0.75 Cohen kappa",
+      "action": "human_review",
+      "reason": "RUBRIC_DESIGN human_review_required=true; ambiguous rubric produces unreliable judge scores"
+    },
+    {
+      "condition": "Safety evaluation false-negative rate on known harm categories exceeds 2%",
+      "action": "human_review",
+      "reason": "SAFETY_EVAL human_review_required=true; risk_if_wrong=0.92; missed harms in deployment"
+    },
+    {
+      "condition": "Judge score trend diverges from human quality by >0.15 over 3 evaluation cycles",
+      "action": "flag",
+      "reason": "GOODHART human_review_required=true; metric gaming likely; diversify metrics immediately"
+    },
+    {
+      "condition": "Judge model deprecated or updated without re-running calibration",
+      "action": "human_review",
+      "reason": "JUDGE_MODEL_SELECT human_review_required=true; judge behavior change requires validation before production use"
+    },
+    {
+      "condition": "Aggregate score improves but per-task regression detected",
+      "action": "flag",
+      "reason": "MULTITASK_AGGREGATE: aggregate masks regression; defer release until task-level investigation complete"
+    },
+    {
+      "condition": "Statistical test yields p>0.05 for claimed model improvement",
+      "action": "flag",
+      "reason": "STATISTICAL_SIGNIFICANCE: difference not significant; do not claim improvement without sufficient power"
+    }
+  ],
+  "validation_checklist": [
+    "Capability axes fully covered by at least one selected benchmark",
+    "Benchmark selection rationale documented; no benchmark used for both dev and final eval without contamination check",
+    "MMLU executed with exactly 5-shot per Hendrycks 2020 spec; all 57 subjects included; macro-average is mean of per-subject accuracies",
+    "GSM8K: chain-of-thought enabled; maj@k k>=10; answer extraction verified on 10 held-out examples",
+    "BBH: 3-shot CoT prompts match Suzgun 2022 spec; all 23 tasks in macro-average; output format parser verified",
+    "HumanEval: sandbox execution verified before any model code runs; pass@k uses unbiased Chen 2021 estimator; all 164 problems complete",
+    "Few-shot shot count and template documented per benchmark; example selection reproducible with fixed seed; instruction-tuned model adaptation rule specified",
+    "Harness version + dataset version + model SHA + seeds + hardware spec logged in eval card",
+    "N-gram contamination check completed before benchmark run; overlap <5%; canary probe not above baseline",
+    "Statistical significance test applied for any cross-model comparison; McNemar for paired binary; bootstrap CI for continuous; effect size reported",
+    "Held-out test set sample size sufficient for target statistical power; IAA >=0.75 for custom benchmarks",
+    "Judge-human Pearson correlation >0.80 on calibration sample before publishing evaluation results",
+    "Position-swap consistency rate >0.85; first-position win rate within [0.45,0.55]",
+    "Verbosity bias: Spearman rho of length vs score <0.30 after debiasing",
+    "Self-preference delta <5% relative to cross-family baseline; ensemble or cross-family judge preferred",
+    "Rubric: IAA >0.75 Cohen kappa on pilot; every grade level has >=2 anchor examples; inter-dimension correlation <0.70",
+    "Safety: false-negative rate on known harm categories <2%; over-refusal on benign inputs <5%",
+    "Per-task regression alerts checked even when aggregate score improves",
+    "95% CI included in all reported scores; limitations and methodology disclosed",
+    "Eval card produced with model SHA, harness version, dataset hash, random seeds, hardware spec"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "benchmark_coverage_vs_compute_cost",
+      "resolution": "Prioritize high-signal-to-cost benchmarks for routine CI; reserve full HELM suite for major releases; chance-normalize and report per-task to avoid masking regressions"
+    },
+    {
+      "tradeoff": "few_shot_vs_zero_shot_protocol",
+      "resolution": "Match protocol to model type: base models prefer few-shot; instruction-tuned prefer zero-shot with system prompt; never mix protocols within a comparison set; document choice explicitly"
+    },
+    {
+      "tradeoff": "lm_eval_harness_vs_helm",
+      "resolution": "Use lm-eval-harness for speed and standard benchmark parity; use HELM when multi-dimensional reporting (calibration, fairness, toxicity) is required for compliance or publication"
+    },
+    {
+      "tradeoff": "static_benchmark_vs_held_out_custom",
+      "resolution": "Public benchmarks for cross-lab comparison; custom held-out for deployment-specific capability not covered by public suites; never expose custom held-out to model selection"
+    },
+    {
+      "tradeoff": "pointwise_vs_pairwise_judge",
+      "resolution": "Pairwise preferred for subjective ranking (higher IRR); pointwise preferred for longitudinal tracking and when absolute scores needed; always apply swap debiasing to pairwise"
+    },
+    {
+      "tradeoff": "llm_judge_scale_vs_human_accuracy",
+      "resolution": "LLM judge scales to millions of outputs but requires human calibration (Pearson >0.80) before trust; human annotation is ground truth for calibration; defer to human on judge drift"
+    },
+    {
+      "tradeoff": "single_judge_vs_ensemble",
+      "resolution": "Single judge is acceptable if cross-family and validated; ensemble required when judge and any candidate share model family; majority vote for disagreements"
+    },
+    {
+      "tradeoff": "safety_vs_helpfulness_scoring",
+      "resolution": "Score independently; never let over-refusal inflate safety score; require both false-negative <2% AND over-refusal <5%; report dual threshold separately"
+    },
+    {
+      "tradeoff": "reference_based_vs_reference_free_eval",
+      "resolution": "Reference-based for factual/math/code tasks; reference-free for creative/open-ended; hybrid when ground truth partially available; reference must be expert-validated"
+    },
+    {
+      "tradeoff": "aggregate_score_vs_per_task_breakdown",
+      "resolution": "Always report per-task breakdown alongside aggregate; alert on regression even if aggregate improves; chance-normalize before aggregating"
+    },
+    {
+      "tradeoff": "evaluation_cost_vs_thoroughness",
+      "resolution": "Stratified 30% sample achieves 95% of ranking signal; use cheap judge for screening, expensive judge for disputed/flagged cases; never cache judge outputs across model updates"
+    },
+    {
+      "tradeoff": "goodhart_single_metric_vs_diversified",
+      "resolution": "When model is trained on judge score as reward, diversify to uncorrelated metrics (judge + ROUGE + human + task accuracy); alert when human-judge gap >0.15"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "benchmark",
+      "definition": "standardized dataset and evaluation protocol measuring specific model capabilities; not same as training set or validation set"
+    },
+    {
+      "term": "contamination",
+      "definition": "presence of benchmark test examples in model training data inflating evaluation scores; detected via n-gram overlap or canary probing"
+    },
+    {
+      "term": "pass_at_k",
+      "definition": "probability at least one of k generated solutions passes unit tests; estimated via unbiased Chen 2021 estimator: 1-(1-c/n)^k"
+    },
+    {
+      "term": "few_shot_prompting",
+      "definition": "providing k labeled examples in prompt before test query for in-context learning; not same as fine-tuning"
+    },
+    {
+      "term": "chain_of_thought",
+      "definition": "prompting technique eliciting step-by-step reasoning traces before final answer; used in GSM8K, BBH, judge prompting"
+    },
+    {
+      "term": "goodhart_law",
+      "definition": "when a measure becomes a target it ceases to be a good measure; benchmark optimization degrades proxy validity; distinct from contamination"
+    },
+    {
+      "term": "expected_calibration_error",
+      "definition": "ECE: average gap between model confidence and empirical accuracy across confidence bins; target <0.05"
+    },
+    {
+      "term": "holistic_evaluation",
+      "definition": "HELM-style multi-dimensional evaluation measuring accuracy, calibration, robustness, fairness, toxicity, efficiency simultaneously"
+    },
+    {
+      "term": "held_out_test_set",
+      "definition": "benchmark split never used for model training, selection, or hyperparameter tuning; reserved for final evaluation only"
+    },
+    {
+      "term": "inter_annotator_agreement",
+      "definition": "IAA: statistical measure of label consistency across annotators; Cohen kappa standard for categorical; target >0.75"
+    },
+    {
+      "term": "pointwise_scoring",
+      "definition": "scoring each output independently on absolute rubric without cross-output comparison; enables longitudinal tracking"
+    },
+    {
+      "term": "pairwise_preference",
+      "definition": "comparing two outputs and eliciting preference verdict or tie; higher IRR than pointwise on subjective tasks"
+    },
+    {
+      "term": "elo_rating",
+      "definition": "continuous skill rating derived from pairwise match outcomes via Elo or Bradley-Terry model; requires ~1000 matches for 95% CI <50 points"
+    },
+    {
+      "term": "position_bias",
+      "definition": "judge tendency to favor first or last presented option in pairwise comparison regardless of quality; mitigated by swap augmentation"
+    },
+    {
+      "term": "verbosity_bias",
+      "definition": "judge tendency to prefer longer more elaborate responses independent of actual quality; measured by Spearman rho length vs score"
+    },
+    {
+      "term": "self_preference",
+      "definition": "tendency of judge model to rate outputs from models with similar training higher; mitigated by cross-family judge ensemble"
+    },
+    {
+      "term": "swap_consistency",
+      "definition": "rate at which pairwise verdicts remain consistent when A/B order is swapped; target >0.85"
+    },
+    {
+      "term": "macro_average",
+      "definition": "mean of per-subset scores (e.g., MMLU 57-subject mean); gives equal weight to each subset regardless of size"
+    },
+    {
+      "term": "maj_at_k",
+      "definition": "majority vote answer across k generated samples; used in GSM8K; requires k>=10 for stability"
+    },
+    {
+      "term": "eval_card",
+      "definition": "reproducibility artifact containing model SHA, harness version, dataset version+hash, random seeds, hardware spec, batch size, temperature"
+    }
+  ],
+  "competency_questions_covered": [
+    "Which benchmark suite should be selected to evaluate a model targeting clinical QA deployment?",
+    "What is the standard MMLU evaluation protocol and what does a macro-average score mean?",
+    "How should few-shot examples be selected and standardized for cross-model comparison?",
+    "How is GSM8K pass rate estimated with chain-of-thought and what does majority voting contribute?",
+    "How is pass@k computed in an unbiased way and what k is appropriate for deployment?",
+    "How is lm-evaluation-harness configured for reproducible benchmark execution?",
+    "How does HELM differ from lm-eval-harness and when should each be used?",
+    "How is training data contamination of MMLU test set detected and what action follows?",
+    "What statistical test should compare two models on a 164-problem benchmark like HumanEval?",
+    "How should a held-out test set be designed to have 80% power to detect a 2% accuracy difference?",
+    "How is LLM-as-judge evaluation validated against human raters and what biases must be mitigated?",
+    "How should an aggregate benchmark score be computed to avoid masking per-task regressions?",
+    "How should evaluation be integrated into CI/CD to prevent regressive model releases?",
+    "What should an evaluation card contain to ensure result reproducibility across labs?",
+    "What evaluation paradigm (pointwise/pairwise/listwise) is used and why?",
+    "How is the LLM judge validated against human preferences before deployment?",
+    "What rubric dimensions and grade anchors are used for pointwise scoring?",
+    "How is position bias detected and corrected in pairwise evaluation?",
+    "How are Elo ratings computed and when are they considered stable?",
+    "How are verbosity and position biases measured and mitigated?",
+    "How is self-preference bias detected when judge and candidate share a model family?",
+    "How are human spot-checks integrated to prevent silent judge drift?",
+    "How is benchmark contamination detected before evaluating a new model?",
+    "What monitoring is in place to detect Goodhart's Law gaming of the judge metric?",
+    "How is evaluation cost managed without sacrificing ranking reliability?",
+    "How are safety and helpfulness jointly evaluated to avoid over-refusal masking?",
+    "How are evaluation results communicated with appropriate uncertainty quantification?"
+  ]
+}
