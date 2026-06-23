@@ -1,0 +1,5961 @@
+{
+  "domain": "ftune__sft_peft",
+  "domain_label": "Supervised & Parameter-Efficient Fine-Tuning (llm_engineering subdomain)",
+  "purpose": "session_bounded_stepwise_execution_for_engineering_sft_and_peft_adapted_specialist_llms_in_production",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "subdomain scope is SFT and PEFT (LoRA/QLoRA/DoRA) for fine-tuning pre-trained transformer LLMs",
+    "base model is a pre-trained transformer; SFT precedes RLHF/DPO alignment",
+    "compute budget is GPU-constrained (single to multi-GPU, not TPU pod scale)",
+    "evaluation is task-metric plus general-benchmark centric with contamination controls"
+  ],
+  "exclusions": [
+    "RLHF and DPO alignment (downstream of SFT)",
+    "pre-training and continued pre-training on raw text",
+    "inference serving optimization beyond adapter merge",
+    "neural architecture search or model distillation",
+    "prompt engineering and in-context learning (referenced only for comparison)"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What criteria determine whether a base model's license permits the target deployment and redistribution?",
+      "must_be_answerable_from": [
+        "nodes",
+        "glossary"
+      ],
+      "acceptance_condition": "LICENSE_TOS and BASE_MODEL_SEL define classification and audit steps",
+      "covered_by": [
+        "LICENSE_TOS",
+        "BASE_MODEL_SEL"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "When is fine-tuning a specialist LLM preferable to prompting a frontier generalist model?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "SPECIALIST_VS_GENERALIST defines decision criteria including orchestration cost",
+      "covered_by": [
+        "SPECIALIST_VS_GENERALIST",
+        "MULTI_ADAPTER_ORCH"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What standards must instruction-response pairs meet before entering the SFT training pipeline?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "DATA_FORMAT_QUALITY and DATA_CURATION define quality rubric and filtering",
+      "covered_by": [
+        "DATA_FORMAT_QUALITY",
+        "DATA_CURATION"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How should chat templates be configured to prevent prompt token inclusion in the loss computation?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "CHAT_TEMPLATE node specifies loss masking requirements",
+      "covered_by": [
+        "CHAT_TEMPLATE",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How are SFT learning rate, epoch count, and batch size selected to prevent divergence and over-training?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "HYPERPARAM_TUNING node defines selection criteria and pilot run protocol",
+      "covered_by": [
+        "HYPERPARAM_TUNING",
+        "CHECKPOINT_MGT"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How does SFT training interact with catastrophic forgetting and what mitigation strategy is applied?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "CAT_FORGETTING node defines detection and mitigation; edges link to SFT_LOOP",
+      "covered_by": [
+        "CAT_FORGETTING",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How are LoRA rank and alpha selected and what target modules should be included for a generative task?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "RANK_ALPHA and TARGET_MODULES define selection rationale",
+      "covered_by": [
+        "RANK_ALPHA",
+        "TARGET_MODULES",
+        "LORA_CONFIG"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "When should QLoRA be used vs fp16 LoRA and what configuration prevents quantization quality loss?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "QLORA_SETUP node and CA_02 define decision criteria and config",
+      "covered_by": [
+        "QLORA_SETUP",
+        "LORA_CONFIG"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "What compute and memory planning is required to ensure training completes within GPU budget?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "COMPUTE_BUDGET and GRAD_CHECKPOINT_MEM define planning and optimization steps",
+      "covered_by": [
+        "COMPUTE_BUDGET",
+        "GRAD_CHECKPOINT_MEM"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How are training hyperparameters validated to ensure convergence without overfitting the SFT dataset?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "HYPERPARAM_TUNING + CHECKPOINT_MGT define pilot protocol and early stopping",
+      "covered_by": [
+        "HYPERPARAM_TUNING",
+        "CHECKPOINT_MGT",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "What evaluation suite confirms SFT model quality across task performance and general capability?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "EVAL_HARNESS defines benchmark selection and acceptance thresholds",
+      "covered_by": [
+        "EVAL_HARNESS",
+        "CAT_FORGETTING",
+        "GOODHART_BENCH"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How is benchmark contamination detected and how does Goodhart's law risk affect SFT evaluation?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "GOODHART_BENCH node and CA_05 define contamination detection and mitigation",
+      "covered_by": [
+        "GOODHART_BENCH",
+        "EVAL_HARNESS"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "What safety evaluation must be run on the fine-tuned model before production deployment?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "SAFETY_ALIGNMENT node defines red-team protocol and acceptance gates",
+      "covered_by": [
+        "SAFETY_ALIGNMENT",
+        "EVAL_HARNESS"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "When should adapters be merged into the base model vs kept separate for multi-adapter serving?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "ADAPTER_MERGE + CA_09 define the merge vs serve decision criteria",
+      "covered_by": [
+        "ADAPTER_MERGE",
+        "MULTI_ADAPTER_ORCH"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "SFT",
+      "definition": "supervised fine-tuning; training a pre-trained LLM on labeled instruction-response pairs with cross-entropy loss on completion tokens",
+      "synonyms": [
+        "instruction tuning",
+        "supervised instruction fine-tuning"
+      ],
+      "not_same_as": [
+        "RLHF",
+        "DPO"
+      ],
+      "used_by_nodes": [
+        "SFT_LOOP",
+        "CHAT_TEMPLATE",
+        "DATA_CURATION"
+      ]
+    },
+    {
+      "term": "LoRA",
+      "definition": "low-rank adaptation; adds trainable low-rank matrices A,B to frozen base model weight matrices; only A,B are updated during training",
+      "synonyms": [
+        "low-rank adaptation"
+      ],
+      "not_same_as": [
+        "full fine-tuning",
+        "prefix tuning"
+      ],
+      "used_by_nodes": [
+        "LORA_CONFIG",
+        "RANK_ALPHA",
+        "TARGET_MODULES"
+      ]
+    },
+    {
+      "term": "QLoRA",
+      "definition": "quantized LoRA; base model quantized to 4-bit NF4 with double quantization; LoRA adapters trained in fp16/bf16 with paged optimizers",
+      "synonyms": [
+        "quantized LoRA"
+      ],
+      "not_same_as": [
+        "post-training quantization",
+        "GPTQ"
+      ],
+      "used_by_nodes": [
+        "QLORA_SETUP",
+        "GRAD_CHECKPOINT_MEM"
+      ]
+    },
+    {
+      "term": "DoRA",
+      "definition": "weight-decomposed low-rank adaptation; decomposes weight into magnitude and direction; applies LoRA to directional component with separate magnitude scaling",
+      "synonyms": [
+        "weight-decomposed LoRA"
+      ],
+      "not_same_as": [
+        "standard LoRA",
+        "IA3"
+      ],
+      "used_by_nodes": [
+        "DORA_ADAPTER"
+      ]
+    },
+    {
+      "term": "catastrophic_forgetting",
+      "definition": "degradation of pre-trained model's general capabilities when fine-tuned on narrow task data due to gradient overwriting",
+      "synonyms": [
+        "catastrophic interference"
+      ],
+      "not_same_as": [
+        "underfitting",
+        "model compression"
+      ],
+      "used_by_nodes": [
+        "CAT_FORGETTING",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "term": "chat_template",
+      "definition": "standardized formatting schema for multi-turn conversations specifying system/user/assistant role tags and special tokens for a given model family",
+      "synonyms": [
+        "instruction template",
+        "prompt template"
+      ],
+      "not_same_as": [
+        "system prompt",
+        "few-shot prompt"
+      ],
+      "used_by_nodes": [
+        "CHAT_TEMPLATE"
+      ]
+    },
+    {
+      "term": "adapter_merge",
+      "definition": "mathematical integration of LoRA adapter weights (W' = W + alpha/r * B*A) into base model weight matrices producing a single merged checkpoint",
+      "synonyms": [
+        "merge_and_unload",
+        "weight merging"
+      ],
+      "not_same_as": [
+        "adapter serving",
+        "hot-swap"
+      ],
+      "used_by_nodes": [
+        "ADAPTER_MERGE"
+      ]
+    },
+    {
+      "term": "loss_masking",
+      "definition": "setting gradient contributions of prompt tokens to zero (-100 label) so the model only learns to predict completion tokens during SFT",
+      "synonyms": [
+        "label masking",
+        "prompt masking"
+      ],
+      "not_same_as": [
+        "attention masking",
+        "padding masking"
+      ],
+      "used_by_nodes": [
+        "CHAT_TEMPLATE",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "term": "rank",
+      "definition": "integer r controlling the inner dimension of LoRA matrices A (d x r) and B (r x d), determining adapter parameter count as 2*d*r per layer",
+      "synonyms": [
+        "LoRA rank",
+        "r"
+      ],
+      "not_same_as": [
+        "alpha",
+        "number of layers"
+      ],
+      "used_by_nodes": [
+        "RANK_ALPHA",
+        "LORA_CONFIG"
+      ]
+    },
+    {
+      "term": "Goodhart_law",
+      "definition": "when a metric becomes a target it ceases to be a good measure; in SFT context: optimizing benchmark scores inflates scores without improving true task capability",
+      "synonyms": [
+        "Goodhart's law",
+        "metric gaming"
+      ],
+      "not_same_as": [
+        "benchmark contamination",
+        "overfitting"
+      ],
+      "used_by_nodes": [
+        "GOODHART_BENCH",
+        "EVAL_HARNESS"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "BASE_MODEL_SEL",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model",
+      "RANK_ALPHA",
+      "COMPUTE_BUDGET"
+    ],
+    "probabilistic_modeling": [
+      "QLORA_SETUP",
+      "GOODHART_BENCH",
+      "CAT_FORGETTING"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "SAFETY_ALIGNMENT",
+      "LICENSE_TOS"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "EVAL_HARNESS",
+      "GOODHART_BENCH"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "SPECIALIST_VS_GENERALIST"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "MULTI_ADAPTER_ORCH"
+    ],
+    "software_schema_engineering": [
+      "schema_contract",
+      "traceability_matrix"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for SFT and PEFT work units in absence of supplied datasets; informed by Tunstall/Werra/Wolf NLP with Transformers, Hu et al. 2021 LoRA, Dettmers et al. 2023 QLoRA, Goodfellow et al. Deep Learning",
+      "citation_or_locator": "Tunstall et al. NLP with Transformers 2022; Hu et al. LoRA arXiv:2106.09685; Dettmers et al. QLoRA arXiv:2305.14314; Liu et al. DoRA arXiv:2402.09353",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "BASE_MODEL_SEL",
+      "topic": "base_model_selection",
+      "definition": "Select a pre-trained base model balancing capability, license, compute footprint, and ToS constraints for the fine-tuning task.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "model size tiers",
+          "license classification",
+          "ToS compatibility",
+          "benchmark capability assessment"
+        ],
+        "excluded": [
+          "LoRA/adapter configuration",
+          "quantization details"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "nlp"
+      ],
+      "subfields": [
+        "model_selection",
+        "transfer_learning"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "largest_model_advocate"
+      ],
+      "inputs": [
+        "task spec",
+        "compute budget",
+        "license constraints"
+      ],
+      "outputs": [
+        "selected base model",
+        "license audit report"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.75,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.75,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.72,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.59,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "new model release or license/ToS change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Locks downstream adapter dims and tokenizer; early decision avoids costly restarts",
+          "example": "switching from LLaMA-2 to Mistral mid-project forces full data reformat"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Base-model license/ToS incompatibility discovered post-training wastes GPU budget",
+          "example": "LLaMA-2 commercial use clause blocks customer deployment"
+        }
+      ],
+      "failure_modes": [
+        "selecting model whose ToS blocks target use",
+        "underestimating quantization quality degradation"
+      ],
+      "acceptance_tests": [
+        "license confirmed for production use-case",
+        "model card benchmark covers target task domain"
+      ],
+      "revisit_triggers": [
+        "ToS revision or model deprecation",
+        "task domain shifts substantially"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "DATA_CURATION",
+      "topic": "training_data_curation",
+      "definition": "Collect, clean, deduplicate, and quality-filter instruction/completion pairs for the SFT regime.",
+      "node_type": "work_unit",
+      "group": "data_pipeline",
+      "scope_boundary": {
+        "included": [
+          "source selection",
+          "deduplication",
+          "quality filtering",
+          "PII redaction",
+          "data mixing ratios"
+        ],
+        "excluded": [
+          "chat template application",
+          "tokenization details"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "nlp"
+      ],
+      "subfields": [
+        "data_engineering",
+        "dataset_curation"
+      ],
+      "specialists": [
+        "data_engineer",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "raw_crawl_advocate"
+      ],
+      "inputs": [
+        "raw text corpora",
+        "annotation guidelines",
+        "quality rubric"
+      ],
+      "outputs": [
+        "curated SFT dataset",
+        "data card"
+      ],
+      "dependencies": [
+        "BASE_MODEL_SEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.7,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.5,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.66,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.6,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.18,
+          0.56
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "new data source onboarded or quality metrics degrade",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High-quality data is the strongest lever for SFT task performance",
+          "example": "filtering ShareGPT to 52K high-quality samples (Alpaca-style) outperforms 500K noisy pairs"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-filtering reduces coverage; under-filtering injects noise and misalignment",
+          "example": "removing all examples under 50 tokens cuts math chain-of-thought data"
+        }
+      ],
+      "failure_modes": [
+        "contaminating eval set with training examples",
+        "mixing incompatible instruction formats"
+      ],
+      "acceptance_tests": [
+        "no eval-set overlap confirmed by n-gram deduplication",
+        "data card documents sources and filter thresholds"
+      ],
+      "revisit_triggers": [
+        "source domain drifts",
+        "annotation guidelines updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CHAT_TEMPLATE",
+      "topic": "chat_template_and_tokenization",
+      "definition": "Apply the model-family chat template (system/user/assistant roles, special tokens) and configure the tokenizer for SFT data formatting.",
+      "node_type": "work_unit",
+      "group": "data_pipeline",
+      "scope_boundary": {
+        "included": [
+          "chat template selection",
+          "special token insertion",
+          "tokenizer config",
+          "loss masking on prompt tokens"
+        ],
+        "excluded": [
+          "model architecture internals",
+          "dataset curation logic"
+        ]
+      },
+      "academic_fields": [
+        "nlp"
+      ],
+      "subfields": [
+        "tokenization",
+        "instruction_tuning"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "raw_text_sft_advocate"
+      ],
+      "inputs": [
+        "curated SFT dataset",
+        "tokenizer",
+        "chat template spec"
+      ],
+      "outputs": [
+        "tokenized dataset",
+        "loss mask config"
+      ],
+      "dependencies": [
+        "DATA_CURATION",
+        "BASE_MODEL_SEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.72,
+        "user_value": 0.8,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.64,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.64,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "base model or serving framework changes template spec",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Correct template prevents EOS/BOS token misalignment that silently degrades generation",
+          "example": "missing [/INST] in LLaMA-2 chat template causes runaway generation at inference"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Template mismatch between training and inference silently degrades output quality",
+          "example": "training with alpaca template but serving with chatml breaks assistant persona"
+        }
+      ],
+      "failure_modes": [
+        "forgetting to mask prompt tokens in loss (model learns to predict prompts)",
+        "EOS token missing causes infinite generation"
+      ],
+      "acceptance_tests": [
+        "generation terminates correctly on held-out prompts",
+        "loss mask confirmed excludes prompt token positions"
+      ],
+      "revisit_triggers": [
+        "base model replaced (new tokenizer/special tokens)",
+        "template spec updated by model provider"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SFT_LOOP",
+      "topic": "supervised_fine_tuning_training_loop",
+      "definition": "Execute the supervised fine-tuning training loop: forward pass on instruction-completion pairs, compute cross-entropy loss on completion tokens, gradient update.",
+      "node_type": "work_unit",
+      "group": "training",
+      "scope_boundary": {
+        "included": [
+          "full fine-tuning",
+          "SFT with loss masking",
+          "multi-epoch training",
+          "learning rate scheduling"
+        ],
+        "excluded": [
+          "PEFT adapter insertion",
+          "quantization setup"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "deep_learning"
+      ],
+      "subfields": [
+        "supervised_learning",
+        "nlp"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "zero_shot_prompting_only_advocate"
+      ],
+      "inputs": [
+        "tokenized dataset",
+        "base model weights",
+        "optimizer config"
+      ],
+      "outputs": [
+        "fine-tuned model checkpoint",
+        "training loss curves"
+      ],
+      "dependencies": [
+        "CHAT_TEMPLATE",
+        "BASE_MODEL_SEL"
+      ],
+      "must_not_finalize_before": [
+        "DATA_CURATION"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.66,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.62,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.73,
+        "dependency_gate_pass_rate": 0.76,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "training loss plateaus or spikes; new data distribution",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Direct gradient signal on task outputs produces strong in-domain performance",
+          "example": "SFT on 1K medical Q&A examples improves F1 by 30pp over prompting"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Full fine-tuning requires large GPU memory and risks catastrophic forgetting of general capabilities",
+          "example": "7B model full FT needs 4x A100 80GB; fine-tuned on code, loses instruction-following"
+        }
+      ],
+      "failure_modes": [
+        "learning rate too high destroys pretrained weights",
+        "epoch over-run causes format memorization not generalization"
+      ],
+      "acceptance_tests": [
+        "validation loss lower than base model",
+        "generation format matches template on held-out prompts"
+      ],
+      "revisit_triggers": [
+        "task distribution changes requiring retraining",
+        "compute budget revised"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LORA_CONFIG",
+      "topic": "lora_adapter_configuration",
+      "definition": "Configure LoRA adapter: select target modules, set rank r and scaling alpha, initialize adapter weights, and freeze base model parameters.",
+      "node_type": "work_unit",
+      "group": "peft",
+      "scope_boundary": {
+        "included": [
+          "rank r selection",
+          "alpha scaling",
+          "target module selection",
+          "adapter initialization",
+          "weight freezing"
+        ],
+        "excluded": [
+          "quantization (handled by QLORA_SETUP)",
+          "full fine-tuning"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "deep_learning"
+      ],
+      "subfields": [
+        "parameter_efficient_finetuning",
+        "low_rank_adaptation"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "full_finetune_advocate"
+      ],
+      "inputs": [
+        "base model architecture",
+        "target task",
+        "compute budget"
+      ],
+      "outputs": [
+        "LoRA adapter config",
+        "trainable parameter count"
+      ],
+      "dependencies": [
+        "BASE_MODEL_SEL"
+      ],
+      "must_not_finalize_before": [
+        "SFT_LOOP"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.72,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.65,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.64,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.17,
+          0.5
+        ],
+        "posterior_importance": 0.58,
+        "update_signal": "new PEFT paper updates rank selection guidance or new model arch",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "LoRA reduces trainable parameters 100-1000x vs full FT, enabling single-GPU fine-tuning of large models",
+          "example": "r=16 LoRA on LLaMA-2-7B trains on single A100 40GB vs 4x A100 for full FT"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too-low rank underfits task; too-high rank wastes parameters and memory without matching full FT",
+          "example": "r=2 on code generation misses complex pattern capture; r=256 gives no benefit over r=64"
+        }
+      ],
+      "failure_modes": [
+        "targeting only attention projections misses MLP contributions for generative tasks",
+        "alpha/r ratio mismatch causes training instability"
+      ],
+      "acceptance_tests": [
+        "adapter adds minimal inference latency overhead confirmed",
+        "validation metric with LoRA within 2pp of full FT baseline"
+      ],
+      "revisit_triggers": [
+        "model architecture updated (new attention mechanism)",
+        "task complexity assessment changes rank recommendation"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "QLORA_SETUP",
+      "topic": "qlora_quantized_training_setup",
+      "definition": "Configure QLoRA: quantize base model to 4-bit NF4/INT8 with double quantization, attach LoRA adapters, and enable paged optimizers for memory-efficient training.",
+      "node_type": "work_unit",
+      "group": "peft",
+      "scope_boundary": {
+        "included": [
+          "4-bit NF4 quantization",
+          "double quantization",
+          "paged Adam",
+          "bitsandbytes integration",
+          "compute dtype"
+        ],
+        "excluded": [
+          "full-precision training",
+          "post-training quantization for inference"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "deep_learning"
+      ],
+      "subfields": [
+        "quantized_training",
+        "parameter_efficient_finetuning"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "full_precision_advocate"
+      ],
+      "inputs": [
+        "base model",
+        "GPU memory budget",
+        "bitsandbytes config"
+      ],
+      "outputs": [
+        "quantized+LoRA model",
+        "memory usage profile"
+      ],
+      "dependencies": [
+        "LORA_CONFIG"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.85,
+        "user_value": 0.68,
+        "technical_complexity": 0.8,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.62,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.63,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.53
+        ],
+        "posterior_importance": 0.5,
+        "update_signal": "bitsandbytes or transformers library update; new quantization scheme",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "QLoRA enables 65B model fine-tuning on single 48GB GPU with near-full-FT quality",
+          "example": "Dettmers et al. 2023: QLoRA matches 16-bit LoRA on MMLU within 1pp"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Quantization introduces numerical noise; NF4 quantization error accumulates across layers",
+          "example": "aggressive 4-bit on small 1.3B models can degrade downstream task performance noticeably"
+        }
+      ],
+      "failure_modes": [
+        "forgetting to set compute_dtype to bf16/fp16 (runs in 4-bit forward, 4-bit backward)",
+        "paged optimizer not enabled causing OOM on long sequences"
+      ],
+      "acceptance_tests": [
+        "training run completes without OOM on target GPU",
+        "gradient norms remain stable across first 100 steps"
+      ],
+      "revisit_triggers": [
+        "bitsandbytes library update changes quantization behavior",
+        "new GPU architecture changes optimal config"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DORA_ADAPTER",
+      "topic": "dora_weight_decomposition_adapter",
+      "definition": "Apply DoRA (Weight-Decomposed Low-Rank Adaptation) which decomposes weights into magnitude and direction components and fine-tunes both with LoRA on the direction.",
+      "node_type": "work_unit",
+      "group": "peft",
+      "scope_boundary": {
+        "included": [
+          "magnitude/direction decomposition",
+          "directional LoRA update",
+          "DoRA vs LoRA comparison"
+        ],
+        "excluded": [
+          "standard LoRA rank/alpha config",
+          "QLoRA quantization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "deep_learning"
+      ],
+      "subfields": [
+        "parameter_efficient_finetuning",
+        "weight_decomposition"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "standard_lora_advocate"
+      ],
+      "inputs": [
+        "base model weights",
+        "LoRA adapter config"
+      ],
+      "outputs": [
+        "DoRA adapter",
+        "per-layer magnitude vectors"
+      ],
+      "dependencies": [
+        "LORA_CONFIG"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.6,
+        "business_value": 0.62,
+        "user_value": 0.58,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.52,
+        "cross_topic_coupling": 0.6,
+        "irreversibility": 0.42,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.53,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.64,
+        "final_importance": 0.58
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.6,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.2,
+          0.58
+        ],
+        "posterior_importance": 0.35,
+        "update_signal": "PEFT library DoRA API changes or new decomposition paper",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "DoRA achieves LoRA-quality at lower rank by separately controlling magnitude and directional updates",
+          "example": "Liu et al. 2024: DoRA r=8 matches LoRA r=16 on commonsense benchmarks"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds magnitude parameter overhead; implementation in PEFT library still maturing",
+          "example": "DoRA training slightly slower than LoRA due to norm computation per step"
+        }
+      ],
+      "failure_modes": [
+        "confusing DoRA magnitude with weight scaling hyperparameter alpha",
+        "not available for all model architectures in PEFT"
+      ],
+      "acceptance_tests": [
+        "DoRA magnitude vectors initialized correctly (unit norms)",
+        "validation loss comparable to higher-rank LoRA baseline"
+      ],
+      "revisit_triggers": [
+        "PEFT library DoRA support matures or breaks",
+        "new decomposition variant supersedes DoRA"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "HYPERPARAM_TUNING",
+      "topic": "sft_hyperparameter_selection",
+      "definition": "Select and tune SFT hyperparameters: learning rate, warmup, batch size, gradient accumulation steps, number of epochs, weight decay, and max sequence length.",
+      "node_type": "work_unit",
+      "group": "training",
+      "scope_boundary": {
+        "included": [
+          "learning rate and schedule",
+          "batch size and grad accum",
+          "epoch count",
+          "warmup steps",
+          "weight decay",
+          "max_seq_len"
+        ],
+        "excluded": [
+          "LoRA rank/alpha (separate node)",
+          "optimizer algorithm selection"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning"
+      ],
+      "subfields": [
+        "hyperparameter_optimization",
+        "training_dynamics"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "default_config_advocate"
+      ],
+      "inputs": [
+        "base model",
+        "dataset stats",
+        "GPU specs"
+      ],
+      "outputs": [
+        "training config",
+        "hyperparameter sweep report"
+      ],
+      "dependencies": [
+        "SFT_LOOP",
+        "LORA_CONFIG"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.75,
+        "user_value": 0.68,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.61,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.63,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.73,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.53
+        ],
+        "posterior_importance": 0.5,
+        "update_signal": "new scaling law paper updates LR recommendations; architecture change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Learning rate is the single most impactful hyperparameter; correct range prevents divergence or stagnation",
+          "example": "lr=2e-4 with cosine schedule is robust default for LoRA SFT on 7B models"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Exhaustive grid search is compute-prohibitive; heuristic defaults transfer poorly across architectures",
+          "example": "lr tuned for LLaMA-2 diverges on Falcon architecture"
+        }
+      ],
+      "failure_modes": [
+        "setting lr too high for large rank LoRA causing loss spikes",
+        "not accounting for effective batch size in warmup calculation"
+      ],
+      "acceptance_tests": [
+        "training loss curve smooth (no spikes) with cosine LR schedule",
+        "final checkpoint not worse than epoch-1 checkpoint on validation"
+      ],
+      "revisit_triggers": [
+        "model architecture changes altering learning dynamics",
+        "new optimizer (e.g., Adan) adopted"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CAT_FORGETTING",
+      "topic": "catastrophic_forgetting_mitigation",
+      "definition": "Detect and mitigate catastrophic forgetting of general capabilities during SFT using regularization, replay, or constrained gradient methods.",
+      "node_type": "work_unit",
+      "group": "training",
+      "scope_boundary": {
+        "included": [
+          "forgetting detection on general benchmarks",
+          "EWC regularization",
+          "replay data mixing",
+          "LoRA freezing strategy"
+        ],
+        "excluded": [
+          "task-specific evaluation",
+          "base model capability assessment"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "deep_learning"
+      ],
+      "subfields": [
+        "continual_learning",
+        "regularization"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "research_scientist"
+      ],
+      "contradictors": [
+        "ignore_forgetting_advocate"
+      ],
+      "inputs": [
+        "base model benchmarks",
+        "SFT task metrics",
+        "replay buffer"
+      ],
+      "outputs": [
+        "forgetting audit report",
+        "regularization config"
+      ],
+      "dependencies": [
+        "SFT_LOOP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.55,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.68,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.58,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.4,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.22,
+          0.62
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "general benchmark scores degrade post-SFT; new mitigation technique",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Mixing a small fraction of general instruction data preserves capability while achieving task gains",
+          "example": "5% replay of Alpaca data prevents MMLU degradation during code SFT"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Anti-forgetting techniques add complexity and may reduce peak task performance",
+          "example": "EWC regularization lowers task-specific F1 by 3pp while preserving general Q&A"
+        }
+      ],
+      "failure_modes": [
+        "not evaluating general benchmarks post-SFT, missing silent degradation",
+        "replay data leaking task-specific labels"
+      ],
+      "acceptance_tests": [
+        "MMLU/HellaSwag scores within 2pp of base model post-SFT",
+        "task metric improved over base model baseline"
+      ],
+      "revisit_triggers": [
+        "task scope expands requiring different general capability preservation",
+        "new catastrophic forgetting mitigation method published"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "ADAPTER_MERGE",
+      "topic": "adapter_merging_and_export",
+      "definition": "Merge trained LoRA/DoRA adapter weights into the base model for single-artifact deployment, or keep separate for hot-swapping multiple adapters.",
+      "node_type": "work_unit",
+      "group": "deployment",
+      "scope_boundary": {
+        "included": [
+          "weight merging (merge_and_unload)",
+          "multi-adapter serving",
+          "GGUF/GGML export",
+          "safetensors format"
+        ],
+        "excluded": [
+          "quantization-aware training",
+          "inference optimization beyond merging"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "model_deployment",
+        "inference_engineering"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "mlops_engineer"
+      ],
+      "contradictors": [
+        "always_merge_advocate"
+      ],
+      "inputs": [
+        "trained adapter",
+        "base model weights",
+        "deployment constraints"
+      ],
+      "outputs": [
+        "merged model artifact",
+        "adapter hub card"
+      ],
+      "dependencies": [
+        "LORA_CONFIG",
+        "SFT_LOOP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.8,
+        "user_value": 0.75,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.68,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.62,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.66,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.12,
+          0.4
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "deployment architecture change or new merging algorithm adopted",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Merged model has zero adapter overhead at inference; identical throughput to base model",
+          "example": "merged 7B model serves at same latency as base on vLLM"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Merging loses adapter modularity; separate adapters enable per-request specialization but add latency",
+          "example": "multi-tenant serving with 4 adapters adds 15ms per-request vs merged"
+        }
+      ],
+      "failure_modes": [
+        "merging quantized adapters into fp16 base causes precision mismatch artifacts",
+        "not validating merged model against adapter model before deployment"
+      ],
+      "acceptance_tests": [
+        "merged model output matches unmerged adapter+base within fp32 tolerance on 100 test prompts",
+        "no performance regression vs unmerged on task benchmark"
+      ],
+      "revisit_triggers": [
+        "deployment architecture changes to multi-adapter serving",
+        "new merge algorithm (TIES, DARE) adopted"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EVAL_HARNESS",
+      "topic": "evaluation_harness_and_benchmarks",
+      "definition": "Design and run evaluation harness: task-specific metrics, general capability benchmarks, contamination checks, and human evaluation for SFT model quality assessment.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "task metric selection",
+          "benchmark selection",
+          "contamination detection",
+          "held-out eval set",
+          "human eval protocol"
+        ],
+        "excluded": [
+          "online A/B testing",
+          "inference optimization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "nlp"
+      ],
+      "subfields": [
+        "evaluation_methodology",
+        "benchmark_design"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "research_scientist"
+      ],
+      "contradictors": [
+        "train_loss_only_advocate"
+      ],
+      "inputs": [
+        "fine-tuned model",
+        "eval dataset",
+        "benchmark suite"
+      ],
+      "outputs": [
+        "evaluation report",
+        "model card metrics"
+      ],
+      "dependencies": [
+        "SFT_LOOP",
+        "CAT_FORGETTING",
+        "GOODHART_BENCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.88,
+        "user_value": 0.82,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.45,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.66,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.39,
+        "lock_score": 0.61,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.2,
+          0.58
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "new contamination discovered; task definition changes; Goodhart drift detected",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-benchmark evaluation catches capability regression invisible from task-specific metrics alone",
+          "example": "MMLU reveals forgetting while task F1 shows improvement, preventing premature deployment"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Benchmark contamination inflates scores and gives false confidence in model quality",
+          "example": "training on WizardLM data contaminated with TruthfulQA inflates TruthfulQA scores by 8pp"
+        }
+      ],
+      "failure_modes": [
+        "Goodhart's law: optimizing benchmark metric misaligns with real task quality",
+        "using eval set examples for few-shot prompting during eval"
+      ],
+      "acceptance_tests": [
+        "eval set confirmed not in training data by exact-match deduplication",
+        "human eval agreement with automated metric >0.7 Spearman correlation"
+      ],
+      "revisit_triggers": [
+        "new benchmark contamination discovered",
+        "task definition revised requiring new eval protocol"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "RANK_ALPHA",
+      "topic": "lora_rank_and_alpha_selection",
+      "definition": "Select LoRA rank r and scaling factor alpha to control adapter capacity and learning rate effective scale, balancing underfitting vs parameter bloat.",
+      "node_type": "work_unit",
+      "group": "peft",
+      "scope_boundary": {
+        "included": [
+          "rank sweep",
+          "alpha/r ratio",
+          "per-layer rank variation",
+          "task complexity assessment"
+        ],
+        "excluded": [
+          "target module selection",
+          "quantization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning"
+      ],
+      "subfields": [
+        "parameter_efficient_finetuning",
+        "hyperparameter_optimization"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "high_rank_always_advocate"
+      ],
+      "inputs": [
+        "task complexity",
+        "model size",
+        "compute budget"
+      ],
+      "outputs": [
+        "rank/alpha config",
+        "parameter count estimate"
+      ],
+      "dependencies": [
+        "LORA_CONFIG"
+      ],
+      "must_not_finalize_before": [
+        "SFT_LOOP"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.7,
+        "user_value": 0.65,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.48,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.61,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.65,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.15,
+          0.47
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "task complexity changes or new rank efficiency analysis published",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rank 8-64 covers most tasks; alpha=2*r is stable default reducing one tuning dimension",
+          "example": "r=16,alpha=32 robust starting point for instruction tuning on 7B models"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High rank increases memory linearly; low rank creates bottleneck for high-complexity tasks",
+          "example": "r=4 on code-generation task caps model at GPT-3.5 level ceiling"
+        }
+      ],
+      "failure_modes": [
+        "setting alpha != 2r without understanding effective LR scaling",
+        "rank too low for multi-task fine-tuning"
+      ],
+      "acceptance_tests": [
+        "rank ablation shows diminishing returns above chosen rank",
+        "alpha/r ratio validated on validation task metric"
+      ],
+      "revisit_triggers": [
+        "task complexity grows requiring rank increase",
+        "new PEFT insight revises rank selection guidelines"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "TARGET_MODULES",
+      "topic": "lora_target_module_selection",
+      "definition": "Decide which model layers and projection matrices (Q,K,V,O,up/down/gate projections) to apply LoRA adapters, trading coverage for memory.",
+      "node_type": "work_unit",
+      "group": "peft",
+      "scope_boundary": {
+        "included": [
+          "attention projection targeting",
+          "MLP projection targeting",
+          "embedding layer adapters",
+          "layer depth coverage"
+        ],
+        "excluded": [
+          "rank/alpha numerical values",
+          "quantization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "deep_learning"
+      ],
+      "subfields": [
+        "parameter_efficient_finetuning",
+        "neural_architecture"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "attention_only_lora_advocate"
+      ],
+      "inputs": [
+        "model architecture spec",
+        "task type",
+        "VRAM budget"
+      ],
+      "outputs": [
+        "target_modules list",
+        "parameter count breakdown"
+      ],
+      "dependencies": [
+        "LORA_CONFIG",
+        "BASE_MODEL_SEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.65,
+        "user_value": 0.6,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.45,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.58,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.67,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "new model architecture adopted or task type changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Including MLP projections alongside attention significantly improves generative tasks",
+          "example": "code generation: adding gate/up/down projections lifts HumanEval by 5-8pp over q/v only"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adding all linear layers increases trainable parameters and memory; often marginal gain beyond q/k/v/o+MLP",
+          "example": "embedding LoRA rarely improves task performance but triples adapter size"
+        }
+      ],
+      "failure_modes": [
+        "targeting only q,v but not k and o for tasks requiring cross-attention alignment",
+        "module names differ across model families (e.g., c_attn in GPT-2 vs q_proj in LLaMA)"
+      ],
+      "acceptance_tests": [
+        "all specified target modules exist in model architecture (verified programmatically)",
+        "parameter count within VRAM budget"
+      ],
+      "revisit_triggers": [
+        "model architecture changes (new model family)",
+        "task type changes altering which modules matter"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "GOODHART_BENCH",
+      "topic": "goodhart_and_benchmark_contamination_risk",
+      "definition": "Manage Goodhart's law risk and benchmark contamination: prevent optimizing proxy metrics that diverge from true capability, and detect training-eval overlap.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "contamination detection",
+          "metric Goodhart analysis",
+          "eval set isolation",
+          "held-out test set protocol"
+        ],
+        "excluded": [
+          "benchmark selection (covered in EVAL_HARNESS)",
+          "data curation internals"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "evaluation_science"
+      ],
+      "subfields": [
+        "benchmark_integrity",
+        "evaluation_methodology"
+      ],
+      "specialists": [
+        "research_scientist",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "benchmark_score_maximizer"
+      ],
+      "inputs": [
+        "training dataset",
+        "benchmark datasets",
+        "eval set"
+      ],
+      "outputs": [
+        "contamination audit report",
+        "Goodhart risk assessment"
+      ],
+      "dependencies": [
+        "DATA_CURATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.82,
+        "user_value": 0.7,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.6,
+        "risk_score": 0.64,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.59,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.42,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.28,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.22,
+          0.64
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "new contamination methodology published; training data source changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Early contamination detection prevents deployment of models with inflated benchmark scores",
+          "example": "MinHash deduplication between training data and MMLU catches 2-4% contamination in web-scraped data"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Contamination detection is compute-intensive; perfect isolation impossible for internet-pretrained models",
+          "example": "n-gram overlap detection misses paraphrase contamination"
+        }
+      ],
+      "failure_modes": [
+        "not running deduplication between SFT data and benchmark test sets",
+        "treating benchmark improvement as evidence of real capability gain"
+      ],
+      "acceptance_tests": [
+        "MinHash or exact-match dedup run between train and eval datasets",
+        "benchmark score changes correlated with human eval score changes"
+      ],
+      "revisit_triggers": [
+        "new benchmark added to eval suite",
+        "training data source changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "COMPUTE_BUDGET",
+      "topic": "compute_and_gpu_budget_planning",
+      "definition": "Estimate and plan GPU compute budget for SFT: model size, batch size, gradient accumulation, mixed precision, and total training tokens to FLOPs mapping.",
+      "node_type": "work_unit",
+      "group": "infrastructure",
+      "scope_boundary": {
+        "included": [
+          "FLOP estimation",
+          "GPU memory planning",
+          "gradient accumulation",
+          "mixed precision selection",
+          "training time estimation"
+        ],
+        "excluded": [
+          "cloud provider selection",
+          "post-training serving infrastructure"
+        ]
+      },
+      "academic_fields": [
+        "systems",
+        "machine_learning"
+      ],
+      "subfields": [
+        "compute_planning",
+        "mlops"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "unlimited_compute_advocate"
+      ],
+      "inputs": [
+        "model size",
+        "dataset size",
+        "hardware specs"
+      ],
+      "outputs": [
+        "compute budget plan",
+        "GPU allocation spec"
+      ],
+      "dependencies": [
+        "BASE_MODEL_SEL",
+        "DATA_CURATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.8,
+        "user_value": 0.58,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.6,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.65,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.53
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "hardware platform changes or model/dataset scale changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Accurate FLOP/memory planning prevents mid-training OOM and enables cost-efficient spot instance use",
+          "example": "Chinchilla scaling laws guide optimal token/parameter ratio for budget"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Compute estimates are approximate; actual training can be 1.5-2x estimated due to overhead",
+          "example": "gradient checkpointing slows training 30-40% vs estimated throughput"
+        }
+      ],
+      "failure_modes": [
+        "underestimating activation memory causing OOM at gradient accumulation step",
+        "not accounting for optimizer state in fp32 alongside fp16 model"
+      ],
+      "acceptance_tests": [
+        "memory profiler confirms peak memory within 90% GPU capacity",
+        "cost estimate within 20% of actual spend on 100-step pilot run"
+      ],
+      "revisit_triggers": [
+        "model size or dataset changes materially",
+        "hardware platform changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LICENSE_TOS",
+      "topic": "base_model_license_and_tos_compliance",
+      "definition": "Audit and enforce base model license terms and ToS constraints: permissible use cases, redistribution rights, derivative model sharing, and commercial deployment.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "license classification (Apache/CC-BY/custom)",
+          "commercial use audit",
+          "derivative redistribution rights",
+          "ToS version tracking"
+        ],
+        "excluded": [
+          "model technical evaluation",
+          "training implementation"
+        ]
+      },
+      "academic_fields": [
+        "law",
+        "governance"
+      ],
+      "subfields": [
+        "model_licensing",
+        "compliance"
+      ],
+      "specialists": [
+        "legal_counsel",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "ignore_license_advocate"
+      ],
+      "inputs": [
+        "model license",
+        "ToS document",
+        "deployment use-case spec"
+      ],
+      "outputs": [
+        "license compliance report",
+        "approved use-case list"
+      ],
+      "dependencies": [
+        "BASE_MODEL_SEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.9,
+        "user_value": 0.6,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.78,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.69,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.63,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.85,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.88,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.63,
+        "update_signal": "provider updates license; deployment jurisdiction changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Early license audit prevents costly post-training legal blocks on deployment",
+          "example": "LLaMA-2 70B commercial use requires explicit Meta approval above 700M MAU threshold"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Restrictive licenses block open sharing of fine-tuned models limiting community contribution",
+          "example": "Mistral Apache-2.0 allows redistribution; LLaMA-2 custom license prohibits training competing LLMs"
+        }
+      ],
+      "failure_modes": [
+        "treating fine-tuned weight merge as derivative work without checking license",
+        "ToS change post-training invalidating deployment rights"
+      ],
+      "acceptance_tests": [
+        "legal sign-off documented for target deployment use case",
+        "ToS version recorded in model card"
+      ],
+      "revisit_triggers": [
+        "model provider updates license terms",
+        "new deployment jurisdiction with different requirements"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SPECIALIST_VS_GENERALIST",
+      "topic": "specialist_vs_generalist_tradeoff",
+      "definition": "Evaluate when a fine-tuned specialist LLM beats prompting a generalist model on the narrow task, accounting for orchestration latency/cost compounding.",
+      "node_type": "work_unit",
+      "group": "strategy",
+      "scope_boundary": {
+        "included": [
+          "narrow-task benchmark comparison",
+          "few-shot vs fine-tuned gap analysis",
+          "orchestration cost modeling",
+          "total inference cost comparison"
+        ],
+        "excluded": [
+          "base model selection process",
+          "production serving architecture"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "economics"
+      ],
+      "subfields": [
+        "model_strategy",
+        "cost_benefit_analysis"
+      ],
+      "specialists": [
+        "research_scientist",
+        "ml_engineer",
+        "product_manager"
+      ],
+      "contradictors": [
+        "finetune_always_advocate"
+      ],
+      "inputs": [
+        "task definition",
+        "performance gap analysis",
+        "inference cost model"
+      ],
+      "outputs": [
+        "go/no-go decision for SFT",
+        "cost-benefit report"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.9,
+        "user_value": 0.78,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.65,
+        "risk_score": 0.66,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.6,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.4,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.22,
+          0.62
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "frontier model capability jump; task scope change; new cost benchmarks",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fine-tuned specialist consistently beats prompting on narrow structured tasks at lower per-call cost",
+          "example": "SQL generation: fine-tuned 7B beats GPT-4 few-shot on spider benchmark at 1/50 cost"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Specialist beats generalist only on narrow tasks; orchestration overhead compounds in multi-step pipelines",
+          "example": "3-specialist pipeline with 150ms each latency vs 1 GPT-4 call at 400ms loses on latency budget"
+        }
+      ],
+      "failure_modes": [
+        "assuming specialist always wins without benchmarking against few-shot prompting of frontier model",
+        "ignoring orchestration latency when comparing multi-specialist vs single-generalist cost"
+      ],
+      "acceptance_tests": [
+        "benchmarked specialist outperforms best few-shot prompting baseline by statistically significant margin",
+        "total pipeline latency within product SLA with specialist architecture"
+      ],
+      "revisit_triggers": [
+        "frontier model capability improves making specialist gap shrink",
+        "task broadens reducing specialist advantage"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MULTI_ADAPTER_ORCH",
+      "topic": "multi_adapter_orchestration",
+      "definition": "Design orchestration layer for routing requests to appropriate fine-tuned specialist adapters, managing adapter hot-swap, and controlling latency/cost compounding.",
+      "node_type": "work_unit",
+      "group": "deployment",
+      "scope_boundary": {
+        "included": [
+          "adapter routing logic",
+          "hot-swap latency",
+          "adapter caching",
+          "cost compounding analysis",
+          "fallback to base model"
+        ],
+        "excluded": [
+          "single-adapter deployment",
+          "model serving infrastructure internals"
+        ]
+      },
+      "academic_fields": [
+        "systems",
+        "machine_learning"
+      ],
+      "subfields": [
+        "model_orchestration",
+        "inference_engineering"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "systems_engineer"
+      ],
+      "contradictors": [
+        "monolithic_model_advocate"
+      ],
+      "inputs": [
+        "multiple trained adapters",
+        "routing specification",
+        "SLA requirements"
+      ],
+      "outputs": [
+        "orchestration config",
+        "adapter registry",
+        "latency profiling report"
+      ],
+      "dependencies": [
+        "ADAPTER_MERGE",
+        "SPECIALIST_VS_GENERALIST"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.58,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.66,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.59,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.58
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "adapter count changes; SLA requirements change; new serving framework adopted",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adapter hot-swapping enables serving multiple specializations from one base model reducing memory footprint",
+          "example": "S-LoRA: serving 1000 LoRA adapters on shared base with <10ms switching overhead"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Orchestration adds latency and complexity; cascading specialist calls compound cost super-linearly",
+          "example": "3-hop multi-specialist pipeline at 200ms each = 600ms vs 350ms direct GPT-4 call"
+        }
+      ],
+      "failure_modes": [
+        "adapter routing misclassification sending requests to wrong specialist",
+        "not profiling adapter swap latency under concurrent load"
+      ],
+      "acceptance_tests": [
+        "adapter routing accuracy >95% on held-out routing test set",
+        "p99 latency within product SLA under 2x peak load"
+      ],
+      "revisit_triggers": [
+        "adapter count grows beyond cache capacity",
+        "SLA requirements tighten"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CHECKPOINT_MGT",
+      "topic": "checkpoint_management_and_early_stopping",
+      "definition": "Implement checkpoint saving strategy, early stopping criteria based on validation metric, and best-checkpoint selection to prevent over-training.",
+      "node_type": "work_unit",
+      "group": "training",
+      "scope_boundary": {
+        "included": [
+          "checkpoint frequency",
+          "early stopping patience",
+          "best checkpoint selection",
+          "validation metric choice"
+        ],
+        "excluded": [
+          "model export and deployment",
+          "optimizer state persistence"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning"
+      ],
+      "subfields": [
+        "training_dynamics",
+        "model_management"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "final_epoch_only_advocate"
+      ],
+      "inputs": [
+        "training loop",
+        "validation set",
+        "storage budget"
+      ],
+      "outputs": [
+        "best model checkpoint",
+        "training curve with checkpoint markers"
+      ],
+      "dependencies": [
+        "SFT_LOOP",
+        "HYPERPARAM_TUNING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.65,
+        "user_value": 0.62,
+        "technical_complexity": 0.52,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.58,
+        "irreversibility": 0.48,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.3,
+        "risk_score": 0.53,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.69,
+        "final_importance": 0.61
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.12,
+          0.4
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "training dynamics change; new early stopping methodology adopted",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Early stopping on validation metric prevents epoch-level over-training and format memorization",
+          "example": "stopping at epoch 2 of 5 based on val loss prevents GSM8K accuracy collapse from over-training"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too-aggressive early stopping may stop before model converges on low-data regimes",
+          "example": "patience=1 epoch stops training prematurely when validation metric is noisy"
+        }
+      ],
+      "failure_modes": [
+        "checkpointing too infrequently losing training progress on preempted jobs",
+        "using training loss not validation metric for early stopping criterion"
+      ],
+      "acceptance_tests": [
+        "best checkpoint selected by validation metric not training epoch number",
+        "checkpoint recovery tested on simulated preemption"
+      ],
+      "revisit_triggers": [
+        "training infrastructure changes affecting checkpoint format",
+        "new training framework adopted"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DATA_FORMAT_QUALITY",
+      "topic": "instruction_data_format_and_quality_standards",
+      "definition": "Define and enforce quality standards for instruction-response pairs: format consistency, response length distribution, instruction diversity, and quality scoring rubric.",
+      "node_type": "work_unit",
+      "group": "data_pipeline",
+      "scope_boundary": {
+        "included": [
+          "instruction format spec",
+          "response quality rubric",
+          "length distribution analysis",
+          "diversity metrics",
+          "format consistency checks"
+        ],
+        "excluded": [
+          "low-level data collection",
+          "model training loop"
+        ]
+      },
+      "academic_fields": [
+        "nlp",
+        "data_engineering"
+      ],
+      "subfields": [
+        "instruction_tuning",
+        "data_quality"
+      ],
+      "specialists": [
+        "data_engineer",
+        "annotator"
+      ],
+      "contradictors": [
+        "quantity_over_quality_advocate"
+      ],
+      "inputs": [
+        "raw instruction-response pairs",
+        "quality rubric spec"
+      ],
+      "outputs": [
+        "quality-annotated dataset",
+        "format spec doc"
+      ],
+      "dependencies": [
+        "DATA_CURATION"
+      ],
+      "must_not_finalize_before": [
+        "CHAT_TEMPLATE"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.75,
+        "user_value": 0.7,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.42,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.58,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.65,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "task definition changes; quality rubric expert review",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High diversity and quality instructions produce more capable generalist SFT models than sheer quantity",
+          "example": "LIMA: 1000 high-quality diverse instructions outperform 50K noisy Alpaca-style data"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Strict quality filters can eliminate edge-case coverage needed for robustness",
+          "example": "filtering short responses removes valid yes/no answers from classification tasks"
+        }
+      ],
+      "failure_modes": [
+        "instruction format inconsistency causing model to learn spurious format correlations",
+        "response quality rubric not aligned with task eval metric"
+      ],
+      "acceptance_tests": [
+        "format consistency >98% on random 500-example audit",
+        "instruction diversity metric (self-BLEU <0.4) confirmed on dataset"
+      ],
+      "revisit_triggers": [
+        "task definition changes requiring new instruction format",
+        "quality rubric updated by domain experts"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "GRAD_CHECKPOINT_MEM",
+      "topic": "gradient_checkpointing_and_memory_optimization",
+      "definition": "Apply gradient checkpointing, flash attention, and mixed precision to reduce peak activation memory and enable larger batch sizes or longer sequence training.",
+      "node_type": "work_unit",
+      "group": "infrastructure",
+      "scope_boundary": {
+        "included": [
+          "gradient checkpointing",
+          "flash attention 2",
+          "bf16/fp16 mixed precision",
+          "activation offloading",
+          "sequence length scaling"
+        ],
+        "excluded": [
+          "optimizer algorithm choice",
+          "model architecture modifications"
+        ]
+      },
+      "academic_fields": [
+        "systems",
+        "machine_learning"
+      ],
+      "subfields": [
+        "memory_optimization",
+        "distributed_training"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "systems_engineer"
+      ],
+      "contradictors": [
+        "no_memory_optimization_advocate"
+      ],
+      "inputs": [
+        "model",
+        "GPU memory budget",
+        "target sequence length"
+      ],
+      "outputs": [
+        "memory-optimized training config",
+        "throughput benchmark"
+      ],
+      "dependencies": [
+        "COMPUTE_BUDGET",
+        "QLORA_SETUP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.72,
+        "user_value": 0.55,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.42,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.32,
+        "risk_score": 0.56,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.68,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "flash attention API changes; new GPU architecture; sequence length requirements change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Flash attention 2 + gradient checkpointing reduces memory 60-70% enabling 2-4x longer sequences",
+          "example": "128K context Mistral training feasible on 8xA100 with flash attention 2 + activation offload"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Gradient checkpointing recomputes activations on backward pass, adding 30-40% training time overhead",
+          "example": "training throughput drops from 2500 to 1700 tokens/sec/GPU with full gradient checkpointing"
+        }
+      ],
+      "failure_modes": [
+        "enabling gradient checkpointing without flash attention 2 causing OOM on long sequences",
+        "not profiling peak memory per step causing surprise OOM late in training"
+      ],
+      "acceptance_tests": [
+        "peak GPU memory utilization <90% confirmed on longest sequences in dataset",
+        "training throughput within 2x of theoretical peak for batch size"
+      ],
+      "revisit_triggers": [
+        "new flash attention version changes API",
+        "target sequence length increases"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SAFETY_ALIGNMENT",
+      "topic": "safety_alignment_and_harmful_output_prevention",
+      "definition": "Assess and mitigate safety risks introduced by SFT: harmful instruction following, jailbreak surface expansion, and misalignment from training data bias.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "harmful output auditing",
+          "jailbreak surface evaluation",
+          "training data bias assessment",
+          "refusal calibration"
+        ],
+        "excluded": [
+          "RLHF/DPO alignment (separate from SFT)",
+          "content moderation infrastructure"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "safety",
+        "ethics"
+      ],
+      "subfields": [
+        "ai_safety",
+        "alignment"
+      ],
+      "specialists": [
+        "safety_researcher",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "ship_without_safety_eval_advocate"
+      ],
+      "inputs": [
+        "fine-tuned model",
+        "red-team guidelines",
+        "safety eval suite"
+      ],
+      "outputs": [
+        "safety evaluation report",
+        "refusal calibration config"
+      ],
+      "dependencies": [
+        "SFT_LOOP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.85,
+        "user_value": 0.75,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.62,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.58,
+        "risk_score": 0.71,
+        "confidence_score": 0.46,
+        "revisit_pressure": 0.39,
+        "lock_score": 0.55,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.42,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.28,
+        "downside_weight": 0.8,
+        "uncertainty_interval": [
+          0.25,
+          0.67
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "new jailbreak vector or red-team finding; deployment context changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "SFT on curated safe data reduces harmful outputs vs base model; refusal calibration prevents over-refusal",
+          "example": "SFT on safety-curated data reduces harmful output rate from 8% to 1.2% on red-team eval"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "SFT on task data without safety controls can expand jailbreak surface or erode base model refusals",
+          "example": "code SFT unintentionally teaches model to follow harmful code generation instructions"
+        }
+      ],
+      "failure_modes": [
+        "not red-teaming fine-tuned model assuming base model safety transfers",
+        "over-calibrating refusals reducing legitimate task utility"
+      ],
+      "acceptance_tests": [
+        "red-team harmful output rate below threshold on safety eval suite",
+        "refusal rate on legitimate task prompts within acceptable range"
+      ],
+      "revisit_triggers": [
+        "new jailbreak vector discovered; deployment context changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "BASE_MODEL_SEL",
+      "to": "LORA_CONFIG",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.9,
+      "label": "base model arch determines LoRA target modules and rank feasibility",
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_002",
+      "from": "BASE_MODEL_SEL",
+      "to": "CHAT_TEMPLATE",
+      "edge_type": "dependency",
+      "relation_strength": 0.92,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.92,
+      "label": "tokenizer and special tokens are model-family specific",
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_003",
+      "from": "BASE_MODEL_SEL",
+      "to": "COMPUTE_BUDGET",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "label": "model size drives FLOP and memory estimates",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_004",
+      "from": "BASE_MODEL_SEL",
+      "to": "LICENSE_TOS",
+      "edge_type": "dependency",
+      "relation_strength": 0.95,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.05,
+      "causal_confidence": 0.95,
+      "label": "model identity determines applicable license and ToS",
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_005",
+      "from": "DATA_CURATION",
+      "to": "CHAT_TEMPLATE",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "label": "curated data must be reformatted according to chat template",
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_006",
+      "from": "DATA_CURATION",
+      "to": "DATA_FORMAT_QUALITY",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "label": "raw collected data undergoes quality standard enforcement",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_007",
+      "from": "DATA_CURATION",
+      "to": "GOODHART_BENCH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "label": "training data must be deduped against eval benchmarks",
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_008",
+      "from": "CHAT_TEMPLATE",
+      "to": "SFT_LOOP",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.9,
+      "label": "tokenized dataset with correct template is SFT loop input",
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_009",
+      "from": "LORA_CONFIG",
+      "to": "QLORA_SETUP",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.88,
+      "label": "LoRA adapter config is prerequisite for QLoRA quantization wrapper",
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_010",
+      "from": "LORA_CONFIG",
+      "to": "RANK_ALPHA",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "label": "LoRA config provides context for rank and alpha sub-selection",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_011",
+      "from": "LORA_CONFIG",
+      "to": "TARGET_MODULES",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "label": "LoRA config provides context for target module sub-selection",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_012",
+      "from": "LORA_CONFIG",
+      "to": "DORA_ADAPTER",
+      "edge_type": "similarity",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.12,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.72,
+      "label": "DoRA extends LoRA with magnitude decomposition; similar adapter pattern",
+      "edge_priority": 0.09,
+      "edge_score": 0.09,
+      "edge_heat": 0.22
+    },
+    {
+      "id": "EDGE_013",
+      "from": "QLORA_SETUP",
+      "to": "SFT_LOOP",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.88,
+      "label": "quantized model+adapter is passed to SFT training loop",
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_014",
+      "from": "RANK_ALPHA",
+      "to": "QLORA_SETUP",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.78,
+      "label": "rank/alpha config parameterizes QLoRA adapter layers",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_015",
+      "from": "TARGET_MODULES",
+      "to": "QLORA_SETUP",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.78,
+      "label": "target module list applied inside QLoRA config",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_016",
+      "from": "SFT_LOOP",
+      "to": "HYPERPARAM_TUNING",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "label": "hyperparameter selection must precede full training run",
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_017",
+      "from": "SFT_LOOP",
+      "to": "CAT_FORGETTING",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.8,
+      "label": "SFT training loop output is input to forgetting detection",
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_018",
+      "from": "SFT_LOOP",
+      "to": "CHECKPOINT_MGT",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.12,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "label": "training loop generates checkpoints managed by checkpoint strategy",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_019",
+      "from": "SFT_LOOP",
+      "to": "EVAL_HARNESS",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.88,
+      "label": "trained model passed to evaluation harness",
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_020",
+      "from": "SFT_LOOP",
+      "to": "SAFETY_ALIGNMENT",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "label": "fine-tuned model requires safety evaluation",
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_021",
+      "from": "HYPERPARAM_TUNING",
+      "to": "SFT_LOOP",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "label": "hyperparameter selection iteratively refined based on training dynamics",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_022",
+      "from": "CAT_FORGETTING",
+      "to": "EVAL_HARNESS",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.78,
+      "label": "forgetting mitigation verified through general benchmark eval",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_023",
+      "from": "GOODHART_BENCH",
+      "to": "EVAL_HARNESS",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "label": "contamination audit output feeds into eval harness benchmark reporting",
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_024",
+      "from": "CHECKPOINT_MGT",
+      "to": "ADAPTER_MERGE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "label": "best checkpoint selected before adapter merging",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_025",
+      "from": "ADAPTER_MERGE",
+      "to": "MULTI_ADAPTER_ORCH",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.75,
+      "label": "merged or unmerged adapter registered in orchestration layer",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_026",
+      "from": "SPECIALIST_VS_GENERALIST",
+      "to": "BASE_MODEL_SEL",
+      "edge_type": "constraint",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "label": "go/no-go SFT decision constrains which base models are prioritized",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_027",
+      "from": "SPECIALIST_VS_GENERALIST",
+      "to": "MULTI_ADAPTER_ORCH",
+      "edge_type": "constraint",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "label": "specialist architecture decision constrains orchestration design choices",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_028",
+      "from": "COMPUTE_BUDGET",
+      "to": "QLORA_SETUP",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "label": "VRAM constraint drives quantization decision",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_029",
+      "from": "COMPUTE_BUDGET",
+      "to": "GRAD_CHECKPOINT_MEM",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.15,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.82,
+      "label": "memory budget determines which memory optimizations are required",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_030",
+      "from": "GRAD_CHECKPOINT_MEM",
+      "to": "SFT_LOOP",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.12,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.8,
+      "label": "memory optimization config applied in training loop setup",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_031",
+      "from": "LICENSE_TOS",
+      "to": "ADAPTER_MERGE",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "label": "license terms constrain whether merged model can be redistributed",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.24
+    },
+    {
+      "id": "EDGE_032",
+      "from": "DATA_FORMAT_QUALITY",
+      "to": "DATA_CURATION",
+      "edge_type": "feedback",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "label": "quality standards feed back to refine curation filters",
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_033",
+      "from": "SAFETY_ALIGNMENT",
+      "to": "EVAL_HARNESS",
+      "edge_type": "constraint",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "label": "safety evaluation constrains eval harness reporting and deployment gate",
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_034",
+      "from": "QLORA_SETUP",
+      "to": "SFT_LOOP",
+      "edge_type": "conflict",
+      "relation_strength": 0.7,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.3,
+      "causal_confidence": 0.65,
+      "label": "4-bit quantization degrades precision vs full-precision LoRA training",
+      "edge_priority": 0.29,
+      "edge_score": 0.29,
+      "edge_heat": 0.38,
+      "resolution_rule": "benchmark quantized vs fp16 LoRA on validation metric; accept QLoRA if gap <2pp else upgrade GPU"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "CAT_FORGETTING",
+      "to": "SFT_LOOP",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.4,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.28,
+      "causal_confidence": 0.68,
+      "label": "SFT task training conflicts with preservation of general capability",
+      "edge_priority": 0.27,
+      "edge_score": 0.27,
+      "edge_heat": 0.37,
+      "resolution_rule": "include 5-10% replay data from general instruction set; measure forgetting on benchmark suite"
+    },
+    {
+      "id": "EDGE_036",
+      "from": "SPECIALIST_VS_GENERALIST",
+      "to": "MULTI_ADAPTER_ORCH",
+      "edge_type": "conflict",
+      "relation_strength": 0.68,
+      "signed_tension": -0.5,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.35,
+      "causal_confidence": 0.62,
+      "label": "multi-specialist orchestration latency/cost may exceed single generalist call",
+      "edge_priority": 0.31,
+      "edge_score": 0.31,
+      "edge_heat": 0.4,
+      "resolution_rule": "measure end-to-end pipeline latency and cost vs single frontier model call; use specialists only if clear win"
+    },
+    {
+      "id": "EDGE_037",
+      "from": "GOODHART_BENCH",
+      "to": "EVAL_HARNESS",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.38,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.32,
+      "causal_confidence": 0.65,
+      "label": "benchmark score optimization diverges from true capability due to Goodhart effect",
+      "edge_priority": 0.26,
+      "edge_score": 0.26,
+      "edge_heat": 0.37,
+      "resolution_rule": "maintain private eval set not used for training decisions; include human eval as Goodhart check"
+    },
+    {
+      "id": "EDGE_038",
+      "from": "LICENSE_TOS",
+      "to": "SPECIALIST_VS_GENERALIST",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.42,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.3,
+      "causal_confidence": 0.62,
+      "label": "restrictive base model license may block specialist deployment or redistribution",
+      "edge_priority": 0.26,
+      "edge_score": 0.26,
+      "edge_heat": 0.36,
+      "resolution_rule": "consult legal before committing to base model; establish approved use-case list before training"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "name": "task_performance_vs_general_capability",
+      "tension": "Maximizing task-specific SFT performance degrades general instruction-following and world knowledge",
+      "nodes_involved": [
+        "SFT_LOOP",
+        "CAT_FORGETTING",
+        "EVAL_HARNESS"
+      ],
+      "resolution_heuristic": "5-10% general instruction replay; monitor MMLU/HellaSwag alongside task metric",
+      "severity": "high"
+    },
+    {
+      "id": "CA_02",
+      "name": "quantization_quality_vs_compute_cost",
+      "tension": "QLoRA 4-bit quantization reduces GPU cost 4-8x but introduces numerical noise degrading task performance",
+      "nodes_involved": [
+        "QLORA_SETUP",
+        "SFT_LOOP",
+        "COMPUTE_BUDGET"
+      ],
+      "resolution_heuristic": "benchmark QLoRA vs fp16 LoRA on validation; accept QLoRA if gap <2pp else use fp16",
+      "severity": "medium"
+    },
+    {
+      "id": "CA_03",
+      "name": "lora_rank_capacity_vs_memory_efficiency",
+      "tension": "Higher LoRA rank captures more task signal but increases VRAM and training time proportionally",
+      "nodes_involved": [
+        "LORA_CONFIG",
+        "RANK_ALPHA",
+        "QLORA_SETUP"
+      ],
+      "resolution_heuristic": "start r=16; ablate up to r=64; return minimal rank achieving plateau",
+      "severity": "medium"
+    },
+    {
+      "id": "CA_04",
+      "name": "data_quantity_vs_data_quality",
+      "tension": "More training data improves coverage but introduces noise that degrades instruction-following quality",
+      "nodes_involved": [
+        "DATA_CURATION",
+        "DATA_FORMAT_QUALITY"
+      ],
+      "resolution_heuristic": "quality-filter first; prefer LIMA-style 1K high-quality over 100K noisy; validate with held-out metric",
+      "severity": "high"
+    },
+    {
+      "id": "CA_05",
+      "name": "benchmark_score_vs_true_capability",
+      "tension": "Optimizing SFT for benchmark metrics triggers Goodhart's law, inflating scores without real capability gain",
+      "nodes_involved": [
+        "EVAL_HARNESS",
+        "GOODHART_BENCH"
+      ],
+      "resolution_heuristic": "hold private eval set; include human eval; decontaminate training data from benchmarks",
+      "severity": "high"
+    },
+    {
+      "id": "CA_06",
+      "name": "specialist_depth_vs_orchestration_cost",
+      "tension": "Fine-tuned specialists outperform on narrow tasks but multi-step orchestration compounds latency and cost super-linearly",
+      "nodes_involved": [
+        "SPECIALIST_VS_GENERALIST",
+        "MULTI_ADAPTER_ORCH",
+        "COMPUTE_BUDGET"
+      ],
+      "resolution_heuristic": "profile end-to-end pipeline vs single frontier model; prefer specialist only if clear performance+cost win",
+      "severity": "high"
+    },
+    {
+      "id": "CA_07",
+      "name": "model_license_openness_vs_deployment_rights",
+      "tension": "Open-weight models (LLaMA-style) offer fine-tunability but impose redistribution and commercial use constraints",
+      "nodes_involved": [
+        "LICENSE_TOS",
+        "BASE_MODEL_SEL",
+        "ADAPTER_MERGE"
+      ],
+      "resolution_heuristic": "classify license before training; prefer Apache-2.0 models for unrestricted deployment",
+      "severity": "high"
+    },
+    {
+      "id": "CA_08",
+      "name": "safety_refusal_calibration_vs_task_utility",
+      "tension": "Over-calibrating SFT model refusals reduces harmful outputs but also blocks legitimate task instructions",
+      "nodes_involved": [
+        "SAFETY_ALIGNMENT",
+        "SFT_LOOP",
+        "EVAL_HARNESS"
+      ],
+      "resolution_heuristic": "measure refusal rate on both harmful red-team set and legitimate task set; tune jointly",
+      "severity": "medium"
+    },
+    {
+      "id": "CA_09",
+      "name": "adapter_modularity_vs_inference_latency",
+      "tension": "Keeping adapters separate enables multi-task hot-swapping but adds per-request latency vs merged model",
+      "nodes_involved": [
+        "ADAPTER_MERGE",
+        "MULTI_ADAPTER_ORCH"
+      ],
+      "resolution_heuristic": "profile swap latency under peak load; merge for latency-critical single-task; keep separate for multi-tenant",
+      "severity": "medium"
+    },
+    {
+      "id": "CA_10",
+      "name": "training_epoch_count_vs_overfitting",
+      "tension": "More training epochs improve task convergence on small datasets but risk format memorization and benchmark overfit",
+      "nodes_involved": [
+        "SFT_LOOP",
+        "CHECKPOINT_MGT",
+        "HYPERPARAM_TUNING"
+      ],
+      "resolution_heuristic": "use validation loss early stopping with patience 1-2 epochs; monitor held-out task metric not train loss",
+      "severity": "medium"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "description": "Base model ToS prohibits fine-tuned derivative redistribution discovered after training completes",
+      "trigger": "Legal audit post-training",
+      "affected_nodes": [
+        "LICENSE_TOS",
+        "BASE_MODEL_SEL",
+        "ADAPTER_MERGE"
+      ],
+      "recommended_action": "halt deployment; retrain on Apache-2.0 base; record ToS check in pre-training checklist",
+      "severity": "critical"
+    },
+    {
+      "id": "EC_02",
+      "description": "Benchmark contamination detected: training data contains n-gram overlap with eval benchmark test set",
+      "trigger": "MinHash dedup between train and eval",
+      "affected_nodes": [
+        "GOODHART_BENCH",
+        "DATA_CURATION",
+        "EVAL_HARNESS"
+      ],
+      "recommended_action": "remove contaminated examples; re-run dedup; rerun evaluation; note all prior scores invalid",
+      "severity": "critical"
+    },
+    {
+      "id": "EC_03",
+      "description": "SFT causes catastrophic forgetting: MMLU drops 8pp while task F1 improves 20pp",
+      "trigger": "General benchmark eval post-SFT",
+      "affected_nodes": [
+        "CAT_FORGETTING",
+        "SFT_LOOP",
+        "EVAL_HARNESS"
+      ],
+      "recommended_action": "add 5-10% general instruction replay; reduce learning rate; re-run training",
+      "severity": "high"
+    },
+    {
+      "id": "EC_04",
+      "description": "QLoRA quantization degrades task performance >3pp vs fp16 LoRA baseline",
+      "trigger": "QLoRA vs fp16 ablation benchmark",
+      "affected_nodes": [
+        "QLORA_SETUP",
+        "SFT_LOOP"
+      ],
+      "recommended_action": "switch to fp16 LoRA; upgrade GPU tier or apply gradient checkpointing to reduce memory",
+      "severity": "high"
+    },
+    {
+      "id": "EC_05",
+      "description": "LoRA adapter merged into quantized base model produces precision mismatch artifacts corrupting outputs",
+      "trigger": "Post-merge validation on test prompts",
+      "affected_nodes": [
+        "ADAPTER_MERGE",
+        "QLORA_SETUP"
+      ],
+      "recommended_action": "dequantize base before merging; validate merged model output against unmerged adapter output",
+      "severity": "high"
+    },
+    {
+      "id": "EC_06",
+      "description": "Chat template mismatch between training and inference causes runaway generation or wrong stop token",
+      "trigger": "Inference testing on deployment server",
+      "affected_nodes": [
+        "CHAT_TEMPLATE",
+        "SFT_LOOP"
+      ],
+      "recommended_action": "lock template version in model card; test generation terminates correctly before deployment",
+      "severity": "high"
+    },
+    {
+      "id": "EC_07",
+      "description": "Multi-specialist pipeline latency exceeds SLA due to orchestration overhead compounding",
+      "trigger": "Load testing of orchestration pipeline",
+      "affected_nodes": [
+        "MULTI_ADAPTER_ORCH",
+        "SPECIALIST_VS_GENERALIST"
+      ],
+      "recommended_action": "profile each hop latency; collapse multi-hop pipeline or replace with single frontier model call",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_08",
+      "description": "LoRA target modules list references layer names not present in selected model family",
+      "trigger": "Model loading error at training start",
+      "affected_nodes": [
+        "TARGET_MODULES",
+        "BASE_MODEL_SEL"
+      ],
+      "recommended_action": "programmatically verify target module names against model.named_modules() before training",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_09",
+      "description": "SFT fine-tuned model exhibits jailbreak surface expansion: follows harmful instructions base model refused",
+      "trigger": "Red-team evaluation of fine-tuned model",
+      "affected_nodes": [
+        "SAFETY_ALIGNMENT",
+        "SFT_LOOP"
+      ],
+      "recommended_action": "add safety examples to SFT data; run DPO alignment on harmfulness refusals",
+      "severity": "critical"
+    },
+    {
+      "id": "EC_10",
+      "description": "Loss masking misconfiguration causes model to learn to predict prompt tokens, degrading instruction following",
+      "trigger": "Anomalously low training loss early in epoch",
+      "affected_nodes": [
+        "CHAT_TEMPLATE",
+        "SFT_LOOP"
+      ],
+      "recommended_action": "inspect loss mask; verify prompt token positions masked to -100; compare with reference implementation",
+      "severity": "high"
+    },
+    {
+      "id": "EC_11",
+      "description": "DoRA magnitude vectors become NaN or collapse to zero during training on low-rank configuration",
+      "trigger": "NaN loss detected during training",
+      "affected_nodes": [
+        "DORA_ADAPTER",
+        "LORA_CONFIG"
+      ],
+      "recommended_action": "switch to standard LoRA; check PEFT library version; file bug report",
+      "severity": "medium"
+    },
+    {
+      "id": "EC_12",
+      "description": "Gradient checkpointing enabled without flash attention 2 causes OOM on sequences >4K tokens",
+      "trigger": "OOM error during training on long sequences",
+      "affected_nodes": [
+        "GRAD_CHECKPOINT_MEM",
+        "QLORA_SETUP"
+      ],
+      "recommended_action": "install flash-attn 2; enable attn_implementation='flash_attention_2' in model loading",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "action": "Conduct go/no-go SFT analysis vs prompting baseline; define task spec",
+      "owner": "ml_engineer",
+      "inputs": [
+        "task definition",
+        "performance gap analysis"
+      ],
+      "outputs": [
+        "SFT decision memo"
+      ],
+      "node_refs": [
+        "SPECIALIST_VS_GENERALIST"
+      ],
+      "gates": [
+        "specialist outperforms prompting on target metric"
+      ]
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "action": "Select and license-audit base model; record ToS compliance",
+      "owner": "ml_engineer",
+      "inputs": [
+        "model capability benchmarks",
+        "compute budget",
+        "license docs"
+      ],
+      "outputs": [
+        "approved base model",
+        "license audit report"
+      ],
+      "node_refs": [
+        "BASE_MODEL_SEL",
+        "LICENSE_TOS"
+      ],
+      "gates": [
+        "legal sign-off on license for deployment use-case"
+      ]
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "action": "Curate, deduplicate, and quality-filter training dataset; run benchmark contamination check",
+      "owner": "data_engineer",
+      "inputs": [
+        "raw data sources",
+        "benchmark test sets"
+      ],
+      "outputs": [
+        "curated SFT dataset",
+        "data card"
+      ],
+      "node_refs": [
+        "DATA_CURATION",
+        "DATA_FORMAT_QUALITY",
+        "GOODHART_BENCH"
+      ],
+      "gates": [
+        "no eval-set overlap; quality metrics pass"
+      ]
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "action": "Apply chat template and configure tokenizer; verify loss masking",
+      "owner": "ml_engineer",
+      "inputs": [
+        "curated dataset",
+        "tokenizer",
+        "chat template spec"
+      ],
+      "outputs": [
+        "tokenized dataset with loss mask"
+      ],
+      "node_refs": [
+        "CHAT_TEMPLATE"
+      ],
+      "gates": [
+        "loss mask confirmed on prompt tokens; EOS token present"
+      ]
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "action": "Plan compute budget; select QLoRA or fp16 LoRA; configure memory optimizations",
+      "owner": "mlops_engineer",
+      "inputs": [
+        "model size",
+        "GPU specs",
+        "dataset size"
+      ],
+      "outputs": [
+        "training config",
+        "VRAM profile"
+      ],
+      "node_refs": [
+        "COMPUTE_BUDGET",
+        "QLORA_SETUP",
+        "GRAD_CHECKPOINT_MEM"
+      ],
+      "gates": [
+        "peak memory within 90% GPU capacity on 100-step pilot"
+      ]
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "action": "Configure LoRA adapter: select rank/alpha, target modules; optionally select DoRA",
+      "owner": "ml_engineer",
+      "inputs": [
+        "model architecture",
+        "task complexity",
+        "compute budget"
+      ],
+      "outputs": [
+        "LoRA/DoRA adapter config"
+      ],
+      "node_refs": [
+        "LORA_CONFIG",
+        "RANK_ALPHA",
+        "TARGET_MODULES",
+        "DORA_ADAPTER"
+      ],
+      "gates": [
+        "target modules verified in model; parameter count within budget"
+      ]
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "action": "Select hyperparameters; run pilot training for 100-200 steps; confirm smooth loss curve",
+      "owner": "ml_engineer",
+      "inputs": [
+        "training config",
+        "model",
+        "dataset"
+      ],
+      "outputs": [
+        "hyperparameter config",
+        "pilot loss curve"
+      ],
+      "node_refs": [
+        "HYPERPARAM_TUNING"
+      ],
+      "gates": [
+        "no loss spikes in pilot; gradient norms stable"
+      ]
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "action": "Execute full SFT training loop with checkpoint management and early stopping",
+      "owner": "ml_engineer",
+      "inputs": [
+        "finalized config",
+        "full dataset",
+        "base model"
+      ],
+      "outputs": [
+        "best model checkpoint"
+      ],
+      "node_refs": [
+        "SFT_LOOP",
+        "CHECKPOINT_MGT"
+      ],
+      "gates": [
+        "validation loss lower than base; early stopping triggered before overfit"
+      ]
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "action": "Evaluate fine-tuned model: task metrics, general benchmarks, contamination, human eval",
+      "owner": "ml_engineer",
+      "inputs": [
+        "best checkpoint",
+        "eval harness",
+        "benchmark suite"
+      ],
+      "outputs": [
+        "evaluation report"
+      ],
+      "node_refs": [
+        "EVAL_HARNESS",
+        "GOODHART_BENCH",
+        "CAT_FORGETTING"
+      ],
+      "gates": [
+        "task metric improved; general benchmarks within 2pp of base; human eval agreement >0.7"
+      ]
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "action": "Run safety red-teaming on fine-tuned model; calibrate refusals",
+      "owner": "safety_researcher",
+      "inputs": [
+        "fine-tuned model",
+        "red-team guidelines"
+      ],
+      "outputs": [
+        "safety eval report"
+      ],
+      "node_refs": [
+        "SAFETY_ALIGNMENT"
+      ],
+      "gates": [
+        "harmful output rate below threshold; refusal rate on legitimate prompts acceptable"
+      ]
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "action": "Merge adapter into base model (or configure multi-adapter serving); deploy and profile latency",
+      "owner": "mlops_engineer",
+      "inputs": [
+        "best checkpoint",
+        "deployment constraints"
+      ],
+      "outputs": [
+        "deployed model artifact",
+        "latency profile"
+      ],
+      "node_refs": [
+        "ADAPTER_MERGE",
+        "MULTI_ADAPTER_ORCH"
+      ],
+      "gates": [
+        "merged model output matches unmerged within tolerance; latency within SLA"
+      ]
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "action": "Monitor production: task metric drift, general capability regression, safety incidents",
+      "owner": "mlops_engineer",
+      "inputs": [
+        "production logs",
+        "monitoring alerts"
+      ],
+      "outputs": [
+        "monitoring dashboard",
+        "drift report"
+      ],
+      "node_refs": [
+        "CAT_FORGETTING",
+        "SAFETY_ALIGNMENT",
+        "EVAL_HARNESS"
+      ],
+      "gates": [
+        "metrics within control limits; safety incidents below threshold"
+      ]
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "rule": "LICENSE_TOS dominates BASE_MODEL_SEL: if license blocks deployment use-case, model must be replaced regardless of capability",
+      "dominant_node": "LICENSE_TOS",
+      "subordinate_node": "BASE_MODEL_SEL",
+      "condition": "license incompatible with target use-case",
+      "rationale": "legal liability exceeds performance gain"
+    },
+    {
+      "id": "DR_02",
+      "rule": "DATA_CURATION dominates LORA_CONFIG: data quality improvements yield larger gains than rank tuning on low-data regimes",
+      "dominant_node": "DATA_CURATION",
+      "subordinate_node": "LORA_CONFIG",
+      "condition": "dataset quality is low or noisy",
+      "rationale": "garbage-in garbage-out; rank tuning cannot fix data quality"
+    },
+    {
+      "id": "DR_03",
+      "rule": "SAFETY_ALIGNMENT dominates ADAPTER_MERGE: safety red-team must pass before any deployment artifact is created",
+      "dominant_node": "SAFETY_ALIGNMENT",
+      "subordinate_node": "ADAPTER_MERGE",
+      "condition": "fine-tuned model not yet safety-evaluated",
+      "rationale": "jailbreak surface expansion is critical production risk"
+    },
+    {
+      "id": "DR_04",
+      "rule": "GOODHART_BENCH dominates EVAL_HARNESS: contamination audit must complete before benchmark scores are reported",
+      "dominant_node": "GOODHART_BENCH",
+      "subordinate_node": "EVAL_HARNESS",
+      "condition": "training data source is internet-scraped",
+      "rationale": "contaminated eval scores invalidate all downstream decisions"
+    },
+    {
+      "id": "DR_05",
+      "rule": "SPECIALIST_VS_GENERALIST dominates all PEFT nodes: if specialist does not beat prompting baseline, SFT is not justified",
+      "dominant_node": "SPECIALIST_VS_GENERALIST",
+      "subordinate_node": "LORA_CONFIG",
+      "condition": "go/no-go analysis not yet conducted",
+      "rationale": "avoids wasted compute on unnecessary fine-tuning"
+    },
+    {
+      "id": "DR_06",
+      "rule": "CAT_FORGETTING dominates SFT_LOOP configuration: anti-forgetting replay must be included if general benchmarks are critical",
+      "dominant_node": "CAT_FORGETTING",
+      "subordinate_node": "SFT_LOOP",
+      "condition": "production system requires general instruction following",
+      "rationale": "silent capability degradation is worse than slightly reduced task peak"
+    },
+    {
+      "id": "DR_07",
+      "rule": "CHAT_TEMPLATE dominates DATA_FORMAT_QUALITY: correct template takes precedence over format quality standards when they conflict",
+      "dominant_node": "CHAT_TEMPLATE",
+      "subordinate_node": "DATA_FORMAT_QUALITY",
+      "condition": "template requires format incompatible with quality spec",
+      "rationale": "template error causes inference-time failure; format quality is secondary"
+    },
+    {
+      "id": "DR_08",
+      "rule": "COMPUTE_BUDGET dominates LORA_CONFIG: VRAM constraints dictate maximum feasible rank before quality optimization",
+      "dominant_node": "COMPUTE_BUDGET",
+      "subordinate_node": "LORA_CONFIG",
+      "condition": "VRAM budget fixed",
+      "rationale": "OOM aborts training; resource constraint is hard; rank is soft"
+    },
+    {
+      "id": "DR_09",
+      "rule": "CHECKPOINT_MGT dominates HYPERPARAM_TUNING: best checkpoint selection by validation metric overrides epoch-number heuristic",
+      "dominant_node": "CHECKPOINT_MGT",
+      "subordinate_node": "HYPERPARAM_TUNING",
+      "condition": "validation metric available",
+      "rationale": "loss-based early stopping is more reliable than fixed epoch count"
+    },
+    {
+      "id": "DR_10",
+      "rule": "BASE_MODEL_SEL dominates CHAT_TEMPLATE: model tokenizer determines valid template; template cannot override tokenizer",
+      "dominant_node": "BASE_MODEL_SEL",
+      "subordinate_node": "CHAT_TEMPLATE",
+      "condition": "always",
+      "rationale": "tokenizer is immutable artifact of base model; template must conform to it"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "AR_01",
+      "rule": "Do not change base model after chat template and dataset tokenization are complete",
+      "protected_node": "BASE_MODEL_SEL",
+      "trigger_for_rework": "model switch discovered after tokenization",
+      "cost_if_violated": "full re-tokenization of entire dataset required"
+    },
+    {
+      "id": "AR_02",
+      "rule": "Do not revise SFT training data after contamination deduplication completes and eval hashes are recorded",
+      "protected_node": "DATA_CURATION",
+      "trigger_for_rework": "new data added post-dedup",
+      "cost_if_violated": "all benchmark scores invalidated; dedup must re-run"
+    },
+    {
+      "id": "AR_03",
+      "rule": "Do not alter LoRA target modules after QLoRA quantized training begins",
+      "protected_node": "TARGET_MODULES",
+      "trigger_for_rework": "target modules changed mid-training",
+      "cost_if_violated": "training run invalidated; full restart from checkpoint"
+    },
+    {
+      "id": "AR_04",
+      "rule": "Do not merge adapter into base model before safety red-team passes",
+      "protected_node": "SAFETY_ALIGNMENT",
+      "trigger_for_rework": "safety failure discovered post-merge",
+      "cost_if_violated": "deployed artifact must be recalled; repeat full safety eval cycle"
+    },
+    {
+      "id": "AR_05",
+      "rule": "Do not report benchmark scores before contamination audit completes",
+      "protected_node": "GOODHART_BENCH",
+      "trigger_for_rework": "contamination discovered after scores reported",
+      "cost_if_violated": "published scores must be retracted; reputational damage"
+    },
+    {
+      "id": "AR_06",
+      "rule": "Do not finalize hyperparameters without pilot run confirming stable gradient norms",
+      "protected_node": "HYPERPARAM_TUNING",
+      "trigger_for_rework": "loss spike in full run traced to lr misconfiguration",
+      "cost_if_violated": "full training run wasted; pilot is cheap insurance"
+    },
+    {
+      "id": "AR_07",
+      "rule": "Do not select rank without first confirming target module list and VRAM budget",
+      "protected_node": "RANK_ALPHA",
+      "trigger_for_rework": "OOM at training start due to rank too high for VRAM",
+      "cost_if_violated": "training restart required; VRAM profiling must precede rank selection"
+    },
+    {
+      "id": "AR_08",
+      "rule": "Do not deploy fine-tuned model without validating chat template matches inference serving config",
+      "protected_node": "CHAT_TEMPLATE",
+      "trigger_for_rework": "template mismatch causing generation failures in production",
+      "cost_if_violated": "production rollback; re-deployment cycle"
+    },
+    {
+      "id": "AR_09",
+      "rule": "Do not assume base model safety properties transfer to fine-tuned model without re-evaluation",
+      "protected_node": "SAFETY_ALIGNMENT",
+      "trigger_for_rework": "jailbreak discovered post-deployment",
+      "cost_if_violated": "emergency rollback; full safety cycle repeated"
+    },
+    {
+      "id": "AR_10",
+      "rule": "Do not commit to multi-adapter orchestration without profiling swap latency under concurrent load",
+      "protected_node": "MULTI_ADAPTER_ORCH",
+      "trigger_for_rework": "SLA violation in production under peak load",
+      "cost_if_violated": "architecture revision required; potential model merge forced post-deployment"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "trigger": "Validation loss increases for 2 consecutive epochs",
+      "action": "reduce learning rate by 0.5x; revert to last best checkpoint; increase gradient accumulation",
+      "node_refs": [
+        "HYPERPARAM_TUNING",
+        "SFT_LOOP",
+        "CHECKPOINT_MGT"
+      ]
+    },
+    {
+      "id": "IP_02",
+      "trigger": "General benchmark (MMLU/HellaSwag) drops >3pp post-SFT",
+      "action": "add 5-10% general instruction replay data; re-run training from scratch with updated dataset mix",
+      "node_refs": [
+        "CAT_FORGETTING",
+        "DATA_CURATION",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "id": "IP_03",
+      "trigger": "QLoRA task metric >2pp below fp16 LoRA baseline",
+      "action": "switch to fp16 LoRA; apply gradient checkpointing + flash attention 2 to fit in VRAM",
+      "node_refs": [
+        "QLORA_SETUP",
+        "GRAD_CHECKPOINT_MEM",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "id": "IP_04",
+      "trigger": "Benchmark contamination detected in training data",
+      "action": "remove contaminated examples; re-run MinHash dedup; invalidate all prior benchmark scores; retrain if >1% of data affected",
+      "node_refs": [
+        "GOODHART_BENCH",
+        "DATA_CURATION",
+        "EVAL_HARNESS"
+      ]
+    },
+    {
+      "id": "IP_05",
+      "trigger": "Safety red-team failure rate exceeds threshold",
+      "action": "add safety-curated examples to SFT mix; consider DPO alignment layer; repeat red-team",
+      "node_refs": [
+        "SAFETY_ALIGNMENT",
+        "DATA_CURATION",
+        "SFT_LOOP"
+      ]
+    },
+    {
+      "id": "IP_06",
+      "trigger": "Multi-specialist pipeline p99 latency exceeds SLA by >20%",
+      "action": "profile each hop; collapse lowest-value hop; consider merging adapters or switching to larger single model",
+      "node_refs": [
+        "MULTI_ADAPTER_ORCH",
+        "SPECIALIST_VS_GENERALIST",
+        "ADAPTER_MERGE"
+      ]
+    },
+    {
+      "id": "IP_07",
+      "trigger": "LoRA rank ablation shows <0.5pp gain from r=16 to r=32",
+      "action": "lock rank at r=16; do not increase; investigate target module selection instead",
+      "node_refs": [
+        "RANK_ALPHA",
+        "TARGET_MODULES",
+        "LORA_CONFIG"
+      ]
+    },
+    {
+      "id": "IP_08",
+      "trigger": "OOM error during training on long sequences",
+      "action": "enable flash attention 2; enable gradient checkpointing; reduce batch size; increase gradient accumulation steps",
+      "node_refs": [
+        "GRAD_CHECKPOINT_MEM",
+        "COMPUTE_BUDGET",
+        "QLORA_SETUP"
+      ]
+    },
+    {
+      "id": "IP_09",
+      "trigger": "Task metric plateaus with more data but human eval shows quality regression",
+      "action": "apply LIMA-style quality filtering; reduce dataset to highest-quality subset; re-evaluate",
+      "node_refs": [
+        "DATA_CURATION",
+        "DATA_FORMAT_QUALITY",
+        "EVAL_HARNESS"
+      ]
+    }
+  ],
+  "source_registry_refs": [
+    "SRC_HEURISTIC_PRIOR"
+  ],
+  "priority_order": [
+    "LICENSE_TOS",
+    "BASE_MODEL_SEL",
+    "SPECIALIST_VS_GENERALIST",
+    "DATA_CURATION",
+    "DATA_FORMAT_QUALITY",
+    "GOODHART_BENCH",
+    "CHAT_TEMPLATE",
+    "COMPUTE_BUDGET",
+    "LORA_CONFIG",
+    "RANK_ALPHA",
+    "TARGET_MODULES",
+    "QLORA_SETUP",
+    "GRAD_CHECKPOINT_MEM",
+    "HYPERPARAM_TUNING",
+    "SFT_LOOP",
+    "CHECKPOINT_MGT",
+    "CAT_FORGETTING",
+    "EVAL_HARNESS",
+    "SAFETY_ALIGNMENT",
+    "DORA_ADAPTER",
+    "ADAPTER_MERGE",
+    "MULTI_ADAPTER_ORCH"
+  ],
+  "priority_rationale": "License and base model selection first (legal/strategic gates); specialist/generalist go-no-go second (avoids wasted training); data pipeline next (data quality is highest-leverage lever); PEFT configuration before training; training loop and checkpointing; evaluation and safety before deployment artifacts; DoRA last (optional advanced PEFT variant); multi-adapter orchestration last (only needed for multi-specialist deployments)",
+  "evaluation_suite": {
+    "eval_objective": "verify_schema_semantics_scoring_workflow_and_grounding_quality_for_sft_peft_kb",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "single task, curated SFT dataset, LoRA adapter, task metric evaluation",
+        "expected_properties": [
+          "task metric computable from fine-tuned model",
+          "LoRA adapter config validated before training"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_002",
+        "case_type": "leakage_probe",
+        "input_summary": "eval benchmark test examples present in SFT training data",
+        "expected_properties": [
+          "contamination detected by deduplication",
+          "benchmark scores flagged as invalid"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_003",
+        "case_type": "forgetting_probe",
+        "input_summary": "task metric improves but MMLU drops 5pp post-SFT",
+        "expected_properties": [
+          "forgetting detected by general benchmark eval",
+          "replay data added to mitigate"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_004",
+        "case_type": "safety_tradeoff",
+        "input_summary": "fine-tuned model follows harmful instructions base model refused",
+        "expected_properties": [
+          "red-team evaluation triggers safety review",
+          "deployment blocked until safety eval passes"
+        ]
+      }
+    ],
+    "metrics": [
+      "json_validity",
+      "schema_conformance",
+      "reference_validity",
+      "formula_consistency",
+      "evidence_label_correctness",
+      "competency_question_coverage",
+      "workflow_gate_integrity",
+      "dependency_cycle_absence",
+      "source_traceability",
+      "anti_rework_rule_coverage"
+    ],
+    "regression_policy": "compare_against_previous_prompt_or_schema_version_before_release",
+    "minimum_pass_conditions": [
+      "json_validity==1.0",
+      "reference_validity==1.0",
+      "formula_consistency==1.0",
+      "dependency_cycle_absence==1.0"
+    ]
+  },
+  "traceability_matrix": {
+    "node_to_competency_questions": {
+      "BASE_MODEL_SEL": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "DATA_CURATION": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "CHAT_TEMPLATE": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "SFT_LOOP": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "LORA_CONFIG": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "QLORA_SETUP": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "DORA_ADAPTER": [
+        "CQ_08"
+      ],
+      "HYPERPARAM_TUNING": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "CAT_FORGETTING": [
+        "CQ_06",
+        "CQ_12"
+      ],
+      "ADAPTER_MERGE": [
+        "CQ_13"
+      ],
+      "EVAL_HARNESS": [
+        "CQ_11",
+        "CQ_12",
+        "CQ_13"
+      ],
+      "RANK_ALPHA": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "TARGET_MODULES": [
+        "CQ_07"
+      ],
+      "GOODHART_BENCH": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "COMPUTE_BUDGET": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "LICENSE_TOS": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "SPECIALIST_VS_GENERALIST": [
+        "CQ_01",
+        "CQ_14"
+      ],
+      "MULTI_ADAPTER_ORCH": [
+        "CQ_13",
+        "CQ_14"
+      ],
+      "CHECKPOINT_MGT": [
+        "CQ_11"
+      ],
+      "DATA_FORMAT_QUALITY": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "GRAD_CHECKPOINT_MEM": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "SAFETY_ALIGNMENT": [
+        "CQ_12",
+        "CQ_13"
+      ]
+    },
+    "node_to_evidence": {
+      "BASE_MODEL_SEL": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "DATA_CURATION": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "CHAT_TEMPLATE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "SFT_LOOP": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "LORA_CONFIG": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "QLORA_SETUP": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "DORA_ADAPTER": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "HYPERPARAM_TUNING": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "CAT_FORGETTING": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "ADAPTER_MERGE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "EVAL_HARNESS": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "RANK_ALPHA": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "TARGET_MODULES": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "GOODHART_BENCH": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "COMPUTE_BUDGET": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "LICENSE_TOS": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "SPECIALIST_VS_GENERALIST": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "MULTI_ADAPTER_ORCH": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "CHECKPOINT_MGT": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "DATA_FORMAT_QUALITY": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "GRAD_CHECKPOINT_MEM": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "SAFETY_ALIGNMENT": [
+        "SRC_HEURISTIC_PRIOR"
+      ]
+    },
+    "edge_to_nodes": {
+      "EDGE_001": {
+        "from": "BASE_MODEL_SEL",
+        "to": "LORA_CONFIG"
+      },
+      "EDGE_002": {
+        "from": "BASE_MODEL_SEL",
+        "to": "CHAT_TEMPLATE"
+      },
+      "EDGE_003": {
+        "from": "BASE_MODEL_SEL",
+        "to": "COMPUTE_BUDGET"
+      },
+      "EDGE_004": {
+        "from": "BASE_MODEL_SEL",
+        "to": "LICENSE_TOS"
+      },
+      "EDGE_005": {
+        "from": "DATA_CURATION",
+        "to": "CHAT_TEMPLATE"
+      },
+      "EDGE_006": {
+        "from": "DATA_CURATION",
+        "to": "DATA_FORMAT_QUALITY"
+      },
+      "EDGE_007": {
+        "from": "DATA_CURATION",
+        "to": "GOODHART_BENCH"
+      },
+      "EDGE_008": {
+        "from": "CHAT_TEMPLATE",
+        "to": "SFT_LOOP"
+      },
+      "EDGE_009": {
+        "from": "LORA_CONFIG",
+        "to": "QLORA_SETUP"
+      },
+      "EDGE_010": {
+        "from": "LORA_CONFIG",
+        "to": "RANK_ALPHA"
+      },
+      "EDGE_011": {
+        "from": "LORA_CONFIG",
+        "to": "TARGET_MODULES"
+      },
+      "EDGE_012": {
+        "from": "LORA_CONFIG",
+        "to": "DORA_ADAPTER"
+      },
+      "EDGE_013": {
+        "from": "QLORA_SETUP",
+        "to": "SFT_LOOP"
+      },
+      "EDGE_014": {
+        "from": "RANK_ALPHA",
+        "to": "QLORA_SETUP"
+      },
+      "EDGE_015": {
+        "from": "TARGET_MODULES",
+        "to": "QLORA_SETUP"
+      },
+      "EDGE_016": {
+        "from": "SFT_LOOP",
+        "to": "HYPERPARAM_TUNING"
+      },
+      "EDGE_017": {
+        "from": "SFT_LOOP",
+        "to": "CAT_FORGETTING"
+      },
+      "EDGE_018": {
+        "from": "SFT_LOOP",
+        "to": "CHECKPOINT_MGT"
+      },
+      "EDGE_019": {
+        "from": "SFT_LOOP",
+        "to": "EVAL_HARNESS"
+      },
+      "EDGE_020": {
+        "from": "SFT_LOOP",
+        "to": "SAFETY_ALIGNMENT"
+      },
+      "EDGE_021": {
+        "from": "HYPERPARAM_TUNING",
+        "to": "SFT_LOOP"
+      },
+      "EDGE_022": {
+        "from": "CAT_FORGETTING",
+        "to": "EVAL_HARNESS"
+      },
+      "EDGE_023": {
+        "from": "GOODHART_BENCH",
+        "to": "EVAL_HARNESS"
+      },
+      "EDGE_024": {
+        "from": "CHECKPOINT_MGT",
+        "to": "ADAPTER_MERGE"
+      },
+      "EDGE_025": {
+        "from": "ADAPTER_MERGE",
+        "to": "MULTI_ADAPTER_ORCH"
+      },
+      "EDGE_026": {
+        "from": "SPECIALIST_VS_GENERALIST",
+        "to": "BASE_MODEL_SEL"
+      },
+      "EDGE_027": {
+        "from": "SPECIALIST_VS_GENERALIST",
+        "to": "MULTI_ADAPTER_ORCH"
+      },
+      "EDGE_028": {
+        "from": "COMPUTE_BUDGET",
+        "to": "QLORA_SETUP"
+      },
+      "EDGE_029": {
+        "from": "COMPUTE_BUDGET",
+        "to": "GRAD_CHECKPOINT_MEM"
+      },
+      "EDGE_030": {
+        "from": "GRAD_CHECKPOINT_MEM",
+        "to": "SFT_LOOP"
+      },
+      "EDGE_031": {
+        "from": "LICENSE_TOS",
+        "to": "ADAPTER_MERGE"
+      },
+      "EDGE_032": {
+        "from": "DATA_FORMAT_QUALITY",
+        "to": "DATA_CURATION"
+      },
+      "EDGE_033": {
+        "from": "SAFETY_ALIGNMENT",
+        "to": "EVAL_HARNESS"
+      },
+      "EDGE_034": {
+        "from": "QLORA_SETUP",
+        "to": "SFT_LOOP"
+      },
+      "EDGE_035": {
+        "from": "CAT_FORGETTING",
+        "to": "SFT_LOOP"
+      },
+      "EDGE_036": {
+        "from": "SPECIALIST_VS_GENERALIST",
+        "to": "MULTI_ADAPTER_ORCH"
+      },
+      "EDGE_037": {
+        "from": "GOODHART_BENCH",
+        "to": "EVAL_HARNESS"
+      },
+      "EDGE_038": {
+        "from": "LICENSE_TOS",
+        "to": "SPECIALIST_VS_GENERALIST"
+      }
+    },
+    "conflict_axis_to_nodes": {
+      "CA_01": [
+        "SFT_LOOP",
+        "CAT_FORGETTING",
+        "EVAL_HARNESS"
+      ],
+      "CA_02": [
+        "QLORA_SETUP",
+        "SFT_LOOP",
+        "COMPUTE_BUDGET"
+      ],
+      "CA_03": [
+        "LORA_CONFIG",
+        "RANK_ALPHA",
+        "QLORA_SETUP"
+      ],
+      "CA_04": [
+        "DATA_CURATION",
+        "DATA_FORMAT_QUALITY"
+      ],
+      "CA_05": [
+        "EVAL_HARNESS",
+        "GOODHART_BENCH"
+      ],
+      "CA_06": [
+        "SPECIALIST_VS_GENERALIST",
+        "MULTI_ADAPTER_ORCH",
+        "COMPUTE_BUDGET"
+      ],
+      "CA_07": [
+        "LICENSE_TOS",
+        "BASE_MODEL_SEL",
+        "ADAPTER_MERGE"
+      ],
+      "CA_08": [
+        "SAFETY_ALIGNMENT",
+        "SFT_LOOP",
+        "EVAL_HARNESS"
+      ],
+      "CA_09": [
+        "ADAPTER_MERGE",
+        "MULTI_ADAPTER_ORCH"
+      ],
+      "CA_10": [
+        "SFT_LOOP",
+        "CHECKPOINT_MGT",
+        "HYPERPARAM_TUNING"
+      ]
+    },
+    "edge_case_to_nodes": {
+      "EC_01": [
+        "LICENSE_TOS",
+        "BASE_MODEL_SEL",
+        "ADAPTER_MERGE"
+      ],
+      "EC_02": [
+        "GOODHART_BENCH",
+        "DATA_CURATION",
+        "EVAL_HARNESS"
+      ],
+      "EC_03": [
+        "CAT_FORGETTING",
+        "SFT_LOOP",
+        "EVAL_HARNESS"
+      ],
+      "EC_04": [
+        "QLORA_SETUP",
+        "SFT_LOOP"
+      ],
+      "EC_05": [
+        "ADAPTER_MERGE",
+        "QLORA_SETUP"
+      ],
+      "EC_06": [
+        "CHAT_TEMPLATE",
+        "SFT_LOOP"
+      ],
+      "EC_07": [
+        "MULTI_ADAPTER_ORCH",
+        "SPECIALIST_VS_GENERALIST"
+      ],
+      "EC_08": [
+        "TARGET_MODULES",
+        "BASE_MODEL_SEL"
+      ],
+      "EC_09": [
+        "SAFETY_ALIGNMENT",
+        "SFT_LOOP"
+      ],
+      "EC_10": [
+        "CHAT_TEMPLATE",
+        "SFT_LOOP"
+      ],
+      "EC_11": [
+        "DORA_ADAPTER",
+        "LORA_CONFIG"
+      ],
+      "EC_12": [
+        "GRAD_CHECKPOINT_MEM",
+        "QLORA_SETUP"
+      ]
+    }
+  },
+  "change_control": {
+    "version": "1.0.0",
+    "change_log": [],
+    "review_required_for": [
+      "nodes",
+      "edges",
+      "conflict_axes",
+      "dominance_rules",
+      "priority_order"
+    ],
+    "auto_approved_changes": [
+      "metric_value_adjustment_within_0.05",
+      "evidence_ref_addition"
+    ],
+    "breaking_change_definition": "any addition/removal of node, edge, or conflict_axis id"
+  },
+  "validation_protocol": {
+    "required_checks": [
+      "all_node_ids_unique",
+      "all_edge_ids_unique_EDGE_NNN_format",
+      "all_edge_from_to_refs_resolve",
+      "conflict_edges_have_negative_signed_tension_and_resolution_rule",
+      "dependency_edges_acyclic",
+      "priority_order_contains_every_node_id_exactly_once",
+      "high_risk_nodes_have_acceptance_tests_and_human_review",
+      "high_coupling_nodes_have_revisit_triggers",
+      "all_competency_question_refs_resolve",
+      "all_conflict_axis_refs_resolve",
+      "all_evidence_refs_resolve_to_source_registry",
+      "SRC_HEURISTIC_PRIOR_in_source_registry",
+      "observed_impact_equals_0_when_no_data",
+      "no_markdown_or_comments_in_json"
+    ],
+    "density_mode_checks": [
+      "node_count_19_to_24",
+      "edge_count_32_to_40",
+      "conflict_axes_8_to_10",
+      "edge_cases_10_to_12",
+      "workflow_steps_9_to_12",
+      "competency_questions_10_to_14",
+      "dominance_rules_7_to_12",
+      "anti_rework_rules_7_to_12",
+      "iteration_protocol_6_to_10"
+    ]
+  },
+  "validation_report": {
+    "status": "pending",
+    "last_validated": null,
+    "failed_checks": [],
+    "passed_checks": []
+  }
+}
