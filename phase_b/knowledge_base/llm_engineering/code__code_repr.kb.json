@@ -1,0 +1,5776 @@
+{
+  "domain": "code__code_repr",
+  "domain_label": "Compact Code and Library Representation (LLM Engineering subdomain)",
+  "purpose": "session_bounded_stepwise_execution_for_token_efficient_code_library_representation_encode_generate_decode_cycle",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "subdomain scope is token-efficient code/library representation for LLM code generation, finer than a whole-codegen KB",
+    "the encode->generate->decode cycle is the organizing metaphor: repr is an intermediate compressed form",
+    "primary use case is retrieval-augmented code generation where compact repr tokens replace verbatim source in context"
+  ],
+  "exclusions": [
+    "full program synthesis beyond API-level generation",
+    "model pre-training data curation for code",
+    "runtime execution environment and sandboxing",
+    "code review and static analysis beyond type grounding",
+    "package manager and dependency resolution infrastructure"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What elements are included vs excluded from compact code/library representation and why?",
+      "must_be_answerable_from": [
+        "nodes",
+        "glossary"
+      ],
+      "acceptance_condition": "REPR_SCHEMA and NATURALNESS define inclusion/exclusion policy",
+      "covered_by": [
+        "REPR_SCHEMA",
+        "NATURALNESS"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How is the repr index kept consistent as libraries release new versions?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "VERSION_MGMT INCREMENTAL_UPDATE REPR_VERSIONING define version lifecycle",
+      "covered_by": [
+        "VERSION_MGMT",
+        "INCREMENTAL_UPDATE",
+        "REPR_VERSIONING"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How are API signatures and docstrings compressed while preserving semantic completeness?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "SIG_COMPRESS DOCSTR_DISTILL USAGE_EX define compression approach",
+      "covered_by": [
+        "SIG_COMPRESS",
+        "DOCSTR_DISTILL",
+        "USAGE_EX"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How is type information encoded in the compact repr to enable type-directed generation?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "TYPE_AWARE and DEP_GRAPH define type and dependency encoding",
+      "covered_by": [
+        "TYPE_AWARE",
+        "DEP_GRAPH",
+        "CROSS_LIB"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How are token budget tradeoffs managed across signature, type, docstring, and example components?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "TOKEN_BUDGET defines allocation; conflict edges show resolution",
+      "covered_by": [
+        "TOKEN_BUDGET",
+        "SIG_COMPRESS",
+        "DOCSTR_DISTILL",
+        "TYPE_AWARE"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How is the encoding pipeline designed to produce a consistent reproducible repr index?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "ENCODE_PIPELINE defines end-to-end pipeline design",
+      "covered_by": [
+        "ENCODE_PIPELINE",
+        "INCREMENTAL_UPDATE"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is a natural language or code query encoded to retrieve relevant API repr entries?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "RETRIEVAL_INDEX and QUERY_ENCODE define retrieval path",
+      "covered_by": [
+        "RETRIEVAL_INDEX",
+        "QUERY_ENCODE"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How is compact repr expanded back to usable code in the decode stage?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "EXPAND_DECODE defines decode stage",
+      "covered_by": [
+        "EXPAND_DECODE",
+        "USAGE_EX",
+        "CONTEXT_INJECT"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is repr injected into the LLM generation prompt and how does fine-tuning reduce injection overhead?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "CONTEXT_INJECT and FINETUNE_REPR define generation integration",
+      "covered_by": [
+        "CONTEXT_INJECT",
+        "FINETUNE_REPR"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How is the overall encode->generate->decode cycle evaluated for quality and correctness?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "EVAL_REPR defines evaluation methodology",
+      "covered_by": [
+        "EVAL_REPR",
+        "FINETUNE_REPR",
+        "EXPAND_DECODE"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How are hallucinations detected and coverage gaps managed in the repr-grounded system?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "HALLUC_GUARD and COVERAGE_GAP define QA approach",
+      "covered_by": [
+        "HALLUC_GUARD",
+        "COVERAGE_GAP",
+        "EVAL_REPR"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How are retrieval and injection latency and cost managed within SLA constraints?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "LATENCY_COST defines latency/cost management",
+      "covered_by": [
+        "LATENCY_COST",
+        "RETRIEVAL_INDEX",
+        "CONTEXT_INJECT"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "compact_repr",
+      "definition": "token-efficient intermediate encoding of a library API entry: signatures compressed types distilled docstrings minimal examples; replaces verbatim source in LLM context",
+      "synonyms": [
+        "repr",
+        "compressed repr",
+        "library repr"
+      ],
+      "not_same_as": [
+        "source code",
+        "raw documentation"
+      ],
+      "used_by_nodes": [
+        "REPR_SCHEMA",
+        "TOKEN_BUDGET",
+        "SIG_COMPRESS"
+      ]
+    },
+    {
+      "term": "encode_generate_decode",
+      "definition": "three-stage pipeline: encode library source to compact repr generate code using repr-augmented LLM decode repr tokens back to executable idiomatic code",
+      "synonyms": [
+        "repr cycle",
+        "repr pipeline"
+      ],
+      "not_same_as": [
+        "tokenization",
+        "model inference"
+      ],
+      "used_by_nodes": [
+        "REPR_SCHEMA",
+        "EXPAND_DECODE",
+        "CONTEXT_INJECT"
+      ]
+    },
+    {
+      "term": "signature_compression",
+      "definition": "lossless or near-lossless reduction of API function/class signatures to minimal token form preserving type and call information",
+      "synonyms": [
+        "sig compress",
+        "API compression"
+      ],
+      "not_same_as": [
+        "minification",
+        "obfuscation"
+      ],
+      "used_by_nodes": [
+        "SIG_COMPRESS",
+        "TOKEN_BUDGET"
+      ]
+    },
+    {
+      "term": "token_budget",
+      "definition": "maximum number of tokens allocated for repr of a library or per-function entry within an LLM context window",
+      "synonyms": [
+        "token quota",
+        "context budget"
+      ],
+      "not_same_as": [
+        "training token count",
+        "model parameters"
+      ],
+      "used_by_nodes": [
+        "TOKEN_BUDGET",
+        "CONTEXT_INJECT",
+        "DOCSTR_DISTILL"
+      ]
+    },
+    {
+      "term": "retrieval_augmented_generation",
+      "definition": "RAG pattern applied to code: retrieve relevant API repr entries given a user query inject into LLM prompt to guide correct API usage",
+      "synonyms": [
+        "RAG for code",
+        "API-RAG"
+      ],
+      "not_same_as": [
+        "web search RAG",
+        "document RAG"
+      ],
+      "used_by_nodes": [
+        "RETRIEVAL_INDEX",
+        "CONTEXT_INJECT",
+        "QUERY_ENCODE"
+      ]
+    },
+    {
+      "term": "repr_index",
+      "definition": "serialized database of encoded library repr entries indexed for fast retrieval by API name type or semantic query",
+      "synonyms": [
+        "API repr index",
+        "library index"
+      ],
+      "not_same_as": [
+        "package index",
+        "documentation index"
+      ],
+      "used_by_nodes": [
+        "RETRIEVAL_INDEX",
+        "ENCODE_PIPELINE",
+        "HALLUC_GUARD"
+      ]
+    },
+    {
+      "term": "type_aware_repr",
+      "definition": "repr that encodes type annotations (generics protocols nullable) such that the generator can produce type-safe code without runtime type checker",
+      "synonyms": [
+        "typed repr"
+      ],
+      "not_same_as": [
+        "dynamic typing",
+        "untyped repr"
+      ],
+      "used_by_nodes": [
+        "TYPE_AWARE",
+        "SIG_COMPRESS"
+      ]
+    },
+    {
+      "term": "naturalness",
+      "definition": "empirical property of code that it follows repetitive predictable patterns similar to natural language (Allamanis et al. 2018) enabling entropy-guided compression",
+      "synonyms": [
+        "code naturalness",
+        "big code naturalness"
+      ],
+      "not_same_as": [
+        "code quality",
+        "code style"
+      ],
+      "used_by_nodes": [
+        "NATURALNESS"
+      ]
+    },
+    {
+      "term": "hallucination_grounding",
+      "definition": "verification that generated API calls have corresponding entries in the repr index flagging ungrounded calls as potential hallucinations",
+      "synonyms": [
+        "repr grounding",
+        "API grounding"
+      ],
+      "not_same_as": [
+        "factual verification",
+        "output filtering"
+      ],
+      "used_by_nodes": [
+        "HALLUC_GUARD",
+        "COVERAGE_GAP"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "REPR_SCHEMA",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "DEP_GRAPH",
+      "CROSS_LIB"
+    ],
+    "mathematical_scoring": [
+      "math_model",
+      "TOKEN_BUDGET",
+      "EVAL_REPR"
+    ],
+    "probabilistic_modeling": [
+      "NATURALNESS",
+      "HALLUC_GUARD",
+      "COVERAGE_GAP"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "HALLUC_GUARD",
+      "FINETUNE_REPR"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "EVAL_REPR",
+      "HALLUC_GUARD"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "CONTEXT_INJECT",
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "ENCODE_PIPELINE",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "REPR_SCHEMA",
+      "REPR_VERSIONING",
+      "schema_contract"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for compact code/library representation work units; informed by Allamanis et al. 2018 naturalness survey and Manning Raghavan Schutze IR principles",
+      "citation_or_locator": "Allamanis et al. 2018 A Survey of ML for Big Code and Naturalness; Manning Raghavan Schutze Introduction to Information Retrieval",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "REPR_SCHEMA",
+      "topic": "code_and_library_representation_schema",
+      "definition": "Define the canonical schema for compact code/library representation: which elements to encode (signatures, docstrings, type annotations, usage examples, dependency graph edges) and what to elide (implementation bodies, comments, redundant boilerplate).",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "signature schema",
+          "type annotation inclusion",
+          "docstring truncation policy",
+          "dependency edge encoding"
+        ],
+        "excluded": [
+          "implementation body encoding",
+          "runtime behavior specification"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "program_representation",
+        "api_modeling"
+      ],
+      "specialists": [
+        "representation_engineer"
+      ],
+      "contradictors": [
+        "verbatim_copy_advocate"
+      ],
+      "inputs": [
+        "library source code",
+        "API surface documentation",
+        "type stubs"
+      ],
+      "outputs": [
+        "canonical repr schema",
+        "field inclusion/exclusion policy"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.8,
+        "user_value": 0.75,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.72,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.75,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.59,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "library schema or type system changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Single authoritative schema prevents representation drift across encode-generate-decode cycle",
+          "example": "repr schema used by both indexer and generator ensures round-trip fidelity"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-elision of context causes ambiguous reconstruction and hallucinated implementations",
+          "example": "stripping all docstrings causes model to invent wrong parameter semantics"
+        }
+      ],
+      "failure_modes": [
+        "schema over-elision causing reconstruction ambiguity",
+        "schema bloat exceeding token budget"
+      ],
+      "acceptance_tests": [
+        "schema serializes a held-out set of functions and round-trips through decode with less than 5 percent semantic error",
+        "every required field present in 100 percent of encoded units"
+      ],
+      "revisit_triggers": [
+        "library API surface expands by more than 20 new public symbols",
+        "type system changes such as new generic syntax"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "TOKEN_BUDGET",
+      "topic": "token_budget_and_compression_tradeoffs",
+      "definition": "Quantify and manage the token budget consumed by encoded library representations; balance compression ratio vs semantic completeness to fit within LLM context windows without losing critical API detail.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "token count estimation",
+          "compression ratio target",
+          "context window fit",
+          "budget allocation per library"
+        ],
+        "excluded": [
+          "model inference cost optimization",
+          "prompt caching internals"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "token_efficiency",
+        "information_compression"
+      ],
+      "specialists": [
+        "token_budget_engineer"
+      ],
+      "contradictors": [
+        "verbatim_include_all_advocate"
+      ],
+      "inputs": [
+        "encoded repr samples",
+        "target model context window size",
+        "compression ratio targets"
+      ],
+      "outputs": [
+        "token budget spec",
+        "per-library token allocation table",
+        "compression ratio report"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.64,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.65,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "context window constraints or library size changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit budget prevents context overflow that silently truncates critical API entries",
+          "example": "fitting 200 library signatures into 4096 tokens via field elision"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Aggressive compression loses type nuance needed for correct code generation",
+          "example": "truncating return types causes model to assume wrong output shape"
+        }
+      ],
+      "failure_modes": [
+        "token budget exceeded silently truncating repr",
+        "over-compression losing semantic discriminators"
+      ],
+      "acceptance_tests": [
+        "encoded repr for benchmark library fits target context window at 90 percent or more signature coverage",
+        "compression ratio documented and reproducible"
+      ],
+      "revisit_triggers": [
+        "LLM context window size changes",
+        "library grows beyond token budget allocation"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SIG_COMPRESS",
+      "topic": "api_signature_compression_techniques",
+      "definition": "Compress API signatures (function/class/method names, parameter types, return types, overloads) into maximally token-efficient notation while preserving all information needed to call the API correctly.",
+      "node_type": "work_unit",
+      "group": "encoding",
+      "scope_boundary": {
+        "included": [
+          "parameter name/type compression",
+          "overload deduplication",
+          "return type encoding",
+          "generic notation shorthand"
+        ],
+        "excluded": [
+          "docstring compression",
+          "implementation body"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "programming_languages"
+      ],
+      "subfields": [
+        "program_synthesis",
+        "type_theory"
+      ],
+      "specialists": [
+        "api_encoder"
+      ],
+      "contradictors": [
+        "full_text_verbatim_advocate"
+      ],
+      "inputs": [
+        "raw API signatures",
+        "type stubs",
+        "overload sets"
+      ],
+      "outputs": [
+        "compressed signature tokens",
+        "signature compression codec"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "TOKEN_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.75,
+        "user_value": 0.7,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.64,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.64,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "API surface or type system substantially revised",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Overload deduplication via delta encoding reduces token cost 40-60 percent for polymorphic APIs",
+          "example": "numpy.array overloads collapsed to single parametric form"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Lossy signature compression causes model to generate wrong argument types",
+          "example": "removing Optional annotation causes model to omit None-handling"
+        }
+      ],
+      "failure_modes": [
+        "stripping Optional/Union annotations causing type errors",
+        "overload collapse losing dispatch information"
+      ],
+      "acceptance_tests": [
+        "compressed signature can be decoded back to original with zero type errors on held-out set",
+        "compression ratio 3x or more on overloaded APIs"
+      ],
+      "revisit_triggers": [
+        "new Python type syntax via PEP updates",
+        "overload explosion in updated library"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "TYPE_AWARE",
+      "topic": "type_aware_code_representation",
+      "definition": "Encode type information (generics, ADTs, protocols, structural types) in representation such that the LLM can perform type-directed generation and avoid type errors without access to the full type checker.",
+      "node_type": "work_unit",
+      "group": "encoding",
+      "scope_boundary": {
+        "included": [
+          "generic type encoding",
+          "protocol/interface encoding",
+          "type alias resolution",
+          "nullable/optional encoding"
+        ],
+        "excluded": [
+          "runtime type checking",
+          "mypy/pyright integration at inference time"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "programming_languages"
+      ],
+      "subfields": [
+        "type_theory",
+        "program_synthesis"
+      ],
+      "specialists": [
+        "type_systems_engineer"
+      ],
+      "contradictors": [
+        "untyped_repr_advocate"
+      ],
+      "inputs": [
+        "type stubs",
+        "mypy/pyright output",
+        "generic definitions"
+      ],
+      "outputs": [
+        "type-annotated repr tokens",
+        "type encoding spec"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "SIG_COMPRESS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.72,
+        "user_value": 0.75,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.65,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.61,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "type system constructs added to language or library",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Type-aware repr enables LLM to generate type-safe code without external checker at generation time",
+          "example": "encoding Tensor shape annotation reduces shape-mismatch errors"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Complex generic types explode token cost and risk confusing the model",
+          "example": "deeply nested TypeVar constraints exceed model effective attention span"
+        }
+      ],
+      "failure_modes": [
+        "over-specifying generics consuming excessive tokens",
+        "stripping nullability causing None errors"
+      ],
+      "acceptance_tests": [
+        "type-directed generation benchmark: less than 10 percent type errors on held-out API call tasks",
+        "all Optional/Union/Protocol types encoded in standard normalized form"
+      ],
+      "revisit_triggers": [
+        "language type system adds new constructs such as TypeVarTuple or ParamSpec",
+        "library adopts Protocol-heavy design"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DOCSTR_DISTILL",
+      "topic": "docstring_distillation_for_repr",
+      "definition": "Distill verbose docstrings into minimal semantic-preserving summaries: retain parameter semantics, return value semantics, raised exceptions, and key behavioral constraints; discard examples, formatting, and redundant prose.",
+      "node_type": "work_unit",
+      "group": "encoding",
+      "scope_boundary": {
+        "included": [
+          "param semantics extraction",
+          "return value description",
+          "exception encoding",
+          "behavioral constraint extraction"
+        ],
+        "excluded": [
+          "implementation-level comments",
+          "changelog and version notes in docstrings"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "natural_language_processing",
+        "api_modeling"
+      ],
+      "specialists": [
+        "nlp_encoder"
+      ],
+      "contradictors": [
+        "full_docstring_verbatim_advocate"
+      ],
+      "inputs": [
+        "raw docstrings",
+        "API documentation"
+      ],
+      "outputs": [
+        "distilled docstring tokens",
+        "distillation quality report"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "TOKEN_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.68,
+        "user_value": 0.7,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.42,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.56,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.68,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "docstring style or coverage changes in target library",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Distilled docstrings reduce per-function token cost 5-10x while retaining semantic correctness",
+          "example": "keras.fit docstring: 800 tokens to 80 tokens with param/return/exception preserved"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Distillation can lose edge-case behavioral constraints causing incorrect API usage",
+          "example": "stripping raises ValueError if axis out of bounds causes uncaught exceptions"
+        }
+      ],
+      "failure_modes": [
+        "over-distillation losing exception or constraint information",
+        "under-distillation wasting token budget"
+      ],
+      "acceptance_tests": [
+        "distillation recall: 95 percent or more of behavioral constraints preserved on evaluation set",
+        "token reduction 5x or more vs raw docstring on benchmark libraries"
+      ],
+      "revisit_triggers": [
+        "documentation style overhaul in target libraries",
+        "new semantic content types added to docstrings"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "NATURALNESS",
+      "topic": "code_naturalness_and_bimodal_distribution",
+      "definition": "Leverage the naturalness hypothesis (Allamanis et al. 2018) that code is repetitive and predictable like natural language; use n-gram/bimodal statistics to guide what to compress (high-entropy unique tokens) vs retain (low-entropy idiomatic patterns).",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "naturalness statistics for repr compression",
+          "entropy-guided elision",
+          "bigram/trigram code statistics",
+          "idiom detection"
+        ],
+        "excluded": [
+          "neural language model pre-training",
+          "style normalization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "code_naturalness",
+        "program_analysis"
+      ],
+      "specialists": [
+        "code_naturalness_researcher"
+      ],
+      "contradictors": [
+        "blank_slate_encoding_advocate"
+      ],
+      "inputs": [
+        "code corpus statistics",
+        "token frequency distributions",
+        "idiom databases"
+      ],
+      "outputs": [
+        "naturalness-guided elision policy",
+        "entropy scores per code element"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.6,
+        "user_value": 0.62,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.58,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.4,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.54,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.69,
+        "final_importance": 0.6
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "code naturalness distribution changes in target domain",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High-entropy unique identifiers need repr; low-entropy idiomatic patterns can be abbreviated or omitted",
+          "example": "for i in range(len(x)) is idiomatic and can be represented by opaque idiom-id"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Naturalness statistics shift across domains; library utility code less natural than application code",
+          "example": "numpy internal C-binding wrappers do not follow Python naturalness distribution"
+        }
+      ],
+      "failure_modes": [
+        "naturalness stats from wrong domain degrading elision policy",
+        "treating domain-specific APIs as idiomatic when they are unique"
+      ],
+      "acceptance_tests": [
+        "elision policy validated: naturalness-guided repr recovers 90 percent or more of token reduction with less than 5 percent semantic loss vs full encoding",
+        "entropy scores computed on representative corpus before use"
+      ],
+      "revisit_triggers": [
+        "new programming paradigms shift naturalness distribution",
+        "switch to new language or library ecosystem"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "USAGE_EX",
+      "topic": "usage_example_encoding_in_repr",
+      "definition": "Select and encode minimal but representative usage examples in the repr to guide the LLM toward correct API usage patterns; balance example token cost against generation fidelity improvement.",
+      "node_type": "work_unit",
+      "group": "encoding",
+      "scope_boundary": {
+        "included": [
+          "usage example selection",
+          "example token budget",
+          "parametric vs concrete examples",
+          "example deduplication"
+        ],
+        "excluded": [
+          "full tutorial encoding",
+          "test case encoding"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "few_shot_prompting",
+        "api_documentation"
+      ],
+      "specialists": [
+        "example_curator"
+      ],
+      "contradictors": [
+        "no_example_advocate"
+      ],
+      "inputs": [
+        "docstring examples",
+        "official API tutorials",
+        "community code snippets"
+      ],
+      "outputs": [
+        "curated usage example repr tokens",
+        "example selection policy"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "TOKEN_BUDGET",
+        "DOCSTR_DISTILL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.65,
+        "user_value": 0.75,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.38,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.53,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.7,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "API usage patterns or token budget constraints change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "One minimal usage example per API reduces model hallucination of incorrect argument order",
+          "example": "example df.merge(right, on=key) prevents positional arg confusion"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too many examples crowd out signature information in limited token budget",
+          "example": "3 examples per function leaves no room for type information"
+        }
+      ],
+      "failure_modes": [
+        "example token budget crowding out type/signature information",
+        "unrepresentative examples teaching wrong usage patterns"
+      ],
+      "acceptance_tests": [
+        "usage example repr improves generation accuracy 10 percent or more over no-example baseline on held-out tasks",
+        "example budget capped at configurable per-function token limit"
+      ],
+      "revisit_triggers": [
+        "API usage patterns shift with new idioms",
+        "token budget constraints tighten"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DEP_GRAPH",
+      "topic": "library_dependency_graph_encoding",
+      "definition": "Encode inter-API dependency relationships (calls, inherits, uses, returns) as a compact graph in the repr index so the generator can navigate transitive dependencies and avoid broken import chains.",
+      "node_type": "work_unit",
+      "group": "encoding",
+      "scope_boundary": {
+        "included": [
+          "call graph encoding",
+          "inheritance encoding",
+          "import dependency encoding",
+          "transitive dep compression"
+        ],
+        "excluded": [
+          "runtime call tracing",
+          "package dependency resolution"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "machine_learning"
+      ],
+      "subfields": [
+        "program_analysis",
+        "graph_representation"
+      ],
+      "specialists": [
+        "program_analysis_engineer"
+      ],
+      "contradictors": [
+        "flat_list_advocate"
+      ],
+      "inputs": [
+        "static analysis call graphs",
+        "class hierarchies",
+        "import graphs"
+      ],
+      "outputs": [
+        "dependency graph repr",
+        "compressed adjacency encoding"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "ENCODE_PIPELINE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.65,
+        "user_value": 0.65,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.6,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.66,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.44,
+        "update_signal": "library refactoring changes dependency structure",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Encoding 1-hop dependency graph enables model to generate correct import chains without hallucinating missing imports",
+          "example": "knowing torch.nn.Module requires import torch.nn prevents import Module hallucination"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Deep transitive dependency encoding explodes repr size and hits token budget",
+          "example": "encoding 10-hop chain for a utility function wastes context"
+        }
+      ],
+      "failure_modes": [
+        "transitive dep explosion exceeding token budget",
+        "stale dep graph after library refactor"
+      ],
+      "acceptance_tests": [
+        "dep graph round-trip: all 1-hop dependencies correctly recovered from repr on benchmark",
+        "dep encoding size bounded to 10 percent or less of total repr token budget"
+      ],
+      "revisit_triggers": [
+        "library major refactor changes call graph structure",
+        "new dependency types added"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ENCODE_PIPELINE",
+      "topic": "library_encoding_pipeline",
+      "definition": "Design and implement the end-to-end pipeline that ingests library source/stubs, applies signature compression, type encoding, docstring distillation, and produces a token-counted repr index ready for retrieval.",
+      "node_type": "work_unit",
+      "group": "pipeline",
+      "scope_boundary": {
+        "included": [
+          "pipeline orchestration",
+          "incremental library updates",
+          "parallelization",
+          "repr index serialization"
+        ],
+        "excluded": [
+          "model inference",
+          "retrieval query processing"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "machine_learning"
+      ],
+      "subfields": [
+        "pipeline_engineering",
+        "information_retrieval"
+      ],
+      "specialists": [
+        "pipeline_engineer"
+      ],
+      "contradictors": [
+        "ad_hoc_script_advocate"
+      ],
+      "inputs": [
+        "library source trees",
+        "type stubs",
+        "REPR_SCHEMA",
+        "compression codecs"
+      ],
+      "outputs": [
+        "repr index file",
+        "pipeline execution logs",
+        "token count report"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "TOKEN_BUDGET",
+        "SIG_COMPRESS",
+        "TYPE_AWARE",
+        "DOCSTR_DISTILL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.65,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.63,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.67,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "upstream library or pipeline toolchain changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Automated pipeline ensures reproducible index updates when libraries release new versions",
+          "example": "CI-triggered re-encoding after pip install upgrade"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Pipeline bugs silently corrupt repr index causing downstream hallucinations",
+          "example": "wrong charset handling strips Unicode type names"
+        }
+      ],
+      "failure_modes": [
+        "silent corruption of repr index",
+        "incremental update missing changed symbols"
+      ],
+      "acceptance_tests": [
+        "pipeline is idempotent: re-running on same input produces identical index",
+        "full re-encode of top-50 Python libraries completes in less than 2 hours"
+      ],
+      "revisit_triggers": [
+        "library release cadence increases",
+        "pipeline input format changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "VERSION_MGMT",
+      "topic": "library_version_management_in_repr",
+      "definition": "Manage multiple concurrent library versions in the repr index; encode version metadata alongside signatures to enable version-conditional generation and prevent cross-version API confusion.",
+      "node_type": "work_unit",
+      "group": "pipeline",
+      "scope_boundary": {
+        "included": [
+          "version tagging of repr entries",
+          "multi-version index",
+          "version-conditional generation",
+          "deprecation flagging"
+        ],
+        "excluded": [
+          "package manager resolution",
+          "runtime version pinning"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "machine_learning"
+      ],
+      "subfields": [
+        "version_control",
+        "api_evolution"
+      ],
+      "specialists": [
+        "versioning_engineer"
+      ],
+      "contradictors": [
+        "single_version_only_advocate"
+      ],
+      "inputs": [
+        "version-tagged library sources",
+        "changelog entries",
+        "deprecation markers"
+      ],
+      "outputs": [
+        "versioned repr index",
+        "version-conditional generation prompts"
+      ],
+      "dependencies": [
+        "ENCODE_PIPELINE",
+        "REPR_SCHEMA"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.68,
+        "user_value": 0.72,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.59,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.65,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.44,
+        "update_signal": "major library version release or API deprecation",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Version tagging prevents model from generating API calls valid only in library v2 for a v1 user",
+          "example": "torch.compile tagged as 2.0 or later prevents generation for PyTorch 1.x users"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-version index multiplies index size and retrieval complexity",
+          "example": "maintaining numpy 1.x and 2.x repr doubles index footprint"
+        }
+      ],
+      "failure_modes": [
+        "cross-version API confusion",
+        "index size explosion from too many versions"
+      ],
+      "acceptance_tests": [
+        "version-conditional generation test: correct version API used for 95 percent or more of versioned benchmark tasks",
+        "index size bounded by retaining only N most recent semver-major versions"
+      ],
+      "revisit_triggers": [
+        "major library version bump with breaking API changes",
+        "LTS version support policy changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "RETRIEVAL_INDEX",
+      "topic": "retrieval_index_over_library_repr",
+      "definition": "Build a retrieval index over the encoded library repr corpus enabling fast lookup of relevant API signatures given a natural language or code query; supports both lexical (BM25) and semantic (embedding) retrieval.",
+      "node_type": "work_unit",
+      "group": "retrieval",
+      "scope_boundary": {
+        "included": [
+          "repr corpus indexing",
+          "BM25 over signatures",
+          "embedding index over repr",
+          "hybrid retrieval"
+        ],
+        "excluded": [
+          "full web crawl indexing",
+          "model training"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [
+        "neural_information_retrieval",
+        "api_search"
+      ],
+      "specialists": [
+        "retrieval_engineer"
+      ],
+      "contradictors": [
+        "brute_force_search_advocate"
+      ],
+      "inputs": [
+        "repr index",
+        "query encoder",
+        "embedding model"
+      ],
+      "outputs": [
+        "retrieval index",
+        "ranked candidate API list"
+      ],
+      "dependencies": [
+        "ENCODE_PIPELINE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.65,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.65,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "retrieval benchmark results or repr schema changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Hybrid retrieval combining BM25 on token-compressed signatures with dense embeddings maximizes recall for both exact-name and paraphrase queries",
+          "example": "BM25 catches pandas.DataFrame.merge; dense catches join two tables"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Embedding drift if repr schema changes without re-indexing degrades retrieval quality",
+          "example": "token-level changes to repr format shift embedding space"
+        }
+      ],
+      "failure_modes": [
+        "embedding drift after repr schema change",
+        "BM25 misses paraphrase queries"
+      ],
+      "acceptance_tests": [
+        "retrieval recall@10 90 percent or more on held-out query set",
+        "index re-build triggered automatically on repr schema version change"
+      ],
+      "revisit_triggers": [
+        "repr schema version change",
+        "new embedding model adopted"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "QUERY_ENCODE",
+      "topic": "query_encoding_for_repr_retrieval",
+      "definition": "Transform a natural language or partial code query into a representation compatible with the repr retrieval index; includes intent classification, keyword extraction, and embedding projection aligned to the repr index space.",
+      "node_type": "work_unit",
+      "group": "retrieval",
+      "scope_boundary": {
+        "included": [
+          "NL to code query translation",
+          "keyword extraction from code context",
+          "embedding alignment to repr space"
+        ],
+        "excluded": [
+          "full query understanding NLU",
+          "document ranking post-retrieval"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [
+        "query_understanding",
+        "neural_information_retrieval"
+      ],
+      "specialists": [
+        "query_engineer"
+      ],
+      "contradictors": [
+        "verbatim_query_advocate"
+      ],
+      "inputs": [
+        "natural language or partial code query",
+        "query encoder",
+        "repr index embedding space"
+      ],
+      "outputs": [
+        "encoded query vector",
+        "extracted keywords"
+      ],
+      "dependencies": [
+        "RETRIEVAL_INDEX"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.7,
+        "user_value": 0.78,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.59,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.67,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "query vocabulary or repr notation changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Intent-aware query encoding distinguishes how-to-use queries from what-signature queries",
+          "example": "classifying as signature-query routes to BM25 on compressed sigs"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Domain shift between NL query and compressed repr notation degrades retrieval",
+          "example": "users say merge dataframes but repr encodes join in compressed form"
+        }
+      ],
+      "failure_modes": [
+        "vocabulary mismatch between NL query and compressed repr notation",
+        "ambiguous code context causing wrong intent class"
+      ],
+      "acceptance_tests": [
+        "query encoding round-trip: encoded query retrieves correct API in top-3 for 85 percent or more of benchmark cases",
+        "intent classifier accuracy 88 percent or more on held-out query sample"
+      ],
+      "revisit_triggers": [
+        "repr schema token notation changes",
+        "new query intent types observed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EXPAND_DECODE",
+      "topic": "expansion_of_compact_repr_to_full_code",
+      "definition": "Expand a retrieved compact repr back to full usable code: reconstruct imports, instantiate parameter defaults, add boilerplate, and emit idiomatic usage patterns - the decode stage of the encode->generate->decode cycle.",
+      "node_type": "work_unit",
+      "group": "decoding",
+      "scope_boundary": {
+        "included": [
+          "import reconstruction",
+          "default parameter expansion",
+          "usage pattern generation",
+          "boilerplate synthesis"
+        ],
+        "excluded": [
+          "full program synthesis",
+          "runtime execution"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "program_synthesis",
+        "code_generation"
+      ],
+      "specialists": [
+        "code_generator"
+      ],
+      "contradictors": [
+        "raw_repr_paste_advocate"
+      ],
+      "inputs": [
+        "compact repr tokens",
+        "retrieved API signatures",
+        "library version context"
+      ],
+      "outputs": [
+        "expanded idiomatic code",
+        "import block",
+        "usage skeleton"
+      ],
+      "dependencies": [
+        "RETRIEVAL_INDEX",
+        "QUERY_ENCODE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.88,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.67,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.63,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "library import structure or repr schema changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Expand-decode stage converts compressed repr tokens back to executable code the user can copy-paste",
+          "example": "from compressed np.arr(shape,dtype) expand to import numpy as np; np.array(shape, dtype=dtype)"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Incomplete expansion leaves placeholder tokens the user must manually replace reducing trust",
+          "example": "unexpanded T generic type left in generated code"
+        }
+      ],
+      "failure_modes": [
+        "unexpanded placeholder tokens in output",
+        "wrong import path reconstruction for submodule APIs"
+      ],
+      "acceptance_tests": [
+        "expand-decode produces syntactically valid Python for 95 percent or more of retrieved API repr on benchmark",
+        "all import statements correct and resolvable on benchmark library set"
+      ],
+      "revisit_triggers": [
+        "library import structure changes such as submodule reorganization",
+        "repr schema changes affecting decode mapping"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CONTEXT_INJECT",
+      "topic": "context_injection_of_repr_into_generation_prompt",
+      "definition": "Design the prompt template and injection strategy for inserting retrieved repr tokens into the LLM generation prompt: placement, formatting, length management, and context priority ordering.",
+      "node_type": "work_unit",
+      "group": "generation",
+      "scope_boundary": {
+        "included": [
+          "repr token injection into prompt",
+          "context priority ordering",
+          "prompt template design",
+          "length management for generation"
+        ],
+        "excluded": [
+          "model fine-tuning on repr format",
+          "system prompt design outside repr injection"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning"
+      ],
+      "subfields": [
+        "prompt_engineering",
+        "llm_engineering"
+      ],
+      "specialists": [
+        "prompt_engineer"
+      ],
+      "contradictors": [
+        "raw_concat_advocate"
+      ],
+      "inputs": [
+        "retrieved repr tokens",
+        "generation prompt template",
+        "LLM context window spec"
+      ],
+      "outputs": [
+        "augmented generation prompt",
+        "context injection policy"
+      ],
+      "dependencies": [
+        "RETRIEVAL_INDEX",
+        "EXPAND_DECODE",
+        "TOKEN_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.64,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.66,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "context window or prompt injection policy changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Structured repr injection with role markers improves model attention to injected context vs prompt prose",
+          "example": "explicit section headers increase API usage accuracy by reducing attention diffusion"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Exceeding context window with repr tokens truncates user task description silently",
+          "example": "retrieving 20 API entries for a simple task crowds out the user code context"
+        }
+      ],
+      "failure_modes": [
+        "repr injection crowding out task context",
+        "model ignoring injected repr due to positional bias"
+      ],
+      "acceptance_tests": [
+        "context injection benchmark: 80 percent or more of generated code uses at least one injected API correctly",
+        "injected repr never truncates user task description"
+      ],
+      "revisit_triggers": [
+        "model context window changes",
+        "repr schema notation changes that break model parsing of injection markers"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EVAL_REPR",
+      "topic": "evaluation_of_repr_quality_and_round_trip_fidelity",
+      "definition": "Evaluate representation quality via round-trip fidelity (encode->generate->decode correctness), retrieval metrics (recall@k, MRR), and generation quality (exact match, type correctness, execution correctness on benchmarks).",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "round-trip fidelity measurement",
+          "retrieval recall@k",
+          "generation exact match",
+          "execution correctness"
+        ],
+        "excluded": [
+          "human evaluation",
+          "production A/B"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "ir_evaluation",
+        "code_generation_evaluation"
+      ],
+      "specialists": [
+        "eval_engineer"
+      ],
+      "contradictors": [
+        "anecdotal_eval_advocate"
+      ],
+      "inputs": [
+        "benchmark API call tasks",
+        "reference implementations",
+        "retrieval ground truth"
+      ],
+      "outputs": [
+        "eval report",
+        "fidelity scores",
+        "retrieval metrics",
+        "generation pass@k"
+      ],
+      "dependencies": [
+        "RETRIEVAL_INDEX",
+        "EXPAND_DECODE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.65,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.64,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "benchmark results or evaluation methodology changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-axis evaluation (retrieval + generation + execution) catches failures that single-axis eval misses",
+          "example": "retrieval recall can be high while generation has systematic type errors"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Pass@k with LLM judge risks Goodhart: model optimizes repr for judge not correctness",
+          "example": "repr tuned to match judge descriptions fails execution tests"
+        }
+      ],
+      "failure_modes": [
+        "Goodharting on judge-based eval instead of execution",
+        "benchmark contamination if library APIs overlap training data"
+      ],
+      "acceptance_tests": [
+        "eval pipeline runs in CI on every repr schema change",
+        "execution correctness 70 percent or more pass@1 on HumanEval-style API tasks"
+      ],
+      "revisit_triggers": [
+        "benchmark contamination detected",
+        "evaluation metric changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "HALLUC_GUARD",
+      "topic": "hallucination_guard_via_repr_grounding",
+      "definition": "Implement repr-grounded hallucination detection: verify generated API calls against the repr index at generation time or post-generation, flagging calls with no matching repr entry as potential hallucinations.",
+      "node_type": "work_unit",
+      "group": "quality_assurance",
+      "scope_boundary": {
+        "included": [
+          "API call grounding check",
+          "repr-index membership test",
+          "hallucination flagging",
+          "graceful fallback"
+        ],
+        "excluded": [
+          "general factual hallucination detection",
+          "model confidence calibration"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "hallucination_detection",
+        "code_verification"
+      ],
+      "specialists": [
+        "qa_engineer"
+      ],
+      "contradictors": [
+        "trust_model_output_advocate"
+      ],
+      "inputs": [
+        "generated code",
+        "repr index",
+        "API membership oracle"
+      ],
+      "outputs": [
+        "hallucination flags",
+        "grounding report",
+        "corrected or flagged API calls"
+      ],
+      "dependencies": [
+        "RETRIEVAL_INDEX",
+        "EXPAND_DECODE",
+        "EVAL_REPR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.58,
+        "risk_score": 0.7,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.61,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "repr index coverage or hallucination rate changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Membership-test against repr index catches fabricated API names before code reaches user",
+          "example": "pd.DataFrame.pivot_wide() not in repr index flags as likely hallucination"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Repr index coverage gaps cause false positives: valid rare APIs flagged as hallucinations",
+          "example": "private or newly-added APIs not yet in index trigger false flags"
+        }
+      ],
+      "failure_modes": [
+        "repr index coverage gaps causing false hallucination flags",
+        "grounding check latency adding unacceptable overhead"
+      ],
+      "acceptance_tests": [
+        "hallucination detection precision 90 percent or more on benchmark of known-hallucinated API calls",
+        "false positive rate less than 10 percent on valid-but-rare API calls"
+      ],
+      "revisit_triggers": [
+        "repr index coverage grows beyond grounding check capacity",
+        "latency budget for grounding check changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FINETUNE_REPR",
+      "topic": "fine_tuning_llm_on_repr_format",
+      "definition": "Fine-tune the LLM to natively understand and generate from the compact repr notation, improving generation fidelity and reducing context needed for in-context teaching of the notation.",
+      "node_type": "work_unit",
+      "group": "generation",
+      "scope_boundary": {
+        "included": [
+          "repr-format supervised fine-tuning",
+          "SFT data construction from repr index",
+          "repr-native generation evaluation"
+        ],
+        "excluded": [
+          "base model pre-training",
+          "RLHF/preference alignment"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning"
+      ],
+      "subfields": [
+        "fine_tuning",
+        "llm_engineering"
+      ],
+      "specialists": [
+        "fine_tuning_engineer"
+      ],
+      "contradictors": [
+        "prompt_only_advocate"
+      ],
+      "inputs": [
+        "repr index",
+        "SFT dataset of repr-code pairs",
+        "base LLM"
+      ],
+      "outputs": [
+        "repr-fine-tuned LLM",
+        "SFT training logs",
+        "generation quality report"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "ENCODE_PIPELINE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.65,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.7,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.6,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.22,
+          0.55
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "repr schema or base model changes requiring re-fine-tuning",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fine-tuning on repr format reduces in-context teaching tokens needed per query freeing context for more API entries",
+          "example": "repr-native model uses zero format-explanation tokens vs 300 for in-context-only approach"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "SFT on narrow repr format risks catastrophic forgetting of general coding capability",
+          "example": "repr-fine-tuned model degrades on non-API coding tasks"
+        }
+      ],
+      "failure_modes": [
+        "catastrophic forgetting of general coding capability",
+        "SFT data contamination with benchmark tasks"
+      ],
+      "acceptance_tests": [
+        "repr-fine-tuned model passes general coding benchmark within 5 percent of base model",
+        "repr-native generation accuracy 10 percent or more above in-context-only baseline"
+      ],
+      "revisit_triggers": [
+        "repr schema changes requiring SFT re-run",
+        "base model updated requiring re-fine-tuning"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "LATENCY_COST",
+      "topic": "retrieval_and_generation_latency_cost_tradeoffs",
+      "definition": "Model and manage end-to-end latency and cost of the encode->retrieve->inject->generate->decode pipeline; identify bottlenecks (retrieval latency, repr injection token cost, fine-tuning amortization) and enforce SLAs.",
+      "node_type": "work_unit",
+      "group": "operations",
+      "scope_boundary": {
+        "included": [
+          "retrieval latency profiling",
+          "token injection cost",
+          "fine-tuning amortization",
+          "SLA definition"
+        ],
+        "excluded": [
+          "model serving infrastructure internals",
+          "hardware procurement"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "software_engineering"
+      ],
+      "subfields": [
+        "system_performance",
+        "llm_engineering"
+      ],
+      "specialists": [
+        "latency_engineer"
+      ],
+      "contradictors": [
+        "correctness_only_advocate"
+      ],
+      "inputs": [
+        "latency profiling data",
+        "token cost model",
+        "SLA requirements"
+      ],
+      "outputs": [
+        "latency budget allocation",
+        "cost model",
+        "SLA enforcement policy"
+      ],
+      "dependencies": [
+        "RETRIEVAL_INDEX",
+        "CONTEXT_INJECT",
+        "FINETUNE_REPR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.75,
+        "user_value": 0.72,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.57,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.68,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "latency SLA or model token cost changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Profiling identifies retrieval as dominant latency: caching top-k repr for frequent APIs reduces p99 latency 60 percent",
+          "example": "LRU cache over repr index hits reduces retrieval from 200ms to 10ms"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Optimizing for latency by reducing retrieval depth degrades recall and hallucination rate",
+          "example": "top-1 retrieval instead of top-10 saves 50ms but misses correct API 30 percent of time"
+        }
+      ],
+      "failure_modes": [
+        "latency-quality tradeoff optimized at wrong operating point",
+        "cost model underestimating token injection overhead"
+      ],
+      "acceptance_tests": [
+        "end-to-end pipeline latency measured and documented",
+        "SLA met for 99 percent or more of requests in load test"
+      ],
+      "revisit_triggers": [
+        "model updated changing token cost",
+        "SLA requirements tighten"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "COVERAGE_GAP",
+      "topic": "repr_coverage_gap_management",
+      "definition": "Detect and manage gaps in repr coverage (APIs present in user code but absent from repr index); implement graceful fallback (retrieval from raw docs, web search, or refusal) and coverage expansion workflow.",
+      "node_type": "work_unit",
+      "group": "quality_assurance",
+      "scope_boundary": {
+        "included": [
+          "coverage gap detection",
+          "fallback policy",
+          "coverage expansion workflow",
+          "coverage reporting"
+        ],
+        "excluded": [
+          "full library source ingestion",
+          "user feedback collection"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "machine_learning"
+      ],
+      "subfields": [
+        "information_retrieval",
+        "qa_engineering"
+      ],
+      "specialists": [
+        "coverage_engineer"
+      ],
+      "contradictors": [
+        "assume_full_coverage_advocate"
+      ],
+      "inputs": [
+        "repr index",
+        "user query logs",
+        "coverage gap reports"
+      ],
+      "outputs": [
+        "coverage gap report",
+        "fallback policy doc",
+        "coverage expansion backlog"
+      ],
+      "dependencies": [
+        "RETRIEVAL_INDEX",
+        "HALLUC_GUARD",
+        "INCREMENTAL_UPDATE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.7,
+        "user_value": 0.75,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.6,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.65,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "coverage gap rate or user query distribution changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Coverage gap reporting drives prioritized index expansion: top-10 missing APIs in user queries added first",
+          "example": "usage-log-driven coverage expansion reduces top-10 gap rate 80 percent in first sprint"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Silent coverage gaps cause hallucination without user awareness; fallback must be explicit",
+          "example": "model generates fabricated API when gap is silent vs explicit uncertainty signal"
+        }
+      ],
+      "failure_modes": [
+        "silent coverage gaps causing hallucination without user warning",
+        "coverage expansion bottlenecked by pipeline throughput"
+      ],
+      "acceptance_tests": [
+        "coverage gap detection rate 95 percent or more: known-missing APIs flagged not silently hallucinated",
+        "fallback policy triggers explicit uncertainty signal for all gap cases"
+      ],
+      "revisit_triggers": [
+        "user query distribution shifts exposing new gap areas",
+        "library adds major new subsystem"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "INCREMENTAL_UPDATE",
+      "topic": "incremental_repr_index_update",
+      "definition": "Update the repr index incrementally when libraries release new versions: detect changed/added/removed symbols, re-encode only affected entries, and propagate dependency graph changes without full re-index.",
+      "node_type": "work_unit",
+      "group": "pipeline",
+      "scope_boundary": {
+        "included": [
+          "changed-symbol detection",
+          "incremental re-encoding",
+          "dep graph delta propagation",
+          "index consistency checks"
+        ],
+        "excluded": [
+          "full corpus re-indexing",
+          "package manager dependency resolution"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "machine_learning"
+      ],
+      "subfields": [
+        "incremental_indexing",
+        "version_control"
+      ],
+      "specialists": [
+        "pipeline_engineer"
+      ],
+      "contradictors": [
+        "full_reindex_always_advocate"
+      ],
+      "inputs": [
+        "library version diffs",
+        "changed symbol lists",
+        "existing repr index"
+      ],
+      "outputs": [
+        "updated repr index",
+        "change log",
+        "consistency check report"
+      ],
+      "dependencies": [
+        "ENCODE_PIPELINE",
+        "DEP_GRAPH",
+        "VERSION_MGMT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.68,
+        "user_value": 0.62,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.48,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.59,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.67,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "library release cadence or repr schema version changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Incremental update reduces re-encode time from hours to minutes for typical patch releases",
+          "example": "only 5 percent of numpy symbols change per minor release; incremental costs 5 percent of full re-index time"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Incremental logic bugs leave stale repr entries for removed APIs causing hallucination",
+          "example": "deleted function still in repr index after library removes it"
+        }
+      ],
+      "failure_modes": [
+        "stale repr entries for removed APIs",
+        "dep graph inconsistency after structural change"
+      ],
+      "acceptance_tests": [
+        "incremental update produces identical index to full re-index on benchmark library patch release",
+        "stale entry detection test: removed APIs not present in updated index"
+      ],
+      "revisit_triggers": [
+        "library reorganization requiring structural re-index",
+        "repr schema version bump requiring full re-encode"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CROSS_LIB",
+      "topic": "cross_library_repr_alignment",
+      "definition": "Align repr notation and identifier namespaces across multiple libraries to enable the model to generate code combining APIs from different libraries without namespace collisions or import confusion.",
+      "node_type": "work_unit",
+      "group": "encoding",
+      "scope_boundary": {
+        "included": [
+          "cross-library namespace mapping",
+          "import alias standardization",
+          "repr namespace prefix encoding"
+        ],
+        "excluded": [
+          "single-library repr",
+          "runtime namespace resolution"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "machine_learning"
+      ],
+      "subfields": [
+        "api_modeling",
+        "program_synthesis"
+      ],
+      "specialists": [
+        "repr_alignment_engineer"
+      ],
+      "contradictors": [
+        "per_library_only_advocate"
+      ],
+      "inputs": [
+        "per-library repr indices",
+        "namespace collision analysis",
+        "alias conventions"
+      ],
+      "outputs": [
+        "aligned cross-library repr index",
+        "namespace mapping table"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "ENCODE_PIPELINE",
+        "RETRIEVAL_INDEX"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.65,
+        "user_value": 0.68,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.6,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.65,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.4,
+        "update_signal": "new library added or cross-library namespace collision detected",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Cross-library alignment prevents torch Tensor vs tensorflow Tensor collision in generated imports",
+          "example": "explicit namespace prefixes in repr: torch::Tensor vs tf::Tensor"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Alignment overhead adds encoding complexity and risks over-normalizing library-specific idioms",
+          "example": "forcing pandas and polars into same repr schema loses polars lazy evaluation distinction"
+        }
+      ],
+      "failure_modes": [
+        "namespace collision in multi-library generation",
+        "over-normalization losing library-specific semantics"
+      ],
+      "acceptance_tests": [
+        "cross-library generation test: correct import namespace used for 95 percent or more of multi-library API calls",
+        "namespace collision rate less than 0.01 in benchmark multi-library tasks"
+      ],
+      "revisit_triggers": [
+        "new library added to index",
+        "library API breaking change affects cross-library alignment"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "REPR_VERSIONING",
+      "topic": "repr_schema_versioning_and_migration",
+      "definition": "Version the repr schema itself and manage migrations: track schema version in each repr entry, migrate old entries to new schema on upgrade, and maintain backward compatibility for fine-tuned models trained on old schema.",
+      "node_type": "work_unit",
+      "group": "pipeline",
+      "scope_boundary": {
+        "included": [
+          "schema version tagging",
+          "entry migration scripts",
+          "backward compat for fine-tuned models",
+          "schema changelog"
+        ],
+        "excluded": [
+          "library version management handled in VERSION_MGMT",
+          "model retraining policy"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering"
+      ],
+      "subfields": [
+        "schema_engineering",
+        "version_control"
+      ],
+      "specialists": [
+        "schema_engineer"
+      ],
+      "contradictors": [
+        "no_versioning_advocate"
+      ],
+      "inputs": [
+        "current repr schema",
+        "old repr entries",
+        "migration spec"
+      ],
+      "outputs": [
+        "versioned repr index",
+        "migration scripts",
+        "schema changelog"
+      ],
+      "dependencies": [
+        "REPR_SCHEMA",
+        "FINETUNE_REPR",
+        "INCREMENTAL_UPDATE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.62,
+        "business_value": 0.65,
+        "user_value": 0.58,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.62,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.63,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.63,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.4,
+        "update_signal": "repr schema major version change or fine-tuned model retrain",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Schema versioning prevents silent incompatibility between repr index built on v1 schema and model fine-tuned on v2 schema",
+          "example": "version mismatch error caught at load time rather than silent generation degradation"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Migration scripts add engineering overhead and risk introducing repr corruption",
+          "example": "migration bug corrupts all signature entries for abstract base classes"
+        }
+      ],
+      "failure_modes": [
+        "migration script corrupting repr entries",
+        "fine-tuned model incompatible with migrated schema"
+      ],
+      "acceptance_tests": [
+        "schema migration produces valid repr entries verified by schema validator on 100 percent of migrated entries",
+        "fine-tuned model compatibility tested before schema migration deployed"
+      ],
+      "revisit_triggers": [
+        "repr schema major revision",
+        "fine-tuned model retrained on new schema"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "REPR_SCHEMA",
+      "to": "TOKEN_BUDGET",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_002",
+      "from": "REPR_SCHEMA",
+      "to": "SIG_COMPRESS",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_003",
+      "from": "REPR_SCHEMA",
+      "to": "TYPE_AWARE",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_004",
+      "from": "REPR_SCHEMA",
+      "to": "DOCSTR_DISTILL",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_006",
+      "from": "TOKEN_BUDGET",
+      "to": "SIG_COMPRESS",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_007",
+      "from": "TOKEN_BUDGET",
+      "to": "DOCSTR_DISTILL",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_008",
+      "from": "TOKEN_BUDGET",
+      "to": "CONTEXT_INJECT",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_009",
+      "from": "SIG_COMPRESS",
+      "to": "TYPE_AWARE",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.45,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.33,
+      "edge_score": 0.33,
+      "edge_heat": 0.44,
+      "resolution_rule": "Resolve by fixing type_aware as inner layer: compress signatures first then annotate types in normalized compressed form; do not further compress type tokens below minimum resolution"
+    },
+    {
+      "id": "EDGE_010",
+      "from": "SIG_COMPRESS",
+      "to": "ENCODE_PIPELINE",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_011",
+      "from": "TYPE_AWARE",
+      "to": "ENCODE_PIPELINE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_012",
+      "from": "DOCSTR_DISTILL",
+      "to": "USAGE_EX",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.35,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.38,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.25,
+      "edge_score": 0.25,
+      "edge_heat": 0.36,
+      "resolution_rule": "Resolve by allocating token budget: docstring distill gets 60 percent of per-function budget usage examples get 40 percent; enforced by TOKEN_BUDGET allocation table"
+    },
+    {
+      "id": "EDGE_013",
+      "from": "DOCSTR_DISTILL",
+      "to": "ENCODE_PIPELINE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_016",
+      "from": "ENCODE_PIPELINE",
+      "to": "RETRIEVAL_INDEX",
+      "edge_type": "dependency",
+      "relation_strength": 0.92,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.9,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.35
+    },
+    {
+      "id": "EDGE_017",
+      "from": "ENCODE_PIPELINE",
+      "to": "DEP_GRAPH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_018",
+      "from": "ENCODE_PIPELINE",
+      "to": "VERSION_MGMT",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_019",
+      "from": "ENCODE_PIPELINE",
+      "to": "INCREMENTAL_UPDATE",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_020",
+      "from": "ENCODE_PIPELINE",
+      "to": "REPR_VERSIONING",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_021",
+      "from": "DEP_GRAPH",
+      "to": "RETRIEVAL_INDEX",
+      "edge_type": "similarity",
+      "relation_strength": 0.72,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_022",
+      "from": "DEP_GRAPH",
+      "to": "EXPAND_DECODE",
+      "edge_type": "similarity",
+      "relation_strength": 0.72,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_023",
+      "from": "VERSION_MGMT",
+      "to": "RETRIEVAL_INDEX",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_024",
+      "from": "RETRIEVAL_INDEX",
+      "to": "QUERY_ENCODE",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_025",
+      "from": "RETRIEVAL_INDEX",
+      "to": "EXPAND_DECODE",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_026",
+      "from": "RETRIEVAL_INDEX",
+      "to": "EVAL_REPR",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_027",
+      "from": "RETRIEVAL_INDEX",
+      "to": "HALLUC_GUARD",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_028",
+      "from": "RETRIEVAL_INDEX",
+      "to": "COVERAGE_GAP",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_029",
+      "from": "RETRIEVAL_INDEX",
+      "to": "CROSS_LIB",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_030",
+      "from": "QUERY_ENCODE",
+      "to": "EXPAND_DECODE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_031",
+      "from": "QUERY_ENCODE",
+      "to": "CONTEXT_INJECT",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_032",
+      "from": "EXPAND_DECODE",
+      "to": "EVAL_REPR",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_033",
+      "from": "EXPAND_DECODE",
+      "to": "HALLUC_GUARD",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_034",
+      "from": "CONTEXT_INJECT",
+      "to": "FINETUNE_REPR",
+      "edge_type": "conflict",
+      "relation_strength": 0.68,
+      "signed_tension": -0.42,
+      "expected_rework_cost": 0.45,
+      "conflict_probability": 0.48,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.32,
+      "edge_score": 0.32,
+      "edge_heat": 0.43,
+      "resolution_rule": "Resolve by separating concerns: in-context injection is the runtime path; fine-tuning is an offline path to reduce injection token overhead; they are complementary not exclusive"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "EVAL_REPR",
+      "to": "FINETUNE_REPR",
+      "edge_type": "feedback",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_036",
+      "from": "EVAL_REPR",
+      "to": "HALLUC_GUARD",
+      "edge_type": "similarity",
+      "relation_strength": 0.78,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_037",
+      "from": "EVAL_REPR",
+      "to": "COVERAGE_GAP",
+      "edge_type": "similarity",
+      "relation_strength": 0.72,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_038",
+      "from": "HALLUC_GUARD",
+      "to": "COVERAGE_GAP",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_040",
+      "from": "REPR_VERSIONING",
+      "to": "FINETUNE_REPR",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.38,
+      "expected_rework_cost": 0.42,
+      "conflict_probability": 0.42,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.28,
+      "edge_score": 0.28,
+      "edge_heat": 0.39,
+      "resolution_rule": "Resolve by schema version gating: fine-tuning runs are tagged with schema version; model retrain is triggered when schema major version changes not for minor/patch updates"
+    },
+    {
+      "id": "EDGE_041",
+      "from": "USAGE_EX",
+      "to": "CONTEXT_INJECT",
+      "edge_type": "similarity",
+      "relation_strength": 0.72,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_042",
+      "from": "LATENCY_COST",
+      "to": "RETRIEVAL_INDEX",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.38,
+      "expected_rework_cost": 0.38,
+      "conflict_probability": 0.42,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.3,
+      "edge_score": 0.3,
+      "edge_heat": 0.42,
+      "resolution_rule": "Resolve by caching and tiered retrieval: implement LRU cache for top-k frequent repr queries; accept higher latency for rare queries where cache misses; set explicit latency budget before recall tradeoff"
+    },
+    {
+      "id": "EDGE_043",
+      "from": "LATENCY_COST",
+      "to": "CONTEXT_INJECT",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.35,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.4,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.29,
+      "edge_score": 0.29,
+      "edge_heat": 0.4,
+      "resolution_rule": "Resolve by repr length budgeting enforced at injection time: hard cap on repr tokens injected per request; prioritize by retrieval score"
+    },
+    {
+      "id": "EDGE_045",
+      "from": "TOKEN_BUDGET",
+      "to": "CONTEXT_INJECT",
+      "edge_type": "conflict",
+      "relation_strength": 0.78,
+      "signed_tension": -0.35,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.38,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.31,
+      "edge_score": 0.31,
+      "edge_heat": 0.42,
+      "resolution_rule": "Resolve by shared budget allocation table owned by TOKEN_BUDGET node; CONTEXT_INJECT defers to it for per-request repr token limits"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "name": "compression_vs_semantic_completeness",
+      "description": "Aggressive token compression reduces context overhead but risks losing type nuance exception semantics and behavioral constraints needed for correct code generation",
+      "poles": [
+        "maximum_compression",
+        "full_semantic_fidelity"
+      ],
+      "nodes_involved": [
+        "REPR_SCHEMA",
+        "TOKEN_BUDGET",
+        "SIG_COMPRESS",
+        "DOCSTR_DISTILL",
+        "TYPE_AWARE"
+      ],
+      "resolution_heuristic": "set minimum semantic completeness requirements first (types exceptions constraints) then compress remaining prose to budget"
+    },
+    {
+      "id": "CA_02",
+      "name": "retrieval_depth_vs_latency",
+      "description": "Deeper retrieval (higher top-k) improves recall and reduces hallucination but increases retrieval latency and token injection cost",
+      "poles": [
+        "deep_retrieval_high_recall",
+        "shallow_retrieval_low_latency"
+      ],
+      "nodes_involved": [
+        "RETRIEVAL_INDEX",
+        "LATENCY_COST",
+        "CONTEXT_INJECT",
+        "HALLUC_GUARD"
+      ],
+      "resolution_heuristic": "profile latency budget first; cache top-k for frequent queries; accept shallow retrieval only when p99 latency would breach SLA"
+    },
+    {
+      "id": "CA_03",
+      "name": "fine_tuning_vs_in_context_repr",
+      "description": "Fine-tuning the model on repr format reduces per-query context overhead but adds training cost risks catastrophic forgetting and requires re-training on repr schema changes",
+      "poles": [
+        "fine_tune_for_efficiency",
+        "in_context_only_for_flexibility"
+      ],
+      "nodes_involved": [
+        "FINETUNE_REPR",
+        "CONTEXT_INJECT",
+        "REPR_VERSIONING"
+      ],
+      "resolution_heuristic": "use in-context injection as default; add fine-tuning only when token injection overhead consistently exceeds 20 percent of context window"
+    },
+    {
+      "id": "CA_04",
+      "name": "index_coverage_vs_index_size",
+      "description": "Maximizing repr index coverage reduces hallucinations but increases index size retrieval latency and encoding pipeline cost",
+      "poles": [
+        "maximum_coverage",
+        "minimal_index_footprint"
+      ],
+      "nodes_involved": [
+        "COVERAGE_GAP",
+        "RETRIEVAL_INDEX",
+        "LATENCY_COST",
+        "ENCODE_PIPELINE"
+      ],
+      "resolution_heuristic": "prioritize coverage by query frequency; encode top-N most-queried APIs first; set index size budget"
+    },
+    {
+      "id": "CA_05",
+      "name": "type_detail_vs_token_cost",
+      "description": "Encoding rich generic and protocol type information improves type-directed generation but consumes large token budget for complex type signatures",
+      "poles": [
+        "full_type_encoding",
+        "type_elision"
+      ],
+      "nodes_involved": [
+        "TYPE_AWARE",
+        "TOKEN_BUDGET",
+        "SIG_COMPRESS"
+      ],
+      "resolution_heuristic": "always encode nullability and top-level generics; elide deeply nested TypeVar constraints beyond 2 levels"
+    },
+    {
+      "id": "CA_06",
+      "name": "multi_version_repr_vs_index_complexity",
+      "description": "Supporting multiple library versions in repr index prevents cross-version API confusion but multiplies index size and retrieval complexity",
+      "poles": [
+        "multi_version_full_support",
+        "single_latest_version_only"
+      ],
+      "nodes_involved": [
+        "VERSION_MGMT",
+        "RETRIEVAL_INDEX",
+        "INCREMENTAL_UPDATE"
+      ],
+      "resolution_heuristic": "retain N most recent semver-major versions; deprecate older entries; version-tag all entries for conditional retrieval"
+    },
+    {
+      "id": "CA_07",
+      "name": "usage_examples_vs_signature_space",
+      "description": "Including usage examples in repr improves generation fidelity but consumes token budget that could be used for additional API signatures",
+      "poles": [
+        "examples_for_fidelity",
+        "signatures_for_breadth"
+      ],
+      "nodes_involved": [
+        "USAGE_EX",
+        "TOKEN_BUDGET",
+        "SIG_COMPRESS",
+        "CONTEXT_INJECT"
+      ],
+      "resolution_heuristic": "allocate fixed per-function example budget; include example only for APIs with known high misuse rate"
+    },
+    {
+      "id": "CA_08",
+      "name": "hallucination_guard_recall_vs_precision",
+      "description": "Strict repr grounding catches more hallucinations but increases false positive rate for valid rare APIs not yet in index",
+      "poles": [
+        "strict_grounding_high_recall",
+        "lenient_grounding_low_false_positive"
+      ],
+      "nodes_involved": [
+        "HALLUC_GUARD",
+        "COVERAGE_GAP",
+        "EVAL_REPR"
+      ],
+      "resolution_heuristic": "set confidence threshold based on index coverage rate; use soft flag (uncertainty) not hard rejection for borderline cases"
+    },
+    {
+      "id": "CA_09",
+      "name": "naturalness_guided_vs_uniform_compression",
+      "description": "Naturalness-guided elision tailors compression to code statistics but adds complexity and may fail for domain-specific code that is less natural",
+      "poles": [
+        "naturalness_guided_elision",
+        "uniform_compression_policy"
+      ],
+      "nodes_involved": [
+        "NATURALNESS",
+        "SIG_COMPRESS",
+        "DOCSTR_DISTILL"
+      ],
+      "resolution_heuristic": "use naturalness statistics as soft prior for compression; override with fixed minimum information rules for low-naturalness library internals"
+    },
+    {
+      "id": "CA_10",
+      "name": "cross_library_alignment_vs_per_library_fidelity",
+      "description": "Aligning repr notation across libraries enables multi-library generation but risks losing library-specific idioms and semantic distinctions",
+      "poles": [
+        "cross_library_unified_repr",
+        "per_library_idiomatic_repr"
+      ],
+      "nodes_involved": [
+        "CROSS_LIB",
+        "REPR_SCHEMA",
+        "ENCODE_PIPELINE"
+      ],
+      "resolution_heuristic": "enforce shared structural schema; allow library-specific notation extensions as tagged fields; resolve collisions with explicit namespace prefixes"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "description": "Library API surface exceeds token budget for any single context window",
+      "trigger": "encoding top-level module with more than 1000 public symbols",
+      "risk": "repr truncation silently drops critical APIs",
+      "mitigation": "hierarchical repr: encode module-level summaries retrieve sub-module repr on demand",
+      "nodes_involved": [
+        "TOKEN_BUDGET",
+        "ENCODE_PIPELINE",
+        "RETRIEVAL_INDEX"
+      ]
+    },
+    {
+      "id": "EC_02",
+      "description": "Library removes a public API between repr index build and user query",
+      "trigger": "library deprecation and removal between index builds",
+      "risk": "hallucination guard fails to catch removed API usage",
+      "mitigation": "incremental update triggered on library release; version-conditional retrieval warns on deprecated API",
+      "nodes_involved": [
+        "INCREMENTAL_UPDATE",
+        "VERSION_MGMT",
+        "HALLUC_GUARD"
+      ]
+    },
+    {
+      "id": "EC_03",
+      "description": "User query uses natural language that has no lexical overlap with compressed repr notation",
+      "trigger": "user says combine dataframes but repr uses compressed join form",
+      "risk": "BM25 retrieval fails; semantic retrieval required",
+      "mitigation": "hybrid retrieval mandatory; query encoder must bridge NL-repr vocabulary gap",
+      "nodes_involved": [
+        "QUERY_ENCODE",
+        "RETRIEVAL_INDEX",
+        "SIG_COMPRESS"
+      ]
+    },
+    {
+      "id": "EC_04",
+      "description": "Repr schema major version change breaks fine-tuned model compatibility",
+      "trigger": "repr schema v2 changes compressed notation for generic types",
+      "risk": "model fine-tuned on v1 schema generates malformed code using v2 repr",
+      "mitigation": "schema version gating: model retraining triggered before schema version deployed to index",
+      "nodes_involved": [
+        "REPR_VERSIONING",
+        "FINETUNE_REPR",
+        "REPR_SCHEMA"
+      ]
+    },
+    {
+      "id": "EC_05",
+      "description": "Cross-library namespace collision in generated imports",
+      "trigger": "both pytorch and tensorflow define Tensor; repr uses same unqualified token",
+      "risk": "generated import uses wrong framework Tensor in multi-library task",
+      "mitigation": "cross-library alignment enforces namespace prefixes in repr; CROSS_LIB node mandatory before multi-library tasks",
+      "nodes_involved": [
+        "CROSS_LIB",
+        "EXPAND_DECODE",
+        "CONTEXT_INJECT"
+      ]
+    },
+    {
+      "id": "EC_06",
+      "description": "Deeply recursive generic type annotation explodes repr token count",
+      "trigger": "Callable with nested Dict List Tuple types in repr",
+      "risk": "single type annotation consumes entire per-function token budget",
+      "mitigation": "type depth limit: encode generics to max 2 levels; represent deeper types as opaque type alias with expansion on demand",
+      "nodes_involved": [
+        "TYPE_AWARE",
+        "TOKEN_BUDGET",
+        "SIG_COMPRESS"
+      ]
+    },
+    {
+      "id": "EC_07",
+      "description": "Repr index built on stubs diverges from runtime behavior",
+      "trigger": "type stub incorrectly documents return type vs actual runtime",
+      "risk": "model generates type-correct but semantically wrong code",
+      "mitigation": "supplement stub-based repr with runtime-validated usage examples; flag stub-only entries with lower confidence",
+      "nodes_involved": [
+        "REPR_SCHEMA",
+        "TYPE_AWARE",
+        "EVAL_REPR"
+      ]
+    },
+    {
+      "id": "EC_08",
+      "description": "High query volume saturates retrieval index cache degrading latency",
+      "trigger": "burst query traffic for same library",
+      "risk": "p99 latency breaches SLA; repr injection stalled",
+      "mitigation": "pre-warm cache for top-N libraries; rate-limit repr injection to budget per request",
+      "nodes_involved": [
+        "LATENCY_COST",
+        "RETRIEVAL_INDEX",
+        "CONTEXT_INJECT"
+      ]
+    },
+    {
+      "id": "EC_09",
+      "description": "Benchmark contamination: repr index built from same source as generation benchmark",
+      "trigger": "HumanEval-style tasks based on numpy; numpy repr in training data",
+      "risk": "eval metrics overestimate generalization; Goodhart on pass@k",
+      "mitigation": "hold out benchmark library versions from repr index; use separate evaluation set for repr quality",
+      "nodes_involved": [
+        "EVAL_REPR",
+        "ENCODE_PIPELINE",
+        "FINETUNE_REPR"
+      ]
+    },
+    {
+      "id": "EC_10",
+      "description": "Coverage gap for internal or private APIs used in user codebase",
+      "trigger": "user asks model to call private internal function not in repr index",
+      "risk": "hallucination guard false-positives on valid private APIs",
+      "mitigation": "coverage gap policy: explicit uncertainty signal; offer to accept user-provided signature as ephemeral repr entry",
+      "nodes_involved": [
+        "COVERAGE_GAP",
+        "HALLUC_GUARD",
+        "RETRIEVAL_INDEX"
+      ]
+    },
+    {
+      "id": "EC_11",
+      "description": "Docstring distillation loses language-specific encoding such as ReST param vs Google style",
+      "trigger": "library uses inconsistent docstring style; distiller trained on one style",
+      "risk": "behavioral constraints silently lost due to format mismatch",
+      "mitigation": "normalize docstring style before distillation; test distillation recall across multiple docstring formats",
+      "nodes_involved": [
+        "DOCSTR_DISTILL",
+        "ENCODE_PIPELINE"
+      ]
+    },
+    {
+      "id": "EC_12",
+      "description": "Repr injection marker conflicts with model natural language in prompt",
+      "trigger": "injection marker string appears in user task description",
+      "risk": "model misparses injected repr boundaries",
+      "mitigation": "use unique structured delimiter tokens not likely in prose; test for delimiter collision before deployment",
+      "nodes_involved": [
+        "CONTEXT_INJECT",
+        "REPR_SCHEMA"
+      ]
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "name": "define_repr_schema",
+      "action": "Define canonical REPR_SCHEMA: required fields optional fields elision policy; agree on compression notation",
+      "output": "schema document and field inclusion spec",
+      "responsible_node": "REPR_SCHEMA",
+      "gate": "schema reviewed by domain expert and codegen team"
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "name": "set_token_budget",
+      "action": "Measure token counts for representative libraries; set per-function and per-library TOKEN_BUDGET; allocate budget across signature type docstring example components",
+      "output": "token budget allocation table",
+      "responsible_node": "TOKEN_BUDGET",
+      "gate": "budget fits target context window at 90 percent or more coverage for benchmark libraries"
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "name": "implement_compression_codecs",
+      "action": "Implement SIG_COMPRESS TYPE_AWARE DOCSTR_DISTILL USAGE_EX DEP_GRAPH encoding as per schema; validate round-trip fidelity on held-out set",
+      "output": "compression codecs and codec test suite",
+      "responsible_node": "ENCODE_PIPELINE",
+      "gate": "round-trip fidelity 95 percent or more on held-out set; token budgets met"
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "name": "run_encoding_pipeline",
+      "action": "Execute ENCODE_PIPELINE over target library corpus; produce versioned repr index with VERSION_MGMT tagging",
+      "output": "repr index v1",
+      "responsible_node": "ENCODE_PIPELINE",
+      "gate": "index passes consistency checks; all entries have schema version tag"
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "name": "build_retrieval_index",
+      "action": "Build RETRIEVAL_INDEX over repr corpus: BM25 index over compressed signatures embedding index over repr entries; configure QUERY_ENCODE",
+      "output": "retrieval index",
+      "responsible_node": "RETRIEVAL_INDEX",
+      "gate": "recall@10 90 percent or more on held-out query set"
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "name": "implement_context_injection",
+      "action": "Implement CONTEXT_INJECT prompt template; test repr injection with representative queries; validate injected repr does not crowd out task context",
+      "output": "context injection policy and prompt template",
+      "responsible_node": "CONTEXT_INJECT",
+      "gate": "injection benchmark: 80 percent or more of generated code uses at least one injected API correctly"
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "name": "run_evaluation",
+      "action": "Run EVAL_REPR: retrieval recall@k generation pass@k execution correctness round-trip fidelity; compare to no-repr baseline",
+      "output": "evaluation report",
+      "responsible_node": "EVAL_REPR",
+      "gate": "execution correctness 70 percent or more pass@1; 10 percent or more improvement over no-repr baseline"
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "name": "implement_hallucination_guard",
+      "action": "Implement HALLUC_GUARD: membership test against repr index; configure COVERAGE_GAP fallback policy",
+      "output": "grounding check module and coverage gap report",
+      "responsible_node": "HALLUC_GUARD",
+      "gate": "hallucination detection precision 90 percent or more; false positive rate less than 10 percent"
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "name": "optional_fine_tuning",
+      "action": "If token injection overhead exceeds 20 percent of context window execute FINETUNE_REPR: build repr-code SFT dataset; fine-tune; evaluate against general coding benchmark",
+      "output": "repr-fine-tuned model",
+      "responsible_node": "FINETUNE_REPR",
+      "gate": "general coding benchmark within 5 percent of base; repr-native generation 10 percent or more improvement"
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "name": "setup_incremental_update",
+      "action": "Configure INCREMENTAL_UPDATE pipeline: delta detection from library releases; automated re-encode of changed symbols; consistency checks; VERSION_MGMT propagation",
+      "output": "automated update pipeline",
+      "responsible_node": "INCREMENTAL_UPDATE",
+      "gate": "incremental update produces identical index to full re-index on patch-release test"
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "name": "monitor_latency_and_coverage",
+      "action": "Deploy LATENCY_COST profiling; monitor retrieval latency injection cost; track COVERAGE_GAP rate from user query logs; prioritize index expansion",
+      "output": "ops dashboard and coverage expansion backlog",
+      "responsible_node": "LATENCY_COST",
+      "gate": "SLA met 99 percent or more of requests; top-10 coverage gaps addressed within sprint"
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "name": "schema_versioning_and_migration",
+      "action": "When REPR_SCHEMA changes: increment schema version; write migration scripts; test with REPR_VERSIONING validation; gate FINETUNE_REPR re-training on schema major version changes",
+      "output": "migrated repr index and compatibility matrix",
+      "responsible_node": "REPR_VERSIONING",
+      "gate": "migration produces valid entries verified by schema validator on 100 percent of migrated entries"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "name": "schema_first",
+      "rule": "REPR_SCHEMA must be finalized before any compression codec is implemented; schema changes after codec implementation trigger codec revision",
+      "rationale": "downstream codecs embed schema assumptions; schema drift without codec revision corrupts the index",
+      "overrides": [
+        "compression_speed_pressure",
+        "partial_schema_advocates"
+      ]
+    },
+    {
+      "id": "DR_02",
+      "name": "token_budget_gates_all_compression",
+      "rule": "TOKEN_BUDGET allocation table gates all per-component compression decisions; no compression codec may exceed its allocated budget without TOKEN_BUDGET revision",
+      "rationale": "without budget enforcement individual codecs optimize locally and collectively overflow the context window",
+      "overrides": [
+        "individual_codec_advocates"
+      ]
+    },
+    {
+      "id": "DR_03",
+      "name": "hallucination_guard_required_before_deployment",
+      "rule": "HALLUC_GUARD must be implemented and pass acceptance tests before the repr-augmented generation system is deployed to users",
+      "rationale": "ungrounded generation is a higher risk than reduced coverage; trust requires explicit hallucination management",
+      "overrides": [
+        "coverage_first_advocates",
+        "fast_deployment_advocates"
+      ]
+    },
+    {
+      "id": "DR_04",
+      "name": "evaluation_before_fine_tuning",
+      "rule": "EVAL_REPR must produce a baseline evaluation report before FINETUNE_REPR begins; fine-tuning targets must be defined from eval results",
+      "rationale": "fine-tuning without a baseline produces uninterpretable results and may optimize for the wrong objective",
+      "overrides": [
+        "training_speed_advocates"
+      ]
+    },
+    {
+      "id": "DR_05",
+      "name": "version_tagging_mandatory",
+      "rule": "All repr index entries must carry schema version and library version tags before entering the retrieval index; untagged entries must be rejected",
+      "rationale": "untagged entries cause silent cross-version API confusion and schema incompatibility",
+      "overrides": [
+        "untagged_entries_ok_advocates"
+      ]
+    },
+    {
+      "id": "DR_06",
+      "name": "retrieval_before_injection",
+      "rule": "RETRIEVAL_INDEX must be built and validated (recall@10 gate) before CONTEXT_INJECT is implemented; injecting from an unvalidated index propagates retrieval errors to generation",
+      "rationale": "injection quality is bounded by retrieval quality",
+      "overrides": [
+        "injection_first_advocates"
+      ]
+    },
+    {
+      "id": "DR_07",
+      "name": "incremental_update_consistency_check_required",
+      "rule": "Every INCREMENTAL_UPDATE run must pass consistency checks before the updated index replaces the production index",
+      "rationale": "stale entries after removal propagate to hallucination guard blindspots",
+      "overrides": [
+        "fast_update_no_check_advocates"
+      ]
+    },
+    {
+      "id": "DR_08",
+      "name": "naturalness_statistics_domain_validated",
+      "rule": "NATURALNESS-guided elision policy must be validated on domain-specific code statistics before application; do not apply general naturalness priors to domain-specific library internals without validation",
+      "rationale": "naturalness distribution varies significantly across domains; misapplied priors cause over-elision",
+      "overrides": [
+        "general_naturalness_always_applies_advocates"
+      ]
+    },
+    {
+      "id": "DR_09",
+      "name": "cross_library_namespace_prefix_mandatory",
+      "rule": "CROSS_LIB must enforce namespace prefixes for all multi-library repr entries before multi-library generation tasks are enabled",
+      "rationale": "namespace collision is a correctness failure not a quality issue",
+      "overrides": [
+        "short_form_repr_advocates"
+      ]
+    },
+    {
+      "id": "DR_10",
+      "name": "repr_schema_versioning_gates_fine_tune",
+      "rule": "REPR_VERSIONING schema major version change must trigger FINETUNE_REPR re-run before new schema repr index is deployed; minor/patch changes do not require re-training",
+      "rationale": "model trained on old schema generates incorrect repr tokens with new schema",
+      "overrides": [
+        "deploy_first_retrain_later_advocates"
+      ]
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "ARR_01",
+      "name": "no_codec_without_schema",
+      "rule": "Do not implement any compression codec before REPR_SCHEMA is finalized; codec assumptions embedded in partial schema will require full rewrite",
+      "prevents_rework_in": [
+        "SIG_COMPRESS",
+        "TYPE_AWARE",
+        "DOCSTR_DISTILL",
+        "ENCODE_PIPELINE"
+      ]
+    },
+    {
+      "id": "ARR_02",
+      "name": "no_retrieval_index_before_codec_validation",
+      "rule": "Do not build the retrieval index before compression codecs pass round-trip fidelity tests; index built on faulty codecs must be fully rebuilt",
+      "prevents_rework_in": [
+        "RETRIEVAL_INDEX",
+        "ENCODE_PIPELINE"
+      ]
+    },
+    {
+      "id": "ARR_03",
+      "name": "no_fine_tuning_before_schema_stable",
+      "rule": "Do not begin FINETUNE_REPR until REPR_SCHEMA and REPR_VERSIONING are stable; schema changes after SFT require re-generating the entire training dataset and re-training",
+      "prevents_rework_in": [
+        "FINETUNE_REPR"
+      ]
+    },
+    {
+      "id": "ARR_04",
+      "name": "no_multi_library_without_cross_lib_alignment",
+      "rule": "Do not enable multi-library generation tasks before CROSS_LIB alignment is implemented; namespace collision bugs require both index rebuild and prompt template revision",
+      "prevents_rework_in": [
+        "CROSS_LIB",
+        "CONTEXT_INJECT",
+        "EXPAND_DECODE"
+      ]
+    },
+    {
+      "id": "ARR_05",
+      "name": "no_production_deployment_without_hallucination_guard",
+      "rule": "Do not deploy to production before HALLUC_GUARD is implemented; post-deployment hallucination issues require emergency patching plus reputation repair",
+      "prevents_rework_in": [
+        "HALLUC_GUARD",
+        "COVERAGE_GAP"
+      ]
+    },
+    {
+      "id": "ARR_06",
+      "name": "no_version_management_bypass",
+      "rule": "Do not skip VERSION_MGMT tagging in initial index build; retrofitting version tags onto an untagged index requires full re-encode",
+      "prevents_rework_in": [
+        "VERSION_MGMT",
+        "INCREMENTAL_UPDATE",
+        "REPR_VERSIONING"
+      ]
+    },
+    {
+      "id": "ARR_07",
+      "name": "no_latency_optimization_before_correctness_gate",
+      "rule": "Do not optimize LATENCY_COST before EVAL_REPR correctness gate is passed; optimizing a broken pipeline locks in wrong architecture",
+      "prevents_rework_in": [
+        "LATENCY_COST",
+        "RETRIEVAL_INDEX"
+      ]
+    },
+    {
+      "id": "ARR_08",
+      "name": "no_docstring_distillation_without_recall_test",
+      "rule": "Do not deploy DOCSTR_DISTILL without measuring distillation recall on behavioral constraints; silent constraint loss requires index reconstruction",
+      "prevents_rework_in": [
+        "DOCSTR_DISTILL",
+        "EVAL_REPR"
+      ]
+    },
+    {
+      "id": "ARR_09",
+      "name": "no_token_budget_changes_post_codec_without_revalidation",
+      "rule": "Do not change TOKEN_BUDGET allocation without re-validating all codecs; budget shifts can cause previously passing codecs to overflow",
+      "prevents_rework_in": [
+        "SIG_COMPRESS",
+        "TYPE_AWARE",
+        "DOCSTR_DISTILL",
+        "USAGE_EX"
+      ]
+    },
+    {
+      "id": "ARR_10",
+      "name": "no_coverage_gap_ignored_in_eval",
+      "rule": "Do not close EVAL_REPR without measuring coverage gap rate; deploying with high gap rate makes hallucination guard ineffective",
+      "prevents_rework_in": [
+        "COVERAGE_GAP",
+        "HALLUC_GUARD"
+      ]
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "trigger": "REPR_SCHEMA revision",
+      "action": "revalidate all codecs for schema compatibility; re-run ENCODE_PIPELINE; rebuild RETRIEVAL_INDEX; gate FINETUNE_REPR re-run on major version change",
+      "exit_condition": "round-trip fidelity 95 percent or more on held-out set after codec revision"
+    },
+    {
+      "id": "IP_02",
+      "trigger": "TOKEN_BUDGET constraint tightens",
+      "action": "re-optimize compression ratios; re-run SIG_COMPRESS and DOCSTR_DISTILL under new budget; validate coverage not degraded",
+      "exit_condition": "repr fits new token budget at 90 percent or more coverage for benchmark libraries"
+    },
+    {
+      "id": "IP_03",
+      "trigger": "retrieval recall@10 drops below 0.85",
+      "action": "diagnose: check repr schema changes embedding drift BM25 index staleness; re-index if needed; re-tune QUERY_ENCODE",
+      "exit_condition": "recall@10 restored to 90 percent or more"
+    },
+    {
+      "id": "IP_04",
+      "trigger": "hallucination rate increases more than 5 percent from baseline",
+      "action": "audit HALLUC_GUARD coverage; check for coverage gaps causing false negatives; run COVERAGE_GAP analysis; expand index for top missing APIs",
+      "exit_condition": "hallucination rate returns to baseline; coverage gap rate less than 10 percent"
+    },
+    {
+      "id": "IP_05",
+      "trigger": "FINETUNE_REPR shows more than 5 percent degradation on general coding benchmark",
+      "action": "reduce SFT dataset size or add general coding examples to re-balance; re-train with revised mix; re-evaluate",
+      "exit_condition": "general coding benchmark within 5 percent of base model"
+    },
+    {
+      "id": "IP_06",
+      "trigger": "library major version release with breaking API changes",
+      "action": "trigger INCREMENTAL_UPDATE for changed symbols; update VERSION_MGMT tags; run HALLUC_GUARD acceptance tests; check CROSS_LIB alignment",
+      "exit_condition": "updated index passes consistency check and hallucination guard tests"
+    },
+    {
+      "id": "IP_07",
+      "trigger": "latency SLA breach at p99",
+      "action": "profile LATENCY_COST bottlenecks; expand retrieval cache; tune retrieval depth; consider reducing CONTEXT_INJECT repr token limit",
+      "exit_condition": "p99 latency within SLA on load test"
+    },
+    {
+      "id": "IP_08",
+      "trigger": "coverage gap rate more than 10 percent on user query sample",
+      "action": "run COVERAGE_GAP analysis; prioritize top-N missing APIs; run INCREMENTAL_UPDATE or targeted encoding for missing entries",
+      "exit_condition": "coverage gap rate less than 5 percent on user query sample"
+    },
+    {
+      "id": "IP_09",
+      "trigger": "evaluation benchmark contamination detected",
+      "action": "remove contaminated libraries from repr index; rebuild evaluation set excluding overlap; re-run EVAL_REPR; update benchmark policy",
+      "exit_condition": "evaluation set has no overlap with repr index training libraries"
+    },
+    {
+      "id": "IP_10",
+      "trigger": "cross-library namespace collision detected in generated code",
+      "action": "audit CROSS_LIB alignment; add namespace prefixes for colliding entries; re-run CONTEXT_INJECT validation; update EXPAND_DECODE for new namespace format",
+      "exit_condition": "zero namespace collision in benchmark multi-library tasks"
+    }
+  ],
+  "priority_order": [
+    "REPR_SCHEMA",
+    "TOKEN_BUDGET",
+    "SIG_COMPRESS",
+    "TYPE_AWARE",
+    "DOCSTR_DISTILL",
+    "NATURALNESS",
+    "USAGE_EX",
+    "DEP_GRAPH",
+    "ENCODE_PIPELINE",
+    "VERSION_MGMT",
+    "RETRIEVAL_INDEX",
+    "QUERY_ENCODE",
+    "EXPAND_DECODE",
+    "CONTEXT_INJECT",
+    "EVAL_REPR",
+    "HALLUC_GUARD",
+    "FINETUNE_REPR",
+    "LATENCY_COST",
+    "COVERAGE_GAP",
+    "INCREMENTAL_UPDATE",
+    "CROSS_LIB",
+    "REPR_VERSIONING"
+  ],
+  "priority_rationale": "REPR_SCHEMA first as the structural contract all other components depend on; TOKEN_BUDGET second as the constraint shaping all compression decisions; compression codecs next; NATURALNESS and USAGE_EX are enrichment layers; DEP_GRAPH and ENCODE_PIPELINE build the index; VERSION_MGMT and RETRIEVAL_INDEX make it queryable; QUERY_ENCODE EXPAND_DECODE CONTEXT_INJECT complete the generation path; EVAL_REPR and HALLUC_GUARD gate quality; FINETUNE_REPR is optional optimization; LATENCY_COST COVERAGE_GAP INCREMENTAL_UPDATE CROSS_LIB REPR_VERSIONING are operational and maintenance concerns",
+  "change_control": {
+    "schema_version_field": "schema_version",
+    "change_log_required": true,
+    "review_required_for": [
+      "REPR_SCHEMA",
+      "FINETUNE_REPR",
+      "HALLUC_GUARD",
+      "EXPAND_DECODE"
+    ],
+    "auto_approved": [
+      "LATENCY_COST",
+      "USAGE_EX",
+      "COVERAGE_GAP"
+    ]
+  },
+  "traceability_matrix": {
+    "REPR_SCHEMA": {
+      "competency_questions": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "conflict_axes": [
+        "CA_01",
+        "CA_09",
+        "CA_10"
+      ],
+      "dominance_rules": [
+        "DR_01",
+        "DR_05"
+      ],
+      "anti_rework_rules": [
+        "ARR_01"
+      ]
+    },
+    "TOKEN_BUDGET": {
+      "competency_questions": [
+        "CQ_01",
+        "CQ_03",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_01",
+        "CA_05",
+        "CA_07"
+      ],
+      "dominance_rules": [
+        "DR_02"
+      ],
+      "anti_rework_rules": [
+        "ARR_09"
+      ]
+    },
+    "SIG_COMPRESS": {
+      "competency_questions": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "conflict_axes": [
+        "CA_01",
+        "CA_05",
+        "CA_09"
+      ],
+      "dominance_rules": [
+        "DR_01",
+        "DR_02"
+      ],
+      "anti_rework_rules": [
+        "ARR_01",
+        "ARR_09"
+      ]
+    },
+    "TYPE_AWARE": {
+      "competency_questions": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_05"
+      ],
+      "dominance_rules": [
+        "DR_01"
+      ],
+      "anti_rework_rules": [
+        "ARR_01"
+      ]
+    },
+    "DOCSTR_DISTILL": {
+      "competency_questions": [
+        "CQ_03"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [
+        "DR_02"
+      ],
+      "anti_rework_rules": [
+        "ARR_08",
+        "ARR_09"
+      ]
+    },
+    "ENCODE_PIPELINE": {
+      "competency_questions": [
+        "CQ_02",
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_04",
+        "CA_10"
+      ],
+      "dominance_rules": [
+        "DR_01",
+        "DR_05"
+      ],
+      "anti_rework_rules": [
+        "ARR_02"
+      ]
+    },
+    "RETRIEVAL_INDEX": {
+      "competency_questions": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_04",
+        "CA_06"
+      ],
+      "dominance_rules": [
+        "DR_06"
+      ],
+      "anti_rework_rules": [
+        "ARR_02",
+        "ARR_07"
+      ]
+    },
+    "QUERY_ENCODE": {
+      "competency_questions": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_02"
+      ],
+      "dominance_rules": [
+        "DR_06"
+      ],
+      "anti_rework_rules": [
+        "ARR_02"
+      ]
+    },
+    "EXPAND_DECODE": {
+      "competency_questions": [
+        "CQ_08",
+        "CQ_09",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [
+        "DR_03"
+      ],
+      "anti_rework_rules": [
+        "ARR_04"
+      ]
+    },
+    "CONTEXT_INJECT": {
+      "competency_questions": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_03",
+        "CA_07"
+      ],
+      "dominance_rules": [
+        "DR_06"
+      ],
+      "anti_rework_rules": [
+        "ARR_04"
+      ]
+    },
+    "EVAL_REPR": {
+      "competency_questions": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "conflict_axes": [
+        "CA_08"
+      ],
+      "dominance_rules": [
+        "DR_04"
+      ],
+      "anti_rework_rules": [
+        "ARR_10"
+      ]
+    },
+    "HALLUC_GUARD": {
+      "competency_questions": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "conflict_axes": [
+        "CA_08"
+      ],
+      "dominance_rules": [
+        "DR_03"
+      ],
+      "anti_rework_rules": [
+        "ARR_05"
+      ]
+    },
+    "FINETUNE_REPR": {
+      "competency_questions": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_03"
+      ],
+      "dominance_rules": [
+        "DR_04",
+        "DR_10"
+      ],
+      "anti_rework_rules": [
+        "ARR_03"
+      ]
+    },
+    "NATURALNESS": {
+      "competency_questions": [
+        "CQ_01"
+      ],
+      "conflict_axes": [
+        "CA_09"
+      ],
+      "dominance_rules": [
+        "DR_08"
+      ],
+      "anti_rework_rules": [
+        "ARR_01"
+      ]
+    },
+    "USAGE_EX": {
+      "competency_questions": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_07"
+      ],
+      "dominance_rules": [
+        "DR_02"
+      ],
+      "anti_rework_rules": [
+        "ARR_09"
+      ]
+    },
+    "DEP_GRAPH": {
+      "competency_questions": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [
+        "DR_01"
+      ],
+      "anti_rework_rules": [
+        "ARR_01"
+      ]
+    },
+    "VERSION_MGMT": {
+      "competency_questions": [
+        "CQ_02"
+      ],
+      "conflict_axes": [
+        "CA_06"
+      ],
+      "dominance_rules": [
+        "DR_05"
+      ],
+      "anti_rework_rules": [
+        "ARR_06"
+      ]
+    },
+    "INCREMENTAL_UPDATE": {
+      "competency_questions": [
+        "CQ_02"
+      ],
+      "conflict_axes": [
+        "CA_06"
+      ],
+      "dominance_rules": [
+        "DR_07"
+      ],
+      "anti_rework_rules": [
+        "ARR_06"
+      ]
+    },
+    "CROSS_LIB": {
+      "competency_questions": [
+        "CQ_04"
+      ],
+      "conflict_axes": [
+        "CA_10"
+      ],
+      "dominance_rules": [
+        "DR_09"
+      ],
+      "anti_rework_rules": [
+        "ARR_04"
+      ]
+    },
+    "LATENCY_COST": {
+      "competency_questions": [
+        "CQ_12"
+      ],
+      "conflict_axes": [
+        "CA_02"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": [
+        "ARR_07"
+      ]
+    },
+    "COVERAGE_GAP": {
+      "competency_questions": [
+        "CQ_11"
+      ],
+      "conflict_axes": [
+        "CA_04",
+        "CA_08"
+      ],
+      "dominance_rules": [
+        "DR_03"
+      ],
+      "anti_rework_rules": [
+        "ARR_05",
+        "ARR_10"
+      ]
+    },
+    "REPR_VERSIONING": {
+      "competency_questions": [
+        "CQ_02"
+      ],
+      "conflict_axes": [
+        "CA_03",
+        "CA_06"
+      ],
+      "dominance_rules": [
+        "DR_10"
+      ],
+      "anti_rework_rules": [
+        "ARR_03",
+        "ARR_06"
+      ]
+    }
+  },
+  "validation_protocol": {
+    "schema_version_check": true,
+    "required_sections": [
+      "domain",
+      "nodes",
+      "edges",
+      "conflict_axes",
+      "edge_cases",
+      "workflow",
+      "competency_questions",
+      "dominance_rules",
+      "anti_rework_rules",
+      "iteration_protocol",
+      "source_registry",
+      "priority_order",
+      "validation_protocol"
+    ],
+    "node_count_range": [
+      19,
+      24
+    ],
+    "edge_count_range": [
+      32,
+      40
+    ],
+    "conflict_axes_count_range": [
+      8,
+      10
+    ],
+    "edge_cases_count_range": [
+      10,
+      12
+    ],
+    "workflow_count_range": [
+      9,
+      12
+    ],
+    "competency_questions_count_range": [
+      10,
+      14
+    ],
+    "dominance_rules_count_range": [
+      7,
+      12
+    ],
+    "anti_rework_rules_count_range": [
+      7,
+      12
+    ],
+    "iteration_protocol_count_range": [
+      6,
+      10
+    ],
+    "high_risk_node_obligation": "nodes with risk_if_wrong>=0.80 must have non-empty acceptance_tests and human_review_required=true",
+    "high_coupling_node_obligation": "nodes with cross_topic_coupling>=0.75 must have non-empty revisit_triggers",
+    "conflict_edge_obligation": "conflict edges must have signed_tension<0 and resolution_rule",
+    "dependency_edge_acyclic": true,
+    "priority_order_completeness": "priority_order must list every node id exactly once",
+    "source_registry_required_entry": "SRC_HEURISTIC_PRIOR",
+    "evidence_refs_must_resolve": true,
+    "competency_question_refs_must_resolve": true,
+    "conflict_axis_refs_must_resolve": true
+  },
+  "validation_report": {
+    "overall_status": "pending",
+    "schema_version_ok": true,
+    "node_count_ok": true,
+    "edge_count_ok": true,
+    "all_checks_passed": false,
+    "failed_checks": [],
+    "notes": "pending external validation run"
+  },
+  "evaluation_suite": {
+    "id": "EVAL_SUITE_CODE_REPR",
+    "name": "code_repr_evaluation_suite",
+    "description": "Evaluation suite for compact code/library representation quality covering encode-generate-decode fidelity, retrieval recall, generation correctness, and hallucination detection",
+    "eval_items": [
+      {
+        "id": "ES_01",
+        "target_node": "REPR_SCHEMA",
+        "metric": "round_trip_fidelity",
+        "threshold": 0.95,
+        "description": "Encoded repr round-trips through decode with <5% semantic error on held-out set"
+      },
+      {
+        "id": "ES_02",
+        "target_node": "RETRIEVAL_INDEX",
+        "metric": "recall_at_10",
+        "threshold": 0.9,
+        "description": "Retrieval recall@10 >=0.90 on held-out API query set"
+      },
+      {
+        "id": "ES_03",
+        "target_node": "EXPAND_DECODE",
+        "metric": "syntax_validity",
+        "threshold": 0.95,
+        "description": "Expand-decode produces syntactically valid code for >=95% of benchmark entries"
+      },
+      {
+        "id": "ES_04",
+        "target_node": "HALLUC_GUARD",
+        "metric": "detection_precision",
+        "threshold": 0.9,
+        "description": "Hallucination detection precision >=0.90 on benchmark of known-hallucinated API calls"
+      },
+      {
+        "id": "ES_05",
+        "target_node": "EVAL_REPR",
+        "metric": "execution_correctness",
+        "threshold": 0.7,
+        "description": "Execution correctness >=70% pass@1 on HumanEval-style API tasks"
+      }
+    ]
+  }
+}
