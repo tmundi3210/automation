@@ -118,10 +118,13 @@ These extend the project's existing boundary discipline (`phase_b/IDEA_NEUTRALIZ
 | 3 ✅ | business, markets, money, uslaw | 12/12 @ 35/35 | business, markets, money, uslaw (13/13) | → 19 specialists / 57 KBs |
 | 4 ✅ | worldmodel, comm, psych | 9/9 @ 35/35 | worldmodel, comm, psych (13/13) | → 22 specialists / 66 KBs |
 | 5 ✅ | marketing, creator, maker | 9/9 @ 35/35 | marketing, creator, maker (13/13) | → 25 specialists / 75 KBs |
-| 6 | design, ling, health | in progress | pending | pending |
+| 6 ✅ | design, ling, health | 9/9 @ 35/35 | design, ling, health (13/13) | → 28 specialists / 84 KBs |
 
-**Set totals after Batch 5:** 25 specialists · 75 dense KBs · 1,568 nodes · 2,918 edges ·
-1,035 competency-questions · INDEX `all_pass: True`.
+**✅ EXPANSION COMPLETE — set totals:** **28 specialists · 84 dense KBs · 1,754 nodes ·
+3,273 edges · 1,157 competency-questions** · INDEX `all_pass: True`. All 18 new domains
+(54 KBs + 18 specialists) authored, gated, distilled, routed, committed, and pushed on top of
+the original 10. Every KB passed the 35-check dense gate; every specialist passed 13/13;
+routing verified dominant per domain at each batch.
 
 Updated as batches land. The pipeline, gate, and tools are unchanged from the first 10 —
 this is breadth on a proven machine, not new machinery.
