@@ -60,9 +60,15 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
       (combined, 21n/40e, ~25k tok) all PASS the gate (35/0/0). KEY FINDING: dense
       mode has a FIXED node budget (19-24), so batching 2 domains into one KB halved
       per-domain depth (IR 19->8 nodes, ~58% coverage loss) without raising total
-      output. **DECISION: GROUP_SIZE = 1 domain per dense KB; scale by parallel
-      fan-out, not by co-batching.** RUN_4 skipped (user-conditional; degradation
-      already shown; available on request).
+      output. Then a GRANULARITY follow-up (`calibration/results/GRAIN_ANALYSIS.json`):
+      IR domain (19 nodes) vs IR broken into 3 subdomains (ranking/indexing/neural;
+      20/19/20 nodes, all PASS). FINDINGS: per-KB node budget is FIXED by density
+      (19-24) and INVARIANT to grain; grain sets RESOLUTION; batching-up thins depth,
+      breaking-down multiplies it (subdomain grain = 3.1x nodes / 2.5x tokens vs domain
+      grain, all gate-passing). Max single KB 40.6k tok, no truncation (ceiling ~40-45k).
+      **DECISION: generate ONE dense KB per SUBDOMAIN/field-grain unit; scale by
+      recursive decomposition + parallel fan-out, not by batch size.** RUN_4 (4 domains
+      in one KB) unnecessary; available on request.
 - A.4 Mass generation: 1 domain per dense KB, fan out helpers in parallel, gate each,
       commit each. Low-value/narrow domains may use standard/compact. **PENDING.**
 - A.5 The resulting KB set = the foundational "how to research knowledge" specialist,
@@ -79,13 +85,16 @@ specialists/ <DOMAIN>.specialist.json           (Phase B output)
 
 ## 7. Current state
 - [x] Repo scaffolded; schema vendored; validators + metrics written; taxonomy seed; job specs.
-- [x] A.3 calibration sweep (3 helpers, all pass) -> GROUP_SIZE = 1 domain/dense KB; see DECISION.json.
+- [x] A.3 calibration sweep + granularity analysis (6 helpers, all pass) -> unit =
+      ONE dense KB per SUBDOMAIN/field-grain; see DECISION.json + GRAIN_ANALYSIS.json.
 - [ ] A.2 deep population (helper) — optional, can precede or follow A.4.
 - [ ] A.4 mass generation — **next action, gated on user go-ahead**
 - [ ] Phase B (awaiting a RAW_IDEA)
 
 ## 8. Next action
-GROUP_SIZE fixed at 1 domain per dense KB. Awaiting user go-ahead to either (a) run A.2
-deep population first, or (b) start A.4 mass generation: fan out one helper per taxonomy
-domain (dense; standard/compact for narrow/low-value), gate + commit each KB, then derive
-the foundational Knowledge Searcher specialist (A.5).
+Unit of generation fixed at ONE dense KB per subdomain/field-grain unit (controlling factor
+= fixed density budget; scale by decomposition + fan-out). Awaiting user go-ahead to either
+(a) run A.2 deep population first, (b) probe even finer grain (field/subfield) to optimize,
+or (c) start A.4 mass generation: fan out one helper per subdomain across the taxonomy
+(~24 dense KBs; standard/compact for narrow/low-value), gate + commit each, then derive the
+foundational Knowledge Searcher specialist (A.5).
