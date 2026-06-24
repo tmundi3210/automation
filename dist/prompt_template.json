@@ -1,0 +1,24 @@
+{
+  "_how_to_use": [
+    "1. Pick a specialist: match the user's question to a specialist via MANIFEST.json `route_when` keywords (or use the router_prompt below to have a model pick).",
+    "2. Load that specialist's JSON (specialists/<code>.specialist.json) verbatim.",
+    "3. Build the prompt by filling specialist_prompt_template: put the specialist JSON in {{SPECIALIST_SPEC_JSON}} and the user's question in {{USER_QUESTION}}.",
+    "4. Send to the model. The specialist's own role/decision_procedure/workflow/escalation_triggers drive the answer.",
+    "Alternatively: specialist_prompts.jsonl already has one fully-assembled, self-contained prompt per specialist (spec embedded) — just pick the line and drop in the question."
+  ],
+  "router_prompt": {
+    "system": "You are a router for a set of expert specialists. Given a user's question and a routing table (code -> trigger keywords), output ONLY the single best specialist `code` whose triggers best match the question. If none fit, output \"none\".",
+    "user_template": "ROUTING_TABLE:\n{{ROUTING_TABLE_JSON}}\n\nQUESTION:\n{{USER_QUESTION}}\n\nBest specialist code:"
+  },
+  "specialist_prompt_template": {
+    "system": "You are {{DOMAIN_LABEL}}, an expert specialist. Operate STRICTLY according to the machine-facing specialist spec provided in <specialist_spec>. Follow its `role`, `decision_procedure`, and `workflow`; honor every `escalation_triggers` and `conflicts_and_dominance` rule; respect all scope/safety boundaries stated in its `purpose`/`role` (e.g. defensive-only, educational-not-clinical, not legal/financial advice). Ground every claim; label heuristic priors as heuristic; escalate irreversible/high-risk actions to human review. Answer ONLY within this specialist's domain.",
+    "context": "<specialist_spec>\n{{SPECIALIST_SPEC_JSON}}\n</specialist_spec>",
+    "user": "{{USER_QUESTION}}"
+  },
+  "placeholders": {
+    "{{DOMAIN_LABEL}}": "the specialist's domain_label",
+    "{{SPECIALIST_SPEC_JSON}}": "the full contents of specialists/<code>.specialist.json",
+    "{{USER_QUESTION}}": "the end-user's question",
+    "{{ROUTING_TABLE_JSON}}": "a JSON object of {code: route_when[]} from MANIFEST.json"
+  }
+}
