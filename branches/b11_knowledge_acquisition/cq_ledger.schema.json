@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "b11/cq_ledger.schema.json",
+  "title": "Competency-Question Ledger",
+  "description": "The single source of truth for branch B11. Known-knowns and known-unknowns are DERIVED VIEWS over this one ledger, never separately maintained tables. unknown-unknowns are operationalized as SAT probe-operators that SPAWN new known_unknown entries (recorded via spawned_by).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["topic", "entries"],
+  "properties": {
+    "topic": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The vague subject being mapped into a self-updating CQ ledger."
+    },
+    "ledger_version": {
+      "type": "string",
+      "description": "Optional monotonic version tag for change control."
+    },
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/entry"}
+    }
+  },
+  "definitions": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cq_id", "question", "status", "claim", "evidence_label", "sources", "spawned_by", "created"],
+      "properties": {
+        "cq_id": {
+          "type": "string",
+          "pattern": "^CQ_[0-9]+$",
+          "description": "Stable competency-question id, e.g. CQ_001."
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A machine-testable competency question."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["known_known", "known_unknown"],
+          "description": "known_known = an answered, claim-bearing CQ; known_unknown = an open CQ with no settled claim. (unknown-unknowns are NOT a status: they are surfaced by probes that spawn known_unknown CQs.)"
+        },
+        "claim": {
+          "type": ["string", "null"],
+          "description": "The asserted answer for a known_known; MUST be null for a known_unknown."
+        },
+        "evidence_label": {
+          "type": "string",
+          "enum": ["high", "moderate", "low", "very_low", "ungraded"],
+          "description": "GRADE/CERQual-style label. A claim-about-evidence, NOT ground truth. 'high'/'moderate' carry source-count legality obligations (see acquisition_ledger.py validate)."
+        },
+        "sources": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/source"},
+          "description": "Provenance for the claim. A known_unknown normally has [] sources."
+        },
+        "spawned_by": {
+          "type": ["string", "null"],
+          "description": "probe_id of the SAT probe that generated this CQ, or null if seeded directly. Links unknown-unknown probing to the ledger."
+        },
+        "created": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ISO-8601 date/datetime the entry was created."
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "authority", "recency", "relevance", "independence_group"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "authority": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Authority/expertise of the source (CRAAP Authority)."
+        },
+        "recency": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Currency of the source (CRAAP Currency)."
+        },
+        "relevance": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Topical relevance to the CQ (CRAAP Relevance)."
+        },
+        "independence_group": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Common-origin cluster label. Two sources in the SAME independence_group are NOT independent corroboration (common-source dependence, per argue's independence rule)."
+        }
+      }
+    }
+  }
+}
