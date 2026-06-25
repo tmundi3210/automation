@@ -25,6 +25,35 @@ passes the repo's `validators/specialist_validator.py` (exit 0).
 | **B11** `b11_knowledge_acquisition` | Knowledge acquisition / known-unknown mapping — one CQ-ledger, derived matrices, SAT probe battery | method, evsynth, scholcomm, libarch, (argue) | `acquisition_ledger.py` (evidence-label legality, derived views, probe→CQ) | pass 0 / fail 1 · 10 tests · spec ✓ |
 | **B13** `b13_recursive_planner` | Recursive planning engine — type-first decomposition with proven termination + contract gate | method, loops, argue, appdev | `plan_validator.py` (termination proof, defeater-fallbacks/SPOF, contract composition, fatal-break) | pass 0 / fail 1 · 13 tests · spec ✓ |
 
+## Heavy build (dense-KB-grounded specialists)
+
+Beyond the prompt-only composition specialists above, each active branch now also ships a
+**heavy** specialist (`specialist.heavy.json`) distilled from **three freshly generated dense
+KBs of its own** — the same construction as the validated 28-specialist set (schema 1.3, gated
+by `validators/kb_validator.py --mode dense`). The KBs are built deterministically by
+`_forge/kb_forge.py` from compact content specs (`kb/_src/*.spec.json`); the builder computes
+every derived metric / id / `priority_order` so the gate's formula and reference checks pass by
+construction. `_forge/HELPER_BRIEF.md` is the author contract and `_forge/example_htn_gen.py`
+is a worked exemplar.
+
+Run the heavy gate from repo root:
+
+```
+for f in branches/b1*/kb/*.kb.json; do python3 validators/kb_validator.py "$f" --mode dense --quiet && echo "PASS $f"; done
+python3 validators/specialist_validator.py branches/b13_recursive_planner/specialist.heavy.json
+```
+
+| Branch | Heavy specialist | Grounded in 3 new dense KBs (each `--mode dense` exit 0) |
+|---|---|---|
+| **B10** | `specialist.heavy.json` (`erotetic_heavy`) | `erot__question_semantics`, `frame__operationalization`, `qeval__answer_quality` |
+| **B11** | `specialist.heavy.json` (`epistemics_heavy`) | `kumap__uncertainty_taxonomy`, `acq__evidence_sourcing`, `sat__structured_probing` |
+| **B13** | `specialist.heavy.json` (`planner_heavy`) | `htn__decomposition`, `term__well_foundedness`, `contract__composition_failure` |
+
+All 9 KBs are 19–24 nodes / 32–40 edges / 14 CQs each; **9/9 pass** `kb_validator --mode dense`
+and all 3 heavy specialists pass `specialist_validator.py`. Each branch keeps BOTH its
+composition specialist (`specialist.json`) and its heavy specialist (`specialist.heavy.json`);
+the validated 28-set + `ROUTER.json` stay untouched.
+
 ## Pending (analyzed, not started — see scratchpad/IDEA_BRANCHES_REPORT.md)
 
 Suggested order honors local-first / eval-before-training / no-LoRA-before-failure-data.
