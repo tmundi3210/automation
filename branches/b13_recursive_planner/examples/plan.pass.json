@@ -1,0 +1,163 @@
+{
+  "plan_id": "ship_release_v1",
+  "root": "N0",
+  "ranking_name": "remaining_decomposition_budget",
+  "depth_cap": 4,
+  "nodes": [
+    {
+      "id": "N0",
+      "goal": "Ship release v1 of the service",
+      "type": "release_goal",
+      "arity": 3,
+      "parent": null,
+      "children": ["N1", "N2", "N3"],
+      "ranking_value": 100,
+      "preconditions": ["repo_clean", "scope_frozen"],
+      "postconditions": ["artifact_built", "tests_green", "deployed_to_prod"],
+      "acceptance_tests": [],
+      "fallbacks": [
+        {"id": "FB0", "trigger": "release_blocked_by_unresolved_critical_bug", "action": "cut a hotfix-only scope and reschedule full release"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "decomposed"
+    },
+    {
+      "id": "N1",
+      "goal": "Produce a build artifact",
+      "type": "build_phase",
+      "arity": 2,
+      "parent": "N0",
+      "children": ["N1a", "N1b"],
+      "ranking_value": 60,
+      "preconditions": ["repo_clean"],
+      "postconditions": ["artifact_built"],
+      "acceptance_tests": [],
+      "fallbacks": [
+        {"id": "FB1", "trigger": "build_toolchain_unavailable", "action": "fall back to the pinned container image build"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "decomposed"
+    },
+    {
+      "id": "N1a",
+      "goal": "Compile sources",
+      "type": "compile_task",
+      "arity": 0,
+      "parent": "N1",
+      "children": [],
+      "ranking_value": 20,
+      "preconditions": ["repo_clean"],
+      "postconditions": ["artifact_built"],
+      "acceptance_tests": [
+        {"id": "AT_N1a_1", "desc": "compiler exits 0 and emits the expected binary path"}
+      ],
+      "fallbacks": [
+        {"id": "FB1a", "trigger": "incremental_compile_cache_corrupt", "action": "purge cache and run a clean full compile"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "ready"
+    },
+    {
+      "id": "N1b",
+      "goal": "Sign the artifact with the release key",
+      "type": "sign_task",
+      "arity": 0,
+      "parent": "N1",
+      "children": [],
+      "ranking_value": 15,
+      "preconditions": ["artifact_built"],
+      "postconditions": ["artifact_built"],
+      "acceptance_tests": [
+        {"id": "AT_N1b_1", "desc": "signature verifies against the published public key"}
+      ],
+      "fallbacks": [
+        {"id": "FB1b", "trigger": "primary_hsm_signer_unavailable", "action": "promote the offline backup signing key from the break-glass procedure"}
+      ],
+      "single_point_of_failure": true,
+      "spof_reason": "the hardware signing key (HSM) is the sole signing authority and a single dependency; the break-glass backup-key fallback bounds the risk but the node remains the only signer",
+      "status": "ready"
+    },
+    {
+      "id": "N2",
+      "goal": "Run the test suite to green",
+      "type": "test_phase",
+      "arity": 2,
+      "parent": "N0",
+      "children": ["N2a", "N2b"],
+      "ranking_value": 55,
+      "preconditions": ["artifact_built"],
+      "postconditions": ["tests_green"],
+      "acceptance_tests": [],
+      "fallbacks": [
+        {"id": "FB2", "trigger": "flaky_test_infra_outage", "action": "rerun on the backup CI pool with quarantine list"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "decomposed"
+    },
+    {
+      "id": "N2a",
+      "goal": "Run unit tests",
+      "type": "test_task",
+      "arity": 0,
+      "parent": "N2",
+      "children": [],
+      "ranking_value": 18,
+      "preconditions": ["artifact_built"],
+      "postconditions": ["tests_green"],
+      "acceptance_tests": [
+        {"id": "AT_N2a_1", "desc": "unit suite passes with coverage >= threshold"}
+      ],
+      "fallbacks": [
+        {"id": "FB2a", "trigger": "single_unit_test_flake", "action": "retry the failing test up to 3 times with backoff before failing the phase"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "ready"
+    },
+    {
+      "id": "N2b",
+      "goal": "Run integration tests",
+      "type": "test_task",
+      "arity": 0,
+      "parent": "N2",
+      "children": [],
+      "ranking_value": 17,
+      "preconditions": ["artifact_built"],
+      "postconditions": ["tests_green"],
+      "acceptance_tests": [
+        {"id": "AT_N2b_1", "desc": "integration suite passes against an ephemeral environment"}
+      ],
+      "fallbacks": [
+        {"id": "FB2b", "trigger": "ephemeral_env_provisioning_failed", "action": "fall back to the shared staging environment with a lock"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "ready"
+    },
+    {
+      "id": "N3",
+      "goal": "Deploy the signed artifact to production",
+      "type": "deploy_phase",
+      "arity": 0,
+      "parent": "N0",
+      "children": [],
+      "ranking_value": 50,
+      "preconditions": ["artifact_built", "tests_green"],
+      "postconditions": ["deployed_to_prod"],
+      "acceptance_tests": [
+        {"id": "AT_N3_1", "desc": "health checks pass on all canary instances post-deploy"},
+        {"id": "AT_N3_2", "desc": "rollback dry-run succeeds before promotion"}
+      ],
+      "fallbacks": [
+        {"id": "FB3", "trigger": "canary_health_check_fails", "action": "automatic rollback to the previous known-good revision"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "ready"
+    }
+  ]
+}
