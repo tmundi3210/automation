@@ -5,6 +5,14 @@ Each active branch composes existing **gate-passed** specialists (`specialists/*
 into a prompt-only specialist plus one deterministic stdlib connective artifact (validator/tool),
 kept here so the validated 28-specialist set + `ROUTER.json` stay untouched until a branch is promoted.
 
+> **Handoff + how to use:** see **[`HANDOFF.md`](HANDOFF.md)** for the full pipeline (build →
+> gate → distill → run a specialist in prompt-only mode) and a command cheat-sheet.
+>
+> **Heavy track (done):** B10/B11/B13 now each also have a **heavy** specialist
+> (`specialist.heavy.json`) grounded in its own **3 freshly generated dense KBs** (9 KBs total,
+> all passing `kb_validator --mode dense`), built via `_forge/kb_forge.py` — same construction
+> as the original 28. A worked self-application run is in `_forge/demo/self_application_run.md`.
+
 Run a branch's gate from the repo root, e.g.:
 
 ```
