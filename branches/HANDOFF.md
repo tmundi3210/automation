@@ -26,9 +26,13 @@ bottom once; the command cheat-sheet is at the end.
   (ingest/understand/link/generate public info + a self-testing brain) produced **5 more heavy
   specialists from 15 freshly generated dense KBs** (`salience_heavy`, `signal_heavy`,
   `creative_heavy`, `eval_heavy`, `compliance_heavy` — all gate-passing), an information-node
-  schema, and a controller loop wiring all 8 specialists together. Read
-  `branches/b60_content_intelligence/README.md` → `SCOPE.md` → `BRAIN.md` → `RUN.md`. This is the
-  best concrete example of using the pipeline end-to-end on a new idea.
+  schema, and a controller loop wiring all 8 specialists together. The idea was then read by a
+  10-specialist panel (`PANEL.md` critical, `BUILD.md` constructive), and the BUILD v1 MVP turned
+  into **offline-runnable code** in `b60_content_intelligence/scaffold/` (stdlib-only, deterministic;
+  `run_pipeline.py` ships a clearance-passing brief + a leakage-controlled verdict; `run_all.sh`
+  smoke-tests 17 subsystems). Read `branches/b60_content_intelligence/README.md` → `SCOPE.md` →
+  `BRAIN.md` → `RUN.md` → `PANEL.md` → `BUILD.md` → `scaffold/`. This is the best concrete example
+  of using the pipeline end-to-end on a new idea — from idea to running scaffold.
 - These live under `branches/` in isolation; the validated 28-specialist main set and
   `specialists/ROUTER.json` are untouched. Wiring into the main router is optional (§8).
 

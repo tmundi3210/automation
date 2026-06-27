@@ -17,6 +17,7 @@ briefs for downstream operators and gates them.
 | **`RUN.md`** | Phase 3 — a worked end-to-end run of one concrete seed through all 5 specialists (the gate BLOCKs; the evaluator returns NO-GO). |
 | **`PANEL.md`** | The whole idea read by a 10-specialist panel (5 new + orch/ir/marketing/reason/psych) — the critical "should you / can you" verdict. |
 | **`BUILD.md`** | The same 10-specialist panel re-run **constructively** — the idea built forward into a buildable spec with a v1 MVP + phased roadmap. |
+| **`scaffold/`** | The v1 MVP **made to run** — offline, deterministic, stdlib-only code for the whole spine; `run_pipeline.py` ships a clearance-passing brief + returns a leakage-controlled verdict. |
 | `schema/information_node.schema.json` | The closed machine-facing record per ingested item (the "schema to think first"). |
 | `demo/*_findings.{json,md}` | Raw structured specialist output (scope, run, panel, build-forward). |
 

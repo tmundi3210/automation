@@ -149,3 +149,19 @@ a defined MVP** — and the safety pieces became *part of the build*, not a wall
 `compliance` is a path-to-yes with green lanes, `psych` is an ethical-resonance playbook with safe
 lanes. The fastest way to make it real is the v1 slice above: prove one end-to-end run that ships a
 clearance-passing brief about a safe-lane subject and returns one honest eval verdict — then optimize.
+
+## This is now running code
+
+The v1 MVP above is realized as an **offline, deterministic, stdlib-only scaffold** in
+[`scaffold/`](scaffold/) — every stage of the spine runs on CPU with a mock backend; the real
+model/data paths are marked hook points. One command runs both MVP deliverables:
+
+```bash
+python3 branches/b60_content_intelligence/scaffold/run_pipeline.py   # (a) brief + (b) verdict
+bash    branches/b60_content_intelligence/scaffold/run_all.sh        # smoke-test 17 subsystems
+```
+
+It currently **(a)** emits a clearance-passing safe-lane brief (signed disclosure token, schema-
+valid nodes) to the outbox, and **(b)** returns an honest **NO-GO** (medium-tier bet confirmed by a
+bootstrap CI that excludes zero, but the system doesn't beat the human-curated baseline). The loop
+closes. See `scaffold/README.md` and `scaffold/ARCHITECTURE_DECISION_RECORD.md`.

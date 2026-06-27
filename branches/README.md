@@ -13,11 +13,13 @@ kept here so the validated 28-specialist set + `ROUTER.json` stay untouched unti
 > all passing `kb_validator --mode dense`), built via `_forge/kb_forge.py` — same construction
 > as the original 28. A worked self-application run is in `_forge/demo/self_application_run.md`.
 >
-> **B60 — Content-Intelligence Engine (heavy scaffold, done):** a full application of the pipeline
-> to a real idea (scrape/understand/link/generate public info + a self-testing brain). **5 new heavy
-> specialists grounded in 15 freshly generated dense KBs** (all gate-passing) + an information-node
-> schema + a controller loop. See **[`b60_content_intelligence/`](b60_content_intelligence/README.md)**
-> (`SCOPE.md` → `BRAIN.md` → `RUN.md`).
+> **B60 — Content-Intelligence Engine (heavy scaffold + runnable v1, done):** a full application of
+> the pipeline to a real idea (scrape/understand/link/generate public info + a self-testing brain).
+> **5 new heavy specialists grounded in 15 freshly generated dense KBs** (all gate-passing) + an
+> information-node schema + a controller loop, then the v1 MVP turned into **offline-runnable code**
+> (`scaffold/run_pipeline.py` ships a clearance-passing brief + a leakage-controlled verdict). See
+> **[`b60_content_intelligence/`](b60_content_intelligence/README.md)**
+> (`SCOPE.md` → `BRAIN.md` → `RUN.md` → `PANEL.md` → `BUILD.md` → `scaffold/`).
 
 Run a branch's gate from the repo root, e.g.:
 
@@ -86,8 +88,14 @@ dense`; all 5 specialists pass `specialist_validator.py` (independently re-gated
 | `compliance_heavy` | legal gate (fail-closed) | `pubrights__likeness_voice`, `defamation__false_light`, `platform_tos__synthetic_disclosure` |
 
 Docs: `b60_content_intelligence/SCOPE.md` (findings + plan) → `BRAIN.md` (controller loop) →
-`RUN.md` (worked seed run) + `schema/information_node.schema.json`. The five specialists are the
-"brain"; `planner/erotetic/epistemics_heavy` are the reasoning core that frames and plans.
+`RUN.md` (worked seed run) → `PANEL.md` (critical 10-specialist read) → `BUILD.md` (constructive
+build-forward spec) + `schema/information_node.schema.json`. The five specialists are the "brain";
+`planner/erotetic/epistemics_heavy` are the reasoning core that frames and plans.
+
+The v1 MVP from `BUILD.md` is now **running code** in `b60_content_intelligence/scaffold/` —
+offline, deterministic, stdlib-only. `python3 .../scaffold/run_pipeline.py` ships a clearance-passing
+safe-lane brief to an outbox **and** returns a leakage-controlled eval verdict (currently NO-GO);
+`bash .../scaffold/run_all.sh` smoke-tests all 17 subsystems. See `scaffold/README.md`.
 
 ## Pending (analyzed, not started — see scratchpad/IDEA_BRANCHES_REPORT.md)
 
