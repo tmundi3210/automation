@@ -15,8 +15,10 @@ briefs for downstream operators and gates them.
 | **`SCOPE.md`** | Phase 1 — the idea typed and run through the 3 existing heavy specialists; the 7 false-presupposition findings; the build plan. |
 | **`BRAIN.md`** | Phase 3 — the controller that wires the 5 new + 3 existing specialists into one build→link→signal→generate→gate→test→revise loop. |
 | **`RUN.md`** | Phase 3 — a worked end-to-end run of one concrete seed through all 5 specialists (the gate BLOCKs; the evaluator returns NO-GO). |
+| **`PANEL.md`** | The whole idea read by a 10-specialist panel (5 new + orch/ir/marketing/reason/psych) — the critical "should you / can you" verdict. |
+| **`BUILD.md`** | The same 10-specialist panel re-run **constructively** — the idea built forward into a buildable spec with a v1 MVP + phased roadmap. |
 | `schema/information_node.schema.json` | The closed machine-facing record per ingested item (the "schema to think first"). |
-| `demo/scope_findings.json`, `demo/run_findings.json` | Raw structured specialist output. |
+| `demo/*_findings.{json,md}` | Raw structured specialist output (scope, run, panel, build-forward). |
 
 ## The 5 heavy specialists (each grounded in 3 dense KBs, all gate-passing)
 
