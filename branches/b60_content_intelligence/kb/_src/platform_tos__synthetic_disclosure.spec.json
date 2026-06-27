@@ -1,0 +1,3338 @@
+{
+  "domain": "platform_tos__synthetic_disclosure",
+  "domain_label": "Platform ToS & Synthetic-Media Disclosure Gate",
+  "purpose": "convert_an_emit_action_into_required_in_band_synthetic_media_disclosure_tokens_and_enforce_platform_tos_failing_closed_at_the_downstream_handoff",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "scope is the disclosure/ToS gate over an emit-action at a downstream handoff; this is not legal advice",
+    "disclosure is mandatory and must travel in-band so the downstream session cannot strip it",
+    "the downstream handoff is a single point of failure that defaults to block on any unmet obligation or unverifiable token",
+    "the gate never strips or downgrades a disclosure to allow an emit through"
+  ],
+  "exclusions": [
+    "legal advice or definitive statutory interpretation (escalate to qualified counsel)",
+    "right-of-publicity / likeness-and-voice consent screening (delegated to pubrights__likeness_voice)",
+    "detection of whether content is synthetic from pixels alone (delegated to a detector); this gate consumes a generation-path classification",
+    "operator execution of the allowed emit and downstream content moderation appeals"
+  ],
+  "source_description": "heuristic prior estimates for a synthetic-media disclosure and platform-ToS gate, grounded in the EU AI Act, the C2PA/Content Credentials provenance standard, major platform synthetic-media policies, and India's IT Rules and deepfake advisories; no supplied dataset",
+  "source_citation": "EU Regulation (EU) 2024/1689 (AI Act) Article 50 transparency obligations for AI-generated/manipulated content and deep fakes; C2PA Technical Specification (Coalition for Content Provenance and Authenticity) and Content Credentials; Meta, YouTube and TikTok synthetic/manipulated/AI-generated content disclosure policies; India Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules 2021 and MeitY 2023 deepfake advisories",
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "How is the emit-action captured and how are the destination platform's ToS constraints resolved?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "EMIT_INTAKE normalizes the emit unit and PLATFORM_TOS resolves binding ToS constraints",
+      "covered_by": [
+        "EMIT_INTAKE",
+        "PLATFORM_TOS"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How is the artifact classified as synthetic/manipulated versus authentic, and how is its source-license provenance traced?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SYNTHETIC_MEDIA_CLASSIFY sets the generation path and SCRAPE_LICENSE traces redistribution license",
+      "covered_by": [
+        "SYNTHETIC_MEDIA_CLASSIFY",
+        "SCRAPE_LICENSE",
+        "PLATFORM_TOS"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What statutory AI-content disclosure obligation attaches to a synthetic artifact, and how does audience context modify it?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SYNTHETIC_MEDIA_DISCLOSURE applies EU AI Act Art 50; AUDIENCE_CONTEXT and SYNTHETIC_MEDIA_CLASSIFY set the trigger",
+      "covered_by": [
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "SYNTHETIC_MEDIA_CLASSIFY",
+        "AUDIENCE_CONTEXT"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How are redistribution and reference-only uses distinguished, and how does provenance gate unlicensed source media?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "REDISTRIBUTION_VS_REFERENCE and SCRAPE_LICENSE/CONTENT_PROVENANCE gate unlicensed republication",
+      "covered_by": [
+        "REDISTRIBUTION_VS_REFERENCE",
+        "SCRAPE_LICENSE",
+        "CONTENT_PROVENANCE"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How are election-period and minor-audience escalations triggered from audience context?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "AUDIENCE_CONTEXT feeds ELECTION_INTEGRITY and AGE_PLATFORM_POLICY escalations",
+      "covered_by": [
+        "AUDIENCE_CONTEXT",
+        "ELECTION_INTEGRITY",
+        "AGE_PLATFORM_POLICY"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How do statutory disclosure and platform manipulated-media policy combine for the same artifact?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "SYNTHETIC_MEDIA_DISCLOSURE and MANIPULATED_MEDIA_POLICY co-apply, platform possibly stricter",
+      "covered_by": [
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "MANIPULATED_MEDIA_POLICY"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is the full per-jurisdiction and per-platform labeling superset assembled and reconciled?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "LABELING_REGIMES unions statute and platform rules; MANIPULATED_MEDIA_POLICY and REDISTRIBUTION_VS_REFERENCE feed it",
+      "covered_by": [
+        "LABELING_REGIMES",
+        "MANIPULATED_MEDIA_POLICY",
+        "REDISTRIBUTION_VS_REFERENCE"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How does C2PA provenance carry the disclosure, and how is the manifest made tamper-evident?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "CONTENT_PROVENANCE supplies the manifest; PROVENANCE_SIGNING signs it; IN_BAND_DISCLOSURE_TOKEN carries it",
+      "covered_by": [
+        "CONTENT_PROVENANCE",
+        "PROVENANCE_SIGNING",
+        "IN_BAND_DISCLOSURE_TOKEN"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is the applicable jurisdiction set resolved and aggregated into the obligation set?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "JURISDICTION_RESOLUTION scopes jurisdictions feeding LABELING_REGIMES and DISCLOSURE_OBLIGATION_SET",
+      "covered_by": [
+        "JURISDICTION_RESOLUTION",
+        "LABELING_REGIMES",
+        "DISCLOSURE_OBLIGATION_SET"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How are election and minor escalations scoped to the right jurisdictions and audiences?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "JURISDICTION_RESOLUTION and AUDIENCE_CONTEXT scope ELECTION_INTEGRITY and AGE_PLATFORM_POLICY",
+      "covered_by": [
+        "ELECTION_INTEGRITY",
+        "AGE_PLATFORM_POLICY",
+        "JURISDICTION_RESOLUTION"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How is the disclosure made in-band and non-strippable, and bound to a downstream slot?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "IN_BAND_DISCLOSURE_TOKEN, PROVENANCE_SIGNING and DISCLOSURE_SLOT_BINDING make disclosure travel in-band to a confirmed slot",
+      "covered_by": [
+        "IN_BAND_DISCLOSURE_TOKEN",
+        "PROVENANCE_SIGNING",
+        "DISCLOSURE_SLOT_BINDING"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How are all obligations aggregated and bound before the handoff?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "DISCLOSURE_OBLIGATION_SET aggregates obligations and DISCLOSURE_SLOT_BINDING binds them to slots",
+      "covered_by": [
+        "DISCLOSURE_OBLIGATION_SET",
+        "DISCLOSURE_SLOT_BINDING",
+        "FAIL_CLOSED_AT_HANDOFF"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "What happens at the fail-closed handoff SPOF when an obligation is unmet or a token may not survive?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "FAIL_CLOSED_AT_HANDOFF blocks the emit and HANDOFF_GATE_VERIFICATION verifies token survival",
+      "covered_by": [
+        "FAIL_CLOSED_AT_HANDOFF",
+        "HANDOFF_GATE_VERIFICATION"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "How is the gate decision audited and token survival verified at the destination?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "HANDOFF_GATE_VERIFICATION re-reads the disclosure and records the decision audit",
+      "covered_by": [
+        "HANDOFF_GATE_VERIFICATION"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "synthetic_media",
+      "definition": "image, audio, or video that is artificially generated or substantially manipulated by AI, as opposed to captured-real unaltered media",
+      "synonyms": [
+        "ai_generated_media",
+        "generative_media"
+      ],
+      "not_same_as": [
+        "captured_real_media"
+      ],
+      "used_by_nodes": [
+        "SYNTHETIC_MEDIA_CLASSIFY",
+        "SYNTHETIC_MEDIA_DISCLOSURE"
+      ]
+    },
+    {
+      "term": "deep_fake",
+      "definition": "synthetic or manipulated media that appreciably resembles real persons, objects, places, or events and would falsely appear authentic, the trigger term used in EU AI Act Art 50",
+      "synonyms": [
+        "deepfake"
+      ],
+      "not_same_as": [
+        "benign_ai_edit"
+      ],
+      "used_by_nodes": [
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "MANIPULATED_MEDIA_POLICY"
+      ]
+    },
+    {
+      "term": "in_band_disclosure",
+      "definition": "a disclosure carried inside the artifact itself (metadata, C2PA assertion, watermark) so it travels with the content rather than as a separable note",
+      "synonyms": [
+        "embedded_disclosure"
+      ],
+      "not_same_as": [
+        "out_of_band_caption"
+      ],
+      "used_by_nodes": [
+        "IN_BAND_DISCLOSURE_TOKEN",
+        "DISCLOSURE_SLOT_BINDING"
+      ]
+    },
+    {
+      "term": "c2pa",
+      "definition": "the Coalition for Content Provenance and Authenticity standard for a tamper-evident, signed provenance manifest bound to a media asset, surfaced to users as Content Credentials",
+      "synonyms": [
+        "content_credentials",
+        "content_provenance_standard"
+      ],
+      "not_same_as": [
+        "visual_watermark_only"
+      ],
+      "used_by_nodes": [
+        "CONTENT_PROVENANCE",
+        "PROVENANCE_SIGNING"
+      ]
+    },
+    {
+      "term": "redistribution",
+      "definition": "republishing the actual media bytes to a destination, as distinct from referencing or linking to them",
+      "synonyms": [
+        "republication",
+        "re_upload"
+      ],
+      "not_same_as": [
+        "reference_only"
+      ],
+      "used_by_nodes": [
+        "REDISTRIBUTION_VS_REFERENCE",
+        "SCRAPE_LICENSE"
+      ]
+    },
+    {
+      "term": "fail_closed",
+      "definition": "a default that blocks the protected action whenever any required condition is unmet or uncertain, rather than allowing it",
+      "synonyms": [
+        "default_deny",
+        "block_on_uncertainty"
+      ],
+      "not_same_as": [
+        "fail_open"
+      ],
+      "used_by_nodes": [
+        "FAIL_CLOSED_AT_HANDOFF",
+        "DISCLOSURE_OBLIGATION_SET"
+      ]
+    },
+    {
+      "term": "handoff_spof",
+      "definition": "the single downstream handoff point at which the disclosure gate is enforced and whose failure determines the whole pipeline's safety",
+      "synonyms": [
+        "single_point_of_failure",
+        "handoff_gate"
+      ],
+      "not_same_as": [
+        "redundant_gate"
+      ],
+      "used_by_nodes": [
+        "FAIL_CLOSED_AT_HANDOFF",
+        "HANDOFF_GATE_VERIFICATION"
+      ]
+    },
+    {
+      "term": "labeling_regime",
+      "definition": "a statutory or platform rule set that mandates a particular synthetic-media disclosure label for a given jurisdiction or platform",
+      "synonyms": [
+        "disclosure_regime"
+      ],
+      "not_same_as": [
+        "voluntary_label"
+      ],
+      "used_by_nodes": [
+        "LABELING_REGIMES",
+        "JURISDICTION_RESOLUTION"
+      ]
+    },
+    {
+      "term": "scrape_sourced",
+      "definition": "media obtained by scraping a platform without a redistribution license, which must not be republished",
+      "synonyms": [
+        "unlicensed_scrape"
+      ],
+      "not_same_as": [
+        "owned_or_licensed_source"
+      ],
+      "used_by_nodes": [
+        "SCRAPE_LICENSE",
+        "REDISTRIBUTION_VS_REFERENCE"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "EMIT_INTAKE",
+      "topic": "emit_action_capture_and_normalization",
+      "definition": "Capture and normalize the emit-action as a fixed unit: the concrete artifact about to be published downstream, its generation path (fully synthetic, AI-edited, or captured-real), the destination platform/session, and the asserted publication jurisdiction(s), so every later disclosure and ToS test resolves against one frozen unit of analysis.",
+      "group": "foundations",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "intake_reviewer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "intake schema or emit-action definition changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "artifact + generation-path description",
+          "destination platform/session",
+          "asserted jurisdiction(s)",
+          "reach/age hints"
+        ],
+        "excluded": [
+          "legal advice",
+          "final allow/block decision",
+          "operator execution of the emit"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A normalized emit unit makes generation-path, platform, and jurisdiction tests resolve against one fixed artifact rather than a moving target",
+          "example": "'a fully AI-generated portrait video, posted to TikTok, viewers in the EU' is frozen before any disclosure rule fires"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A thin intake (unknown generation path, vague destination) silently weakens every downstream disclosure test",
+          "example": "an artifact tagged 'maybe edited' with no platform cannot be screened, only escalated"
+        }
+      ],
+      "failure_modes": [
+        "generation path left unknown yet treated as captured-real",
+        "destination platform omitted so the wrong ToS set applies",
+        "jurisdiction omitted so the wrong labeling regime is applied"
+      ],
+      "acceptance_tests": [
+        "emit unit records a generation path, a destination platform/session, and at least one asserted jurisdiction"
+      ],
+      "revisit_triggers": [
+        "intake schema revised",
+        "a new generation path (e.g. real-time avatar) appears"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "PLATFORM_TOS",
+      "topic": "platform_terms_of_service_constraints",
+      "definition": "Resolve the destination (and any source) platform's Terms of Service constraints that bind this emit: scraping limits on how source media was obtained, redistribution and republication permissions, API/automation rules, and the platform's own synthetic/manipulated-media policy hooks, so platform-level prohibitions are known before a disclosure plan is built.",
+      "group": "foundations",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "platform_policy_specialist"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "EMIT_INTAKE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.74,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.55
+        ],
+        "update_signal": "a destination/source platform updates its ToS or developer policy"
+      },
+      "scope_boundary": {
+        "included": [
+          "scraping/collection limits",
+          "redistribution/republication permission",
+          "API and automation rules",
+          "platform synthetic-media policy hooks"
+        ],
+        "excluded": [
+          "statutory labeling law",
+          "the in-band token mechanism",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Reading ToS first means a redistribution prohibition or scraping ban can block an emit before disclosure work is wasted on it",
+          "example": "TikTok and YouTube ToS forbid redistributing other users' content without permission, independent of any AI label"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "ToS are unilateral, frequently revised, and per-platform, so a cached snapshot can silently diverge from the live policy",
+          "example": "a platform tightens its automation policy overnight and a previously allowed bulk emit becomes a violation"
+        }
+      ],
+      "failure_modes": [
+        "stale ToS snapshot applied to a live emit",
+        "source-platform scraping limits ignored because only the destination was checked",
+        "API rate/automation rule treated as advisory"
+      ],
+      "acceptance_tests": [
+        "the destination platform's redistribution, scraping, automation, and synthetic-media policy clauses relevant to this emit are identified and dated"
+      ],
+      "revisit_triggers": [
+        "a platform ToS or developer-policy version changes",
+        "a redistribution-permission call is disputed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "SYNTHETIC_MEDIA_CLASSIFY",
+      "topic": "synthetic_or_manipulated_media_classification",
+      "definition": "Classify the artifact's generation path on the spectrum that triggers disclosure: fully AI-generated, AI-substantially-edited/altered, AI-assisted-but-authentic, or captured-real-unaltered; this classification is the switch that decides whether any synthetic-media disclosure obligation exists at all.",
+      "group": "classification",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "synthetic_media_classifier"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "EMIT_INTAKE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.8,
+        "user_value": 0.8,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.24,
+          0.6
+        ],
+        "update_signal": "the AI-content definition or manipulation threshold shifts"
+      },
+      "scope_boundary": {
+        "included": [
+          "fully-synthetic detection",
+          "substantial-edit / alteration threshold",
+          "AI-assisted-but-authentic carve-out",
+          "captured-real classification"
+        ],
+        "excluded": [
+          "the legal labeling requirement itself",
+          "provenance signing",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An explicit four-way classification makes 'does disclosure apply?' a recorded decision rather than an implicit assumption, matching the EU AI Act's 'artificially generated or manipulated' trigger",
+          "example": "an AI-generated voiceover is classed fully-synthetic; a colour-graded real clip is captured-real and triggers no AI label"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "The synthetic/authentic boundary is genuinely fuzzy for AI-assisted edits, and an over-broad threshold floods authentic media with needless labels",
+          "example": "mild generative denoising of a real photo may or may not cross the 'substantially manipulated' line"
+        }
+      ],
+      "failure_modes": [
+        "substantial AI manipulation mis-classified as authentic, suppressing a required label",
+        "trivial AI assistance over-classified as synthetic, mislabeling authentic media",
+        "deepfake of a real person not recognized as manipulated media"
+      ],
+      "acceptance_tests": [
+        "a generation-path class (fully-synthetic, substantially-edited, AI-assisted-authentic, captured-real) is recorded with the evidence that placed it there"
+      ],
+      "revisit_triggers": [
+        "the AI-content / 'substantially manipulated' definition changes",
+        "a borderline AI-edit is mis-classified in review"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "SCRAPE_LICENSE",
+      "topic": "scrape_provenance_and_redistribution_license",
+      "definition": "Trace how the source media was obtained and whether it carries a redistribution license: SCRAPE-sourced or otherwise unlicensed third-party media must not be republished, so the emit is gated on having either an original/owned source or an explicit redistribution license, independent of any AI label.",
+      "group": "classification",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "rights_provenance_specialist"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "PLATFORM_TOS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.8,
+        "user_value": 0.7,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.22,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.24,
+          0.6
+        ],
+        "update_signal": "the source-provenance signal or licensing model changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "source acquisition path (owned / licensed / scraped)",
+          "redistribution-license presence",
+          "third-party rights in the underlying media"
+        ],
+        "excluded": [
+          "statutory AI labeling",
+          "the in-band token format",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Gating on redistribution license catches unlicensed-republish violations that a synthetic-media label would never surface, since a perfectly labeled AI edit of scraped footage is still an unlicensed republish",
+          "example": "an AI restyle of a scraped news clip is blocked on the scrape-license gate even though its AI label is correct"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Provenance of source media is often unverifiable at emit time, so a conservative gate blocks legitimate fair-use or owned material lacking a paper trail",
+          "example": "a creator's own footage with no stored license record is treated as unlicensed"
+        }
+      ],
+      "failure_modes": [
+        "scraped/unlicensed source republished under a correct AI label",
+        "owned material blocked for lack of a license record",
+        "license assumed from platform availability"
+      ],
+      "acceptance_tests": [
+        "the source is recorded as owned, explicitly licensed for redistribution, or flagged as scraped/unlicensed-and-non-republishable"
+      ],
+      "revisit_triggers": [
+        "the provenance/licensing model changes",
+        "a scraped-source republish is detected post-emit"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "AUDIENCE_CONTEXT",
+      "topic": "audience_reach_and_age_context",
+      "definition": "Establish the audience context that escalates obligations: estimated reach, whether the content is directed to or likely to reach minors, and the topical sensitivity (political, health, financial), since age and reach determine which heightened platform and statutory rules attach to the same artifact.",
+      "group": "classification",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "audience_policy_analyst"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "EMIT_INTAKE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.72,
+        "user_value": 0.74,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.54
+        ],
+        "update_signal": "audience-context signals or the minor-directed standard change"
+      },
+      "scope_boundary": {
+        "included": [
+          "reach estimate",
+          "minor-directed / minor-likely audience signal",
+          "topical sensitivity (political/health/financial)"
+        ],
+        "excluded": [
+          "the specific minor-policy rules",
+          "election-period rules",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Fixing audience context lets the gate apply minor and election escalations to the right emits instead of all of them",
+          "example": "an AI clip directed to a kids' channel pulls in stricter platform minor rules than the same clip on a general feed"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Reach and minor-directedness are predictions, not facts, at emit time, so the context can be wrong in either direction",
+          "example": "a niche post unexpectedly goes viral into an audience the gate never anticipated"
+        }
+      ],
+      "failure_modes": [
+        "minor-directed content not flagged for heightened policy",
+        "reach over-estimated, applying needless escalations",
+        "political topical sensitivity missed before an election window"
+      ],
+      "acceptance_tests": [
+        "an audience context (reach band, minor-likelihood, topical sensitivity) is recorded for the emit"
+      ],
+      "revisit_triggers": [
+        "the minor-directed standard changes",
+        "an emit reaches a materially different audience than predicted"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "SYNTHETIC_MEDIA_DISCLOSURE",
+      "topic": "mandatory_ai_content_disclosure",
+      "definition": "Apply the mandatory AI-content transparency obligation: under EU AI Act Article 50, deployers of systems that generate or manipulate image, audio, or video constituting deep fakes must disclose that the content is artificially generated or manipulated, in a clear and distinguishable way; this is the central required-label obligation the gate enforces.",
+      "group": "regime",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "ai_act_transparency_specialist"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "SYNTHETIC_MEDIA_CLASSIFY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.95,
+        "business_value": 0.82,
+        "user_value": 0.82,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.62,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "EU AI Act Art 50 transparency scope or guidance changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "deep-fake disclosure obligation",
+          "clear-and-distinguishable labeling requirement",
+          "machine-readable marking expectation"
+        ],
+        "excluded": [
+          "the per-platform label UI",
+          "provenance signing internals",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Grounding the core obligation in EU AI Act Art 50 gives the gate a concrete statutory anchor: deep-fake content must be disclosed as artificially generated or manipulated",
+          "example": "Art 50(4) requires deployers to disclose AI-generated or manipulated image/audio/video that is a deep fake"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Art 50 carries exceptions (assistive editing, law-enforcement, artistic/satirical works with proportionate disclosure) that a blunt always-label rule mis-handles",
+          "example": "an evidently artistic synthetic work needs disclosure that does not spoil the work, not a blanket banner"
+        }
+      ],
+      "failure_modes": [
+        "a required deep-fake disclosure omitted entirely",
+        "disclosure present but not clear-and-distinguishable",
+        "artistic/satirical proportionate-disclosure exception ignored or over-applied"
+      ],
+      "acceptance_tests": [
+        "a clear-and-distinguishable AI-content disclosure obligation is recorded for any artifact classed synthetic/manipulated, with any applicable exception noted"
+      ],
+      "revisit_triggers": [
+        "EU AI Act Art 50 transparency guidance changes",
+        "a disclosure is found not to be clear-and-distinguishable in review"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MANIPULATED_MEDIA_POLICY",
+      "topic": "platform_manipulated_media_policy",
+      "definition": "Apply destination-platform manipulated-media and synthetic-content policies (Meta, YouTube, TikTok) which independently require labeling or prohibit certain altered/deepfake media; these platform rules co-exist with statute and can be stricter, so the emit must satisfy the platform policy even where statute is silent.",
+      "group": "regime",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "platform_policy_specialist"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "SYNTHETIC_MEDIA_CLASSIFY",
+        "PLATFORM_TOS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.8,
+        "user_value": 0.76,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.58,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.22,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "a platform's synthetic/manipulated-media policy version changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "platform AI-content label requirement",
+          "prohibited-deepfake categories",
+          "altered-media context rules"
+        ],
+        "excluded": [
+          "statutory labeling text",
+          "the in-band token format",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Honoring platform policy catches removals/penalties statute would not predict, since platforms label and demote unlabeled AI media on their own terms",
+          "example": "YouTube requires creators to disclose realistic altered or synthetic content; TikTok requires labeling AI-generated content and auto-labels C2PA-marked uploads; Meta labels AI-generated imagery"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Platform policies are uneven, fast-changing, and sometimes vaguer than statute, so encoding them risks both over- and under-blocking",
+          "example": "one platform's 'realistic' threshold differs from another's, and the same artifact is treated differently per destination"
+        }
+      ],
+      "failure_modes": [
+        "destination platform's mandatory AI label not satisfied",
+        "a platform-prohibited deepfake category emitted",
+        "altered-media policy treated as identical across platforms"
+      ],
+      "acceptance_tests": [
+        "the destination platform's manipulated/synthetic-media labeling or prohibition rules for this artifact are identified and reconciled with statute"
+      ],
+      "revisit_triggers": [
+        "a platform synthetic-media policy changes",
+        "a platform demotes/removes a correctly-statute-labeled emit"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CONTENT_PROVENANCE",
+      "topic": "c2pa_content_credentials_provenance",
+      "definition": "Use C2PA / Content Credentials as the provenance substrate: a tamper-evident, cryptographically signed manifest bound to the asset that records its creation and edit history (including whether AI tools were used), giving the disclosure a verifiable, machine-readable carrier rather than a strippable visual caption.",
+      "group": "regime",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "provenance_engineer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "SYNTHETIC_MEDIA_CLASSIFY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.78,
+        "user_value": 0.74,
+        "technical_complexity": 0.74,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.6,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.24,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.26,
+          0.62
+        ],
+        "update_signal": "the C2PA spec or Content Credentials adoption profile changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "signed provenance manifest",
+          "creation/edit assertions",
+          "AI-tool-use assertion",
+          "binding of manifest to asset bytes"
+        ],
+        "excluded": [
+          "statutory obligation text",
+          "the platform label UI",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "C2PA gives disclosure a tamper-evident, signed carrier whose alteration is detectable, which a visual caption can never offer",
+          "example": "a C2PA manifest records that a generative-fill tool edited the image, and any later tampering breaks the signature"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "C2PA manifests can be stripped by re-encoding or screenshotting, and verification depends on platform support, so provenance is necessary but not self-sufficient",
+          "example": "a screenshot of a credentialed image drops the manifest, defeating provenance unless a durable in-band mark also exists"
+        }
+      ],
+      "failure_modes": [
+        "provenance manifest absent on a synthetic asset",
+        "manifest present but not bound to the asset bytes",
+        "provenance relied on where the destination cannot verify it"
+      ],
+      "acceptance_tests": [
+        "a synthetic/manipulated asset carries a C2PA/Content Credentials manifest binding creation and AI-edit assertions to the asset, with a recorded stripping-risk assessment"
+      ],
+      "revisit_triggers": [
+        "the C2PA spec or adoption profile changes",
+        "a credentialed asset is observed stripped of its manifest"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "LABELING_REGIMES",
+      "topic": "per_jurisdiction_and_per_platform_label_set",
+      "definition": "Assemble the applicable labeling regime set: the union of statutory requirements per asserted jurisdiction (EU AI Act, India IT Rules 2021 and the 2023 deepfake advisories, plus any state synthetic-media laws) and per-destination-platform policy, so the gate reasons over the full superset of labels the emit must carry.",
+      "group": "regime",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "multi_jurisdiction_policy_analyst"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "MANIPULATED_MEDIA_POLICY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.6,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "a jurisdiction adds, amends, or repeals a synthetic-media labeling rule"
+      },
+      "scope_boundary": {
+        "included": [
+          "per-jurisdiction statutory label set",
+          "per-platform policy label set",
+          "superset reconciliation across regimes"
+        ],
+        "excluded": [
+          "jurisdiction selection logic",
+          "the token mechanism",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Treating labels as a superset over all applicable regimes prevents satisfying one jurisdiction while violating another",
+          "example": "an emit reaching both EU and Indian audiences must satisfy EU AI Act Art 50 and India's IT Rules deepfake-labeling advisories simultaneously"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Regimes conflict in form and wording, and stacking every label can produce an over-cluttered or self-contradictory disclosure",
+          "example": "two regimes mandate differently-worded mandatory captions that cannot both be the single visible label"
+        }
+      ],
+      "failure_modes": [
+        "a jurisdiction's required label omitted from the set",
+        "conflicting regime requirements collapsed to the weaker one",
+        "platform policy dropped because statute was satisfied"
+      ],
+      "acceptance_tests": [
+        "the labeling-requirement set is the reconciled superset of every applicable jurisdiction and platform rule for this emit"
+      ],
+      "revisit_triggers": [
+        "a jurisdiction's labeling law changes",
+        "two regimes' label requirements are found to conflict"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "ELECTION_INTEGRITY",
+      "topic": "election_period_synthetic_content_rules",
+      "definition": "Apply heightened election-integrity rules: during defined election periods, synthetic or manipulated political content (especially depicting candidates or officials) is subject to stricter disclosure, prohibition, or removal under platform political-content policies and laws such as India's advisories and EU/state election rules, escalating the obligation for politically-classed emits.",
+      "group": "regime",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "election_integrity_specialist"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "LABELING_REGIMES",
+        "AUDIENCE_CONTEXT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.76,
+        "user_value": 0.78,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.66,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.62,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.24,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.26,
+          0.62
+        ],
+        "update_signal": "an election-period rule or window definition changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "election-period window detection",
+          "political/candidate-depiction synthetic content",
+          "heightened-disclosure or prohibition escalation"
+        ],
+        "excluded": [
+          "general-audience labeling",
+          "operator execution",
+          "content moderation appeals"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Escalating in election windows catches the highest-harm synthetic-media cases where a generic label is insufficient or the content is outright prohibited",
+          "example": "a synthetic clip of a candidate during an election period can require prominent disclosure or be barred entirely under platform political-deepfake rules"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Election periods, jurisdictions, and 'political' scope are hard to define precisely, so the escalation can fire on satire or news or miss novel formats",
+          "example": "a satirical synthetic skit during an election may be protected expression, not a prohibited deepfake"
+        }
+      ],
+      "failure_modes": [
+        "a prohibited election-period synthetic political emit not blocked",
+        "general satire over-blocked as a prohibited deepfake",
+        "election window not recognized for the relevant jurisdiction"
+      ],
+      "acceptance_tests": [
+        "politically-classed synthetic emits in an active election window are escalated to heightened disclosure or block per the applicable rule"
+      ],
+      "revisit_triggers": [
+        "an election-period rule or window changes",
+        "a synthetic political emit is mis-escalated in review"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "AGE_PLATFORM_POLICY",
+      "topic": "minor_audience_and_platform_age_rules",
+      "definition": "Apply audience-age and platform minor-protection policies: where content is directed to or likely to reach minors, platform rules and child-safety regimes impose stricter limits on synthetic likenesses, synthetic minors, and advertising, escalating disclosure or prohibition for minor-facing synthetic emits.",
+      "group": "regime",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "child_safety_policy_analyst"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "LABELING_REGIMES",
+        "AUDIENCE_CONTEXT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.74,
+        "user_value": 0.76,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.62,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "a platform minor policy or child-safety regime changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "minor-directed escalation",
+          "synthetic-minor and synthetic-likeness limits",
+          "minor-facing advertising restrictions"
+        ],
+        "excluded": [
+          "general labeling",
+          "election rules",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Minor-facing escalation blocks the highest-sensitivity synthetic cases (synthetic depictions of or ads to children) that a default label does not address",
+          "example": "a synthetic depiction of a minor, or AI-personalized advertising to a kids' audience, triggers stricter platform limits than a general AI label"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Minor-directedness is a prediction and child-safety regimes vary, so the escalation can over-restrict general content or miss minor reach",
+          "example": "a general-audience post that incidentally reaches minors may be over-restricted by a minor-directed assumption"
+        }
+      ],
+      "failure_modes": [
+        "synthetic-minor content not blocked under child-safety rules",
+        "general content over-restricted as minor-directed",
+        "minor reach unaccounted in the escalation"
+      ],
+      "acceptance_tests": [
+        "minor-directed or minor-likely synthetic emits are escalated to the applicable platform minor and child-safety limits"
+      ],
+      "revisit_triggers": [
+        "a platform minor policy changes",
+        "a minor-facing synthetic emit is mis-handled in review"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "REDISTRIBUTION_VS_REFERENCE",
+      "topic": "redistribution_versus_reference_only_use",
+      "definition": "Distinguish republishing the media (redistribution, which triggers the full ToS and licensing gate) from merely referencing or linking it (reference-only, which typically does not redistribute the bytes), because the obligation set and the scrape-license gate apply only to actual redistribution, not to a citation or link.",
+      "group": "regime",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "redistribution_rights_analyst"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "SCRAPE_LICENSE",
+        "PLATFORM_TOS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.74,
+        "user_value": 0.72,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.52,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.54
+        ],
+        "update_signal": "the redistribution/reference boundary or embedding behavior changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "republish-vs-link classification",
+          "embed/quote handling",
+          "reference-only carve-out"
+        ],
+        "excluded": [
+          "statutory AI labeling of original synthetic content",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Separating reference from redistribution avoids blocking legitimate citation while still gating actual republication of unlicensed bytes",
+          "example": "linking to a hosted news clip is reference-only and skips the scrape-license republish gate, whereas re-uploading the clip is redistribution and does not"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Embeds and quote-reposts blur the line, since an embed can effectively redistribute the bytes while looking like a reference",
+          "example": "a platform embed that re-hosts the media is functionally redistribution despite presenting as a link"
+        }
+      ],
+      "failure_modes": [
+        "an embed that re-hosts bytes treated as reference-only",
+        "a true reference over-gated as redistribution",
+        "quote-repost mis-classified"
+      ],
+      "acceptance_tests": [
+        "the emit is classified as redistribution or reference-only, and the scrape-license/ToS republish gate is applied only to redistribution"
+      ],
+      "revisit_triggers": [
+        "the redistribution/reference boundary changes",
+        "an embed is found to re-host bytes it was treated as referencing"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "IN_BAND_DISCLOSURE_TOKEN",
+      "topic": "non_strippable_in_band_disclosure_token",
+      "definition": "Specify the in-band disclosure token: a machine-readable disclosure marker carried inside the artifact itself (embedded metadata, C2PA assertion, and a durable watermark) that the downstream session cannot trivially strip, so the disclosure travels WITH the content rather than as an out-of-band note the next hop can drop.",
+      "group": "mechanism",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "provenance_engineer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "CONTENT_PROVENANCE",
+        "SYNTHETIC_MEDIA_DISCLOSURE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.8,
+        "user_value": 0.8,
+        "technical_complexity": 0.74,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.66,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.62,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.24,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.26,
+          0.62
+        ],
+        "update_signal": "the token format or non-strippability requirement changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "embedded machine-readable disclosure",
+          "C2PA assertion carrier",
+          "durable watermark layer",
+          "strip-resistance properties"
+        ],
+        "excluded": [
+          "the visible human-facing caption only",
+          "statutory text",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An in-band token means a downstream session that re-emits the asset carries the disclosure forward by default, since stripping it requires deliberate tampering rather than mere omission",
+          "example": "a watermarked + C2PA-marked clip stays disclosed when reposted, whereas a caption-only label is lost on the first re-upload"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "No single in-band channel is unstrippable: metadata is dropped on re-encode, watermarks degrade, and C2PA breaks on screenshot, so robustness requires redundancy and is never absolute",
+          "example": "a determined re-encode can defeat any one carrier, so the token must layer several and still cannot guarantee survival"
+        }
+      ],
+      "failure_modes": [
+        "disclosure carried only out-of-band where the next hop can drop it",
+        "a single fragile carrier relied on as if unstrippable",
+        "token machine-unreadable to the destination"
+      ],
+      "acceptance_tests": [
+        "the disclosure is carried in-band via at least one durable machine-readable channel, with redundant carriers and a recorded strip-resistance assessment"
+      ],
+      "revisit_triggers": [
+        "the token format changes",
+        "an in-band token is observed stripped at a downstream hop"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PROVENANCE_SIGNING",
+      "topic": "cryptographic_provenance_manifest_signing",
+      "definition": "Cryptographically sign the C2PA provenance manifest so the disclosure and edit-history assertions are tamper-evident and verifiable by a relying party: any alteration of the asset or its claims after signing breaks verification, turning the disclosure into a checkable claim rather than an editable annotation.",
+      "group": "mechanism",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "provenance_engineer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "CONTENT_PROVENANCE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.76,
+        "user_value": 0.7,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.62,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.24,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.26,
+          0.62
+        ],
+        "update_signal": "the signing trust model or certificate policy changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "manifest signing",
+          "trust-anchor/certificate handling",
+          "tamper-evidence verification"
+        ],
+        "excluded": [
+          "watermark robustness",
+          "statutory text",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Signing makes the provenance claim verifiable and tamper-evident, so a relying platform can trust the disclosure or detect that it was altered",
+          "example": "a C2PA signature lets TikTok verify and auto-apply an AI label from the manifest, and detect if the manifest was edited"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Signing depends on key custody and a trust ecosystem; a compromised key, expired cert, or unrecognized trust anchor undermines verification",
+          "example": "a manifest signed by an untrusted issuer is cryptographically valid but not trusted by the destination"
+        }
+      ],
+      "failure_modes": [
+        "manifest left unsigned, so claims are silently editable",
+        "signing key compromise unaddressed",
+        "trust anchor not recognized by the destination"
+      ],
+      "acceptance_tests": [
+        "the provenance manifest is signed by a recognized trust anchor and its tamper-evidence verifies at the destination"
+      ],
+      "revisit_triggers": [
+        "the signing trust model changes",
+        "a signature fails verification at a destination that should trust it"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DISCLOSURE_SLOT_BINDING",
+      "topic": "downstream_disclosure_slot_binding",
+      "definition": "Bind the required disclosure token to a concrete disclosure slot in the downstream handoff: confirm the destination session/platform exposes a place the in-band token (and any required visible label) can be deposited and will be carried, so the disclosure has a guaranteed home in the next hop rather than an assumed one.",
+      "group": "mechanism",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "handoff_integration_engineer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "IN_BAND_DISCLOSURE_TOKEN",
+        "LABELING_REGIMES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.78,
+        "user_value": 0.78,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.66,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.62,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.26,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.28,
+          0.66
+        ],
+        "update_signal": "the downstream handoff contract or available slot changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "destination disclosure-slot discovery",
+          "token-to-slot binding",
+          "visible-label slot confirmation"
+        ],
+        "excluded": [
+          "the block decision itself",
+          "statutory text",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Explicitly binding the token to a real downstream slot turns 'the next hop will surely carry it' into a verified property, exposing missing-slot cases before emit",
+          "example": "confirming TikTok's AI-content toggle and C2PA ingestion exist binds the disclosure to a real slot rather than hoping a caption survives"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Downstream slots are heterogeneous and undocumented, and a slot may exist but silently not propagate the token, so binding can give false assurance",
+          "example": "a platform accepts the metadata field but strips it server-side, so the bound slot does not actually carry the disclosure"
+        }
+      ],
+      "failure_modes": [
+        "disclosure emitted with no bound downstream slot",
+        "slot bound but not verified to propagate",
+        "visible-label slot assumed but absent"
+      ],
+      "acceptance_tests": [
+        "each required disclosure is bound to a confirmed downstream slot that is verified to carry it forward"
+      ],
+      "revisit_triggers": [
+        "the downstream handoff contract changes",
+        "a bound slot is found not to propagate the token"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "JURISDICTION_RESOLUTION",
+      "topic": "applicable_jurisdiction_resolution",
+      "definition": "Resolve which jurisdictions' rules actually apply to this emit from the asserted publication geography, audience location, and platform reach, producing the jurisdiction set that LABELING_REGIMES and the escalations reason over, since applying the wrong jurisdiction set silently mis-scopes every obligation.",
+      "group": "decision",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "multi_jurisdiction_policy_analyst"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "EMIT_INTAKE",
+        "LABELING_REGIMES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.78,
+        "user_value": 0.74,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.62,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.24,
+          0.6
+        ],
+        "update_signal": "the jurisdiction-determination rule or audience-geo signal changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "publication-geography resolution",
+          "audience-location reach",
+          "applicable-jurisdiction set output"
+        ],
+        "excluded": [
+          "the specific statutory text per jurisdiction",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Resolving jurisdiction explicitly prevents applying one country's rules to an audience governed by another's, scoping the obligation set correctly",
+          "example": "an EU-targeted emit pulls in the AI Act, while an India-reaching emit pulls in the IT Rules deepfake advisories"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Reach crosses borders and geo-signals are noisy, so the resolved jurisdiction set can be over- or under-inclusive",
+          "example": "a globally accessible post nominally reaches every jurisdiction, making a literal union impractically broad"
+        }
+      ],
+      "failure_modes": [
+        "a reaching jurisdiction omitted from the set",
+        "an inapplicable jurisdiction's rules applied",
+        "global reach collapsed to a single home jurisdiction"
+      ],
+      "acceptance_tests": [
+        "the applicable-jurisdiction set is resolved from publication geography and audience reach and is passed to the labeling and escalation rules"
+      ],
+      "revisit_triggers": [
+        "the jurisdiction-determination rule changes",
+        "an emit is found to reach a jurisdiction not in the resolved set"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DISCLOSURE_OBLIGATION_SET",
+      "topic": "aggregated_disclosure_obligation_set",
+      "definition": "Aggregate every triggered obligation into one disclosure-obligation set for the emit: the union of statutory labels, platform policies, provenance/in-band token requirements, redistribution clearances, and any election/minor escalations, with each obligation tagged satisfied or unmet, producing the single checklist the handoff gate enforces.",
+      "group": "decision",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "obligation_aggregation_engineer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "JURISDICTION_RESOLUTION",
+        "ELECTION_INTEGRITY",
+        "AGE_PLATFORM_POLICY",
+        "REDISTRIBUTION_VS_REFERENCE",
+        "DISCLOSURE_SLOT_BINDING",
+        "PROVENANCE_SIGNING",
+        "SCRAPE_LICENSE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.82,
+        "user_value": 0.82,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.66,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.62,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.24,
+        "downside_weight": 0.64,
+        "uncertainty_interval": [
+          0.28,
+          0.66
+        ],
+        "update_signal": "any upstream obligation, escalation, or token requirement changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "union of all triggered obligations",
+          "per-obligation satisfied/unmet tagging",
+          "single emit-level disclosure checklist"
+        ],
+        "excluded": [
+          "the block/allow action itself",
+          "statutory text drafting",
+          "operator execution"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A single aggregated, per-obligation-tagged set makes the gate's decision a deterministic checklist rather than a scattered set of partial checks",
+          "example": "the set lists 'EU AI Act label: bound', 'TikTok AI toggle: bound', 'scrape license: missing' so the unmet item is unambiguous"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Aggregation hides the provenance of each obligation unless every entry is traceable, and a missing upstream trigger silently shrinks the set",
+          "example": "if the election escalation never ran, its obligation is simply absent from the set with no signal that it was skipped"
+        }
+      ],
+      "failure_modes": [
+        "an obligation present upstream missing from the aggregated set",
+        "obligations aggregated without satisfied/unmet tags",
+        "set treated as complete despite a skipped upstream check"
+      ],
+      "acceptance_tests": [
+        "the obligation set is the union of all triggered obligations, each tagged satisfied or unmet, with traceability to the rule that produced it"
+      ],
+      "revisit_triggers": [
+        "an upstream obligation or escalation changes",
+        "an obligation is found missing from a previously-passed set"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FAIL_CLOSED_AT_HANDOFF",
+      "topic": "fail_closed_handoff_spof_gate",
+      "definition": "Enforce the fail-closed handoff gate, the single point of failure of the whole pipeline: at the downstream handoff, if any disclosure obligation is unmet, no disclosure slot is bound, or the in-band token cannot be verified to survive transit, the emit is BLOCKED; the gate defaults to block on any uncertainty and never strips or downgrades a disclosure to let the emit through.",
+      "group": "decision",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "reliability_engineer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "DISCLOSURE_OBLIGATION_SET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.97,
+        "business_value": 0.85,
+        "user_value": 0.85,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.95,
+        "cross_topic_coupling": 0.9,
+        "irreversibility": 0.78,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.65,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.96,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.26,
+          0.6
+        ],
+        "update_signal": "the fail-closed default or block criteria change"
+      },
+      "scope_boundary": {
+        "included": [
+          "block-on-any-unmet-obligation rule",
+          "block-on-missing-slot rule",
+          "block-on-unverifiable-token rule",
+          "default-to-block under uncertainty"
+        ],
+        "excluded": [
+          "legal advice",
+          "appeals/override workflow",
+          "operator execution of an allowed emit"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Defaulting to block at the single handoff means a missing or strippable disclosure can never silently leak through; the failure mode is a blocked emit, not an unlabeled synthetic publication",
+          "example": "an emit whose C2PA slot is unverified is blocked rather than published with a disclosure that the next hop would drop"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A strict fail-closed gate at one SPOF over-blocks legitimate emits when an upstream signal is merely uncertain, and concentrates all risk in one component that must itself be highly reliable",
+          "example": "a transient verification failure on a perfectly compliant emit blocks it, creating pressure to weaken the default"
+        }
+      ],
+      "failure_modes": [
+        "gate fails open and emits without a satisfied obligation",
+        "disclosure stripped or downgraded to force a pass",
+        "SPOF gate itself unmonitored so its own failure is silent"
+      ],
+      "acceptance_tests": [
+        "any unmet obligation, unbound slot, or unverifiable in-band token causes the emit to be BLOCKED, with no path that strips or downgrades a disclosure to allow it"
+      ],
+      "revisit_triggers": [
+        "the fail-closed default or block criteria change",
+        "the gate is found to have failed open on any emit"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "HANDOFF_GATE_VERIFICATION",
+      "topic": "token_survival_and_decision_audit",
+      "definition": "Verify that the bound in-band token actually survives the handoff and record the gate decision: re-read the disclosure at (or simulating) the downstream destination to confirm the token and visible label are present and verifiable, and write an audit record of the obligation set, the survival check, and the allow-with-disclosure / block outcome.",
+      "group": "verification",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "ai_governance",
+        "platform_policy_and_media_law"
+      ],
+      "subfields": [
+        "synthetic_media_transparency",
+        "content_provenance"
+      ],
+      "specialists": [
+        "disclosure_gate_analyst",
+        "verification_engineer"
+      ],
+      "contradictors": [
+        "frictionless_publishing_advocate"
+      ],
+      "inputs": [
+        "emit-action artifact",
+        "source/platform context"
+      ],
+      "outputs": [
+        "disclosure obligation signal"
+      ],
+      "dependencies": [
+        "FAIL_CLOSED_AT_HANDOFF"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.78,
+        "user_value": 0.78,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.66,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "the survival-verification method or audit schema changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "post-handoff token re-read",
+          "visible-label presence check",
+          "decision audit record"
+        ],
+        "excluded": [
+          "the block rule itself",
+          "legal advice",
+          "downstream content moderation"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Re-reading the disclosure at the destination converts 'the token was attached' into 'the token is present and verifiable where it must be', closing the gap the SPOF most fears",
+          "example": "a post-emit fetch confirms the C2PA manifest and AI label are intact on the published TikTok asset"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "True downstream re-read may be impossible before emit, so a simulation can diverge from real platform processing and miss server-side stripping",
+          "example": "a staging check passes but the live platform's transcoding strips the metadata the staging path preserved"
+        }
+      ],
+      "failure_modes": [
+        "survival assumed rather than verified",
+        "audit record omits the obligation set or outcome",
+        "simulation diverges from live platform behavior"
+      ],
+      "acceptance_tests": [
+        "the in-band token's survival is verified (or best-effort simulated) at the destination and an audit record of obligations, survival, and outcome is written"
+      ],
+      "revisit_triggers": [
+        "the survival-verification method changes",
+        "a token verified at emit is found stripped at the live destination"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "from": "EMIT_INTAKE",
+      "to": "PLATFORM_TOS",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "PLATFORM_TOS depends on EMIT_INTAKE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "EMIT_INTAKE finalized before PLATFORM_TOS"
+    },
+    {
+      "from": "EMIT_INTAKE",
+      "to": "SYNTHETIC_MEDIA_CLASSIFY",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "SYNTHETIC_MEDIA_CLASSIFY depends on EMIT_INTAKE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "EMIT_INTAKE finalized before SYNTHETIC_MEDIA_CLASSIFY"
+    },
+    {
+      "from": "EMIT_INTAKE",
+      "to": "AUDIENCE_CONTEXT",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "AUDIENCE_CONTEXT depends on EMIT_INTAKE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "EMIT_INTAKE finalized before AUDIENCE_CONTEXT"
+    },
+    {
+      "from": "PLATFORM_TOS",
+      "to": "SCRAPE_LICENSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "SCRAPE_LICENSE depends on PLATFORM_TOS",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "PLATFORM_TOS finalized before SCRAPE_LICENSE"
+    },
+    {
+      "from": "SYNTHETIC_MEDIA_CLASSIFY",
+      "to": "SYNTHETIC_MEDIA_DISCLOSURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "SYNTHETIC_MEDIA_DISCLOSURE depends on SYNTHETIC_MEDIA_CLASSIFY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SYNTHETIC_MEDIA_CLASSIFY finalized before SYNTHETIC_MEDIA_DISCLOSURE"
+    },
+    {
+      "from": "SYNTHETIC_MEDIA_CLASSIFY",
+      "to": "MANIPULATED_MEDIA_POLICY",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "MANIPULATED_MEDIA_POLICY depends on SYNTHETIC_MEDIA_CLASSIFY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SYNTHETIC_MEDIA_CLASSIFY finalized before MANIPULATED_MEDIA_POLICY"
+    },
+    {
+      "from": "SYNTHETIC_MEDIA_CLASSIFY",
+      "to": "CONTENT_PROVENANCE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "CONTENT_PROVENANCE depends on SYNTHETIC_MEDIA_CLASSIFY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SYNTHETIC_MEDIA_CLASSIFY finalized before CONTENT_PROVENANCE"
+    },
+    {
+      "from": "SYNTHETIC_MEDIA_DISCLOSURE",
+      "to": "LABELING_REGIMES",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "LABELING_REGIMES depends on SYNTHETIC_MEDIA_DISCLOSURE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SYNTHETIC_MEDIA_DISCLOSURE finalized before LABELING_REGIMES"
+    },
+    {
+      "from": "MANIPULATED_MEDIA_POLICY",
+      "to": "LABELING_REGIMES",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "LABELING_REGIMES depends on MANIPULATED_MEDIA_POLICY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "MANIPULATED_MEDIA_POLICY finalized before LABELING_REGIMES"
+    },
+    {
+      "from": "LABELING_REGIMES",
+      "to": "ELECTION_INTEGRITY",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "ELECTION_INTEGRITY depends on LABELING_REGIMES",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "LABELING_REGIMES finalized before ELECTION_INTEGRITY"
+    },
+    {
+      "from": "LABELING_REGIMES",
+      "to": "AGE_PLATFORM_POLICY",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "AGE_PLATFORM_POLICY depends on LABELING_REGIMES",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "LABELING_REGIMES finalized before AGE_PLATFORM_POLICY"
+    },
+    {
+      "from": "SCRAPE_LICENSE",
+      "to": "REDISTRIBUTION_VS_REFERENCE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "REDISTRIBUTION_VS_REFERENCE depends on SCRAPE_LICENSE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SCRAPE_LICENSE finalized before REDISTRIBUTION_VS_REFERENCE"
+    },
+    {
+      "from": "CONTENT_PROVENANCE",
+      "to": "IN_BAND_DISCLOSURE_TOKEN",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "IN_BAND_DISCLOSURE_TOKEN depends on CONTENT_PROVENANCE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "CONTENT_PROVENANCE finalized before IN_BAND_DISCLOSURE_TOKEN"
+    },
+    {
+      "from": "CONTENT_PROVENANCE",
+      "to": "PROVENANCE_SIGNING",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "PROVENANCE_SIGNING depends on CONTENT_PROVENANCE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "CONTENT_PROVENANCE finalized before PROVENANCE_SIGNING"
+    },
+    {
+      "from": "IN_BAND_DISCLOSURE_TOKEN",
+      "to": "DISCLOSURE_SLOT_BINDING",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISCLOSURE_SLOT_BINDING depends on IN_BAND_DISCLOSURE_TOKEN",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "IN_BAND_DISCLOSURE_TOKEN finalized before DISCLOSURE_SLOT_BINDING"
+    },
+    {
+      "from": "EMIT_INTAKE",
+      "to": "JURISDICTION_RESOLUTION",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "JURISDICTION_RESOLUTION depends on EMIT_INTAKE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "EMIT_INTAKE finalized before JURISDICTION_RESOLUTION"
+    },
+    {
+      "from": "JURISDICTION_RESOLUTION",
+      "to": "DISCLOSURE_OBLIGATION_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISCLOSURE_OBLIGATION_SET depends on JURISDICTION_RESOLUTION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "JURISDICTION_RESOLUTION finalized before DISCLOSURE_OBLIGATION_SET"
+    },
+    {
+      "from": "ELECTION_INTEGRITY",
+      "to": "DISCLOSURE_OBLIGATION_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISCLOSURE_OBLIGATION_SET depends on ELECTION_INTEGRITY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "ELECTION_INTEGRITY finalized before DISCLOSURE_OBLIGATION_SET"
+    },
+    {
+      "from": "AGE_PLATFORM_POLICY",
+      "to": "DISCLOSURE_OBLIGATION_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISCLOSURE_OBLIGATION_SET depends on AGE_PLATFORM_POLICY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "AGE_PLATFORM_POLICY finalized before DISCLOSURE_OBLIGATION_SET"
+    },
+    {
+      "from": "REDISTRIBUTION_VS_REFERENCE",
+      "to": "DISCLOSURE_OBLIGATION_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISCLOSURE_OBLIGATION_SET depends on REDISTRIBUTION_VS_REFERENCE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "REDISTRIBUTION_VS_REFERENCE finalized before DISCLOSURE_OBLIGATION_SET"
+    },
+    {
+      "from": "DISCLOSURE_SLOT_BINDING",
+      "to": "DISCLOSURE_OBLIGATION_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISCLOSURE_OBLIGATION_SET depends on DISCLOSURE_SLOT_BINDING",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DISCLOSURE_SLOT_BINDING finalized before DISCLOSURE_OBLIGATION_SET"
+    },
+    {
+      "from": "PROVENANCE_SIGNING",
+      "to": "DISCLOSURE_OBLIGATION_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISCLOSURE_OBLIGATION_SET depends on PROVENANCE_SIGNING",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "PROVENANCE_SIGNING finalized before DISCLOSURE_OBLIGATION_SET"
+    },
+    {
+      "from": "DISCLOSURE_OBLIGATION_SET",
+      "to": "FAIL_CLOSED_AT_HANDOFF",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "FAIL_CLOSED_AT_HANDOFF depends on DISCLOSURE_OBLIGATION_SET",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DISCLOSURE_OBLIGATION_SET finalized before FAIL_CLOSED_AT_HANDOFF"
+    },
+    {
+      "from": "FAIL_CLOSED_AT_HANDOFF",
+      "to": "HANDOFF_GATE_VERIFICATION",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "HANDOFF_GATE_VERIFICATION depends on FAIL_CLOSED_AT_HANDOFF",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "FAIL_CLOSED_AT_HANDOFF finalized before HANDOFF_GATE_VERIFICATION"
+    },
+    {
+      "from": "HANDOFF_GATE_VERIFICATION",
+      "to": "IN_BAND_DISCLOSURE_TOKEN",
+      "edge_type": "feedback",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a failed downstream survival check feeds back to strengthen the in-band token's strip-resistance",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "HANDOFF_GATE_VERIFICATION/IN_BAND_DISCLOSURE_TOKEN feedback relation"
+    },
+    {
+      "from": "HANDOFF_GATE_VERIFICATION",
+      "to": "DISCLOSURE_SLOT_BINDING",
+      "edge_type": "feedback",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "verification of token survival validates or invalidates the bound downstream slot",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "HANDOFF_GATE_VERIFICATION/DISCLOSURE_SLOT_BINDING feedback relation"
+    },
+    {
+      "from": "AUDIENCE_CONTEXT",
+      "to": "JURISDICTION_RESOLUTION",
+      "edge_type": "causal",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "audience location drives which jurisdictions' rules apply",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "AUDIENCE_CONTEXT/JURISDICTION_RESOLUTION causal relation"
+    },
+    {
+      "from": "CONTENT_PROVENANCE",
+      "to": "MANIPULATED_MEDIA_POLICY",
+      "edge_type": "causal",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a C2PA manifest lets platforms auto-apply their AI-content label, satisfying platform policy",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "CONTENT_PROVENANCE/MANIPULATED_MEDIA_POLICY causal relation"
+    },
+    {
+      "from": "SCRAPE_LICENSE",
+      "to": "FAIL_CLOSED_AT_HANDOFF",
+      "edge_type": "constraint",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "an unlicensed-scrape redistribution is an unmet obligation that forces a block",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "SCRAPE_LICENSE/FAIL_CLOSED_AT_HANDOFF constraint relation"
+    },
+    {
+      "from": "PROVENANCE_SIGNING",
+      "to": "HANDOFF_GATE_VERIFICATION",
+      "edge_type": "similarity",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "signature verification at the destination is the tamper-evidence the survival check relies on",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "PROVENANCE_SIGNING/HANDOFF_GATE_VERIFICATION similarity relation"
+    },
+    {
+      "from": "ELECTION_INTEGRITY",
+      "to": "FAIL_CLOSED_AT_HANDOFF",
+      "edge_type": "constraint",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a prohibited election-period synthetic emit is an unmet obligation that forces a block",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "ELECTION_INTEGRITY/FAIL_CLOSED_AT_HANDOFF constraint relation"
+    },
+    {
+      "from": "AGE_PLATFORM_POLICY",
+      "to": "FAIL_CLOSED_AT_HANDOFF",
+      "edge_type": "constraint",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a minor-protection violation is an unmet obligation that forces a block",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "AGE_PLATFORM_POLICY/FAIL_CLOSED_AT_HANDOFF constraint relation"
+    },
+    {
+      "from": "FAIL_CLOSED_AT_HANDOFF",
+      "to": "PLATFORM_TOS",
+      "edge_type": "conflict",
+      "relation_strength": 0.7,
+      "signed_tension": -0.6,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "disclosure dominates throughput: when a fail-closed block would stop an emit a publishing SLA wants out, the gate still blocks; throughput is recovered by binding a real disclosure slot, never by stripping or downgrading the disclosure",
+      "why_related": "the fail-closed disclosure block conflicts with platform/business pressure to publish quickly and frictionlessly",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades disclosure correctness",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "LABELING_REGIMES",
+      "to": "IN_BAND_DISCLOSURE_TOKEN",
+      "edge_type": "conflict",
+      "relation_strength": 0.7,
+      "signed_tension": -0.5,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "satisfy the superset in a single durable carrier: when two regimes mandate differently-worded visible labels that cannot both be the one caption, carry the machine-readable union in-band and render the strictest human-visible label, escalating genuine conflicts to review",
+      "why_related": "stacking conflicting per-regime label requirements collides with a single in-band token that must carry one coherent disclosure",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades disclosure correctness",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "REDISTRIBUTION_VS_REFERENCE",
+      "to": "SCRAPE_LICENSE",
+      "edge_type": "conflict",
+      "relation_strength": 0.66,
+      "signed_tension": -0.45,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "apply the republish gate only to genuine redistribution: classify embeds that re-host bytes as redistribution and subject them to the scrape-license gate, while true reference-only links bypass it",
+      "why_related": "a permissive reference-only classification can let an embed that actually re-hosts unlicensed bytes escape the scrape-license redistribution gate",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades disclosure correctness",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "SYNTHETIC_MEDIA_DISCLOSURE",
+      "to": "CONTENT_PROVENANCE",
+      "edge_type": "conflict",
+      "relation_strength": 0.66,
+      "signed_tension": -0.4,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "treat provenance as necessary but not sufficient: a signed C2PA manifest does not by itself satisfy the statutory clear-and-distinguishable disclosure when the destination cannot verify it, so require a human-perceptible label in addition where provenance may be stripped",
+      "why_related": "relying on C2PA provenance to discharge the statutory disclosure conflicts with provenance being strippable and unverifiable at some destinations",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades disclosure correctness",
+      "example": "see resolution_rule"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "disclosure_mandatory_vs_publishing_throughput",
+      "description": "Fail-closed disclosure blocks maximize transparency but add friction and can stop emits a publishing pipeline wants out fast.",
+      "poles": [
+        "mandatory_disclosure",
+        "frictionless_throughput"
+      ],
+      "resolution_hint": "recover throughput by binding a real disclosure slot, never by weakening the disclosure",
+      "tension_score": 0.78,
+      "affected_nodes": [
+        "FAIL_CLOSED_AT_HANDOFF",
+        "DISCLOSURE_OBLIGATION_SET",
+        "PLATFORM_TOS"
+      ]
+    },
+    {
+      "name": "in_band_robustness_vs_strippability",
+      "description": "In-band tokens travel with the content but no single carrier is unstrippable, so robustness needs redundancy and is never absolute.",
+      "poles": [
+        "in_band_durability",
+        "carrier_strippability"
+      ],
+      "resolution_hint": "layer metadata, C2PA, and watermark; verify survival; default to block on doubt",
+      "tension_score": 0.75,
+      "affected_nodes": [
+        "IN_BAND_DISCLOSURE_TOKEN",
+        "PROVENANCE_SIGNING",
+        "HANDOFF_GATE_VERIFICATION"
+      ]
+    },
+    {
+      "name": "statutory_label_vs_platform_policy",
+      "description": "Statute and platform policy can both apply and diverge in form and strictness for the same artifact.",
+      "poles": [
+        "statutory_label",
+        "platform_policy"
+      ],
+      "resolution_hint": "take the reconciled superset and satisfy the strictest applicable rule",
+      "tension_score": 0.7,
+      "affected_nodes": [
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "MANIPULATED_MEDIA_POLICY",
+        "LABELING_REGIMES"
+      ]
+    },
+    {
+      "name": "over_labeling_vs_under_labeling",
+      "description": "A broad synthetic threshold floods authentic media with needless labels; a narrow one suppresses required disclosures.",
+      "poles": [
+        "broad_threshold",
+        "narrow_threshold"
+      ],
+      "resolution_hint": "calibrate the substantial-manipulation threshold and escalate borderline cases to review",
+      "tension_score": 0.68,
+      "affected_nodes": [
+        "SYNTHETIC_MEDIA_CLASSIFY",
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "MANIPULATED_MEDIA_POLICY"
+      ]
+    },
+    {
+      "name": "redistribution_gate_vs_legitimate_reference",
+      "description": "Gating republication protects rights but can over-block legitimate citation and fair reference.",
+      "poles": [
+        "strict_republish_gate",
+        "open_reference"
+      ],
+      "resolution_hint": "gate only genuine redistribution; treat byte-re-hosting embeds as redistribution",
+      "tension_score": 0.66,
+      "affected_nodes": [
+        "REDISTRIBUTION_VS_REFERENCE",
+        "SCRAPE_LICENSE",
+        "PLATFORM_TOS"
+      ]
+    },
+    {
+      "name": "jurisdiction_union_vs_practical_scope",
+      "description": "Global reach makes a literal union of all jurisdictions' rules impractically broad, while a narrow home-jurisdiction scope under-covers.",
+      "poles": [
+        "full_union",
+        "home_jurisdiction"
+      ],
+      "resolution_hint": "resolve jurisdictions from actual audience reach, not nominal global availability",
+      "tension_score": 0.65,
+      "affected_nodes": [
+        "JURISDICTION_RESOLUTION",
+        "LABELING_REGIMES",
+        "DISCLOSURE_OBLIGATION_SET"
+      ]
+    },
+    {
+      "name": "election_escalation_vs_protected_expression",
+      "description": "Heightened election rules catch high-harm political deepfakes but can over-block satire and news.",
+      "poles": [
+        "strict_election_escalation",
+        "protected_expression"
+      ],
+      "resolution_hint": "escalate candidate-depicting deceptive synthesis; preserve clearly-marked satire and news per exception",
+      "tension_score": 0.66,
+      "affected_nodes": [
+        "ELECTION_INTEGRITY",
+        "AUDIENCE_CONTEXT",
+        "JURISDICTION_RESOLUTION"
+      ]
+    },
+    {
+      "name": "minor_protection_vs_general_audience_reach",
+      "description": "Minor-directed escalations protect children but can over-restrict general content that incidentally reaches minors.",
+      "poles": [
+        "minor_directed_strictness",
+        "general_reach"
+      ],
+      "resolution_hint": "escalate on directed-to-minors signals; treat incidental reach proportionately",
+      "tension_score": 0.62,
+      "affected_nodes": [
+        "AGE_PLATFORM_POLICY",
+        "AUDIENCE_CONTEXT",
+        "DISCLOSURE_OBLIGATION_SET"
+      ]
+    },
+    {
+      "name": "single_spof_gate_vs_distributed_enforcement",
+      "description": "Concentrating enforcement at one fail-closed handoff is simple and auditable but makes that gate a single point of failure that must be highly reliable.",
+      "poles": [
+        "single_spof_gate",
+        "distributed_checks"
+      ],
+      "resolution_hint": "keep the SPOF gate but monitor it heavily and verify token survival downstream",
+      "tension_score": 0.7,
+      "affected_nodes": [
+        "FAIL_CLOSED_AT_HANDOFF",
+        "HANDOFF_GATE_VERIFICATION",
+        "DISCLOSURE_OBLIGATION_SET"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "The downstream destination exposes no disclosure slot, so an in-band token cannot be deposited or carried.",
+      "trigger": "DISCLOSURE_SLOT_BINDING finds no slot that propagates the token at the handoff",
+      "affected_nodes": [
+        "DISCLOSURE_SLOT_BINDING",
+        "FAIL_CLOSED_AT_HANDOFF",
+        "IN_BAND_DISCLOSURE_TOKEN"
+      ],
+      "mitigation": "fail closed and BLOCK the emit; do not publish a disclosure the next hop will drop",
+      "severity": "critical"
+    },
+    {
+      "description": "A correctly C2PA-marked synthetic asset is screenshotted or re-encoded downstream, stripping the manifest and the disclosure.",
+      "trigger": "the in-band token's only durable carrier is defeated by re-encode/screenshot",
+      "affected_nodes": [
+        "IN_BAND_DISCLOSURE_TOKEN",
+        "CONTENT_PROVENANCE",
+        "HANDOFF_GATE_VERIFICATION"
+      ],
+      "mitigation": "layer redundant carriers (watermark + metadata + C2PA) and verify survival; block if none survive",
+      "severity": "critical"
+    },
+    {
+      "description": "A deepfake of a real person is mis-classified as authentic, suppressing the required AI-content disclosure.",
+      "trigger": "SYNTHETIC_MEDIA_CLASSIFY threshold misses substantial manipulation",
+      "affected_nodes": [
+        "SYNTHETIC_MEDIA_CLASSIFY",
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "MANIPULATED_MEDIA_POLICY"
+      ],
+      "mitigation": "calibrate the manipulation threshold conservatively and escalate borderline cases to review",
+      "severity": "high"
+    },
+    {
+      "description": "An AI restyle of scraped, unlicensed source footage is emitted with a correct AI label but is still an unlicensed republish.",
+      "trigger": "SCRAPE_LICENSE gate skipped because the AI disclosure looked sufficient",
+      "affected_nodes": [
+        "SCRAPE_LICENSE",
+        "REDISTRIBUTION_VS_REFERENCE",
+        "FAIL_CLOSED_AT_HANDOFF"
+      ],
+      "mitigation": "run the scrape-license redistribution gate independently of the AI label and block unlicensed republication",
+      "severity": "high"
+    },
+    {
+      "description": "Two applicable jurisdictions mandate differently-worded mandatory visible labels that cannot both be the single caption.",
+      "trigger": "LABELING_REGIMES superset contains conflicting human-visible label requirements",
+      "affected_nodes": [
+        "LABELING_REGIMES",
+        "IN_BAND_DISCLOSURE_TOKEN",
+        "JURISDICTION_RESOLUTION"
+      ],
+      "mitigation": "carry the machine-readable union in-band, render the strictest visible label, and escalate true conflicts to review",
+      "severity": "high"
+    },
+    {
+      "description": "A synthetic clip depicting a candidate is emitted during an active election window without the heightened election disclosure or block.",
+      "trigger": "ELECTION_INTEGRITY escalation not triggered for the resolved jurisdiction",
+      "affected_nodes": [
+        "ELECTION_INTEGRITY",
+        "JURISDICTION_RESOLUTION",
+        "FAIL_CLOSED_AT_HANDOFF"
+      ],
+      "mitigation": "detect election windows per jurisdiction and escalate candidate-depicting synthesis to prominent disclosure or block",
+      "severity": "high"
+    },
+    {
+      "description": "An embed that re-hosts the underlying media bytes is treated as reference-only and escapes the redistribution gate.",
+      "trigger": "REDISTRIBUTION_VS_REFERENCE mis-classifies a byte-re-hosting embed",
+      "affected_nodes": [
+        "REDISTRIBUTION_VS_REFERENCE",
+        "SCRAPE_LICENSE"
+      ],
+      "mitigation": "classify byte-re-hosting embeds as redistribution and subject them to the scrape-license gate",
+      "severity": "medium"
+    },
+    {
+      "description": "The fail-closed handoff gate itself fails open on a transient verification error, publishing an unlabeled synthetic emit.",
+      "trigger": "the SPOF gate defaults to allow instead of block on an internal error",
+      "affected_nodes": [
+        "FAIL_CLOSED_AT_HANDOFF",
+        "HANDOFF_GATE_VERIFICATION"
+      ],
+      "mitigation": "default to block on any internal/verification uncertainty and monitor the gate's own health",
+      "severity": "critical"
+    },
+    {
+      "description": "A provenance manifest is signed by an issuer the destination platform does not trust, so the disclosure is valid but not honored.",
+      "trigger": "PROVENANCE_SIGNING uses an unrecognized trust anchor",
+      "affected_nodes": [
+        "PROVENANCE_SIGNING",
+        "CONTENT_PROVENANCE",
+        "DISCLOSURE_SLOT_BINDING"
+      ],
+      "mitigation": "sign with a trust anchor the destination recognizes and add a human-perceptible label as fallback",
+      "severity": "medium"
+    },
+    {
+      "description": "A general-audience synthetic post unexpectedly reaches a minor audience that the gate never escalated for.",
+      "trigger": "AUDIENCE_CONTEXT under-predicted minor reach",
+      "affected_nodes": [
+        "AUDIENCE_CONTEXT",
+        "AGE_PLATFORM_POLICY"
+      ],
+      "mitigation": "apply proportionate minor protections on minor-likely reach and re-evaluate on reach signals",
+      "severity": "medium"
+    },
+    {
+      "description": "A cached platform ToS snapshot diverges from the live policy, so a now-prohibited redistribution is allowed.",
+      "trigger": "PLATFORM_TOS applied a stale snapshot",
+      "affected_nodes": [
+        "PLATFORM_TOS",
+        "SCRAPE_LICENSE",
+        "REDISTRIBUTION_VS_REFERENCE"
+      ],
+      "mitigation": "date ToS snapshots, refresh on a schedule, and treat staleness beyond a bound as an unmet obligation",
+      "severity": "medium"
+    },
+    {
+      "description": "An obligation triggered upstream is silently absent from the aggregated set because its producing check was skipped.",
+      "trigger": "DISCLOSURE_OBLIGATION_SET aggregates without verifying every upstream check ran",
+      "affected_nodes": [
+        "DISCLOSURE_OBLIGATION_SET",
+        "JURISDICTION_RESOLUTION",
+        "FAIL_CLOSED_AT_HANDOFF"
+      ],
+      "mitigation": "require each upstream check to register a present/absent status; a skipped check is itself an unmet obligation",
+      "severity": "high"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "capture_emit_unit",
+      "node_ref": "EMIT_INTAKE",
+      "description": "Normalize the emit-action into a fixed unit: artifact, generation path, destination platform/session, and asserted jurisdictions.",
+      "artifact": "emit_unit_record",
+      "gate": "generation path, destination, and >=1 jurisdiction recorded"
+    },
+    {
+      "action": "resolve_platform_tos",
+      "node_ref": "PLATFORM_TOS",
+      "description": "Resolve destination and source platform ToS: scraping, redistribution, automation, and synthetic-media clauses, dated.",
+      "artifact": "tos_constraint_set",
+      "gate": "relevant ToS clauses identified and dated"
+    },
+    {
+      "action": "classify_generation_path",
+      "node_ref": "SYNTHETIC_MEDIA_CLASSIFY",
+      "description": "Classify the artifact as fully-synthetic, substantially-edited, AI-assisted-authentic, or captured-real.",
+      "artifact": "generation_path_class",
+      "gate": "a generation-path class is recorded with evidence"
+    },
+    {
+      "action": "trace_source_license",
+      "node_ref": "SCRAPE_LICENSE",
+      "description": "Trace source provenance and redistribution license; flag scraped/unlicensed source media.",
+      "artifact": "source_license_record",
+      "gate": "source recorded as owned, licensed, or scraped/non-republishable"
+    },
+    {
+      "action": "apply_statutory_disclosure",
+      "node_ref": "SYNTHETIC_MEDIA_DISCLOSURE",
+      "description": "Apply EU AI Act Art 50 deep-fake disclosure with any artistic/assistive exception noted.",
+      "artifact": "statutory_disclosure_obligation",
+      "gate": "clear-and-distinguishable disclosure obligation recorded for synthetic artifacts"
+    },
+    {
+      "action": "reconcile_labeling_regimes",
+      "node_ref": "LABELING_REGIMES",
+      "description": "Assemble the per-jurisdiction and per-platform labeling superset and reconcile conflicts.",
+      "artifact": "labeling_requirement_set",
+      "gate": "reconciled superset of statute and platform labels assembled"
+    },
+    {
+      "action": "build_provenance_token",
+      "node_ref": "IN_BAND_DISCLOSURE_TOKEN",
+      "description": "Build the in-band token via C2PA assertion, metadata, and durable watermark; sign the manifest.",
+      "artifact": "in_band_disclosure_token",
+      "gate": "disclosure carried in-band via >=1 durable signed channel"
+    },
+    {
+      "action": "resolve_jurisdiction",
+      "node_ref": "JURISDICTION_RESOLUTION",
+      "description": "Resolve the applicable jurisdiction set from publication geography and audience reach.",
+      "artifact": "jurisdiction_set",
+      "gate": "applicable jurisdiction set resolved from actual reach"
+    },
+    {
+      "action": "apply_escalations",
+      "node_ref": "ELECTION_INTEGRITY",
+      "description": "Apply election-period and minor-audience escalations to politically- or minor-classed emits.",
+      "artifact": "escalation_record",
+      "gate": "election and minor escalations applied per resolved jurisdiction and audience"
+    },
+    {
+      "action": "bind_disclosure_slot",
+      "node_ref": "DISCLOSURE_SLOT_BINDING",
+      "description": "Bind each required disclosure to a confirmed downstream slot verified to carry it.",
+      "artifact": "slot_binding_record",
+      "gate": "each required disclosure bound to a propagating downstream slot"
+    },
+    {
+      "action": "aggregate_obligations",
+      "node_ref": "DISCLOSURE_OBLIGATION_SET",
+      "description": "Aggregate all triggered obligations into one set, each tagged satisfied or unmet, with traceability.",
+      "artifact": "obligation_set",
+      "gate": "every triggered obligation present and tagged satisfied/unmet"
+    },
+    {
+      "action": "gate_and_verify_handoff",
+      "node_ref": "FAIL_CLOSED_AT_HANDOFF",
+      "description": "Block on any unmet obligation, unbound slot, or unverifiable token; then verify survival and write the audit.",
+      "artifact": "handoff_decision_record",
+      "gate": "emit allowed-with-disclosure only if all obligations met and token survival verified; else blocked"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "FAIL_CLOSED_AT_HANDOFF must BLOCK the emit whenever any obligation in DISCLOSURE_OBLIGATION_SET is unmet, no slot is bound, or token survival is unverifiable",
+      "rationale": "the handoff is the SPOF; failing open publishes an unlabeled or strippable synthetic emit",
+      "trigger": "an emit reaches the handoff with an unmet obligation or unbound slot",
+      "action": "block the emit and route to remediation; never strip or downgrade the disclosure"
+    },
+    {
+      "rule": "A disclosure may never be stripped or downgraded to make an emit pass the gate",
+      "rationale": "stripping defeats the entire purpose of mandatory in-band disclosure",
+      "trigger": "a pass would require removing or weakening a required disclosure",
+      "action": "block instead and escalate for a compliant disclosure slot"
+    },
+    {
+      "rule": "SYNTHETIC_MEDIA_DISCLOSURE statutory obligation dominates platform-policy convenience but never overrides a stricter platform rule",
+      "rationale": "both regimes co-apply; the strictest applicable rule governs",
+      "trigger": "statute and platform policy diverge for the same artifact",
+      "action": "satisfy the reconciled strictest superset from LABELING_REGIMES"
+    },
+    {
+      "rule": "SCRAPE_LICENSE redistribution gate must run independently of any AI-content disclosure",
+      "rationale": "a correct AI label does not license republication of scraped source media",
+      "trigger": "an emit redistributes third-party media with only an AI label",
+      "action": "block on missing redistribution license regardless of the AI label"
+    },
+    {
+      "rule": "IN_BAND_DISCLOSURE_TOKEN must use redundant durable carriers and survival must be verified before allow",
+      "rationale": "no single carrier is unstrippable; an out-of-band note can be dropped by the next hop",
+      "trigger": "disclosure carried only out-of-band or via a single fragile carrier",
+      "action": "require layered in-band carriers and a survival check"
+    },
+    {
+      "rule": "ELECTION_INTEGRITY and AGE_PLATFORM_POLICY escalations dominate the default label for in-scope emits",
+      "rationale": "election and minor contexts carry the highest harm and stricter or prohibitive rules",
+      "trigger": "a politically- or minor-classed synthetic emit in an in-scope window or audience",
+      "action": "apply the heightened disclosure or block before the default label"
+    },
+    {
+      "rule": "JURISDICTION_RESOLUTION must be fixed before LABELING_REGIMES finalizes the obligation superset",
+      "rationale": "the wrong jurisdiction set silently mis-scopes every label",
+      "trigger": "labeling assembled before jurisdictions are resolved from reach",
+      "action": "resolve jurisdictions from actual audience reach first"
+    },
+    {
+      "rule": "DISCLOSURE_OBLIGATION_SET must record every upstream check as present or absent",
+      "rationale": "a silently skipped check shrinks the set and hides an unmet obligation",
+      "trigger": "an obligation is absent because its producing check did not run",
+      "action": "treat a skipped upstream check as itself an unmet obligation"
+    },
+    {
+      "rule": "PROVENANCE_SIGNING alone does not discharge the statutory clear-and-distinguishable disclosure where the destination cannot verify it",
+      "rationale": "provenance is necessary but strippable and not always verifiable downstream",
+      "trigger": "a signed manifest relied on at a destination that cannot verify it",
+      "action": "add a human-perceptible label in addition to provenance"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Do not build the in-band token before the labeling superset is reconciled; a late regime adds a label the token must re-carry",
+      "prevents": "re-signing and re-binding the token after a missed jurisdiction's label surfaces"
+    },
+    {
+      "rule": "Do not finalize the obligation set before jurisdiction resolution; a late jurisdiction invalidates the whole set",
+      "prevents": "re-aggregating every obligation after the jurisdiction scope changes"
+    },
+    {
+      "rule": "Do not bind a downstream slot without verifying it propagates the token; an unverified slot silently drops the disclosure",
+      "prevents": "re-emitting after discovering the bound slot stripped the disclosure server-side"
+    },
+    {
+      "rule": "Do not rely on a single in-band carrier; retrofitting redundancy after a strip incident requires re-marking every asset",
+      "prevents": "emergency re-watermarking of already-published assets after a stripping incident"
+    },
+    {
+      "rule": "Do not run the AI-disclosure path while skipping the scrape-license gate; an unlicensed republish surfaces as a takedown later",
+      "prevents": "post-publication takedown and re-clearance of unlicensed redistributed media"
+    },
+    {
+      "rule": "Do not classify embeds as reference-only without checking byte-re-hosting; mis-classification leaks an ungated redistribution",
+      "prevents": "re-screening embeds after an ungated republish is discovered"
+    },
+    {
+      "rule": "Do not let the SPOF gate default to allow on internal errors; a single fail-open publishes an unlabeled emit",
+      "prevents": "incident response and recall after an unlabeled synthetic emit leaks through a fail-open gate"
+    },
+    {
+      "rule": "Do not cache platform ToS indefinitely; a stale snapshot permits a now-prohibited redistribution",
+      "prevents": "re-clearing emits after a ToS change invalidates a cached redistribution permission"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "an in-band token is observed stripped at a downstream hop",
+      "action": "strengthen redundant carriers in IN_BAND_DISCLOSURE_TOKEN and re-verify survival in HANDOFF_GATE_VERIFICATION",
+      "nodes": [
+        "IN_BAND_DISCLOSURE_TOKEN",
+        "HANDOFF_GATE_VERIFICATION",
+        "DISCLOSURE_SLOT_BINDING"
+      ],
+      "priority": "critical"
+    },
+    {
+      "trigger": "the fail-closed gate is found to have failed open on any emit",
+      "action": "force default-to-block on uncertainty in FAIL_CLOSED_AT_HANDOFF and add health monitoring of the SPOF gate",
+      "nodes": [
+        "FAIL_CLOSED_AT_HANDOFF",
+        "HANDOFF_GATE_VERIFICATION"
+      ],
+      "priority": "critical"
+    },
+    {
+      "trigger": "a deepfake is mis-classified as authentic, suppressing a required label",
+      "action": "recalibrate the manipulation threshold in SYNTHETIC_MEDIA_CLASSIFY and escalate borderline cases",
+      "nodes": [
+        "SYNTHETIC_MEDIA_CLASSIFY",
+        "SYNTHETIC_MEDIA_DISCLOSURE",
+        "MANIPULATED_MEDIA_POLICY"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "an unlicensed scraped source is republished under a correct AI label",
+      "action": "enforce the independent redistribution gate in SCRAPE_LICENSE and REDISTRIBUTION_VS_REFERENCE",
+      "nodes": [
+        "SCRAPE_LICENSE",
+        "REDISTRIBUTION_VS_REFERENCE",
+        "FAIL_CLOSED_AT_HANDOFF"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "a prohibited election-period synthetic political emit passes the gate",
+      "action": "tighten election-window detection in ELECTION_INTEGRITY scoped by JURISDICTION_RESOLUTION",
+      "nodes": [
+        "ELECTION_INTEGRITY",
+        "JURISDICTION_RESOLUTION",
+        "AUDIENCE_CONTEXT"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "a reaching jurisdiction's required label is missing from the obligation set",
+      "action": "re-run JURISDICTION_RESOLUTION from actual reach and re-assemble LABELING_REGIMES",
+      "nodes": [
+        "JURISDICTION_RESOLUTION",
+        "LABELING_REGIMES",
+        "DISCLOSURE_OBLIGATION_SET"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "a minor audience is reached without the minor escalation",
+      "action": "tighten minor-likelihood signals in AUDIENCE_CONTEXT and apply AGE_PLATFORM_POLICY proportionately",
+      "nodes": [
+        "AUDIENCE_CONTEXT",
+        "AGE_PLATFORM_POLICY"
+      ],
+      "priority": "medium"
+    },
+    {
+      "trigger": "a stale platform ToS permits a now-prohibited redistribution",
+      "action": "refresh and date the snapshot in PLATFORM_TOS and treat staleness as an unmet obligation",
+      "nodes": [
+        "PLATFORM_TOS",
+        "SCRAPE_LICENSE"
+      ],
+      "priority": "medium"
+    }
+  ],
+  "priority_rationale": "EMIT_INTAKE/PLATFORM_TOS/SYNTHETIC_MEDIA_CLASSIFY are foundational; the regime and provenance nodes build the obligation superset; the in-band token and slot binding make disclosure survive; FAIL_CLOSED_AT_HANDOFF is the SPOF that blocks on any gap and HANDOFF_GATE_VERIFICATION closes the loop.",
+  "eval_objective": "verify_synthetic_media_classification_statutory_and_platform_disclosure_in_band_token_survival_and_fail_closed_handoff_blocking_of_platform_tos__synthetic_disclosure_kb"
+}

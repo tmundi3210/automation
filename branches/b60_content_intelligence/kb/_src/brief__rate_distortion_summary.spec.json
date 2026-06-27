@@ -1,0 +1,3490 @@
+{
+  "domain": "brief__rate_distortion_summary",
+  "domain_label": "Decision-Lossless Dense Machine-Facing Brief",
+  "purpose": "produce_a_token_budgeted_machine_facing_summary_at_a_chosen_rate_distortion_point_that_is_decision_lossless_over_a_fixed_downstream_field_set",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "a fixed downstream consumer with an enumerable decision/field set exists; 'lossless' is defined relative to that field set, not literal bit-losslessness",
+    "the consumer's tokenizer is known and used to measure token cost",
+    "the source is available in full at generation time so faithfulness can be checked by entailment against it"
+  ],
+  "exclusions": [
+    "human-readability and stylistic quality of the brief (the target is machine parsing)",
+    "literal bit-level lossless compression (provably infeasible below the source entropy floor at a tight budget)",
+    "training or fine-tuning the downstream consumer model",
+    "general open-domain abstractive summarization quality metrics decoupled from a downstream field set"
+  ],
+  "source_description": "heuristic prior estimates for decision-lossless rate-distortion summarization work units, grounded in Shannon's rate-distortion and source coding theory, Rissanen's MDL, and faithfulness research in abstractive summarization; no supplied dataset",
+  "source_citation": "Shannon 1948 A Mathematical Theory of Communication (source coding theorem and rate-distortion); Cover & Thomas 2006 Elements of Information Theory (ch. 10 rate-distortion theory, ch. 5 data compression); Rissanen 1978 Modeling by Shortest Data Description (Minimum Description Length); Maynez, Narayan, Bohnet & McDonald 2020 On Faithfulness and Factuality in Abstractive Summarization (ACL)",
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What is the fixed downstream field set and what content must be preserved for it?",
+      "must_be_answerable_from": [
+        "nodes",
+        "glossary"
+      ],
+      "acceptance_condition": "FIELD_SET_SPEC fixes the field set; MUST_PRESERVE_CLASSES maps content to it",
+      "covered_by": [
+        "FIELD_SET_SPEC",
+        "MUST_PRESERVE_CLASSES"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "Why can a brief not be both literally lossless and arbitrarily short, and what is the rate floor?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SOURCE_ENTROPY_BOUND sets the entropy floor; RATE_DISTORTION frames the tradeoff",
+      "covered_by": [
+        "SOURCE_ENTROPY_BOUND",
+        "RATE_DISTORTION"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How is source content partitioned into must-preserve versus droppable, and in what order is it shed?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "MUST_PRESERVE_CLASSES and DROPPABLE_CLASSES partition; SALIENCE_RANKING orders shedding",
+      "covered_by": [
+        "MUST_PRESERVE_CLASSES",
+        "DROPPABLE_CLASSES",
+        "SALIENCE_RANKING"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How is distortion defined so that 'lossless' means the right thing?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "DISTORTION_METRIC defines distortion as decision error over the field set, not surface overlap",
+      "covered_by": [
+        "DISTORTION_METRIC"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How is the lossless-versus-efficient goal reframed as a rate-distortion tradeoff and an operating point?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "RATE_DISTORTION reframes it (FP2); OPERATING_POINT and DECISION_LOSSLESS pick the target",
+      "covered_by": [
+        "RATE_DISTORTION",
+        "DECISION_LOSSLESS",
+        "OPERATING_POINT"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What does decision-losslessness mean and how is it operationally tested?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "DECISION_LOSSLESS defines it; ROUND_TRIP_TEST tests it operationally",
+      "covered_by": [
+        "DECISION_LOSSLESS",
+        "ROUND_TRIP_TEST"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is the operating point and token budget chosen given per-field loss tolerance?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "OPERATING_POINT selects the point; TOKEN_BUDGET fixes and measures B",
+      "covered_by": [
+        "OPERATING_POINT",
+        "TOKEN_BUDGET"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How is the token budget measured and how does distortion vary with it?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "TOKEN_BUDGET measures cost; DISTORTION_CURVE traces distortion vs budget",
+      "covered_by": [
+        "TOKEN_BUDGET",
+        "DISTORTION_CURVE"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is the operating budget validated against coverage and the distortion knee?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "DISTORTION_CURVE locates the knee; COVERAGE_AUDIT validates coverage and budget jointly",
+      "covered_by": [
+        "DISTORTION_CURVE",
+        "COVERAGE_AUDIT"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "Why is the brief optimized for machines and what target does that set?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "MACHINE_FACING sets the parse-optimized target; DENSE_GRAMMAR realizes it",
+      "covered_by": [
+        "MACHINE_FACING",
+        "DENSE_GRAMMAR"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "What grammar makes the dense line self-describing and unambiguously parseable?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "DENSE_GRAMMAR fixes the pipe/KV format; SCHEMA_HINT and ABBREVIATION_KEY make it self-describing",
+      "covered_by": [
+        "DENSE_GRAMMAR",
+        "SCHEMA_HINT",
+        "ABBREVIATION_KEY"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "Which compression operators move along the rate axis and how is their distortion controlled?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "COMPRESSION_OPS applies lossless/bounded-lossy operators ordered by SALIENCE_RANKING",
+      "covered_by": [
+        "COMPRESSION_OPS",
+        "SALIENCE_RANKING"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How is faithfulness enforced and how is each fact made verifiable?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "FAITHFULNESS forbids hallucination; VERIFIABILITY_TAGS attach provenance",
+      "covered_by": [
+        "FAITHFULNESS",
+        "VERIFIABILITY_TAGS"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "How is decision-losslessness verified end-to-end before the brief is accepted?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "ROUND_TRIP_TEST reconstructs decisions; VERIFIABILITY_TAGS support the audit",
+      "covered_by": [
+        "ROUND_TRIP_TEST",
+        "VERIFIABILITY_TAGS"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "rate_distortion_function",
+      "definition": "R(D): the minimum rate (bits/tokens) needed to encode a source within distortion D; the lower boundary of the achievable (rate,distortion) region",
+      "synonyms": [
+        "R(D)",
+        "rate_distortion_curve"
+      ],
+      "not_same_as": [
+        "lossless_compression_ratio"
+      ],
+      "used_by_nodes": [
+        "RATE_DISTORTION",
+        "DISTORTION_CURVE"
+      ]
+    },
+    {
+      "term": "decision_lossless",
+      "definition": "lossless with respect to a fixed downstream field set: the consumer makes every field decision identically from the brief and from the source",
+      "synonyms": [
+        "semantically_lossless",
+        "task_lossless"
+      ],
+      "not_same_as": [
+        "literal_lossless",
+        "bit_lossless"
+      ],
+      "used_by_nodes": [
+        "DECISION_LOSSLESS",
+        "ROUND_TRIP_TEST"
+      ]
+    },
+    {
+      "term": "source_entropy_floor",
+      "definition": "the field-restricted entropy of the source; a lower bound on the rate of any zero-distortion code by Shannon's source coding theorem",
+      "synonyms": [
+        "entropy_rate_floor",
+        "rate_floor"
+      ],
+      "not_same_as": [
+        "compression_target"
+      ],
+      "used_by_nodes": [
+        "SOURCE_ENTROPY_BOUND",
+        "TOKEN_BUDGET"
+      ]
+    },
+    {
+      "term": "distortion",
+      "definition": "decision error over the field set: weighted fraction of downstream field decisions the brief would get wrong versus the source",
+      "synonyms": [
+        "decision_error",
+        "fidelity_loss"
+      ],
+      "not_same_as": [
+        "edit_distance",
+        "rouge_overlap"
+      ],
+      "used_by_nodes": [
+        "DISTORTION_METRIC",
+        "DISTORTION_CURVE"
+      ]
+    },
+    {
+      "term": "operating_point",
+      "definition": "the chosen (token budget, tolerated distortion) pair on R(D) that the brief targets",
+      "synonyms": [
+        "rd_point",
+        "budget_fidelity_point"
+      ],
+      "not_same_as": [
+        "maximum_compression"
+      ],
+      "used_by_nodes": [
+        "OPERATING_POINT",
+        "TOKEN_BUDGET"
+      ]
+    },
+    {
+      "term": "must_preserve_class",
+      "definition": "a content class load-bearing for at least one downstream field, whose loss can flip a decision (identifiers, quantities, negation, deadlines)",
+      "synonyms": [
+        "decision_relevant_content"
+      ],
+      "not_same_as": [
+        "droppable_class"
+      ],
+      "used_by_nodes": [
+        "MUST_PRESERVE_CLASSES",
+        "SALIENCE_RANKING"
+      ]
+    },
+    {
+      "term": "droppable_class",
+      "definition": "a content class that is redundant, inferable, or decision-irrelevant and may be compressed or removed",
+      "synonyms": [
+        "compressible_content"
+      ],
+      "not_same_as": [
+        "must_preserve_class"
+      ],
+      "used_by_nodes": [
+        "DROPPABLE_CLASSES",
+        "COMPRESSION_OPS"
+      ]
+    },
+    {
+      "term": "schema_hint",
+      "definition": "a compact self-description prepended to the dense line declaring field names, order, types, and a version so the line is self-parsing",
+      "synonyms": [
+        "self_describing_header"
+      ],
+      "not_same_as": [
+        "external_schema_doc"
+      ],
+      "used_by_nodes": [
+        "SCHEMA_HINT",
+        "DENSE_GRAMMAR"
+      ]
+    },
+    {
+      "term": "hallucination",
+      "definition": "content in the brief not entailed by the source: extrinsic (absent from source) or intrinsic (contradicting source), per Maynez et al. 2020",
+      "synonyms": [
+        "unfaithful_content",
+        "fabrication"
+      ],
+      "not_same_as": [
+        "valid_inference"
+      ],
+      "used_by_nodes": [
+        "FAITHFULNESS",
+        "VERIFIABILITY_TAGS"
+      ]
+    },
+    {
+      "term": "round_trip_test",
+      "definition": "feeding the brief alone to the downstream consumer and checking it reconstructs every field decision correctly; the operational test of decision-losslessness",
+      "synonyms": [
+        "reconstruction_test"
+      ],
+      "not_same_as": [
+        "surface_similarity_check"
+      ],
+      "used_by_nodes": [
+        "ROUND_TRIP_TEST",
+        "COVERAGE_AUDIT"
+      ]
+    },
+    {
+      "term": "minimum_description_length",
+      "definition": "Rissanen's MDL principle: prefer the model+data encoding of shortest total length; here, splitting cost between a shared codebook and the message",
+      "synonyms": [
+        "mdl",
+        "two_part_code"
+      ],
+      "not_same_as": [
+        "maximum_likelihood_only"
+      ],
+      "used_by_nodes": [
+        "ABBREVIATION_KEY",
+        "DENSE_GRAMMAR"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "FIELD_SET_SPEC",
+      "topic": "fixed_downstream_field_set_specification",
+      "definition": "Fix the exact set of fields/decisions a downstream consumer (a generator, classifier, or router) must make from the brief alone; this field set is the reference against which 'lossless' is defined and is the boundary condition for the whole rate-distortion problem.",
+      "group": "foundations",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "systems_analyst",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "downstream consumer spec",
+        "decision contract"
+      ],
+      "outputs": [
+        "fixed field set with weights"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.85,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.66,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "downstream consumer's required field set or decision contract changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "enumerated downstream fields",
+          "decision contract",
+          "field criticality weights"
+        ],
+        "excluded": [
+          "source-side entropy estimation",
+          "grammar design"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Pinning the field set turns 'lossless' from an unbounded ideal into a finite, checkable obligation per field",
+          "example": "fields={priority, owner, due_date, blocking_dep} -> only these four must be reconstructable"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A field set fixed too early can omit a decision the consumer silently needs, making the brief locally lossless but globally wrong",
+          "example": "consumer later needs 'risk_tier' that was never enumerated"
+        }
+      ],
+      "failure_modes": [
+        "unenumerated decision relied on downstream",
+        "field set conflated with source schema rather than decision needs"
+      ],
+      "acceptance_tests": [
+        "every downstream decision maps to at least one enumerated field with a criticality weight"
+      ],
+      "revisit_triggers": [
+        "downstream consumer contract changes",
+        "a new decision field is requested"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "SOURCE_ENTROPY_BOUND",
+      "topic": "source_entropy_rate_floor",
+      "definition": "Estimate the information content of the source restricted to the field set, establishing the rate floor: by Shannon's source coding theorem no lossless code can compress decision-relevant content below its entropy, so 'lossless AND arbitrarily short' is provably impossible.",
+      "group": "foundations",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "fixed field set"
+      ],
+      "outputs": [
+        "entropy floor estimate",
+        "compressibility headroom"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.78,
+        "user_value": 0.7,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.62,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.28,
+          0.62
+        ],
+        "update_signal": "source distribution assumptions or field-restricted entropy estimate changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "field-restricted entropy estimate",
+          "rate floor (lower bound on tokens)",
+          "compressibility headroom"
+        ],
+        "excluded": [
+          "actual encoding",
+          "human readability tuning"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An explicit entropy floor exposes the hard limit: tokens cannot go below the field-restricted entropy without distortion",
+          "example": "if the four decision fields carry ~30 bits, no zero-distortion brief is shorter than ~30 bits of code"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Entropy of natural-language fields is hard to estimate; a wrong floor mis-prices the achievable budget",
+          "example": "treating a high-entropy free-text justification as if it were a low-entropy enum"
+        }
+      ],
+      "failure_modes": [
+        "entropy underestimated -> impossible budget targeted",
+        "source modeled as i.i.d. when it has strong dependencies"
+      ],
+      "acceptance_tests": [
+        "the chosen token budget is consistent with (>=) the estimated field-restricted entropy floor"
+      ],
+      "revisit_triggers": [
+        "source distribution shifts",
+        "field-restricted entropy re-estimated materially higher"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "MUST_PRESERVE_CLASSES",
+      "topic": "decision_relevant_must_preserve_classes",
+      "definition": "Partition source content into classes that MUST survive compression because they are load-bearing for at least one downstream field: identifiers, quantities, polarity/negation, deadlines, named entities, and explicit constraints whose loss flips a decision.",
+      "group": "selection",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer",
+        "systems_analyst"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "FIELD_SET_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.64,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.54
+        ],
+        "update_signal": "field set changes or a content class is reclassified as decision-relevant"
+      },
+      "scope_boundary": {
+        "included": [
+          "must-preserve class taxonomy",
+          "field-to-class mapping",
+          "negation/quantity/identifier preservation"
+        ],
+        "excluded": [
+          "droppable classification",
+          "token costing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Naming must-preserve classes makes preservation a typed, auditable obligation rather than an editorial hope",
+          "example": "negation and numeric quantities are tagged must-preserve so 'not approved' never compresses to 'approved'"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Over-broad must-preserve sets defeat compression by protecting content no decision actually needs",
+          "example": "marking every proper noun must-preserve when only the assignee entity is decision-relevant"
+        }
+      ],
+      "failure_modes": [
+        "a decision-flipping token (a negation, a unit) dropped as droppable",
+        "must-preserve set so large no budget is feasible"
+      ],
+      "acceptance_tests": [
+        "every must-preserve class traces to >=1 downstream field and survives the round-trip test"
+      ],
+      "revisit_triggers": [
+        "field set changes",
+        "a dropped token is found to have flipped a decision"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DROPPABLE_CLASSES",
+      "topic": "redundant_low_value_droppable_classes",
+      "definition": "Identify content classes that are redundant, inferable, or decision-irrelevant and therefore compressible or droppable: rhetorical framing, repeated restatements, hedging, examples that re-encode an already-stated fact, and stylistic prose.",
+      "group": "selection",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "FIELD_SET_SPEC",
+        "MUST_PRESERVE_CLASSES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.74,
+        "user_value": 0.68,
+        "technical_complexity": 0.56,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.5,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.46,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "droppable taxonomy or redundancy model changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "redundancy detection",
+          "inferable-content detection",
+          "droppable taxonomy"
+        ],
+        "excluded": [
+          "must-preserve protection",
+          "grammar encoding"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Explicitly classing content as droppable is where almost all rate savings come from; redundancy is free to remove",
+          "example": "three paragraphs restating one due date collapse to a single date token"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Aggressive dropping can remove content that is redundant in the source but disambiguating for the consumer",
+          "example": "an 'example' that is the only place a unit is stated gets dropped as illustrative"
+        }
+      ],
+      "failure_modes": [
+        "inferable-but-not-actually-recoverable content dropped",
+        "redundancy mis-detected across negation boundary"
+      ],
+      "acceptance_tests": [
+        "dropped content is provably reconstructable or provably decision-irrelevant under the field set"
+      ],
+      "revisit_triggers": [
+        "redundancy model changes",
+        "a 'droppable' drop degrades a downstream decision"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DISTORTION_METRIC",
+      "topic": "decision_indexed_distortion_metric",
+      "definition": "Define the distortion measure d(source, brief) as decision error over the field set -- the fraction or weighted count of downstream fields the consumer would get wrong from the brief versus from the source -- NOT token edit distance or surface n-gram overlap.",
+      "group": "rd_core",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist",
+        "evaluation_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "FIELD_SET_SPEC",
+        "MUST_PRESERVE_CLASSES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.8,
+        "user_value": 0.74,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.6,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.28,
+          0.64
+        ],
+        "update_signal": "distortion definition or field weighting changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "decision-error distortion measure",
+          "per-field weighting",
+          "weighted aggregate distortion"
+        ],
+        "excluded": [
+          "surface ROUGE-style overlap metrics",
+          "human-preference scoring"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A decision-indexed distortion makes 'lossless' precise: zero distortion = the consumer makes every field decision identically from the brief",
+          "example": "distortion counts a flipped 'blocking=true->false' as full loss regardless of token overlap"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Decision-error distortion needs a downstream oracle or proxy to evaluate, which can be expensive or noisy",
+          "example": "approximating consumer decisions with an LLM judge introduces its own error"
+        }
+      ],
+      "failure_modes": [
+        "distortion proxied by surface overlap, rewarding faithful-looking but decision-wrong briefs",
+        "field weights mis-set so a critical flip scores low"
+      ],
+      "acceptance_tests": [
+        "distortion is computed from downstream field decisions, not surface overlap, and weights sum to a fixed total"
+      ],
+      "revisit_triggers": [
+        "field weighting changes",
+        "distortion metric found to reward decision-wrong output"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "RATE_DISTORTION",
+      "topic": "rate_distortion_tradeoff_curve",
+      "definition": "Frame the core tension: the achievable region of (rate=tokens, distortion=decision error) pairs is governed by a rate-distortion function R(D); lower distortion costs more rate. 'Lossless AND minimal tokens' is not a point but a tradeoff bounded by R(0)>=source entropy on the field set.",
+      "group": "rd_core",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate",
+        "pure_token_minimizer"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "SOURCE_ENTROPY_BOUND",
+        "DISTORTION_METRIC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.95,
+        "business_value": 0.88,
+        "user_value": 0.82,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.72,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.62,
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.24,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.3,
+          0.66
+        ],
+        "update_signal": "rate-distortion model or achievable-region assumptions change"
+      },
+      "scope_boundary": {
+        "included": [
+          "R(D) rate-distortion function",
+          "achievable (rate,distortion) region",
+          "FP2 reframing of lossless+efficient as a tradeoff"
+        ],
+        "excluded": [
+          "the literal-losslessness framing",
+          "operating-point selection (delegated)"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Casting the problem as R(D) dissolves the contradiction in 'lossless AND token-efficient': they trade off along a curve, and the right question is which point to pick",
+          "example": "at D=0 rate equals the entropy floor; relaxing to D=0.02 may halve the tokens"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "The true R(D) for natural-language field reconstruction is not closed-form; we work with an empirically traced approximation",
+          "example": "the curve is sampled at a few budgets, not derived analytically"
+        }
+      ],
+      "failure_modes": [
+        "treating zero distortion as free (ignoring R(0) floor)",
+        "assuming a single 'best' point exists independent of the consumer's loss tolerance"
+      ],
+      "acceptance_tests": [
+        "the stated goal is expressed as a point on a rate-distortion tradeoff, never as simultaneous literal-lossless + minimal-token"
+      ],
+      "revisit_triggers": [
+        "rate-distortion model assumptions change",
+        "achievable region re-traced and shifts materially"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DECISION_LOSSLESS",
+      "topic": "decision_lossless_criterion",
+      "definition": "Define decision-losslessness: the brief is lossless w.r.t. a fixed downstream field set iff the consumer makes every field decision identically from the brief and from the full source (distortion=0 under the decision metric). This is strictly weaker than literal/bit-losslessness and is the property actually required.",
+      "group": "rd_core",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist",
+        "systems_analyst"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "RATE_DISTORTION",
+        "DISTORTION_METRIC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.96,
+        "business_value": 0.9,
+        "user_value": 0.86,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.9,
+        "irreversibility": 0.74,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.95,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.2,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.26,
+          0.6
+        ],
+        "update_signal": "definition of the downstream field set or the losslessness criterion changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "decision-lossless predicate",
+          "equivalence of brief-decisions and source-decisions",
+          "scope FP2 finding"
+        ],
+        "excluded": [
+          "literal bit-losslessness",
+          "human-perceived completeness"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Decision-losslessness is achievable at far lower rate than literal losslessness because it only protects what changes a decision",
+          "example": "a 50-page contract compresses to a few decision fields while remaining decision-lossless for an approval router"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Decision-losslessness is only as trustworthy as the field set; it is silent about decisions outside that set",
+          "example": "a brief decision-lossless for routing is useless to an auditor who needs the dropped clauses"
+        }
+      ],
+      "failure_modes": [
+        "claiming losslessness without naming the field set",
+        "field set narrower than the consumer's actual decisions"
+      ],
+      "acceptance_tests": [
+        "for every field, the consumer's decision from the brief equals its decision from the full source on a held-out test set"
+      ],
+      "revisit_triggers": [
+        "downstream field set changes",
+        "a consumer decision diverges between brief and source"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "OPERATING_POINT",
+      "topic": "rate_distortion_operating_point_selection",
+      "definition": "Choose the operating point on R(D): the (token budget, tolerated distortion) pair to target, given the consumer's loss tolerance per field. Decision-critical fields demand the D=0 point; advisory fields may tolerate small distortion to buy rate.",
+      "group": "rd_core",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer",
+        "systems_analyst"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "RATE_DISTORTION",
+        "DECISION_LOSSLESS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.78,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.66,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.28,
+          0.62
+        ],
+        "update_signal": "consumer loss tolerance or budget constraint changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "operating-point selection",
+          "per-field distortion tolerance",
+          "budget-vs-fidelity tradeoff decision"
+        ],
+        "excluded": [
+          "curve estimation (delegated)",
+          "grammar encoding"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Selecting the point explicitly makes the lossless/efficient tradeoff a deliberate, documented decision rather than an accident of prompt length",
+          "example": "set D=0 for {amount, party, deadline}; allow D<=0.05 for {tone, background}"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A single global operating point can over- or under-protect heterogeneous fields with different stakes",
+          "example": "one budget forces the same fidelity on a legal amount and a stylistic note"
+        }
+      ],
+      "failure_modes": [
+        "operating point chosen without per-field tolerance",
+        "point set below the entropy floor (infeasible at zero distortion)"
+      ],
+      "acceptance_tests": [
+        "the selected operating point is feasible (rate>=entropy floor at the chosen distortion) and per-field tolerances are recorded"
+      ],
+      "revisit_triggers": [
+        "consumer loss tolerance changes",
+        "budget constraint tightened or relaxed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "TOKEN_BUDGET",
+      "topic": "fixed_token_budget_and_cost_measurement",
+      "definition": "Fix a token budget B for the brief and measure realized token cost against it with a concrete tokenizer; the budget is the rate axis made operational, and cost must be measured in the same tokenizer the downstream consumer uses.",
+      "group": "budget",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "operating point",
+        "consumer tokenizer"
+      ],
+      "outputs": [
+        "budget B",
+        "measured token cost"
+      ],
+      "dependencies": [
+        "OPERATING_POINT",
+        "SOURCE_ENTROPY_BOUND"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.76,
+        "technical_complexity": 0.54,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.55,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.16,
+        "downside_weight": 0.46,
+        "uncertainty_interval": [
+          0.18,
+          0.46
+        ],
+        "update_signal": "tokenizer or budget constraint B changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "fixed budget B",
+          "tokenizer-consistent cost measurement",
+          "budget-overrun defeater"
+        ],
+        "excluded": [
+          "entropy estimation",
+          "fidelity verification"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A measured budget in the consumer's own tokenizer makes 'token-efficient' an enforced number, not an aspiration",
+          "example": "B=180 tokens measured with the same BPE the downstream model parses with"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Budgets measured in the wrong tokenizer mislead: a brief 'within budget' in one tokenizer overflows another",
+          "example": "counting whitespace-split words while the consumer uses sub-word BPE"
+        }
+      ],
+      "failure_modes": [
+        "cost measured in a different tokenizer than the consumer's",
+        "budget set without reference to the entropy floor"
+      ],
+      "acceptance_tests": [
+        "realized token cost <= B measured with the consumer's tokenizer, and B >= the entropy floor"
+      ],
+      "revisit_triggers": [
+        "tokenizer changes",
+        "budget constraint B revised"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DISTORTION_CURVE",
+      "topic": "empirical_distortion_vs_budget_curve",
+      "definition": "Trace the empirical distortion-vs-budget curve by generating briefs at several budgets and measuring decision distortion at each, approximating R(D) and locating the knee where further compression starts flipping decisions.",
+      "group": "budget",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "evaluation_engineer",
+        "information_theorist"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "DISTORTION_METRIC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.76,
+        "user_value": 0.72,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.24,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.3,
+          0.66
+        ],
+        "update_signal": "curve sampling protocol or distortion measurement changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "budget sweep",
+          "per-budget distortion measurement",
+          "knee/operating-point identification"
+        ],
+        "excluded": [
+          "analytic R(D) derivation",
+          "final encoding"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An empirical curve replaces guesswork: it shows exactly how many tokens buy how much fidelity for THIS source and field set",
+          "example": "curve shows distortion is flat from 250 down to 180 tokens, then rises sharply -> pick ~180"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "The curve is only valid for the sampled source/consumer; it does not generalize to a different document or field set",
+          "example": "a curve traced on invoices misapplied to legal briefs"
+        }
+      ],
+      "failure_modes": [
+        "curve sampled too coarsely to locate the knee",
+        "distortion measured with a proxy that hides decision flips"
+      ],
+      "acceptance_tests": [
+        "the curve has enough budget samples to locate the knee, and the chosen budget sits at or above it"
+      ],
+      "revisit_triggers": [
+        "source or field set changes (curve invalidated)",
+        "curve knee moves materially on re-sampling"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "MACHINE_FACING",
+      "topic": "machine_facing_optimization_target",
+      "definition": "Commit to optimizing the brief for machine parsing rather than human readability: prose connectives, hewing to natural prosody, and narrative flow are dropped in favor of token-dense, position-stable, unambiguously parseable structure.",
+      "group": "encoding",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer",
+        "prompt_engineer"
+      ],
+      "contradictors": [
+        "human_readability_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "DROPPABLE_CLASSES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.74,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "downstream consumer changes from machine to human or vice versa"
+      },
+      "scope_boundary": {
+        "included": [
+          "machine-parse optimization target",
+          "removal of human-prosody overhead",
+          "position-stable structure"
+        ],
+        "excluded": [
+          "human-readability tuning",
+          "stylistic polish"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Optimizing for the parser removes whole classes of tokens (articles, transitions, hedges) that cost rate but carry no decision information",
+          "example": "'The owner of the task is, as noted, Alice' -> 'owner=Alice'"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Machine-facing briefs are hostile to human review, so errors are harder for a person to spot before consumption",
+          "example": "a flipped boolean in a pipe-delimited line is invisible at a glance"
+        }
+      ],
+      "failure_modes": [
+        "machine-facing form so terse it becomes ambiguous to the parser",
+        "human reviewer assumed where only a parser consumes"
+      ],
+      "acceptance_tests": [
+        "the brief parses unambiguously under the declared grammar with no reliance on prose connectives"
+      ],
+      "revisit_triggers": [
+        "consumer switches to a human reader",
+        "parser ambiguity observed on the brief form"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DENSE_GRAMMAR",
+      "topic": "fixed_pipe_kv_dense_grammar",
+      "definition": "Fix a dense, self-describing grammar -- a stable pipe/key-value line format with a leading schema_hint -- so the brief is unambiguously parseable and self-delimiting; the grammar is part of the code, paid for once, and amortized across every field.",
+      "group": "encoding",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer",
+        "prompt_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "MACHINE_FACING",
+        "MUST_PRESERVE_CLASSES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.64,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.7,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.56,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "grammar specification or delimiter set changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "pipe/KV line grammar",
+          "leading schema_hint",
+          "self-delimiting field encoding"
+        ],
+        "excluded": [
+          "abbreviation expansion (delegated)",
+          "distortion measurement"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A fixed grammar with a schema_hint lets the dense line self-describe, so the consumer parses it deterministically without a separate spec",
+          "example": "'#schema:owner|prio|due|blocks; owner=Alice|prio=P1|due=2026-07-01|blocks=SVC-9'"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A rigid grammar can fail to encode an unexpected field shape, forcing either an escape hatch or silent loss",
+          "example": "a multi-valued field that the single-value KV slot cannot hold"
+        }
+      ],
+      "failure_modes": [
+        "delimiter collision with field content (unescaped pipe in a value)",
+        "grammar drift between producer and consumer versions"
+      ],
+      "acceptance_tests": [
+        "the brief carries a schema_hint and every field parses unambiguously; delimiters in values are escaped"
+      ],
+      "revisit_triggers": [
+        "grammar/delimiter set changes",
+        "a parse failure traced to the grammar"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "SCHEMA_HINT",
+      "topic": "self_describing_schema_hint",
+      "definition": "Prepend a compact schema_hint that names the fields and their order/types so the dense line is self-describing; this is the one-time grammar cost that makes the rest of the line interpretable and version-checkable by the consumer.",
+      "group": "encoding",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "fixed field set",
+        "grammar"
+      ],
+      "outputs": [
+        "schema_hint header"
+      ],
+      "dependencies": [
+        "DENSE_GRAMMAR",
+        "FIELD_SET_SPEC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.76,
+        "user_value": 0.74,
+        "technical_complexity": 0.54,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.58,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.16,
+        "downside_weight": 0.44,
+        "uncertainty_interval": [
+          0.18,
+          0.46
+        ],
+        "update_signal": "field set or schema versioning policy changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "field-name/order/type declaration",
+          "schema version tag",
+          "self-description of the dense line"
+        ],
+        "excluded": [
+          "value encoding",
+          "round-trip evaluation"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A schema_hint makes the brief portable and version-checkable: the consumer validates the field set before parsing values",
+          "example": "'#v=2;fields=owner:str,prio:enum,due:date' lets the consumer reject a v1 parser"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "The schema_hint is pure overhead at very small budgets where its tokens rival the payload",
+          "example": "a 4-field hint costs as much as the 4 values it describes"
+        }
+      ],
+      "failure_modes": [
+        "schema_hint omitted, leaving the consumer to guess field order",
+        "schema version not bumped on a field change"
+      ],
+      "acceptance_tests": [
+        "the schema_hint declares every field and a version tag, and the consumer validates it before parsing"
+      ],
+      "revisit_triggers": [
+        "field set changes",
+        "schema versioning policy changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "ABBREVIATION_KEY",
+      "topic": "expandable_abbreviation_key",
+      "definition": "Maintain an expandable abbreviation/symbol key so high-frequency long tokens are coded to short symbols recoverable by the consumer; this is an MDL move -- shifting cost into a shared, amortized codebook to lower the message rate.",
+      "group": "encoding",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "DENSE_GRAMMAR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.76,
+        "business_value": 0.72,
+        "user_value": 0.68,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.5,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.76,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.44,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "update_signal": "abbreviation codebook or sharing assumption changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "symbol/abbreviation codebook",
+          "expansion rules",
+          "codebook-vs-message cost split"
+        ],
+        "excluded": [
+          "schema declaration",
+          "faithfulness tagging"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "By MDL, moving repeated long strings into a shared key lowers total description length when the codebook is amortized over many briefs",
+          "example": "code 'organization'->'org', 'requirement'->'req' once, save tokens on every line"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "If the consumer lacks the key (or it drifts), abbreviations are unrecoverable and the brief becomes lossy",
+          "example": "a brief using an org-specific code shipped to a consumer without the codebook"
+        }
+      ],
+      "failure_modes": [
+        "abbreviation collides with a literal value",
+        "codebook drift between producer and consumer"
+      ],
+      "acceptance_tests": [
+        "every abbreviation in the brief is expandable by the consumer's current key with no collisions"
+      ],
+      "revisit_triggers": [
+        "codebook changes",
+        "an unexpandable abbreviation reaches the consumer"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "FAITHFULNESS",
+      "topic": "no_hallucinated_facts_faithfulness",
+      "definition": "Enforce faithfulness: every fact in the brief must be entailed by the source -- no hallucinated, fabricated, or unsupported content. Following Maynez et al. 2020, distinguish extrinsic hallucination (content not in source) from intrinsic (content contradicting source); both are zero-tolerance for decision fields.",
+      "group": "fidelity",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer",
+        "evaluation_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "MUST_PRESERVE_CLASSES",
+        "DISTORTION_METRIC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.94,
+        "business_value": 0.86,
+        "user_value": 0.82,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.7,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.28,
+          0.64
+        ],
+        "update_signal": "faithfulness definition or entailment-checking method changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "source-entailment requirement",
+          "extrinsic vs intrinsic hallucination distinction",
+          "zero-tolerance on decision fields"
+        ],
+        "excluded": [
+          "fluency optimization",
+          "human-readability"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Faithfulness keeps compression honest: a shorter brief is worthless if it invents a deadline or flips a polarity",
+          "example": "abstractive rewrite that introduces a date absent from the source is rejected as extrinsic hallucination"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Strict entailment can reject valid sound inferences the consumer would accept, forcing verbose hedging",
+          "example": "an obvious aggregate the source implies but does not literally state is flagged unsupported"
+        }
+      ],
+      "failure_modes": [
+        "abstractive paraphrase silently introduces an unsupported fact",
+        "intrinsic hallucination flips a polarity (approved<->denied)"
+      ],
+      "acceptance_tests": [
+        "every decision-field value in the brief is entailed by the source on a faithfulness check"
+      ],
+      "revisit_triggers": [
+        "faithfulness criterion changes",
+        "a hallucinated fact is found in a shipped brief"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "VERIFIABILITY_TAGS",
+      "topic": "verifiability_and_provenance_tags",
+      "definition": "Attach verifiability tags (source span pointer, or an explicit 'inferred'/'derived' marker) to facts in the brief so the consumer can distinguish source-grounded values from derived ones and audit any field back to the source.",
+      "group": "fidelity",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "FAITHFULNESS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.76,
+        "user_value": 0.74,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.46,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "provenance tagging scheme or source addressing changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "per-fact source-span pointers",
+          "inferred/derived markers",
+          "auditability to source"
+        ],
+        "excluded": [
+          "entailment computation",
+          "budget setting"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Verifiability tags let the consumer trust-but-verify and let an auditor trace any decision back to a source span cheaply",
+          "example": "owner=Alice[span:p2L4] vs risk=high[inferred] makes provenance explicit"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Provenance tags add rate; at tight budgets they compete with the payload they describe",
+          "example": "a span pointer per field can double the token cost of a terse brief"
+        }
+      ],
+      "failure_modes": [
+        "inferred value presented as if source-grounded",
+        "span pointers stale after source revision"
+      ],
+      "acceptance_tests": [
+        "every fact carries a provenance tag (source span or inferred marker) that resolves against the current source"
+      ],
+      "revisit_triggers": [
+        "provenance scheme changes",
+        "a span pointer fails to resolve"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "ROUND_TRIP_TEST",
+      "topic": "downstream_reconstruction_round_trip_test",
+      "definition": "Run the round-trip test: hand the brief alone (no source) to the downstream consumer and check whether it reconstructs every field decision correctly. This is the operational definition of decision-losslessness and the primary acceptance gate.",
+      "group": "fidelity",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "evaluation_engineer",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "DECISION_LOSSLESS",
+        "FAITHFULNESS",
+        "DENSE_GRAMMAR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.93,
+        "business_value": 0.86,
+        "user_value": 0.82,
+        "technical_complexity": 0.64,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.86,
+        "irreversibility": 0.66,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.2,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.26,
+          0.6
+        ],
+        "update_signal": "round-trip protocol or consumer model changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "brief-only reconstruction trial",
+          "field-by-field decision comparison",
+          "decision-lossless acceptance gate"
+        ],
+        "excluded": [
+          "source-assisted evaluation",
+          "stylistic scoring"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "The round-trip test directly measures the property that matters: can the consumer act correctly from the brief alone",
+          "example": "feed only the dense line to the router; confirm it picks the same owner/priority as from the full ticket"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "The test is only as representative as the consumer model and the held-out cases used to run it",
+          "example": "passing on easy cases while failing on the rare decision-flipping edge case not in the sample"
+        }
+      ],
+      "failure_modes": [
+        "round-trip run with the source still in context (leakage)",
+        "test cases miss the decision-critical edge cases"
+      ],
+      "acceptance_tests": [
+        "the consumer reconstructs every field decision from the brief alone, matching the source-based decision on the test set"
+      ],
+      "revisit_triggers": [
+        "consumer model changes",
+        "a round-trip failure is observed in production"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "SALIENCE_RANKING",
+      "topic": "decision_salience_ranking",
+      "definition": "Rank source content units by decision salience -- expected reduction in downstream decision error if retained -- so that under a binding budget the highest-salience must-preserve content is encoded first and droppable content is shed last.",
+      "group": "selection",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "information_theorist",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "MUST_PRESERVE_CLASSES",
+        "DROPPABLE_CLASSES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.74,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.28,
+          0.6
+        ],
+        "update_signal": "salience model or field weighting changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "decision-salience scoring",
+          "budget-aware retention order",
+          "shed-order for droppable content"
+        ],
+        "excluded": [
+          "grammar encoding",
+          "round-trip evaluation"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Ranking by decision salience makes budget cuts principled: you lose the least decision-relevant content first",
+          "example": "a binding constraint clause outranks a background paragraph for retention"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Salience estimates are noisy; a mis-ranked but decision-critical unit can be shed under a tight budget",
+          "example": "an easily-overlooked exception clause scored low and dropped"
+        }
+      ],
+      "failure_modes": [
+        "salience proxied by frequency, demoting rare-but-critical clauses",
+        "ranking ignores field weights from the operating point"
+      ],
+      "acceptance_tests": [
+        "retained content is ordered by decision salience and no must-preserve unit is shed before any droppable unit"
+      ],
+      "revisit_triggers": [
+        "salience model changes",
+        "a high-salience unit is found to have been shed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "COMPRESSION_OPS",
+      "topic": "lossy_and_lossless_compression_operators",
+      "definition": "Apply the compression operators that move along the rate axis: lossless ones (deduplication, abbreviation, normalization to canonical form) and bounded-lossy ones (paraphrase, aggregation, quantization of low-stakes fields), each tagged by the distortion it may introduce.",
+      "group": "operations",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "SALIENCE_RANKING",
+        "ABBREVIATION_KEY",
+        "OPERATING_POINT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.78,
+        "user_value": 0.72,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.58,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.24,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.3,
+          0.66
+        ],
+        "update_signal": "compression operator set or per-operator distortion budget changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "lossless operators (dedup, normalize, abbreviate)",
+          "bounded-lossy operators (paraphrase, aggregate, quantize)",
+          "per-operator distortion accounting"
+        ],
+        "excluded": [
+          "faithfulness checking (delegated)",
+          "final round-trip"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Separating lossless from bounded-lossy operators lets you spend the distortion budget deliberately and only where the operating point allows",
+          "example": "normalize dates losslessly; quantize a 'confidence 0.73' to 'high' only for advisory fields"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Composed lossy operators accumulate distortion that can exceed the per-field tolerance non-obviously",
+          "example": "paraphrase plus aggregation together flip a decision neither would alone"
+        }
+      ],
+      "failure_modes": [
+        "lossy operator applied to a D=0 decision field",
+        "accumulated distortion across operators exceeds the field tolerance"
+      ],
+      "acceptance_tests": [
+        "each operator's distortion is accounted, and the summed distortion per field stays within its tolerance from the operating point"
+      ],
+      "revisit_triggers": [
+        "operator set changes",
+        "accumulated distortion exceeds a field tolerance"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "COVERAGE_AUDIT",
+      "topic": "field_set_coverage_and_overrun_audit",
+      "definition": "Audit the final brief on both axes at once: field-set coverage (every required field is present and decision-lossless via the round-trip) and budget conformance (cost <= B). A pass requires both; either failure routes back to operating-point or compression.",
+      "group": "verification",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "evaluation_engineer",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "ROUND_TRIP_TEST",
+        "TOKEN_BUDGET",
+        "DISTORTION_CURVE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.84,
+        "user_value": 0.8,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.66,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.18,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.22,
+          0.54
+        ],
+        "update_signal": "audit criteria or budget/coverage thresholds change"
+      },
+      "scope_boundary": {
+        "included": [
+          "field coverage check",
+          "budget conformance check",
+          "joint pass/fail gate"
+        ],
+        "excluded": [
+          "operating-point reselection (routed)",
+          "source re-ingestion"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A joint audit prevents optimizing one axis at the other's expense: it fails a brief that is cheap but decision-lossy or lossless but over budget",
+          "example": "180-token brief that drops 'blocking_dep' fails coverage even though it meets budget"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Joint pass/fail can stall when no point satisfies both (entropy floor exceeds budget), needing escalation not iteration",
+          "example": "budget below the field-restricted entropy floor makes a clean pass impossible"
+        }
+      ],
+      "failure_modes": [
+        "coverage passed but a decision field silently absent",
+        "budget conformance measured in the wrong tokenizer"
+      ],
+      "acceptance_tests": [
+        "the brief is decision-lossless over the full field set AND within budget B, both measured with the consumer's tokenizer"
+      ],
+      "revisit_triggers": [
+        "audit thresholds change",
+        "an infeasibility (floor>budget) is detected"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "REVISION_TRIGGER",
+      "topic": "drift_and_revision_trigger_protocol",
+      "definition": "Define when a previously-passing brief must be regenerated: the field set changes, the source is revised, the consumer/tokenizer changes, or a production round-trip failure is observed. Each trigger invalidates a specific upstream artifact, scoping the rework.",
+      "group": "governance",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "information_theory",
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "rate_distortion_theory",
+        "summarization"
+      ],
+      "specialists": [
+        "systems_analyst",
+        "summarization_engineer"
+      ],
+      "contradictors": [
+        "literal_losslessness_advocate"
+      ],
+      "inputs": [
+        "source document",
+        "downstream field set"
+      ],
+      "outputs": [
+        "dense machine-facing brief"
+      ],
+      "dependencies": [
+        "COVERAGE_AUDIT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.74,
+        "technical_complexity": 0.56,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.6,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "trigger taxonomy or invalidation mapping changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "revision trigger taxonomy",
+          "trigger-to-artifact invalidation map",
+          "scoped regeneration"
+        ],
+        "excluded": [
+          "initial generation",
+          "curve estimation"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Mapping each trigger to the specific invalidated artifact scopes rework: a tokenizer change re-measures budget without re-deriving the field set",
+          "example": "source revision invalidates entropy floor and curve but not the field set spec"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Over-eager triggers cause needless regeneration; under-eager ones let a stale brief drift into decision loss",
+          "example": "regenerating on a cosmetic source edit that touches no decision field"
+        }
+      ],
+      "failure_modes": [
+        "a decision-relevant source change does not trigger revision",
+        "trigger fires but invalidates the wrong artifact, missing the real staleness"
+      ],
+      "acceptance_tests": [
+        "every trigger maps to the precise upstream artifact it invalidates and scoped regeneration restores a passing audit"
+      ],
+      "revisit_triggers": [
+        "trigger taxonomy changes",
+        "a stale brief reaches production without a trigger firing"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    }
+  ],
+  "edges": [
+    {
+      "from": "FIELD_SET_SPEC",
+      "to": "MUST_PRESERVE_CLASSES",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "MUST_PRESERVE_CLASSES depends on FIELD_SET_SPEC",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "FIELD_SET_SPEC finalized before MUST_PRESERVE_CLASSES"
+    },
+    {
+      "from": "FIELD_SET_SPEC",
+      "to": "DROPPABLE_CLASSES",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DROPPABLE_CLASSES depends on FIELD_SET_SPEC",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "FIELD_SET_SPEC finalized before DROPPABLE_CLASSES"
+    },
+    {
+      "from": "FIELD_SET_SPEC",
+      "to": "DISTORTION_METRIC",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISTORTION_METRIC depends on FIELD_SET_SPEC",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "FIELD_SET_SPEC finalized before DISTORTION_METRIC"
+    },
+    {
+      "from": "SOURCE_ENTROPY_BOUND",
+      "to": "RATE_DISTORTION",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "RATE_DISTORTION depends on SOURCE_ENTROPY_BOUND",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SOURCE_ENTROPY_BOUND finalized before RATE_DISTORTION"
+    },
+    {
+      "from": "DISTORTION_METRIC",
+      "to": "RATE_DISTORTION",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "RATE_DISTORTION depends on DISTORTION_METRIC",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DISTORTION_METRIC finalized before RATE_DISTORTION"
+    },
+    {
+      "from": "RATE_DISTORTION",
+      "to": "DECISION_LOSSLESS",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DECISION_LOSSLESS depends on RATE_DISTORTION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "RATE_DISTORTION finalized before DECISION_LOSSLESS"
+    },
+    {
+      "from": "RATE_DISTORTION",
+      "to": "OPERATING_POINT",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "OPERATING_POINT depends on RATE_DISTORTION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "RATE_DISTORTION finalized before OPERATING_POINT"
+    },
+    {
+      "from": "OPERATING_POINT",
+      "to": "TOKEN_BUDGET",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "TOKEN_BUDGET depends on OPERATING_POINT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "OPERATING_POINT finalized before TOKEN_BUDGET"
+    },
+    {
+      "from": "TOKEN_BUDGET",
+      "to": "DISTORTION_CURVE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DISTORTION_CURVE depends on TOKEN_BUDGET",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "TOKEN_BUDGET finalized before DISTORTION_CURVE"
+    },
+    {
+      "from": "DROPPABLE_CLASSES",
+      "to": "MACHINE_FACING",
+      "edge_type": "dependency",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "MACHINE_FACING depends on DROPPABLE_CLASSES",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DROPPABLE_CLASSES finalized before MACHINE_FACING"
+    },
+    {
+      "from": "MACHINE_FACING",
+      "to": "DENSE_GRAMMAR",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DENSE_GRAMMAR depends on MACHINE_FACING",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "MACHINE_FACING finalized before DENSE_GRAMMAR"
+    },
+    {
+      "from": "DENSE_GRAMMAR",
+      "to": "SCHEMA_HINT",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "SCHEMA_HINT depends on DENSE_GRAMMAR",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DENSE_GRAMMAR finalized before SCHEMA_HINT"
+    },
+    {
+      "from": "DENSE_GRAMMAR",
+      "to": "ABBREVIATION_KEY",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "ABBREVIATION_KEY depends on DENSE_GRAMMAR",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DENSE_GRAMMAR finalized before ABBREVIATION_KEY"
+    },
+    {
+      "from": "MUST_PRESERVE_CLASSES",
+      "to": "FAITHFULNESS",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "FAITHFULNESS depends on MUST_PRESERVE_CLASSES",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "MUST_PRESERVE_CLASSES finalized before FAITHFULNESS"
+    },
+    {
+      "from": "FAITHFULNESS",
+      "to": "VERIFIABILITY_TAGS",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "VERIFIABILITY_TAGS depends on FAITHFULNESS",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "FAITHFULNESS finalized before VERIFIABILITY_TAGS"
+    },
+    {
+      "from": "DECISION_LOSSLESS",
+      "to": "ROUND_TRIP_TEST",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "ROUND_TRIP_TEST depends on DECISION_LOSSLESS",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DECISION_LOSSLESS finalized before ROUND_TRIP_TEST"
+    },
+    {
+      "from": "MUST_PRESERVE_CLASSES",
+      "to": "SALIENCE_RANKING",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "SALIENCE_RANKING depends on MUST_PRESERVE_CLASSES",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "MUST_PRESERVE_CLASSES finalized before SALIENCE_RANKING"
+    },
+    {
+      "from": "SALIENCE_RANKING",
+      "to": "COMPRESSION_OPS",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "COMPRESSION_OPS depends on SALIENCE_RANKING",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SALIENCE_RANKING finalized before COMPRESSION_OPS"
+    },
+    {
+      "from": "ABBREVIATION_KEY",
+      "to": "COMPRESSION_OPS",
+      "edge_type": "dependency",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "COMPRESSION_OPS depends on ABBREVIATION_KEY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "ABBREVIATION_KEY finalized before COMPRESSION_OPS"
+    },
+    {
+      "from": "OPERATING_POINT",
+      "to": "COMPRESSION_OPS",
+      "edge_type": "dependency",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "COMPRESSION_OPS depends on OPERATING_POINT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "OPERATING_POINT finalized before COMPRESSION_OPS"
+    },
+    {
+      "from": "ROUND_TRIP_TEST",
+      "to": "COVERAGE_AUDIT",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "COVERAGE_AUDIT depends on ROUND_TRIP_TEST",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "ROUND_TRIP_TEST finalized before COVERAGE_AUDIT"
+    },
+    {
+      "from": "TOKEN_BUDGET",
+      "to": "COVERAGE_AUDIT",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "COVERAGE_AUDIT depends on TOKEN_BUDGET",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "TOKEN_BUDGET finalized before COVERAGE_AUDIT"
+    },
+    {
+      "from": "DISTORTION_CURVE",
+      "to": "COVERAGE_AUDIT",
+      "edge_type": "dependency",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "COVERAGE_AUDIT depends on DISTORTION_CURVE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DISTORTION_CURVE finalized before COVERAGE_AUDIT"
+    },
+    {
+      "from": "COVERAGE_AUDIT",
+      "to": "REVISION_TRIGGER",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "REVISION_TRIGGER depends on COVERAGE_AUDIT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "COVERAGE_AUDIT finalized before REVISION_TRIGGER"
+    },
+    {
+      "from": "DISTORTION_CURVE",
+      "to": "OPERATING_POINT",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "the traced distortion curve feeds back to relocate the operating point at the knee",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "DISTORTION_CURVE/OPERATING_POINT feedback relation"
+    },
+    {
+      "from": "ROUND_TRIP_TEST",
+      "to": "COMPRESSION_OPS",
+      "edge_type": "feedback",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a round-trip failure feeds back to back off a lossy compression operator",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "ROUND_TRIP_TEST/COMPRESSION_OPS feedback relation"
+    },
+    {
+      "from": "COVERAGE_AUDIT",
+      "to": "OPERATING_POINT",
+      "edge_type": "feedback",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a failed audit routes back to reselect the operating point or budget",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "COVERAGE_AUDIT/OPERATING_POINT feedback relation"
+    },
+    {
+      "from": "REVISION_TRIGGER",
+      "to": "FIELD_SET_SPEC",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a field-set-change trigger reopens the field set specification",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "REVISION_TRIGGER/FIELD_SET_SPEC feedback relation"
+    },
+    {
+      "from": "SOURCE_ENTROPY_BOUND",
+      "to": "OPERATING_POINT",
+      "edge_type": "constraint",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "the entropy floor constrains feasible operating points to rate>=floor at zero distortion",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "SOURCE_ENTROPY_BOUND/OPERATING_POINT constraint relation"
+    },
+    {
+      "from": "OPERATING_POINT",
+      "to": "COMPRESSION_OPS",
+      "edge_type": "constraint",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "per-field distortion tolerances from the operating point bound which lossy operators may apply",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "OPERATING_POINT/COMPRESSION_OPS constraint relation"
+    },
+    {
+      "from": "VERIFIABILITY_TAGS",
+      "to": "ROUND_TRIP_TEST",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "provenance tags let the round-trip audit attribute a decision flip to a specific source span",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "VERIFIABILITY_TAGS/ROUND_TRIP_TEST causal relation"
+    },
+    {
+      "from": "SCHEMA_HINT",
+      "to": "COVERAGE_AUDIT",
+      "edge_type": "similarity",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "the schema_hint enumerates the fields the coverage audit checks for presence",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "SCHEMA_HINT/COVERAGE_AUDIT similarity relation"
+    },
+    {
+      "from": "DECISION_LOSSLESS",
+      "to": "TOKEN_BUDGET",
+      "edge_type": "conflict",
+      "relation_strength": 0.74,
+      "signed_tension": -0.6,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "respect the entropy floor: hold decision-losslessness for D=0 fields and spend rate to meet it; only relax distortion on fields whose operating-point tolerance allows, never compress a D=0 field below its floor",
+      "why_related": "driving the token budget down conflicts with decision-losslessness once the budget approaches the entropy floor",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades the rate-distortion outcome",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "MACHINE_FACING",
+      "to": "FAITHFULNESS",
+      "edge_type": "conflict",
+      "relation_strength": 0.68,
+      "signed_tension": -0.45,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "terseness must not introduce ambiguity that the consumer resolves into an unsupported fact; keep every dense token entailed by the source and add a verifiability tag rather than guess",
+      "why_related": "maximal machine-facing terseness can drop qualifiers, risking an unfaithful over-strong claim",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades the rate-distortion outcome",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "COMPRESSION_OPS",
+      "to": "DECISION_LOSSLESS",
+      "edge_type": "conflict",
+      "relation_strength": 0.7,
+      "signed_tension": -0.55,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "apply lossy operators only to fields whose operating-point distortion tolerance is non-zero; route any operator that would flip a D=0 field's decision back to a lossless alternative",
+      "why_related": "aggressive lossy compression to hit the budget conflicts with keeping decision-critical fields lossless",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades the rate-distortion outcome",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "ABBREVIATION_KEY",
+      "to": "MACHINE_FACING",
+      "edge_type": "conflict",
+      "relation_strength": 0.64,
+      "signed_tension": -0.4,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "only abbreviate with symbols the consumer's current codebook expands; if the consumer cannot expand a symbol, prefer the longer literal even though it costs rate",
+      "why_related": "abbreviation saves rate but, if the codebook is not shared, makes the brief unparseable by the machine consumer",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades the rate-distortion outcome",
+      "example": "see resolution_rule"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "decision_lossless_vs_token_budget",
+      "description": "Driving tokens down toward the entropy floor eventually starts flipping decisions; holding decisions exact costs rate. This is the central FP2 rate-distortion tension.",
+      "poles": [
+        "minimal_tokens",
+        "decision_lossless"
+      ],
+      "resolution_hint": "pick an operating point on R(D); hold D=0 only for decision-critical fields, never compress them below the floor",
+      "tension_score": 0.8,
+      "affected_nodes": [
+        "DECISION_LOSSLESS",
+        "TOKEN_BUDGET",
+        "RATE_DISTORTION",
+        "OPERATING_POINT"
+      ]
+    },
+    {
+      "name": "literal_lossless_vs_decision_lossless",
+      "description": "Literal/bit-losslessness is bounded below by source entropy and usually infeasible at a tight budget; decision-losslessness only protects what changes a decision.",
+      "poles": [
+        "literal_lossless",
+        "decision_lossless"
+      ],
+      "resolution_hint": "adopt decision-losslessness over a named field set; document that out-of-set content is intentionally not preserved",
+      "tension_score": 0.78,
+      "affected_nodes": [
+        "DECISION_LOSSLESS",
+        "SOURCE_ENTROPY_BOUND",
+        "FIELD_SET_SPEC"
+      ]
+    },
+    {
+      "name": "machine_facing_vs_human_readable",
+      "description": "Parse-optimized density removes prose overhead but makes human review and error-spotting hard.",
+      "poles": [
+        "machine_facing",
+        "human_readable"
+      ],
+      "resolution_hint": "optimize for the parser; gate with an automated round-trip rather than human readability",
+      "tension_score": 0.66,
+      "affected_nodes": [
+        "MACHINE_FACING",
+        "DENSE_GRAMMAR",
+        "ROUND_TRIP_TEST"
+      ]
+    },
+    {
+      "name": "faithfulness_vs_compression",
+      "description": "Aggressive abstractive compression risks extrinsic/intrinsic hallucination; strict entailment limits how far you can compress.",
+      "poles": [
+        "max_compression",
+        "strict_faithfulness"
+      ],
+      "resolution_hint": "permit only entailment-preserving operators on decision fields; tag inferred values explicitly",
+      "tension_score": 0.74,
+      "affected_nodes": [
+        "FAITHFULNESS",
+        "COMPRESSION_OPS",
+        "MACHINE_FACING"
+      ]
+    },
+    {
+      "name": "must_preserve_breadth_vs_budget",
+      "description": "A broad must-preserve set protects more content but defeats the budget; a narrow one risks dropping a decision-flipping token.",
+      "poles": [
+        "broad_preservation",
+        "tight_budget"
+      ],
+      "resolution_hint": "include in must-preserve only content tracing to a field; rank the rest by decision salience",
+      "tension_score": 0.7,
+      "affected_nodes": [
+        "MUST_PRESERVE_CLASSES",
+        "DROPPABLE_CLASSES",
+        "SALIENCE_RANKING"
+      ]
+    },
+    {
+      "name": "abbreviation_savings_vs_recoverability",
+      "description": "Codebook abbreviation lowers message rate (MDL) but is unrecoverable if the consumer lacks or drifts from the key.",
+      "poles": [
+        "max_abbreviation",
+        "guaranteed_recoverability"
+      ],
+      "resolution_hint": "abbreviate only with a shared, version-checked codebook; fall back to literals otherwise",
+      "tension_score": 0.62,
+      "affected_nodes": [
+        "ABBREVIATION_KEY",
+        "DENSE_GRAMMAR",
+        "MACHINE_FACING"
+      ]
+    },
+    {
+      "name": "provenance_completeness_vs_rate",
+      "description": "Per-fact verifiability tags enable audit but cost tokens that compete with the payload at tight budgets.",
+      "poles": [
+        "full_provenance",
+        "minimal_rate"
+      ],
+      "resolution_hint": "tag decision-critical and inferred fields; omit tags for self-evident source-grounded enums",
+      "tension_score": 0.58,
+      "affected_nodes": [
+        "VERIFIABILITY_TAGS",
+        "FAITHFULNESS",
+        "TOKEN_BUDGET"
+      ]
+    },
+    {
+      "name": "empirical_curve_cost_vs_point_accuracy",
+      "description": "Sampling more budgets locates the knee precisely but costs many generations; coarse sampling is cheap but mis-places the operating point.",
+      "poles": [
+        "dense_sampling",
+        "cheap_sampling"
+      ],
+      "resolution_hint": "sample densely only near the suspected knee; coarse elsewhere",
+      "tension_score": 0.55,
+      "affected_nodes": [
+        "DISTORTION_CURVE",
+        "OPERATING_POINT",
+        "TOKEN_BUDGET"
+      ]
+    },
+    {
+      "name": "early_field_set_freeze_vs_late_discovery",
+      "description": "Freezing the field set early enables all downstream work but risks omitting a decision the consumer later needs; deferring it stalls everything.",
+      "poles": [
+        "early_freeze",
+        "deferred_field_set"
+      ],
+      "resolution_hint": "freeze the field set against the consumer's decision contract; treat additions as a revision trigger",
+      "tension_score": 0.6,
+      "affected_nodes": [
+        "FIELD_SET_SPEC",
+        "REVISION_TRIGGER",
+        "COVERAGE_AUDIT"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "The field-restricted entropy floor exceeds the imposed token budget, so no decision-lossless brief fits the budget.",
+      "trigger": "budget B set below the source entropy floor on the must-preserve fields",
+      "affected_nodes": [
+        "SOURCE_ENTROPY_BOUND",
+        "TOKEN_BUDGET",
+        "COVERAGE_AUDIT"
+      ],
+      "mitigation": "escalate: raise B, narrow the field set, or accept bounded distortion on non-critical fields; do not silently drop a decision field",
+      "severity": "critical"
+    },
+    {
+      "description": "A negation or unit is compressed away, flipping a decision while the brief still looks faithful and fluent.",
+      "trigger": "a must-preserve token (negation, quantity, unit) classed as droppable",
+      "affected_nodes": [
+        "MUST_PRESERVE_CLASSES",
+        "DROPPABLE_CLASSES",
+        "DISTORTION_METRIC"
+      ],
+      "mitigation": "tag negation/quantity/identifier as must-preserve; round-trip test detects the decision flip",
+      "severity": "critical"
+    },
+    {
+      "description": "Abstractive paraphrase introduces a fact absent from the source (extrinsic hallucination) that the consumer treats as real.",
+      "trigger": "lossy paraphrase applied without an entailment check",
+      "affected_nodes": [
+        "FAITHFULNESS",
+        "COMPRESSION_OPS",
+        "VERIFIABILITY_TAGS"
+      ],
+      "mitigation": "gate every value with source entailment; mark derived values 'inferred'",
+      "severity": "high"
+    },
+    {
+      "description": "The brief is decision-lossless for the named field set but the consumer silently needs a field never enumerated.",
+      "trigger": "field set fixed without the full decision contract",
+      "affected_nodes": [
+        "FIELD_SET_SPEC",
+        "DECISION_LOSSLESS",
+        "REVISION_TRIGGER"
+      ],
+      "mitigation": "validate the field set against the consumer's decision contract; treat a new decision as a revision trigger",
+      "severity": "high"
+    },
+    {
+      "description": "Token cost is measured in a different tokenizer than the consumer uses, so a 'within budget' brief overflows downstream.",
+      "trigger": "cost measured with a word-split or wrong-BPE tokenizer",
+      "affected_nodes": [
+        "TOKEN_BUDGET",
+        "COVERAGE_AUDIT"
+      ],
+      "mitigation": "always measure cost in the consumer's tokenizer",
+      "severity": "high"
+    },
+    {
+      "description": "An abbreviation symbol is unrecoverable because the consumer's codebook drifted or was never shared.",
+      "trigger": "abbreviation used outside a shared, version-checked codebook",
+      "affected_nodes": [
+        "ABBREVIATION_KEY",
+        "DENSE_GRAMMAR",
+        "MACHINE_FACING"
+      ],
+      "mitigation": "version the codebook and validate it before parsing; fall back to literals on mismatch",
+      "severity": "high"
+    },
+    {
+      "description": "A pipe or delimiter appears unescaped inside a field value, corrupting the parse and shifting subsequent fields.",
+      "trigger": "delimiter collision with field content in the dense grammar",
+      "affected_nodes": [
+        "DENSE_GRAMMAR",
+        "SCHEMA_HINT"
+      ],
+      "mitigation": "escape delimiters in values; the schema_hint lets the consumer detect field-count mismatch",
+      "severity": "high"
+    },
+    {
+      "description": "The distortion curve is sampled too coarsely and the operating point is placed past the knee, in the region where decisions flip.",
+      "trigger": "budget sweep with too few samples near the knee",
+      "affected_nodes": [
+        "DISTORTION_CURVE",
+        "OPERATING_POINT"
+      ],
+      "mitigation": "densify sampling near the knee; choose a budget at or above it",
+      "severity": "medium"
+    },
+    {
+      "description": "Composed lossy operators each within tolerance accumulate to flip a field neither would alone.",
+      "trigger": "paraphrase plus aggregation applied to the same field without summed-distortion accounting",
+      "affected_nodes": [
+        "COMPRESSION_OPS",
+        "DISTORTION_METRIC"
+      ],
+      "mitigation": "account summed per-field distortion across operators; stop before the field tolerance is exceeded",
+      "severity": "medium"
+    },
+    {
+      "description": "A source revision changes a decision-relevant value but the cached brief is reused without regeneration.",
+      "trigger": "source updated with no revision trigger fired",
+      "affected_nodes": [
+        "REVISION_TRIGGER",
+        "COVERAGE_AUDIT",
+        "VERIFIABILITY_TAGS"
+      ],
+      "mitigation": "fire a source-revision trigger that invalidates the entropy floor, curve, and brief; re-audit",
+      "severity": "high"
+    },
+    {
+      "description": "The round-trip test passes because the source leaked into the consumer's context, masking a decision-lossy brief.",
+      "trigger": "round-trip run with the full source still in context",
+      "affected_nodes": [
+        "ROUND_TRIP_TEST",
+        "DECISION_LOSSLESS"
+      ],
+      "mitigation": "run the consumer on the brief alone with the source removed from context",
+      "severity": "high"
+    },
+    {
+      "description": "Distortion is scored by surface n-gram overlap, rewarding a faithful-looking brief that nonetheless flips a decision.",
+      "trigger": "distortion proxied by ROUGE-style overlap instead of decision error",
+      "affected_nodes": [
+        "DISTORTION_METRIC",
+        "ROUND_TRIP_TEST"
+      ],
+      "mitigation": "score distortion by downstream decision error, not surface similarity",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "fix_field_set",
+      "node_ref": "FIELD_SET_SPEC",
+      "description": "Enumerate the downstream consumer's required fields/decisions and assign criticality weights; this is the losslessness reference.",
+      "artifact": "fixed_field_set",
+      "gate": "every downstream decision maps to >=1 weighted field"
+    },
+    {
+      "action": "estimate_entropy_floor",
+      "node_ref": "SOURCE_ENTROPY_BOUND",
+      "description": "Estimate the field-restricted source entropy to set the rate floor and compressibility headroom.",
+      "artifact": "entropy_floor_estimate",
+      "gate": "floor estimated; budget will be checked against it"
+    },
+    {
+      "action": "classify_content",
+      "node_ref": "MUST_PRESERVE_CLASSES",
+      "description": "Partition content into must-preserve (decision-relevant) and droppable (redundant/inferable) classes.",
+      "artifact": "content_class_partition",
+      "gate": "every must-preserve class traces to a field"
+    },
+    {
+      "action": "define_distortion",
+      "node_ref": "DISTORTION_METRIC",
+      "description": "Define distortion as weighted decision error over the field set, not surface overlap.",
+      "artifact": "distortion_metric_spec",
+      "gate": "distortion computed from field decisions with fixed weights"
+    },
+    {
+      "action": "reframe_as_rate_distortion",
+      "node_ref": "RATE_DISTORTION",
+      "description": "Express the lossless-and-efficient goal as a point on R(D); confirm zero-distortion rate >= entropy floor (FP2).",
+      "artifact": "rate_distortion_framing",
+      "gate": "goal stated as an operating point, not literal-lossless+minimal"
+    },
+    {
+      "action": "select_operating_point",
+      "node_ref": "OPERATING_POINT",
+      "description": "Choose the (budget, per-field distortion tolerance) point; D=0 for decision-critical fields.",
+      "artifact": "operating_point_spec",
+      "gate": "point feasible (rate>=floor) with recorded per-field tolerances"
+    },
+    {
+      "action": "fix_and_measure_budget",
+      "node_ref": "TOKEN_BUDGET",
+      "description": "Fix budget B and measure realized cost in the consumer's tokenizer.",
+      "artifact": "budget_and_cost",
+      "gate": "cost <= B in the consumer's tokenizer; B >= floor"
+    },
+    {
+      "action": "fix_grammar_and_encode",
+      "node_ref": "DENSE_GRAMMAR",
+      "description": "Fix the pipe/KV grammar with a schema_hint and abbreviation key; encode the dense, machine-facing line.",
+      "artifact": "dense_brief_draft",
+      "gate": "line parses unambiguously with a schema_hint and escaped delimiters"
+    },
+    {
+      "action": "compress_to_budget",
+      "node_ref": "COMPRESSION_OPS",
+      "description": "Apply salience-ordered lossless then bounded-lossy operators to meet B, accounting per-field distortion.",
+      "artifact": "compressed_brief",
+      "gate": "summed per-field distortion within tolerance; no lossy op on a D=0 field"
+    },
+    {
+      "action": "enforce_faithfulness",
+      "node_ref": "FAITHFULNESS",
+      "description": "Check every value is source-entailed; attach verifiability tags and mark inferred values.",
+      "artifact": "faithfulness_report",
+      "gate": "no extrinsic/intrinsic hallucination on decision fields"
+    },
+    {
+      "action": "round_trip_test",
+      "node_ref": "ROUND_TRIP_TEST",
+      "description": "Feed the brief alone to the consumer and compare its field decisions against source-based decisions.",
+      "artifact": "round_trip_result",
+      "gate": "consumer reconstructs every field decision from the brief alone"
+    },
+    {
+      "action": "joint_audit_and_govern",
+      "node_ref": "COVERAGE_AUDIT",
+      "description": "Audit coverage and budget jointly; on pass, register revision triggers; on fail, route back.",
+      "artifact": "coverage_audit_report",
+      "gate": "decision-lossless over the field set AND within budget B"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "FIELD_SET_SPEC must be fixed before MUST_PRESERVE_CLASSES, DISTORTION_METRIC, or any budget work",
+      "rationale": "the field set is the reference for losslessness; classifying or measuring distortion first causes rework",
+      "trigger": "content classification or distortion definition begins without a fixed field set",
+      "action": "block until the field set is fixed against the decision contract"
+    },
+    {
+      "rule": "The token budget must never be set below the field-restricted entropy floor for zero-distortion fields",
+      "rationale": "by Shannon's source coding theorem a sub-floor budget cannot be decision-lossless on those fields",
+      "trigger": "a budget below the entropy floor is proposed for D=0 fields",
+      "action": "raise the budget, narrow the field set, or relax distortion on non-critical fields; never compress a D=0 field below floor"
+    },
+    {
+      "rule": "Distortion must be measured as decision error over the field set, not surface overlap, wherever the two disagree",
+      "rationale": "surface metrics reward faithful-looking but decision-wrong briefs",
+      "trigger": "a surface-overlap distortion proxy is used for acceptance",
+      "action": "replace the proxy with a decision-error measure via the round-trip test"
+    },
+    {
+      "rule": "No lossy compression operator may be applied to a field whose operating-point distortion tolerance is zero",
+      "rationale": "a lossy op on a D=0 field can flip a decision and break decision-losslessness",
+      "trigger": "a lossy operator targets a decision-critical field",
+      "action": "substitute a lossless operator or back off the operator"
+    },
+    {
+      "rule": "FAITHFULNESS gating must pass before ROUND_TRIP_TEST is trusted",
+      "rationale": "a hallucinated value can pass a round-trip that the consumer cannot distinguish from truth",
+      "trigger": "round-trip run on a brief with unverified entailment",
+      "action": "run the entailment check and tag provenance before the round-trip"
+    },
+    {
+      "rule": "ROUND_TRIP_TEST must be run on the brief alone, with the source removed from context",
+      "rationale": "source leakage masks a decision-lossy brief",
+      "trigger": "round-trip executed with the source still in context",
+      "action": "strip the source from context and re-run on the brief alone"
+    },
+    {
+      "rule": "Abbreviations may only be used when the consumer's current, version-checked codebook expands them",
+      "rationale": "an unexpandable abbreviation makes the brief lossy and unparseable",
+      "trigger": "an abbreviation is emitted without a shared codebook entry",
+      "action": "expand to the literal or add the symbol to the shared codebook first"
+    },
+    {
+      "rule": "COVERAGE_AUDIT must pass on both axes (decision-lossless AND within budget) before acceptance",
+      "rationale": "optimizing one axis at the other's expense yields a cheap-but-lossy or lossless-but-overbudget brief",
+      "trigger": "a brief passes only one of coverage or budget",
+      "action": "route back to operating-point or compression; never accept a single-axis pass"
+    },
+    {
+      "rule": "A revision trigger must fire whenever the field set, source, or consumer/tokenizer changes",
+      "rationale": "a stale brief silently drifts into decision loss",
+      "trigger": "a decision-relevant change occurs with no trigger",
+      "action": "fire the trigger, invalidate the mapped upstream artifact, and re-audit"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Do not classify content or define distortion before the field set is fixed; a late field set invalidates both",
+      "prevents": "re-classifying content and re-deriving distortion after the field set changes"
+    },
+    {
+      "rule": "Do not target a budget below the entropy floor; discovering infeasibility after encoding wastes the whole pass",
+      "prevents": "encoding and compressing toward an impossible zero-distortion budget"
+    },
+    {
+      "rule": "Do not use surface-overlap distortion as the acceptance metric; swapping it in late re-opens every operating-point decision",
+      "prevents": "re-tracing the distortion curve after the metric is corrected"
+    },
+    {
+      "rule": "Do not apply lossy operators to decision-critical fields; reverting a decision-flip found at audit means regenerating",
+      "prevents": "regenerating the brief after a lossy op flips a D=0 field"
+    },
+    {
+      "rule": "Do not measure budget in the wrong tokenizer; an overflow found downstream forces a re-encode",
+      "prevents": "re-encoding after a 'within budget' brief overflows the consumer's tokenizer"
+    },
+    {
+      "rule": "Do not abbreviate without a shared, version-checked codebook; an unexpandable symbol forces a re-encode at the consumer",
+      "prevents": "re-encoding after the consumer cannot expand an abbreviation"
+    },
+    {
+      "rule": "Do not run the round-trip with the source in context; a false pass surfaces as a production decision failure",
+      "prevents": "shipping a decision-lossy brief that passed a leaked round-trip"
+    },
+    {
+      "rule": "Do not omit revision triggers; an undetected source/field/tokenizer change surfaces as silent drift requiring full reanalysis",
+      "prevents": "full re-derivation after a stale brief drifts undetected into decision loss"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "the entropy floor exceeds the token budget (no feasible zero-distortion brief)",
+      "action": "escalate via OPERATING_POINT: raise B, narrow FIELD_SET_SPEC, or relax distortion on non-critical fields",
+      "nodes": [
+        "SOURCE_ENTROPY_BOUND",
+        "TOKEN_BUDGET",
+        "OPERATING_POINT"
+      ],
+      "priority": "critical"
+    },
+    {
+      "trigger": "the round-trip test shows a decision flip from the brief alone",
+      "action": "trace the flipped field to its compression operator and back off, re-checking faithfulness",
+      "nodes": [
+        "ROUND_TRIP_TEST",
+        "COMPRESSION_OPS",
+        "FAITHFULNESS"
+      ],
+      "priority": "critical"
+    },
+    {
+      "trigger": "a hallucinated (extrinsic/intrinsic) fact is found on a decision field",
+      "action": "tighten FAITHFULNESS entailment and add verifiability tags, then re-run the round-trip",
+      "nodes": [
+        "FAITHFULNESS",
+        "VERIFIABILITY_TAGS",
+        "ROUND_TRIP_TEST"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "the coverage audit fails on the budget axis while coverage passes",
+      "action": "re-locate the operating point at the distortion-curve knee and re-apply salience-ordered compression",
+      "nodes": [
+        "COVERAGE_AUDIT",
+        "DISTORTION_CURVE",
+        "OPERATING_POINT"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "a must-preserve token was found shed under a tight budget",
+      "action": "re-rank by decision salience and protect the token as must-preserve before re-compressing",
+      "nodes": [
+        "SALIENCE_RANKING",
+        "MUST_PRESERVE_CLASSES",
+        "COMPRESSION_OPS"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "the consumer's tokenizer or codebook changes",
+      "action": "re-measure budget in the new tokenizer and re-validate the abbreviation key before re-auditing",
+      "nodes": [
+        "TOKEN_BUDGET",
+        "ABBREVIATION_KEY",
+        "COVERAGE_AUDIT"
+      ],
+      "priority": "medium"
+    },
+    {
+      "trigger": "the downstream field set changes",
+      "action": "fire a revision trigger that reopens FIELD_SET_SPEC and invalidates the dependent must-preserve, distortion, and curve artifacts",
+      "nodes": [
+        "REVISION_TRIGGER",
+        "FIELD_SET_SPEC",
+        "DISTORTION_METRIC"
+      ],
+      "priority": "high"
+    }
+  ],
+  "priority_rationale": "FIELD_SET_SPEC and SOURCE_ENTROPY_BOUND are foundational; DISTORTION_METRIC, RATE_DISTORTION and DECISION_LOSSLESS encode the FP2 reframing; OPERATING_POINT/TOKEN_BUDGET fix the rate; grammar and compression realize the brief; faithfulness, round-trip, and the joint coverage audit close decision-losslessness last.",
+  "eval_objective": "verify_rate_distortion_framing_decision_losslessness_faithfulness_budget_conformance_and_round_trip_reconstruction_of_brief__rate_distortion_summary_kb"
+}
