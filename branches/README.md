@@ -12,6 +12,12 @@ kept here so the validated 28-specialist set + `ROUTER.json` stay untouched unti
 > (`specialist.heavy.json`) grounded in its own **3 freshly generated dense KBs** (9 KBs total,
 > all passing `kb_validator --mode dense`), built via `_forge/kb_forge.py` — same construction
 > as the original 28. A worked self-application run is in `_forge/demo/self_application_run.md`.
+>
+> **B60 — Content-Intelligence Engine (heavy scaffold, done):** a full application of the pipeline
+> to a real idea (scrape/understand/link/generate public info + a self-testing brain). **5 new heavy
+> specialists grounded in 15 freshly generated dense KBs** (all gate-passing) + an information-node
+> schema + a controller loop. See **[`b60_content_intelligence/`](b60_content_intelligence/README.md)**
+> (`SCOPE.md` → `BRAIN.md` → `RUN.md`).
 
 Run a branch's gate from the repo root, e.g.:
 
@@ -61,6 +67,27 @@ All 9 KBs are 19–24 nodes / 32–40 edges / 14 CQs each; **9/9 pass** `kb_vali
 and all 3 heavy specialists pass `specialist_validator.py`. Each branch keeps BOTH its
 composition specialist (`specialist.json`) and its heavy specialist (`specialist.heavy.json`);
 the validated 28-set + `ROUTER.json` stay untouched.
+
+## B60 — Content-Intelligence Engine (applied scaffold)
+
+A full, worked application of the whole pipeline to a real idea (ingest public info → understand
+densely → link 2–3 related things → generate image/story/audio prompt-briefs for an audience,
+driven by a self-testing "brain"). Built in 3 phases: **scope** (run through the existing
+planner/erotetic/epistemics) → **build** (5 new heavy specialists from **15 freshly generated dense
+KBs**) → **run** (worked end-to-end on one concrete seed). All 15 KBs pass `kb_validator --mode
+dense`; all 5 specialists pass `specialist_validator.py` (independently re-gated).
+
+| Specialist | Covers | Grounded in 3 dense KBs |
+|---|---|---|
+| `salience_heavy` | map + link | `geo__attention_topology`, `niche__audience_segmentation`, `link__entity_relevance` |
+| `signal_heavy` | understand + signal | `auth__inauthenticity_detection`, `hype__organic_baseline`, `brief__rate_distortion_summary` |
+| `creative_heavy` | generate | `scene__multi_entity_composition`, `promptgen__downstream_brief`, `novelty__derivative_vs_copy` |
+| `eval_heavy` | brain + eval | `leakage__holdout_design`, `metric__frozen_preregistration`, `backtest__outcome_validity` |
+| `compliance_heavy` | legal gate (fail-closed) | `pubrights__likeness_voice`, `defamation__false_light`, `platform_tos__synthetic_disclosure` |
+
+Docs: `b60_content_intelligence/SCOPE.md` (findings + plan) → `BRAIN.md` (controller loop) →
+`RUN.md` (worked seed run) + `schema/information_node.schema.json`. The five specialists are the
+"brain"; `planner/erotetic/epistemics_heavy` are the reasoning core that frames and plans.
 
 ## Pending (analyzed, not started — see scratchpad/IDEA_BRANCHES_REPORT.md)
 
