@@ -1,0 +1,889 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://attention-web/schemas/information-node/1.0.json",
+  "title": "InformationNode",
+  "description": "One ingested public-info item (a person, news item, song, or image) turned into a dense machine-facing UNDERSTANDING. Stage-A artifact: read by the MAP/LINK stage and the GENERATE stage but contains NO derivative creative content itself. All metrics are calibrated [0,1] unless noted; sentiments are [-1,1]. grounding_status flags whether each block is observed vs estimated. UPPER_SNAKE node_id is stable and is the target of every typed link handle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "node_id",
+    "schema_version",
+    "provenance",
+    "item",
+    "behind",
+    "place",
+    "known_for",
+    "audience",
+    "signal",
+    "hype",
+    "critical_read",
+    "links",
+    "machine_summary",
+    "safety_flags",
+    "grounding_status"
+  ],
+  "properties": {
+    "node_id": {
+      "type": "string",
+      "pattern": "^IN_[A-Z0-9]+(?:_[A-Z0-9]+)*$",
+      "description": "Stable id, UPPER_SNAKE, prefix IN_ (e.g. IN_PERSON_DILJIT_DOSANJH, IN_NEWS_US_INDIA_H1B_2025). Immutable; target of every typed link handle."
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC ingest timestamp; reactions are valid as-of this time."
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "PERSON",
+        "NEWS",
+        "SONG",
+        "IMAGE",
+        "ORG",
+        "EVENT",
+        "MEME_FORMAT"
+      ],
+      "description": "Coarse kind of the ingested item; drives which optional blocks are expected."
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_urls",
+        "collection_method",
+        "first_seen",
+        "is_public_information"
+      ],
+      "description": "Where this understanding came from; every downstream factual claim must be traceable here.",
+      "properties": {
+        "source_urls": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Canonical public URLs ingested from (article, post, profile, track, image host)."
+        },
+        "mirror_urls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Secondary/archive copies (e.g. web.archive.org) for link-rot resilience."
+        },
+        "collection_method": {
+          "type": "string",
+          "enum": [
+            "API",
+            "RSS",
+            "MANUAL",
+            "SCRAPE",
+            "SEARCH",
+            "CROSSPOST_TRACE"
+          ],
+          "description": "How the bytes were obtained; SCRAPE implies higher ToS scrutiny."
+        },
+        "publisher": {
+          "type": "string",
+          "description": "Outlet/platform/label/rights-holder name if known (e.g. 'Reuters','YouTube','T-Series')."
+        },
+        "first_seen": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_checked": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "license_or_rights": {
+          "type": "string",
+          "description": "Stated license/copyright/right-holder note, or 'unknown'. Constrains downstream reuse."
+        },
+        "is_public_information": {
+          "type": "boolean",
+          "description": "True only if lawfully public. Gates the whole pipeline; private/leaked material is false and excluded from GENERATE."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence the provenance attribution itself is correct."
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_name",
+        "what_it_is"
+      ],
+      "description": "WHAT the item is, on its own terms.",
+      "properties": {
+        "canonical_name": {
+          "type": "string",
+          "description": "Best display name/title/headline."
+        },
+        "aka": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Aliases, stage names, transliterations, alternate spellings."
+        },
+        "what_it_is": {
+          "type": "string",
+          "description": "One-sentence plain statement of the thing (e.g. 'Punjabi singer-actor','wire report on H-1B rule change')."
+        },
+        "language": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "BCP-47-ish language tags relevant to the item (pa, hi, en)."
+        },
+        "time_anchor": {
+          "type": "string",
+          "description": "When the item is anchored to (release/event/news date); ISO date or fuzzy ('mid-2025')."
+        },
+        "media_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "URLs to the actual media referenced, NOT copies stored by us."
+        },
+        "factual_claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "claim",
+              "verifiability"
+            ],
+            "properties": {
+              "claim": {
+                "type": "string"
+              },
+              "verifiability": {
+                "type": "string",
+                "enum": [
+                  "VERIFIED",
+                  "REPORTED",
+                  "ALLEGED",
+                  "RUMOR",
+                  "OPINION"
+                ]
+              },
+              "source_ref": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          },
+          "description": "Atomized claims with verifiability tags. ALLEGED/RUMOR must NOT be stated as fact downstream (false-light/defamation guard)."
+        }
+      }
+    },
+    "behind": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "who_or_what"
+      ],
+      "description": "WHO/WHAT is behind the item -- agency, ownership, intent; distinguishes subject from producer.",
+      "properties": {
+        "who_or_what": {
+          "type": "string",
+          "description": "Person/org/collective responsible for or central to the item."
+        },
+        "entity_kind": {
+          "type": "string",
+          "enum": [
+            "INDIVIDUAL",
+            "GROUP",
+            "COMPANY",
+            "INSTITUTION",
+            "STATE",
+            "ANONYMOUS",
+            "AUTOMATED"
+          ],
+          "description": "AUTOMATED/ANONYMOUS raises bot/astroturf prior for any reaction it drives."
+        },
+        "is_real_identifiable_person": {
+          "type": "boolean",
+          "description": "TRUE triggers the full safety_register (likeness, voice, right-of-publicity, defamation)."
+        },
+        "public_figure_status": {
+          "type": "string",
+          "enum": [
+            "GLOBAL_CELEBRITY",
+            "NATIONAL",
+            "REGIONAL",
+            "NICHE",
+            "PRIVATE",
+            "MINOR_OR_PROTECTED"
+          ],
+          "description": "MINOR_OR_PROTECTED hard-blocks GENERATE; drives publicity/defamation thresholds."
+        },
+        "affiliations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Labels, parties, teams, employers, networks -- used for geo/topic relevance and conflict checks."
+        },
+        "controls_handles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Official/verified handles this entity controls, to separate the entity's own voice from reaction."
+        }
+      }
+    },
+    "place": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary_region"
+      ],
+      "description": "Place/region anchoring for MAP expansion and geo-relevance linking.",
+      "properties": {
+        "primary_region": {
+          "type": "string",
+          "description": "Most relevant region (e.g. 'Punjab, IN','USA','Mumbai'); should match a geo_key in links."
+        },
+        "region_hierarchy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Decreasing-size path for MAP traversal: ['IN','Punjab','Amritsar'] or ['US','CA','LA']."
+        },
+        "diaspora_relevance": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Cross-border salient communities (e.g. 'Punjabi diaspora US/CA/UK'). Enables cross-region links like US-India immigration -> Punjab."
+        },
+        "geo_market_tier": {
+          "type": "string",
+          "enum": [
+            "TIER1_GLOBAL",
+            "TIER2_NATIONAL",
+            "TIER3_REGIONAL",
+            "TIER4_LOCAL"
+          ],
+          "description": "Coarse market size for the decreasing-hype MAP traversal."
+        }
+      }
+    },
+    "known_for": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary"
+      ],
+      "description": "What the entity/item is KNOWN FOR -- the salience hook used when linking.",
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Single strongest association (e.g. 'Coachella 2023 Punjabi set','the visa-backlog story')."
+        },
+        "secondary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "interest_domain": {
+          "type": "string",
+          "enum": [
+            "MUSIC",
+            "SPORT",
+            "FILM",
+            "POLITICS",
+            "COMEDY",
+            "BUSINESS",
+            "RELIGION",
+            "TECH",
+            "NEWS_EVENT",
+            "INTERNET_CULTURE",
+            "OTHER"
+          ],
+          "description": "Top-level niche for the MAP interest-split (music->genre, sport->cricket)."
+        },
+        "interest_subgenre": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Niche split values (e.g. ['Punjabi pop','bhangra'] or ['cricket','IPL']); top-5-per-niche selection runs over these at MAP stage."
+        },
+        "iconic_assets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Recognizable motifs (catchphrase, signature look, hook line) usable as scene hooks WITHOUT reproducing protected media."
+        }
+      }
+    },
+    "audience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "core_demo"
+      ],
+      "description": "Who pays attention; feeds target-audience selection for GENERATE.",
+      "properties": {
+        "core_demo": {
+          "type": "string",
+          "description": "Primary audience descriptor (e.g. 'Punjabi youth 16-30, India + diaspora')."
+        },
+        "age_bands": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "U13",
+              "13_17",
+              "18_24",
+              "25_34",
+              "35_44",
+              "45_plus"
+            ]
+          },
+          "description": "Presence of U13/13_17 raises minor-protection constraints on the eventual content."
+        },
+        "geo_spread": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Regions where the audience concentrates."
+        },
+        "platform_mix": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Where this audience lives, [0,1] share each.",
+          "properties": {
+            "youtube": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "instagram": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reddit": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "tiktok": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "news": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "size_estimate": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Rough reachable audience count; omit if unknown."
+        },
+        "sentiment_baseline": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "description": "Pre-existing audience disposition toward the entity, -1 hostile .. +1 adoring."
+        }
+      }
+    },
+    "signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "per_platform",
+        "aggregate_sentiment",
+        "authenticity"
+      ],
+      "description": "Cross-platform reaction reading across news, Reddit, X, Instagram, YouTube. The 'are the comments real?' block lives here.",
+      "properties": {
+        "per_platform": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "platform",
+              "sentiment",
+              "volume_tier"
+            ],
+            "properties": {
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "NEWS",
+                  "REDDIT",
+                  "X",
+                  "INSTAGRAM",
+                  "YOUTUBE",
+                  "TIKTOK",
+                  "OTHER"
+                ]
+              },
+              "sentiment": {
+                "type": "number",
+                "minimum": -1,
+                "maximum": 1,
+                "description": "Mean reaction polarity on that platform."
+              },
+              "sentiment_variance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Polarization; high = love-it/hate-it split."
+              },
+              "volume_tier": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "LOW",
+                  "MED",
+                  "HIGH",
+                  "VIRAL"
+                ]
+              },
+              "dominant_themes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Top reaction frames (e.g. 'pride','sellout accusation','visa anger')."
+              },
+              "sample_size": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "N comments/posts sampled for this read."
+              },
+              "as_of": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "evidence_urls": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "description": "One entry per platform actually sampled. Absent platform = not read (distinct from read-and-empty)."
+        },
+        "aggregate_sentiment": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "description": "Volume-weighted cross-platform polarity."
+        },
+        "consensus_vs_division": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "0 = platforms agree, 1 = platforms sharply disagree with each other."
+        },
+        "authenticity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "organic_score",
+            "bot_astroturf_risk"
+          ],
+          "description": "Is the reaction real? Higher bot_astroturf_risk must DISCOUNT hype and is logged as a reason.",
+          "properties": {
+            "organic_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "1 = looks fully organic, 0 = looks fully manufactured."
+            },
+            "bot_astroturf_risk": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Probability the visible reaction is inflated by bots/coordinated/astroturf."
+            },
+            "manipulation_signals": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "BURST_TIMING",
+                  "TEMPLATED_TEXT",
+                  "LOW_ACCOUNT_AGE",
+                  "FOLLOWER_ANOMALY",
+                  "COORDINATED_REPOST",
+                  "ENGAGEMENT_MISMATCH",
+                  "SINGLE_SOURCE_AMPLIFY",
+                  "SENTIMENT_UNIFORMITY"
+                ]
+              }
+            },
+            "verified_share": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Fraction of reaction from established/verified accounts."
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "hype": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_hype",
+        "authenticity_adjusted_hype",
+        "tier"
+      ],
+      "description": "Is this GENUINELY hyped, and is it the medium-tier opportunity (KEY INSIGHT) rather than the over-saturated global top?",
+      "properties": {
+        "raw_hype": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Surface attention level before authenticity discount."
+        },
+        "authenticity_adjusted_hype": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "raw_hype discounted by bot_astroturf_risk and over-saturation; the number MAP/LINK ranks on."
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "UNDERGROUND",
+            "RISING",
+            "MEDIUM_OPPORTUNITY",
+            "PEAKING",
+            "OVER_SATURATED",
+            "DECLINING"
+          ],
+          "description": "MEDIUM_OPPORTUNITY is the target band; OVER_SATURATED is explicitly de-prioritized."
+        },
+        "trajectory": {
+          "type": "string",
+          "enum": [
+            "EMERGING",
+            "ACCELERATING",
+            "PLATEAU",
+            "FADING"
+          ]
+        },
+        "opportunity_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Composite rewarding medium-tier+organic+linkable, penalizing over-saturated+astroturfed. Primary MAP ranking key."
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Why this hype reading (trend points, search interest, volume deltas)."
+        }
+      }
+    },
+    "critical_read": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary"
+      ],
+      "description": "Short adversarial read: criticize the news/item, surface what the hype hides.",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "1-3 sentence skeptical take (spin, missing context, manufactured angle)."
+        },
+        "spin_or_bias": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Detected framing/bias/agenda."
+        },
+        "missing_context": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "credibility": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How much to trust the item's own claims."
+        },
+        "sensitivity_flags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "POLITICAL",
+              "RELIGIOUS",
+              "ETHNIC",
+              "TRAGEDY",
+              "LEGAL_PENDING",
+              "HEALTH",
+              "MINOR_INVOLVED",
+              "SEXUAL",
+              "VIOLENCE"
+            ]
+          },
+          "description": "Topical sensitivities that constrain joke/association framing in GENERATE."
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typed_tags",
+        "geo_keys"
+      ],
+      "description": "Typed, linkable handles that let 2-3 nodes combine into one scene; the LINK stage joins on these.",
+      "properties": {
+        "typed_tags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "PERSON",
+                  "ORG",
+                  "PLACE",
+                  "TOPIC",
+                  "EVENT",
+                  "GENRE",
+                  "SPORT",
+                  "MEME_FORMAT",
+                  "CATCHPHRASE",
+                  "TIME",
+                  "POLICY"
+                ],
+                "description": "Typed namespace so joins are unambiguous (PLACE:punjab links to PLACE:punjab, not TOPIC:punjab)."
+              },
+              "value": {
+                "type": "string",
+                "description": "Normalized tag value, lowercase_snake preferred for join stability."
+              },
+              "weight": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Centrality of this tag to the node; drives best-scene selection."
+              }
+            }
+          },
+          "description": "The combinable handles. A strong scene = 2-3 nodes sharing high-weight compatible tags."
+        },
+        "geo_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Normalized geo-relevance keys (e.g. 'punjab','us_india_immigration','diaspora_us'). LINK stage MUST require an overlapping geo_key before joining a regional person to a news item (e.g. only link a Punjab person to US-India immigration news)."
+        },
+        "suggested_link_partners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "node_id",
+              "relation",
+              "geo_relevance_ok"
+            ],
+            "properties": {
+              "node_id": {
+                "type": "string",
+                "pattern": "^IN_[A-Z0-9]+(?:_[A-Z0-9]+)*$"
+              },
+              "relation": {
+                "type": "string",
+                "enum": [
+                  "SAME_PLACE",
+                  "SAME_TOPIC",
+                  "SAME_AUDIENCE",
+                  "CONTRASTS_WITH",
+                  "AFFECTS",
+                  "REFERENCES",
+                  "SAME_TIME"
+                ]
+              },
+              "strength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "geo_relevance_ok": {
+                "type": "boolean",
+                "description": "False forbids the join even if topically tempting (geo-relevance guard)."
+              }
+            }
+          },
+          "description": "Pre-computed candidate joins to other nodes by id; advisory for the LINK stage."
+        }
+      }
+    },
+    "machine_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dense",
+        "schema_hint"
+      ],
+      "description": "LOSSLESS, token-efficient, information-dense, machine-facing summary. A downstream agent can reconstruct the node's decision-relevant state from this field ALONE.",
+      "properties": {
+        "dense": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Single packed line in a fixed pipe/KV grammar. Recommended slots: id|type|name|behind(realperson?)|place>region_path|known_for|interest:domain/subgenre|aud:demo@platforms|sent:agg(+per-platform)|auth:organic/botrisk|hype:adjtier/opp|crit:onelineskeptic|safety:flags|tags:type:value;...|geo:keys. Abbreviations MUST be expandable from schema_hint. Lossless = decision-lossless: no field that changes a downstream decision may be dropped."
+        },
+        "schema_hint": {
+          "type": "string",
+          "description": "Grammar/abbreviation key needed to losslessly parse `dense` (e.g. 'sent=[-1,1]; botrisk=[0,1]; tier in {UNDERGROUND..OVER_SATURATED}'). Makes the dense line self-describing."
+        },
+        "token_estimate": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Approx token cost of `dense`; budget guard for GENERATE prompt assembly."
+        },
+        "lossless_assertion": {
+          "type": "boolean",
+          "description": "Producer asserts every decision-relevant field is recoverable from `dense`+`schema_hint`; validator may spot-check."
+        }
+      }
+    },
+    "safety_flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "touches_real_person",
+        "generate_allowed",
+        "applicable_constraints"
+      ],
+      "description": "Per-node safety state. GENERATE reads this gate FIRST and must honor safety_register.",
+      "properties": {
+        "touches_real_person": {
+          "type": "boolean"
+        },
+        "involves_voice_or_likeness": {
+          "type": "boolean",
+          "description": "True if downstream could clone voice or reproduce likeness."
+        },
+        "is_minor_or_protected": {
+          "type": "boolean",
+          "description": "True hard-blocks GENERATE."
+        },
+        "political_or_election_context": {
+          "type": "boolean"
+        },
+        "generate_allowed": {
+          "type": "string",
+          "enum": [
+            "ALLOW",
+            "ALLOW_WITH_CONSTRAINTS",
+            "BLOCK",
+            "HUMAN_REVIEW"
+          ],
+          "description": "Decision gate for GENERATE. BLOCK/HUMAN_REVIEW stop or escalate before any derivative content."
+        },
+        "applicable_constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ids from safety_register that apply to this node (e.g. ['SR_LIKENESS','SR_SYN_DISCLOSE'])."
+        },
+        "review_reason": {
+          "type": "string",
+          "description": "Why HUMAN_REVIEW/BLOCK, if set."
+        }
+      }
+    },
+    "grounding_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overall"
+      ],
+      "description": "Per-block observed-vs-estimated flags (mirrors the reference KB's source_grounding_status) so downstream knows evidence vs heuristic.",
+      "properties": {
+        "overall": {
+          "type": "string",
+          "enum": [
+            "OBSERVED",
+            "MIXED",
+            "ESTIMATED",
+            "NOT_AVAILABLE"
+          ]
+        },
+        "signal_grounded": {
+          "type": "boolean",
+          "description": "True only if per_platform reads are from actual sampled comments, not guessed."
+        },
+        "hype_grounded": {
+          "type": "boolean"
+        },
+        "audience_grounded": {
+          "type": "boolean"
+        },
+        "stale_after": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Reaction/hype reads should be re-pulled after this time."
+        }
+      }
+    }
+  }
+}

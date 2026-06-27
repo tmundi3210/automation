@@ -1,0 +1,679 @@
+{
+  "planner": {
+    "typed_goal": "TYPE: Plan(G) where G : CompoundGoal = ingest(item : PublicItem) \u2192 understand(item) \u2192 derive(scene : CreativePrompt linking 2..3 RelatedNodes) \u2192 emit(prompt \u2192 DownstreamAgentSession), the whole governed by a Controller(\"brain\") running a refinement loop build\u2192test_on_unseen_historical\u2192measure\u2192revise. The goal is a recursive PIPELINE-FACTORY-PLUS-OPTIMIZER: two distinct recursions are present \u2014 (R1) ATTENTION_WEB expansion: expand(region) \u2192 split_by_interest(niche) \u2192 top_k(5) per niche, recursing over regions in DECREASING order of (size, hype); (R2) EVAL_LOOP: revise(model) until success_criterion holds. Input type carries a hard precondition: item \u220b identifiable_public_figure(likeness|voice) \u2227 political_news \u21d2 the typed goal is NOT well-formed unless a Consent/Likeness/Defamation/Right-of-Publicity/Platform-ToS/Synthetic-Media-Disclosure contract is attached as a precondition gating SUBTASK_EMIT. Treated as: Plan(G) under interface contract C_legal-ethical, with R1 and R2 each requiring a separate termination obligation.",
+    "success_criterion": "A plan is ACCEPTED iff: (1) every primitive leaf (ingest, understand, link, generate-image-prompt, generate-story-prompt, generate-audio-brief, emit) grounds to a signature-matching operator with closed preconditions; (2) R1 (attention-web) carries a ranking function on a well-founded order (region_size, hype_tier, depth) with proven strict decrease AND a depth cap; (3) R2 (eval-loop) carries EITHER a strict ranking decrease on a held-out metric OR an explicit fuel budget (max_cycles) raising a divergence defeater \u2014 because \"results are good\" is NOT machine-checkable as stated and must be replaced by a frozen, pre-registered metric+threshold before R2 is well-formed; (4) C_legal-ethical (consent/likeness/defamation/right-of-publicity/ToS/synthetic-media-disclosure) is discharged as a precondition on every emit leaf \u2014 set-cover requires this obligation be covered by at least one step or the plan is rejected; (5) the link step satisfies the geo-relevance contract (only link node A to news N when relevance(A,N) holds); (6) obligation set-cover closure over all six author sub-capabilities holds with no out-of-scope leaf and the refinement graph is acyclic; (7) a termination certificate is emitted. The criterion is machine-checkable EXCEPT where the author's spec leaves it underspecified (noted as gaps), which is itself a finding.",
+    "decomposition": [
+      {
+        "capability": "type-driven decomposition",
+        "why": "The author's six sub-capabilities form one compound goal that must be expanded into typed subtasks with checked arity, kept acyclic. Pipeline (ingest\u2192understand\u2192derive\u2192emit) is sequential; ATTENTION_WEB and EVAL_LOOP are recursive sub-graphs that must not create cycles back into ingestion.",
+        "subtasks": [
+          "GOAL_INTAKE: type each PublicItem (news|social_post|image_of_public_figure|song) and tag the hard precondition likeness/voice/political \u2192 triggers C_legal-ethical",
+          "TASK_TYPING of the 4 stages: ingest:Item\u2192RawCapture; understand:RawCapture\u2192DenseUnderstanding; link:Understanding[]\u2192Scene(2..3 nodes); generate:Scene\u2192{image_prompt, story_prompt, audio_brief?}; emit:Prompts\u2192DownstreamSession",
+          "ARITY_TYPING the link operator: arity fixed at 2..3 RelatedNodes (reject scenes of 1 or >3); enforce relatedness predicate as part of arity, not a soft preference",
+          "SUBTASK_EMIT for ATTENTION_WEB: expand(region)\u2192split_by_interest\u2192top_k(5); type the node so it is link-ready (the author's 'make nodes easy to link' = a node interface contract)",
+          "DECOMP_DAG: assert acyclicity \u2014 EVAL_LOOP revises the controller, it must NOT rewrite the ingestion type signature mid-plan or the graph cycles"
+        ]
+      },
+      {
+        "capability": "termination proof",
+        "why": "Two recursions with sharply different termination status. R1 is provably terminating; R2 as written is suspected-non-terminating and is the single biggest planning defect in the brief. This is the heaviest obligation.",
+        "subtasks": [
+          "R1 RANK_FUNCTION: variant = (decreasing region size/hype tier, web-expansion depth); WELLFOUND_ORDER on finite region\u222aniche taxonomy; PROGRESS_MEASURE = 'expand in DECREASING order of size/hype' gives strict decrease; top_k(5) bounds fan-out; DEPTH_CAP on web frontier \u2192 TERMINATION_OBLIGATION dischargeable",
+          "R1 caveat: strict decrease requires the (size,hype) order be TOTAL and the taxonomy FINITE; if regions/niches are discovered dynamically from live signals, the frontier may not be well-founded \u2192 attach FUEL_BUDGET on frontier size as backstop",
+          "R2 RANK_FUNCTION: NONE EXISTS as specified. 'repeat until results are good' + 'revise the WHOLE model' resets state rather than decreasing a variant. Raise DIVERGENCE_DEFEATER.",
+          "R2 mandatory repair: replace 'results are good' with a FROZEN pre-registered metric M on a held-out set + threshold \u03c4; require strict improvement \u0394M \u2265 \u03b5 per cycle OR consume FUEL_BUDGET (max_cycles); on budget exhaustion \u2192 halt, do not loop",
+          "Emit TERMINATION_CERTIFICATE only for R1 unconditionally; for R2 only conditionally on the metric+budget repair being adopted"
+        ]
+      },
+      {
+        "capability": "contract-checked composition",
+        "why": "Stages are composed under assume/guarantee; the dangerous compositions are (a) understand\u2192generate (lossiness) and (b) generate\u2192emit (legal gate). Obligation set-cover must include C_legal-ethical or the plan silently ships an uncovered obligation.",
+        "subtasks": [
+          "INTERFACE_CONTRACT on understand\u2192generate: postcondition of understand must guarantee the fields generate consumes (who/place/known-for/audience/sentiment); else generate has open preconditions",
+          "INTERFACE_CONTRACT C_legal-ethical on every emit: pre = consent_or_lawful_basis \u2227 defamation_screen_passed \u2227 right_of_publicity_checked \u2227 platform_ToS_satisfied \u2227 synthetic_media_disclosed; this is ASSUME/GUARANTEE, not optional",
+          "INTERFACE_CONTRACT geo-relevance on link: pre = relevance(nodeA, news) (author's Punjab\u2194US-India-immigration example) \u2014 reject non-relevant links as a contract violation, not a quality nit",
+          "SIGNAL-READING contract: 'are the comments real / detect bots' has NO ground-truth postcondition available \u2192 contract can only GUARANTEE a calibrated confidence, never a boolean 'real'; downgrade to GRACEFUL_DEGRADE",
+          "OBLIGATION_SETCOVER: prove the union of step guarantees covers {info-first, map, link, signal, generate, eval} AND C_legal-ethical; flag any uncovered obligation"
+        ]
+      },
+      {
+        "capability": "failure handling",
+        "why": "The author's own EVAL_LOOP says 'diagnose why it is not improving and revise the whole model' \u2014 that is backtracking phrased as blanket retry. It must be re-expressed as defeater-justified repair vs backtracking vs fatal-break, never 'just revise everything again'.",
+        "subtasks": [
+          "CONFLICT_DETECT: clobber between 'reuse meme formats' and 'don't copy, modify' + right-of-publicity \u2192 potential IP/defamation clobber; detect before emit",
+          "SPOF_TAG: the downstream-agent handoff (emit\u2192separate session) is a single point of failure \u2014 if the downstream session ignores C_legal-ethical, the gate is bypassed; tag and require the contract travel WITH the prompt (in-band), not be assumed downstream",
+          "PARTIAL_PLAN_REPAIR (bounded): on a failing node-link, repair locally by re-selecting from top_5 before re-running the whole web",
+          "ALT_METHOD_BACKTRACK: 'revise the whole model' = backtracking to a different controller method; allowed ONLY after bounded repair bound exceeded, and must be metered by R2 fuel budget",
+          "FATAL_BREAK + COMPENSATION: an emitted defamatory/likeness-violating prompt is IRREVERSIBLE once shared \u2192 no compensation path post-publication; therefore the gate must be PRE-emit and fail-closed (halt), never post-hoc"
+        ]
+      },
+      {
+        "capability": "goal-coverage closure",
+        "why": "Before declaring the plan done, every author sub-capability must ground to an executable operator and the success criterion must be set-covered, with no leaf outside scope (e.g., no leaf that actually publishes \u2014 author says prompts are injected LATER into a separate session, so 'publish' is out of THIS plan's scope).",
+        "subtasks": [
+          "PRIMITIVE_GROUNDING: bind each leaf to an operator signature (ingest\u2192scraper/API; understand\u2192LLM summarizer; link\u2192graph matcher; generate\u2192prompt synthesizer; emit\u2192handoff). Flag leaves with NO operator: bot-detection-as-boolean, lossless-AND-compressed summary",
+          "LEAF_VERIFICATION: confirm each leaf executable under its closed preconditions; the EVAL_LOOP's 'test on examples it did NOT see' leaf is NOT verifiable against a pretrained model (leakage) \u2192 mark operator-gap",
+          "COVERAGE_CHECK: map {1 info-first,2 map,3 link,4 signal,5 generate,6 brain+eval} \u2192 plan steps; verify C_legal-ethical covered; verify no leaf publishes/executes (scope containment)",
+          "DECOMP_TRACE: emit the refinement trace region\u2192niche\u2192top5\u2192node\u2192scene\u2192prompt so the plan is auditable and the geo-relevance + legal gates are visible at the leaf"
+        ]
+      }
+    ],
+    "termination": {
+      "measure": "Lexicographic variant per recursion. R1 (attention-web): (region_size_rank \u2193, hype_tier_rank \u2193, expansion_depth \u2191 to DEPTH_CAP, top_k bounded at 5) over a finite region\u222aniche taxonomy \u2014 strictly decreasing because the author mandates 'expand in DECREASING order of size/hype'. R2 (eval-loop): there is NO natural decreasing variant ('revise the whole model' resets state), so termination is enforced only by an artificial FUEL_BUDGET = max_revision_cycles, with each cycle additionally required to show \u0394M \u2265 \u03b5 on a frozen held-out metric M or it consumes budget.",
+      "well_founded": false,
+      "base_case": "R1 base case: a region/niche with no further sub-region OR depth_cap reached OR frontier empty \u2192 return top_5 nodes (well-founded, holds). R2 base case AS WRITTEN ('until results are good') is NOT a well-founded base case \u2014 'good' is unquantified, so the loop has no decidable stopping predicate. A valid base case exists ONLY after repair: stop when M \u2265 \u03c4 on held-out data OR max_cycles reached.",
+      "backstop": "Dual backstop. R1: DEPTH_CAP on web expansion + FUEL_BUDGET on live-discovered frontier size \u2192 raises a divergence defeater if the taxonomy is not actually finite. R2: hard FUEL_BUDGET (max_cycles) that HALTS (not retries) on exhaustion, plus a no-improvement defeater that halts if \u0394M < \u03b5 for k consecutive cycles. Without these two backstops the system does not terminate. well_founded is set false at the GOAL level because R2 as specified by the author lacks a well-founded order; it becomes well-founded only conditionally on adopting the metric+budget repair."
+    },
+    "coverage": {
+      "obligations": [
+        "INFO-FIRST (understand: who/what/place/known-for/audience/sentiment) \u2014 covered by understand operator with a typed postcondition",
+        "ATTENTION_WEB/MAP (region\u2192niche\u2192top5, decreasing size/hype) \u2014 covered by R1 with ranking function + depth cap",
+        "LINKING (2..3 related nodes, geo-relevance) \u2014 covered by link operator with arity 2..3 + relevance contract",
+        "SIGNAL-READING (cross-platform reactions, hype assessment, criticism) \u2014 partially covered: reaction aggregation yes, but bot/astroturf 'real?' only as calibrated confidence, never boolean",
+        "GENERATE (image-prompt + story-prompt + optional audio brief, reuse-but-modify) \u2014 covered by generate operator; IP/likeness obligation pushed into C_legal-ethical",
+        "BRAIN + EVAL_LOOP (controller + build-test-measure-fix on unseen historical) \u2014 covered ONLY after R2 termination repair + leakage caveat",
+        "C_legal-ethical (consent/likeness/defamation/right-of-publicity/ToS/synthetic-media-disclosure) \u2014 covered ONLY if attached as a fail-closed precondition that travels in-band to the downstream session"
+      ],
+      "gaps": [
+        "R2 stopping predicate 'results are good' is not machine-checkable \u2192 set-cover GAP until replaced by frozen metric M + threshold \u03c4 (escalation).",
+        "'LOSSLESS, token-efficient, information-dense' summary is internally contradictory: lossless compression is bounded below by the source entropy, so it cannot be simultaneously lossless AND arbitrarily token-efficient unless the source is highly redundant \u2192 operator gap; pick ONE (lossless OR compressed) per field.",
+        "'test on REAL historical examples it did NOT see during design' is not verifiable against an LLM whose pretraining likely already contains those outcomes (data leakage / single-origin-evidence) \u2192 the backtest's predictive claim is unfalsifiable as framed; needs a strictly post-cutoff held-out set or a non-memorizing operator.",
+        "Bot/astroturf detection ('are the comments real?') has no ground-truth label source in the plan \u2192 no signature-matching operator yields a sound boolean; only a confidence estimate is groundable.",
+        "'medium-tier is the opportunity' is an untested heuristic PRIOR, not an established result \u2192 must be labeled heuristic and itself measured by the eval loop, not assumed.",
+        "SPOF: the emit\u2192separate-downstream-session boundary can bypass C_legal-ethical if the contract does not travel with the prompt \u2192 uncovered unless made in-band and fail-closed.",
+        "No defined audience-fit metric: 'aimed at a target audience' has no measurable postcondition \u2192 coverage of the 'shareable scene' success claim is unverifiable without an engagement/fit baseline."
+      ]
+    },
+    "new_specialists_implied": [
+      {
+        "name": "Synthetic-Media Legal & Consent Gate",
+        "domain": "likeness_voice_defamation_compliance",
+        "three_kbs": [
+          {
+            "id": "right_of_publicity__likeness_voice.kb",
+            "scope": "Per-jurisdiction right-of-publicity & personality rights, voice-cloning consent, post-mortem rights, news/parody/transformative-use exceptions, India (incl. Punjab/IT Rules) vs US state-by-state; maps an (item, public_figure, use) tuple to a lawful-basis verdict."
+          },
+          {
+            "id": "defamation__false_light_screen.kb",
+            "scope": "Defamation/false-light/false-association screening for jokes & derived scenes: opinion vs assertion-of-fact, satire/parody safe harbors, actual-malice for public figures, the specific risk of linking a real person to real political news; yields a pass/block/needs-review decision."
+          },
+          {
+            "id": "platform_tos__synthetic_disclosure.kb",
+            "scope": "Platform ToS for synthetic/derivative media + mandatory AI-content disclosure/labeling regimes (EU AI Act transparency, platform manipulated-media policies); converts an emit action into required disclosure tokens carried in-band to the downstream session."
+          }
+        ]
+      },
+      {
+        "name": "Backtest & Anti-Leakage Evaluation Designer",
+        "domain": "holdout_eval_no_leakage",
+        "three_kbs": [
+          {
+            "id": "data_leakage__pretraining_contamination.kb",
+            "scope": "Detecting and preventing memorization/leakage when an LLM is 'tested' on historical events inside its training window; strictly-post-cutoff holdout construction, contamination probes, why 'it did not see it during design' is insufficient."
+          },
+          {
+            "id": "metric_design__frozen_preregistration.kb",
+            "scope": "Turning 'results are good' into a frozen, pre-registered metric+threshold; choosing virality/audience-fit proxies, defining \u0394M\u2265\u03b5 improvement criteria, multiple-comparisons control across the author's 'different fields'."
+          },
+          {
+            "id": "backtest_validity__base_rate_outcome.kb",
+            "scope": "Outcome-based backtesting with real known results: base-rate calibration, survivorship/hindsight bias, single-origin-evidence risk, and why a model that fits past virality may not generalize (the medium-tier hypothesis as a falsifiable bet)."
+          }
+        ]
+      },
+      {
+        "name": "Astroturf & Authenticity Signal Analyst",
+        "domain": "bot_coordination_authenticity",
+        "three_kbs": [
+          {
+            "id": "coordinated_inauthentic_behavior__detection.kb",
+            "scope": "Bot/astroturf/CIB detection across news/Reddit/X/Instagram/YouTube without labeled ground truth: coordination signals, timing/burst analysis, account-age/network features; outputs a calibrated authenticity confidence, never a boolean 'real'."
+          },
+          {
+            "id": "hype_vs_organic__baseline_estimation.kb",
+            "scope": "Distinguishing genuine hype from manufactured hype: organic-engagement baselines per platform/region, anomaly detection vs expected diffusion curves, the author's 'is this news genuinely hyped' question made measurable."
+          },
+          {
+            "id": "cross_platform_sentiment__fusion.kb",
+            "scope": "Fusing reactions across platforms into one machine-facing sentiment/criticism summary with provenance weighting, dedup of cross-posted/brigaded content, and confidence-tagged 'what people think' fields feeding the link/generate stages."
+          }
+        ]
+      }
+    ],
+    "verdict_on_claims": [
+      {
+        "claim": "Produce a LOSSLESS, token-efficient, information-dense, machine-facing summary per item.",
+        "verdict": "FALSE-PREMISE (as stated)",
+        "reason": "Lossless and maximally token-efficient are in tension: lossless representation cannot drop below the source's information entropy, so you cannot have both arbitrary compression AND zero loss unless the source is highly redundant. The achievable target is task-lossless (lossless w.r.t. a fixed downstream field set) OR lossy-but-compact \u2014 not 'lossless AND token-efficient' unqualified. Must pick a loss model per field."
+      },
+      {
+        "claim": "Build the system FIRST, then test it on real historical examples it did NOT see during design, measure, fix, repeat.",
+        "verdict": "UNVERIFIABLE-WITHOUT-BASELINE / LEAKAGE RISK",
+        "reason": "'Did not see during design' is necessary but not sufficient: an LLM-based controller likely encountered those historical outcomes in pretraining, so the backtest measures memorization, not predictive skill. Sound only with a strictly post-training-cutoff holdout or a non-memorizing operator. Otherwise the improvement signal is confounded (single-origin evidence)."
+      },
+      {
+        "claim": "The medium-tier (not the over-hyped global top) is THE opportunity.",
+        "verdict": "HEURISTIC PRIOR (unproven)",
+        "reason": "Plausible but untested; it is exactly the kind of hypothesis the author's own eval loop should FALSIFY, not assume. Label heuristic; make it a measured variable (top-tier vs medium-tier vs long-tail) rather than a baked-in rule."
+      },
+      {
+        "claim": "Detect bots/astroturf and decide whether 'the comments are real'.",
+        "verdict": "UNSOUND AS BOOLEAN",
+        "reason": "No ground-truth label source is specified; authenticity detection without labels can yield a calibrated confidence and coordination signals, but not a sound boolean 'real/fake'. Downgrade the contract postcondition from boolean to confidence + provenance."
+      },
+      {
+        "claim": "Link 2-3 related public things into one shareable scene aimed at a target audience.",
+        "verdict": "PARTIALLY GROUNDED",
+        "reason": "The 2..3 arity and geo-relevance predicate ARE typeable and enforceable (good, well-formed core). But 'shareable' and 'aimed at a target audience' have NO measurable postcondition in the brief, so the success of a scene is unverifiable without an audience-fit/engagement baseline. The link mechanics are sound; the success metric is missing."
+      },
+      {
+        "claim": "Reuse meme formats; 'don't copy, modify'; add your own element.",
+        "verdict": "CONTRACT CONFLICT (IP/defamation clobber)",
+        "reason": "'Reuse but modify' over real identifiable public figures + real political news collides with right-of-publicity and defamation. 'Modify' is not a legal safe harbor by itself; transformative/parody status is jurisdiction-specific. Must be gated by C_legal-ethical, not treated as a creative free pass."
+      },
+      {
+        "claim": "Emitted prompts are injected LATER into a SEPARATE downstream agent session.",
+        "verdict": "SINGLE-POINT-OF-FAILURE",
+        "reason": "The handoff can bypass the legal/ethical gate if the contract does not travel in-band. Once a derived scene about a real person is shared it is irreversible (no compensation path). Therefore the gate must be PRE-emit, fail-closed, and carried with the prompt \u2014 not assumed of the downstream session."
+      }
+    ],
+    "escalations": [
+      "NO-METHOD / SUSPECTED NON-TERMINATION (R2 eval-loop): 'repeat until results are good' + 'revise the whole model' has no ranking function and no decidable base case. ESCALATE: require a frozen pre-registered metric M + threshold \u03c4 + max_cycles fuel budget before R2 is well-formed. Until then the plan does not terminate and must be rejected.",
+      "OPERATOR GAP (lossless+compressed summary): no operator can satisfy 'lossless AND token-efficient' unconditionally. ESCALATE to human/spec-owner to choose a loss model (task-lossless vs lossy-compact) per field.",
+      "OPERATOR GAP (anti-leakage backtest): no signature-matching operator gives a leakage-free 'tested on unseen historical' verdict against a pretrained LLM. ESCALATE: supply a strictly post-cutoff holdout or a non-memorizing evaluator; otherwise the predictive claim is unfalsifiable.",
+      "SET-COVER GAP / IRREVERSIBLE-FAILURE (C_legal-ethical): consent/likeness/defamation/right-of-publicity/ToS/synthetic-media-disclosure over REAL identifiable figures + political news is a high-risk, irreversible-once-published action. ESCALATE to human legal review; the engine must NOT auto-emit. Plan is fail-closed at the emit gate.",
+      "SPOF (downstream handoff): the emit\u2192separate-session boundary can silently bypass the gate. ESCALATE: make the legal/disclosure contract in-band and fail-closed, or treat the whole derive\u2192emit path as an uncompensated single point of failure.",
+      "UNVERIFIABLE SUCCESS CRITERION ('shareable', 'aimed at target audience', 'medium-tier is the opportunity'): no measurable postcondition/baseline. ESCALATE: define audience-fit/engagement metrics, else COVERAGE_CHECK cannot close and these claims remain heuristic, not verified."
+    ]
+  },
+  "erotetic": {
+    "not_one_question": [
+      "The brief is a build-this-system directive bundling at least 6 distinct sub-capabilities; it is not one question and must be decomposed before any part is answerable.",
+      "CONFLATION: 'understand an item' (capability 1/4, a descriptive/measurement question) and 'generate derivative content from it' (capability 5, a generative/design question) have different answerhood conditions but are run together as if one.",
+      "CONFLATION: 'is the news genuinely hyped' (empirical magnitude), 'are the comments real / bot-detection' (empirical classification), and 'criticize the news' (open evaluative) are three different erotetic types fused under 'SIGNAL READING'.",
+      "CONFLATION: 'build the brain' (engineering/design) and 'does it work' (measurement requiring a defined success construct + baseline) are merged into one 'BRAIN + EVAL LOOP' with the design claim never separated from the does-it-work claim.",
+      "CONFLATION: MAP/ATTENTION-WEB fuses a descriptive question ('who/what is salient') with a strategic claim ('the medium-tier is the opportunity') and a procedural recipe ('decreasing size, top-5 per niche'); the strategic claim is smuggled in as description.",
+      "CONFLATION: the legal/ethical LIVE CONSTRAINT is one lump but is at least five distinct legal questions (right-of-publicity, defamation, voice/likeness consent, platform-ToS, synthetic-media-disclosure) with different jurisdictions and rights-holders.",
+      "CONFLATION: 'lossless' and 'token-efficient / information-dense' are stated as one joint requirement on the per-item summary, but they are two questions in tension and whether both can hold at once is itself an open, unstated question.",
+      "CONFLATION: 'shareable scene aimed at a target audience' fuses a generative question (what scene) with an optimization question (what maximizes sharing for whom), and the audience/objective are left unbound."
+    ],
+    "false_presuppositions": [
+      {
+        "id": "FP1",
+        "text": "'The medium-tier (not the over-hyped global top) is the opportunity.' (KEY INSIGHT, capability 2)",
+        "status": "unverified-presupposition-asserted-as-fact",
+        "why": "This is a contestable empirical/strategic claim, not a given. It presupposes (a) a defined objective the 'opportunity' is relative to (reach? virality? monetization? legal safety?), (b) that medium-tier salience is causally more exploitable, and (c) that 'over-hyped' and 'medium-tier' are measurable and separable. None is established; the claim is single-origin (the author's intuition) with no warrant. Per spec it is flagged, not answered.",
+        "reframe": "Relative to a stated objective O and a defined salience metric, is the expected return on medium-tier nodes higher than on top-tier nodes, and by what measured margin on a held-out set?"
+      },
+      {
+        "id": "FP2",
+        "text": "'Write a LOSSLESS, token-efficient, information-dense summary per item.' (capability 4)",
+        "status": "false-as-stated (internally contradictory)",
+        "why": "'Lossless' (zero information discarded) and 'token-efficient / dense' (information discarded or compressed below the source's entropy) are jointly unsatisfiable for any item whose information content exceeds the token budget; lossless compression is bounded by source entropy. As literally stated this is a false presupposition. It must be reframed as a rate-distortion tradeoff, not a both-at-once requirement.",
+        "reframe": "At a fixed token budget B, what is the minimum-distortion (maximally faithful) summary, and which information classes are designated must-preserve vs droppable?"
+      },
+      {
+        "id": "FP3",
+        "text": "'Build the system FIRST, then test it on real historical examples it did NOT see during design' yields a clean unbiased holdout. (capability 6)",
+        "status": "unverified-presupposition (leakage risk)",
+        "why": "Presupposes the designer can be informationally isolated from outcomes of famous historical public-figure events. For real, well-known events the designer almost certainly already knows the outcomes, so 'did not see during design' does not guarantee no leakage; the human author is part of the model. Without a pre-registered, time-boxed, blinded protocol the holdout claim is unwarranted.",
+        "reframe": "By what blinding/pre-registration/time-cutoff protocol is outcome leakage from the designer's prior knowledge of famous events actually prevented, and how is residual leakage measured?"
+      },
+      {
+        "id": "FP4",
+        "text": "'Detect bots/astroturf and decide are the comments real?' is answerable from public comment streams. (capability 4)",
+        "status": "unverified-presupposition (answerable-without-baseline risk)",
+        "why": "Presupposes a ground-truth label of 'real vs bot' is recoverable from public signals alone. Bot/astroturf detection has no public ground truth, adversaries adapt, and platform-side data (account provenance, IP, timing) is not in the public feed. Without a labeled baseline the 'are they real?' verdict has no admissible answer set; it can only return a calibrated likelihood with stated false-positive cost.",
+        "reframe": "Given only public signals, what is the calibrated probability that a comment cluster is coordinated/inauthentic, against what labeled validation set, and at what false-positive rate?"
+      },
+      {
+        "id": "FP5",
+        "text": "'Measure, fix, repeat across fields until results are good.' (capability 6)",
+        "status": "unanswerable-as-stated (no success construct / no baseline)",
+        "why": "'Good' is undefined: no metric, no target threshold, no baseline to beat, no held-out comparator. 'Diagnose why it is not improving' presupposes 'improving' is measurable, which presupposes the metric that does not yet exist. This is the spec's escalation case 'topic not answerable in principle (no measurable construct)' until a construct, indicator, and measure are bound.",
+        "reframe": "What is the operational success construct, its indicator, its measure, the baseline it must beat, and the stopping threshold that defines 'good'?"
+      },
+      {
+        "id": "FP6",
+        "text": "Linking real public figures + voice + jokes + political news is a creative/technical problem the system can simply 'handle'. (capabilities 3, 5 + LIVE CONSTRAINT)",
+        "status": "false-presupposition (mixes a legal question into an engineering frame; not answerable by this specialist as ground truth)",
+        "why": "Presupposes permissibility is a feature to be implemented rather than a jurisdiction-dependent legal question (right of publicity, defamation, voice-likeness consent, platform ToS, synthetic-media-disclosure law). This specialist analyzes question structure and does not assert legal answers; the brief treats a contested legal/normative question as a settled technical premise.",
+        "reframe": "For target jurisdiction J and use U, what is the admissible set of derivative outputs under publicity/defamation/consent/ToS/disclosure constraints, as determined by qualified legal review (not by this system)?"
+      },
+      {
+        "id": "FP7",
+        "text": "'Read reactions across news, Reddit, X, Instagram, YouTube' gives independent corroboration of hype. (capability 4)",
+        "status": "unverified-presupposition (single-origin-evidence risk)",
+        "why": "Presupposes the five platforms are independent evidence sources. They frequently share one upstream origin (the same press release, the same seeded astroturf campaign, cross-posted screenshots), so multi-platform agreement can collapse to a single source and create false corroboration. The independence required for 'genuinely hyped' is assumed, not verified.",
+        "reframe": "After deduplicating to distinct originating sources, how many independent origins support the hype signal, and does agreement survive source-provenance clustering?"
+      }
+    ],
+    "sub_question_dag": [
+      {
+        "id": "Q0",
+        "question": "What is the single operational objective the whole system optimizes (reach, virality, monetization, audience-building, legal-safe output), and for which target audience?",
+        "interrogative_type": "wh-which",
+        "answer_schema": "one named objective O with a measurable proxy + one defined audience segment",
+        "depends_on": [],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q1",
+        "question": "Is each capability answerable in principle, i.e. does it bind to a measurable construct, indicator, and measure?",
+        "interrogative_type": "polar (per-capability)",
+        "answer_schema": "yes/no + construct->indicator->measure binding for each of the 6 capabilities",
+        "depends_on": [
+          "Q0"
+        ],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q2",
+        "question": "For a single ingested item, what is the admissible UNDERSTANDING-completeness condition (which information classes must be preserved) at a fixed token budget?",
+        "interrogative_type": "wh-what",
+        "answer_schema": "ordered must-preserve / droppable information-class list + budget B",
+        "depends_on": [
+          "Q0"
+        ],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q3",
+        "question": "What is the salience metric, and is medium-tier expected-return higher than top-tier on a held-out set (FP1)?",
+        "interrogative_type": "alternative (medium vs top) + magnitude",
+        "answer_schema": "metric definition + measured return delta with CI on holdout",
+        "depends_on": [
+          "Q0",
+          "Q1"
+        ],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q4",
+        "question": "What is the geo-relevance admissibility predicate that decides whether linking node A to news B is licensed (e.g. Punjab-person <-> US-India immigration)?",
+        "interrogative_type": "wh-what (relation predicate)",
+        "answer_schema": "explicit relevance predicate R(A,B) with pass/fail examples",
+        "depends_on": [
+          "Q1"
+        ],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q5",
+        "question": "Given only public signals, what is the calibrated probability a comment cluster is inauthentic, against what labeled validation set and at what false-positive rate (FP4)?",
+        "interrogative_type": "wh-what (probability) ",
+        "answer_schema": "calibrated p + named validation set + FPR/TPR",
+        "depends_on": [
+          "Q1"
+        ],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q6",
+        "question": "After deduplicating to distinct originating sources, is the hype signal supported by >=N independent origins (FP7)?",
+        "interrogative_type": "polar + count",
+        "answer_schema": "origin count after provenance clustering + threshold N",
+        "depends_on": [
+          "Q5"
+        ],
+        "closed_or_open": "closed (given N)"
+      },
+      {
+        "id": "Q7",
+        "question": "What is the operational definition of 'good', its baseline-to-beat, and its stopping threshold (FP5)?",
+        "interrogative_type": "wh-what",
+        "answer_schema": "metric + baseline value + target threshold + stopping rule",
+        "depends_on": [
+          "Q0",
+          "Q1"
+        ],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q8",
+        "question": "By what blinding/pre-registration/time-cutoff protocol is outcome leakage from the designer's prior knowledge prevented, and what residual leakage remains (FP3)?",
+        "interrogative_type": "wh-how + magnitude",
+        "answer_schema": "protocol spec + measured/estimated residual leakage",
+        "depends_on": [
+          "Q7"
+        ],
+        "closed_or_open": "open"
+      },
+      {
+        "id": "Q9",
+        "question": "For target jurisdiction J and use U, what is the admissible set of derivative outputs under publicity/defamation/consent/ToS/synthetic-media-disclosure constraints (FP6)?",
+        "interrogative_type": "wh-what (set)",
+        "answer_schema": "constraint-filtered admissible output set, per rights class, from qualified legal review",
+        "depends_on": [
+          "Q0"
+        ],
+        "closed_or_open": "open (ESCALATED: outside this specialist's answer authority)"
+      },
+      {
+        "id": "Q10",
+        "question": "Does the end-to-end pipeline (understand->map->link->generate) beat its baseline on Q7's metric, on the leakage-controlled holdout of Q8, across >=2 fields?",
+        "interrogative_type": "polar + magnitude",
+        "answer_schema": "per-field score vs baseline with CI + pass/fail vs threshold",
+        "depends_on": [
+          "Q2",
+          "Q3",
+          "Q4",
+          "Q5",
+          "Q6",
+          "Q7",
+          "Q8"
+        ],
+        "closed_or_open": "closed (given threshold)"
+      }
+    ],
+    "answerability_ranking": [
+      {
+        "qid": "Q0",
+        "decision_relevance": 1,
+        "answerability": 0.9,
+        "note": "Gates everything: with no objective, 'opportunity', 'good', and 'target audience' are all undefined. Cheaply answerable by a decision, but currently unstated."
+      },
+      {
+        "qid": "Q7",
+        "decision_relevance": 1,
+        "answerability": 0.85,
+        "note": "Without a defined success construct + baseline, the entire EVAL LOOP (capability 6) is unanswerable-without-baseline. High relevance; answerable once a metric is chosen."
+      },
+      {
+        "qid": "Q2",
+        "decision_relevance": 0.85,
+        "answerability": 0.8,
+        "note": "Reframes FP2: lossless+dense is a rate-distortion tradeoff. Answerable once must-preserve classes + budget are fixed; not answerable as 'both at once'."
+      },
+      {
+        "qid": "Q8",
+        "decision_relevance": 0.9,
+        "answerability": 0.45,
+        "note": "Designer already knows famous outcomes; clean holdout is hard. Answerable only with a pre-registered, time-cutoff, blinded protocol; residual leakage may be irreducible."
+      },
+      {
+        "qid": "Q3",
+        "decision_relevance": 0.8,
+        "answerability": 0.5,
+        "note": "The KEY INSIGHT (FP1) is testable but only after Q0 fixes the objective and a salience metric exists; until then it is an unwarranted claim, not a finding."
+      },
+      {
+        "qid": "Q5",
+        "decision_relevance": 0.7,
+        "answerability": 0.35,
+        "note": "Bot/astroturf has no public ground truth (FP4); best achievable is a calibrated likelihood against a labeled set, never a clean 'real/not-real' verdict."
+      },
+      {
+        "qid": "Q6",
+        "decision_relevance": 0.7,
+        "answerability": 0.55,
+        "note": "Single-origin risk (FP7) is detectable via provenance dedup; answerable once a source-clustering step exists, but adversarial seeding caps confidence."
+      },
+      {
+        "qid": "Q4",
+        "decision_relevance": 0.6,
+        "answerability": 0.6,
+        "note": "Geo-relevance predicate is definable with examples; moderately answerable but currently only gestured at by one example."
+      },
+      {
+        "qid": "Q9",
+        "decision_relevance": 0.95,
+        "answerability": 0.2,
+        "note": "ESCALATED. High decision-relevance (it can void the whole output set) but NOT answerable by this specialist; requires qualified legal review per jurisdiction. Flagged, not answered."
+      },
+      {
+        "qid": "Q1",
+        "decision_relevance": 0.85,
+        "answerability": 0.7,
+        "note": "Meta-gate: forces each capability to bind a measurable construct before build. Answerable per-capability; capability 6 currently fails it (see Q7)."
+      },
+      {
+        "qid": "Q10",
+        "decision_relevance": 0.95,
+        "answerability": 0.3,
+        "note": "The real does-it-work question. Closed once a threshold exists, but inherits the low answerability of Q7/Q8/Q5 it depends on; cannot be answered before they are."
+      }
+    ],
+    "unknown_discovery": [
+      "UNBOUND OBJECTIVE: nothing in the brief states what is being optimized; 'opportunity', 'good', 'hype', 'shareable' are all relative to an objective that is never named (Q0). This is the dominant unknown.",
+      "MISSING SUCCESS CONSTRUCT + BASELINE: 'measure, fix, repeat until good' has no metric, no target, no baseline-to-beat, no stopping rule (FP5/Q7). The eval loop is currently non-terminating and self-confirming.",
+      "LEAKAGE UNKNOWN: whether the 'unseen historical examples' holdout is actually clean is unknown and probably violated, because the human designer already knows the outcomes of famous events (FP3/Q8).",
+      "BOT-DETECTION GROUND TRUTH: there is no stated labeled set against which 'are the comments real?' can be validated; the unknown is the validation data, not the model (FP4/Q5).",
+      "SOURCE-INDEPENDENCE UNKNOWN: the number of truly independent origins behind a 'hype' signal is unknown until provenance deduplication is added; multi-platform agreement may be one source wearing five masks (FP7/Q6).",
+      "RATE-DISTORTION POINT: the must-preserve vs droppable information classes for the per-item summary are unspecified, so 'lossless+dense' has no defined operating point (FP2/Q2).",
+      "LEGAL ADMISSIBLE SET: the actual set of permitted outputs under publicity/defamation/consent/ToS/disclosure law per jurisdiction is unknown to this specialist and unspecified in the brief (FP6/Q9) \u2014 and it can retroactively void otherwise-valid creative output.",
+      "AUDIENCE DEFINITION: 'target audience' is referenced but never segmented; relevance/adequacy scoring of any generated scene has no QUD without it."
+    ],
+    "escalations": [
+      "FALSE/UNVERIFIED PRESUPPOSITION (spec trigger 1): FP1 'medium-tier is the opportunity', FP2 'lossless AND token-efficient', FP3 'clean unseen holdout', FP7 'five platforms = independent corroboration'. Per conflicts_and_dominance, flagging dominates answering \u2014 these are corrected (see reframes), not granted.",
+      "NOT ANSWERABLE IN PRINCIPLE / NO MEASURABLE CONSTRUCT (spec trigger 2): FP5/Q7 'measure, fix, repeat until results are good' has no success construct or baseline; the EVAL LOOP is unanswerable until a metric+baseline+threshold is bound. The whole capability-6 claim is escalated.",
+      "OPEN-TYPE ANSWER WITH NO WARRANT (spec trigger 3): the KEY INSIGHT (FP1) and 'criticize the news' verdicts are open-type outputs offered with no evidential warrant; calibration dominates informativeness, so they may not be asserted at the brief's confidence.",
+      "OUT-OF-DOMAIN / IRREVERSIBLE-RISK ESCALATION TO HUMAN: Q9 (legal admissibility of real-likeness/voice derivatives + political content under publicity/defamation/consent/ToS/synthetic-media-disclosure law) is outside this specialist's answer authority and carries irreversible reputational/legal risk; it requires qualified legal review per jurisdiction. This specialist flags it and does not assert a legal answer as ground truth.",
+      "SINGLE-ORIGIN-EVIDENCE RISK (verification duty): the signal-reading and eval loops can both collapse to one upstream source \u2014 astroturf seeding / cross-posting for hype (FP7), and designer prior-knowledge for the holdout (FP3) \u2014 producing false corroboration and self-confirming evaluation. Provenance deduplication (Q6) and blinding (Q8) are required before any 'is it really hyped / is it really working' verdict is trusted."
+    ]
+  },
+  "epistemics": {
+    "known_knowns": [
+      "The component technologies each exist and are individually buildable today: LLM-based item summarization, image-prompt and story-prompt generation, retrieval/aggregation of public web text, and TTS/voice tools (e.g. ElevenLabs). None of the six sub-capabilities requires an undiscovered primitive.",
+      "The pipeline is decomposable and each stage is independently testable: ingest -> understanding -> link-graph -> signal-read -> generate -> eval-loop. This staged structure is a known-known and makes incremental validation feasible.",
+      "A 'build-first-then-backtest-on-held-out-historical-cases' methodology is a recognized, sound evaluation pattern (out-of-sample / retrodiction) PROVIDED leakage is controlled.",
+      "The legal/consent surface is real and non-optional, not hypothetical: using identifiable public figures' likeness/voice plus jokes and political-news associations implicates right-of-publicity, defamation, platform ToS, and (in several jurisdictions) synthetic-media disclosure law. The author already acknowledges this.",
+      "Geo-relevance gating for linking (only join nodes that share an audience-relevant connection, e.g. US-India immigration to a Punjab node) is a concrete, encodable constraint, not vague."
+    ],
+    "known_unknowns": [
+      {
+        "id": "KU1",
+        "gap": "Is the 'medium-tier is the opportunity' KEY INSIGHT true? It is asserted, not evidenced. Whether mid-hype nodes yield better shareability/ROI than over-hyped global-top or long-tail nodes is an untested hypothesis presented as a known.",
+        "evidence_channel": "Held-out backtest measuring engagement/share-rate by hype-tier across multiple regions and niches; A/B on top-5 vs mid-tier node selections; published creator-economy engagement-distribution studies (grade independently).",
+        "voi": "HIGH - this insight is the core selection heuristic; if false, the MAP/ATTENTION-WEB module optimizes for the wrong nodes and the whole funnel mis-targets."
+      },
+      {
+        "id": "KU2",
+        "gap": "Can astroturf/bot vs genuine reaction ('are the comments real?') be reliably detected from PUBLIC signals alone? Ground truth (who actually authored, coordination intent) is platform-internal and not externally observable.",
+        "evidence_channel": "Validation against labeled coordinated-inauthentic-behavior datasets with known ground truth; platform transparency reports; academic bot-detection benchmarks. Note: true corroboration lives inside platforms and is inaccessible.",
+        "voi": "HIGH - the 'criticize the news / is it genuinely hyped' judgment and node-selection both depend on this; a false-confident bot signal poisons downstream selection."
+      },
+      {
+        "id": "KU3",
+        "gap": "What does 'LOSSLESS, token-efficient, information-dense summary' mean operationally? Lossless and compressed are in tension; summarization is lossy by construction. The success criterion is undefined.",
+        "evidence_channel": "Define a task-grounded reconstruction/round-trip test (can the downstream generator reproduce the needed facts from the summary?) and measure retained-vs-dropped salient fields against the raw item.",
+        "voi": "HIGH - undefined success target means the understanding stage cannot be evaluated or improved; it blocks the eval-loop (sub-cap 6)."
+      },
+      {
+        "id": "KU4",
+        "gap": "Does the backtest genuinely use cases the system 'did NOT see during design'? Any public figure/news the designer already knows contaminates the held-out set (designer-knowledge leakage, not just model training leakage).",
+        "evidence_channel": "Pre-registration of held-out cases with timestamps; temporal cutoff (only post-cutoff events); blind selection by a party not involved in design.",
+        "voi": "HIGH - without leakage control the entire 'measure, fix, repeat' loop produces inflated, non-predictive scores; the eval loop's validity collapses."
+      },
+      {
+        "id": "KU5",
+        "gap": "What is the legality of generating synthetic likeness/voice + joke/political associations for specific named individuals, per target jurisdiction (India/Punjab, US, others)? Right-of-publicity, defamation, ToS, and synthetic-media-disclosure rules differ and change.",
+        "evidence_channel": "Qualified legal counsel per jurisdiction; statutory text + current case law; platform ToS as published. Deep/Knightian + escalation - NOT resolvable to one confident answer by web acquisition.",
+        "voi": "HIGH - a legal gate dominates technical feasibility; an unfavorable answer can void the use case regardless of how well the system works."
+      },
+      {
+        "id": "KU6",
+        "gap": "What is the baseline shareability of output, and against what target? 'Until results are good' has no defined metric, threshold, or comparison baseline. 'Good' is unanchored.",
+        "evidence_channel": "Define metric (share-rate, save-rate, audience-fit), establish a naive/random-selection baseline and a human-curated baseline to beat.",
+        "voi": "HIGH - no baseline means 'measure, fix, repeat' (sub-cap 6) cannot terminate or demonstrate improvement; stopping rule undefined."
+      },
+      {
+        "id": "KU7",
+        "gap": "What is the real reaction-data access path? Reading reactions across News/Reddit/X/Instagram/YouTube assumes API/scrape access that is increasingly gated, paid, or ToS-restricted.",
+        "evidence_channel": "Each platform's current API tier, pricing, and ToS for automated collection; test-collection feasibility per platform.",
+        "voi": "MEDIUM-HIGH - SIGNAL-READING (sub-cap 4) is data-dependent; if access is blocked the bot-detection and hype-assessment modules starve."
+      },
+      {
+        "id": "KU8",
+        "gap": "Is 'don't copy, modify; add the author's own element' a sufficient line for copyright/meme-format reuse, or does derivative-content liability remain? The transformation threshold is unspecified.",
+        "evidence_channel": "Copyright/fair-use (and equivalent) doctrine per jurisdiction via counsel; case law on meme/derivative reuse.",
+        "voi": "MEDIUM - affects sub-cap 5 (GENERATE); overlaps KU5 but is a distinct IP question."
+      },
+      {
+        "id": "KU9",
+        "gap": "Does the cross-session handoff (emit prompts now, inject into a SEPARATE downstream agent later) preserve the dense understanding without context loss, and who owns safety-gating at the boundary?",
+        "evidence_channel": "Integration test of the prompt-handoff contract; check that legal/consent gates travel with the payload rather than being dropped at the seam.",
+        "voi": "MEDIUM - architectural seam risk; a dropped safety gate at the handoff re-exposes KU5/KU8 downstream."
+      },
+      {
+        "id": "KU10",
+        "gap": "Is the region->niche->top-5 expansion in 'decreasing order of size/hype' computable from available data, and what defines a region's 'size/hype' ordering quantitatively?",
+        "evidence_channel": "Define the salience metric and its inputs; check data availability to rank regions/niches reproducibly.",
+        "voi": "MEDIUM - the MAP module's traversal order is only as good as the salience metric; vague ordering yields non-reproducible maps."
+      }
+    ],
+    "aleatory_vs_epistemic": {
+      "aleatory": [
+        "Whether any given generated scene actually goes viral / lands with the target audience - virality is stochastic; even a correct node-selection and good craft cannot deterministically produce shares. Irreducible variance remains no matter how much the model learns.",
+        "Real-time human reaction to a fresh news item before enough comments accumulate - early reaction is genuinely noisy/random and not knowable by more analysis at t=0.",
+        "Which specific public figures will be 'salient' at generation time - public attention is a moving stochastic process; the map is valid only for a short half-life.",
+        "Residual ambiguity in whether an individual comment is bot or human even with perfect public-signal features - some inauthentic behavior is statistically indistinguishable from genuine behavior (irreducible from outside the platform)."
+      ],
+      "epistemic": [
+        "The truth of the 'medium-tier is the opportunity' insight (KU1) - reducible by backtest/A-B.",
+        "Operational definition of 'lossless dense summary' and of 'good' results (KU3, KU6) - reducible by defining metrics.",
+        "Legality per jurisdiction (KU5, KU8) - reducible by counsel, though slow-moving and jurisdiction-bounded; treat as deep where law is unsettled.",
+        "Platform data-access feasibility (KU7) - reducible by checking current APIs/ToS.",
+        "Detectability ceiling of astroturf from public signals (KU2) - PARTLY reducible (benchmarks raise the floor) but bounded by an aleatory residual; do not promise full reducibility.",
+        "Leakage control adequacy of the backtest (KU4) - reducible by pre-registration and temporal cutoff."
+      ]
+    },
+    "assumptions": [
+      "ASSUMPTION (conditional known): the author has, or will obtain, lawful access to each platform's reaction data; if access is ToS-blocked, sub-cap 4 is degraded - not registered as solved.",
+      "ASSUMPTION: 'public figures' and 'publicly-available information' are treated as automatically usable; this conflates availability with permissibility - public availability does NOT grant likeness/voice/derivative rights. Registered as a conditional known pending KU5/KU8.",
+      "ASSUMPTION: the downstream SEPARATE agent session will honor whatever safety/consent gates the upstream emits; unverified across the handoff seam (KU9).",
+      "ASSUMPTION: a 'salience/hype' ordering for regions and niches is computable from obtainable public metrics; depends on KU10 metric definition.",
+      "ASSUMPTION: 'real, known historical outcomes' exist and are cleanly attributable for the backtest cases; outcome attribution (why a past scene worked) is itself partly confounded - treat as a conditional, not a clean label.",
+      "ASSUMPTION: 'add the author's own element' is intended as both a creativity and a legal-distinction lever; only the creativity role is in scope here, the legal sufficiency is KU8."
+    ],
+    "gap_priority_by_voi": [
+      "KU5 (legality of synthetic likeness/voice + political/joke association) - dominates: a gating constraint that can void the use case independent of technical success; escalate to counsel first.",
+      "KU3 (define 'lossless dense summary' success criterion) - unblocks the understanding stage and is cheap to resolve; without it nothing downstream is measurable.",
+      "KU6 (define 'good' + baseline) and KU4 (leakage control) - jointly make the eval-loop valid; the loop is the author's stated mechanism for everything, so its validity is high-VOI and low-cost to fix.",
+      "KU1 (test the medium-tier insight) - high VOI but higher cost; do it once KU3/KU6/KU4 give it a valid measurement substrate, else you backtest against an undefined target.",
+      "KU2 (astroturf detectability) - high VOI but partially aleatory-bounded; scope it to 'raise the floor against labeled benchmarks,' do not chase a full solution.",
+      "KU7 (platform data access) - resolve early-cheap because it can hard-block sub-cap 4 regardless of model quality.",
+      "KU8 (derivative/IP line), KU9 (handoff gate integrity), KU10 (salience metric) - second tier; resolve after the gating and eval-validity items."
+    ],
+    "confidence": {
+      "buildable": "MEDIUM-HIGH that the technical pipeline (ingest -> understanding -> link-graph -> generate -> eval-loop) can be assembled from existing components; each stage uses known primitives. This is a calibrated prior, not an evidence-graded finding - I ran no acquisition, so no 'high' label is legal.",
+      "useful": "LOW-to-MEDIUM and UNVERIFIABLE WITHOUT A BASELINE. The two load-bearing claims for usefulness - 'medium-tier is the opportunity' (KU1) and 'good results' (KU6) - are undefined/untested. Usefulness also sits behind a legal gate (KU5) that can dominate it. Cannot be raised without defining metrics and running a leakage-controlled backtest.",
+      "caps_reason": "Confidence is capped because: (1) I performed NO evidence acquisition in this pass, so label-legality forbids any 'high' label (a high label needs >=2 sources in distinct independence groups). (2) Core success terms ('lossless', 'good', 'medium-tier opportunity') are undefined, so usefulness is unanswerable-without-baseline. (3) Legality (KU5) is deep/Knightian and jurisdiction-dependent, not reducible to a confident probability here. (4) Astroturf ground truth (KU2) is platform-internal - a single-origin/inaccessible-corroboration risk that bounds the SIGNAL-READING module's reliability."
+    },
+    "escalations": [
+      "ESCALATE TO LEGAL/HUMAN REVIEW (trigger: deep/Knightian uncertainty that cannot be honestly reduced to a probability): KU5 and KU8 - synthetic likeness/voice of identifiable real people plus joke/political associations and meme-derivative reuse. Jurisdiction-dependent right-of-publicity, defamation, platform ToS, and synthetic-media-disclosure obligations. This gate must be resolved by qualified counsel before build, not engineered around.",
+      "ESCALATE (trigger: citation chain collapses to a single original source / only correlated sources for a high-stakes claim): KU2 - true astroturf ground truth is platform-internal and inaccessible from outside; external 'is it real?' signals share a common-method origin and do not independently corroborate each other. Do not assign a high-confidence 'comments are/aren't real' label.",
+      "ESCALATE (trigger: a decision-relevant gap cannot be closed within the acquisition budget): KU1 medium-tier insight - it is asserted as the KEY INSIGHT yet has no baseline; flagging it as a false-premise-until-tested so it is not silently inherited as ground truth by downstream design.",
+      "ESCALATE (trigger: structured probe surfaces a credible unknown-unknown reframing the question): the 'lossless summary' (KU3) framing - a Key-Assumptions-Check shows 'lossless' is internally contradictory with 'dense/token-efficient'; this reframes the understanding-stage spec and must be redefined before it can be evaluated.",
+      "NOTE (designer-knowledge leakage, KU4): the held-out backtest's validity depends on cases the DESIGNER did not know, not merely cases the model did not train on; recommend pre-registration + temporal cutoff + blind case-selection by an uninvolved party before any 'measure, fix, repeat' results are trusted."
+    ]
+  },
+  "schema_field_rationale": [
+    {
+      "field": "node_id (UPPER_SNAKE, IN_ prefix, regex-pinned)",
+      "why": "Linking is the whole point of the system; joins need a stable, collision-resistant key. A pattern-constrained id makes every link handle and suggested_link_partner.node_id a verifiable reference, matching the reference KB's UPPER_SNAKE node-id-ref discipline."
+    },
+    {
+      "field": "provenance.is_public_information + license_or_rights + source_urls(minItems 1)",
+      "why": "The brief insists this is publicly-available info touching real figures. Forcing >=1 source URL and an explicit public-information boolean makes lawful-public a hard gate, and license_or_rights constrains reuse before GENERATE can act."
+    },
+    {
+      "field": "item vs behind (split)",
+      "why": "Author explicitly separates 'what is it' from 'who/what is behind it'. Separating the subject (item) from the agent/producer (behind) lets the system reason about intent and ownership, and is where is_real_identifiable_person / public_figure_status fire the safety register."
+    },
+    {
+      "field": "item.factual_claims[].verifiability",
+      "why": "Defamation/false-light is a named live constraint. Tagging each claim VERIFIED/REPORTED/ALLEGED/RUMOR/OPINION lets GENERATE refuse to state unverified claims as fact, which is the core defamation guard at the data layer."
+    },
+    {
+      "field": "place.region_hierarchy + geo_market_tier + diaspora_relevance",
+      "why": "The MAP expands in decreasing region size and the LINK stage needs cross-border relevance (US-India immigration -> Punjab). region_hierarchy gives the traversal order, market tier gives the size ranking, diaspora_relevance encodes the legitimate cross-region bridge."
+    },
+    {
+      "field": "known_for.interest_domain + interest_subgenre",
+      "why": "MAP splits a crowd by interest (music->genres, sport->cricket) and takes top-5 per niche. A typed domain plus free subgenre list is exactly the field the niche-split and top-N selection operate over."
+    },
+    {
+      "field": "signal.per_platform (NEWS/REDDIT/X/INSTAGRAM/YOUTUBE enum)",
+      "why": "The brief enumerates these five surfaces explicitly. An array keyed by a platform enum with per-platform sentiment/volume lets the system read reactions per surface and compute consensus_vs_division across them rather than collapsing to one number."
+    },
+    {
+      "field": "signal.authenticity (organic_score, bot_astroturf_risk, manipulation_signals)",
+      "why": "'Are the comments real?' is a named sub-capability. Modeling organic vs astroturf as calibrated scores plus typed manipulation signals lets hype be discounted by manufactured reaction, and records WHY it was discounted."
+    },
+    {
+      "field": "hype.tier with MEDIUM_OPPORTUNITY + opportunity_score",
+      "why": "The KEY INSIGHT is that the medium-tier (not the over-hyped global top) is the opportunity. Encoding the tier enum with an explicit MEDIUM_OPPORTUNITY band and an opportunity_score that penalizes OVER_SATURATED makes that insight a rankable field, not a comment."
+    },
+    {
+      "field": "hype.authenticity_adjusted_hype",
+      "why": "Separating raw_hype from authenticity-adjusted hype operationalizes 'assess whether news is GENUINELY hyped' \u2014 the adjusted number is what MAP ranks on, so bot inflation cannot win attention."
+    },
+    {
+      "field": "critical_read.sensitivity_flags + credibility",
+      "why": "Author wants a short critical read and the work touches political/sensitive material. Typed sensitivity flags (POLITICAL, TRAGEDY, MINOR_INVOLVED, LEGAL_PENDING...) let GENERATE constrain joke framing, and credibility feeds the hype discount."
+    },
+    {
+      "field": "links.typed_tags + geo_keys + suggested_link_partners.geo_relevance_ok",
+      "why": "Best scene attaches 2-3 related things WITH geo-relevance respected. Typed tags make joins unambiguous (PLACE:punjab != TOPIC:punjab), geo_keys are the mandatory overlap for regional joins, and geo_relevance_ok=false can forbid a topically-tempting but geographically-irrelevant link."
+    },
+    {
+      "field": "machine_summary.dense + schema_hint + lossless_assertion",
+      "why": "The author's literal requirement: lossless, token-efficient, dense, machine-facing summary. A fixed pipe/KV grammar gives density; schema_hint makes it self-describing so 'lossless' is recoverable by a downstream agent from this field alone; lossless_assertion + token_estimate make the claim auditable and budgetable for prompt assembly."
+    },
+    {
+      "field": "safety_flags (generate_allowed gate + applicable_constraints referencing safety_register)",
+      "why": "GENERATE runs in a SEPARATE downstream session, so the gate must travel with the node. A four-state generate_allowed (ALLOW/ALLOW_WITH_CONSTRAINTS/BLOCK/HUMAN_REVIEW) plus the list of applicable safety_register ids is the machine-readable contract the later step must honor."
+    },
+    {
+      "field": "grounding_status (observed vs estimated per block)",
+      "why": "Mirrors the reference KB's source_grounding_status/calculation_mode. The BRAIN+EVAL loop tests on real historical examples and must distinguish measured signal from heuristic estimate to diagnose why it is not improving; stale_after drives re-pulling time-sensitive reaction reads."
+    },
+    {
+      "field": "additionalProperties:false throughout + explicit required arrays",
+      "why": "Token-efficiency and machine-facing reliability demand a closed schema: no silent extra keys, and the decision-critical blocks (provenance, signal, hype, links, machine_summary, safety_flags, grounding_status) are required so a node cannot reach GENERATE missing a safety or provenance gate."
+    }
+  ],
+  "safety_register": [
+    {
+      "risk": "Right-of-publicity / likeness misuse: commercial or shareable derivative reproducing a real identifiable person's face, body, or signature look without authorization.",
+      "rule": "If behind.is_real_identifiable_person=true, GENERATE may produce caricature/parody/commentary-style likeness ONLY; no photoreal face-swap or implied endorsement, and no commercial use of the persona. Honor known_for.iconic_assets as references, never as reproductions of protected media. If public_figure_status=MINOR_OR_PROTECTED, hard BLOCK.",
+      "escalation": "Set safety_flags.generate_allowed=HUMAN_REVIEW when involves_voice_or_likeness=true and use is commercial/ambiguous; route to human rights/legal review and log review_reason."
+    },
+    {
+      "risk": "Voice-clone without consent: synthesizing a real person's voice for the optional ElevenLabs/audio brief.",
+      "rule": "Do NOT emit an audio brief that clones a real, identifiable person's voice unless documented consent/license exists in provenance.license_or_rights. Default to a clearly non-impersonating, generically-described voice. Never imply the real person actually said the synthesized words.",
+      "escalation": "If safety_flags.involves_voice_or_likeness=true and no consent on record, set generate_allowed=BLOCK for the audio brief specifically; the image/story prompts may still proceed under their own gates."
+    },
+    {
+      "risk": "Defamation / false-light: presenting jokes, associations, or scenes as factual assertions, or fabricating wrongdoing.",
+      "rule": "Only item.factual_claims tagged VERIFIED/REPORTED may inform factual framing; ALLEGED/RUMOR/OPINION must be rendered as opinion/parody and visibly non-literal. Never depict a real person committing a crime, holding a view, or making a statement they did not, in a way a reasonable viewer could read as fact.",
+      "escalation": "If critical_read.sensitivity_flags include LEGAL_PENDING or the scene asserts disputed wrongdoing, set generate_allowed=HUMAN_REVIEW; require explicit satire/parody framing or downgrade to ALLOW_WITH_CONSTRAINTS."
+    },
+    {
+      "risk": "Synthetic-media non-disclosure: AI-generated likeness/voice presented without a label, breaching emerging law and platform rules.",
+      "rule": "Every derivative depicting a real person's likeness or voice MUST carry a machine-readable synthetic-media disclosure tag in the GENERATE output (e.g. 'AI-generated parody'). Disclosure is mandatory, not optional, and cannot be stripped by the downstream session.",
+      "escalation": "If the target platform or jurisdiction requires labeling and the GENERATE output lacks a disclosure slot, set generate_allowed=BLOCK until disclosure is attached."
+    },
+    {
+      "risk": "Platform Terms-of-Service violation: scraped reactions/media reused in ways the source platform forbids, or content that breaks the publishing platform's rules.",
+      "rule": "Respect provenance.collection_method and license_or_rights; SCRAPE-sourced or unlicensed media must not be redistributed. GENERATE output must conform to the intended publishing platform's content and synthetic-media policies for the audience's platform_mix.",
+      "escalation": "If collection_method=SCRAPE or license_or_rights='unknown' for media intended for reuse, set generate_allowed=ALLOW_WITH_CONSTRAINTS (reference-only, no redistribution) or HUMAN_REVIEW."
+    },
+    {
+      "risk": "Political / election manipulation and astroturf amplification: building shareable content around political news whose hype is itself manufactured, or that could mislead voters.",
+      "rule": "If safety_flags.political_or_election_context=true, require signal.authenticity.organic_score above threshold and bot_astroturf_risk below threshold before treating the news as genuinely salient; never fabricate political statements/positions of a real figure; no content engineered to deceive voters or impersonate officials.",
+      "escalation": "High bot_astroturf_risk or election-period political context sets generate_allowed=HUMAN_REVIEW; record the astroturf signals in review_reason."
+    },
+    {
+      "risk": "Sensitive-context harm: jokes/associations attached to tragedy, ethnicity, religion, health, or minors.",
+      "rule": "critical_read.sensitivity_flags of TRAGEDY, ETHNIC, RELIGIOUS, HEALTH, MINOR_INVOLVED, SEXUAL, or VIOLENCE bar mocking/derogatory framing of the affected group or individual; respect geo/community context (e.g. religious sensitivity in regional audiences).",
+      "escalation": "Presence of any such flag downgrades generate_allowed to ALLOW_WITH_CONSTRAINTS at most, or HUMAN_REVIEW if a real identifiable person is the target of the joke."
+    },
+    {
+      "risk": "Non-public or private information leaking into the pipeline.",
+      "rule": "Only nodes with provenance.is_public_information=true may proceed; private, leaked, hacked, or doxxing-adjacent material is excluded from ingestion and from GENERATE entirely.",
+      "escalation": "is_public_information=false sets generate_allowed=BLOCK at the node level; no override path in the automated pipeline."
+    }
+  ]
+}
