@@ -97,6 +97,13 @@ offline, deterministic, stdlib-only. `python3 .../scaffold/run_pipeline.py` ship
 safe-lane brief to an outbox **and** returns a leakage-controlled eval verdict (currently NO-GO);
 `bash .../scaffold/run_all.sh` smoke-tests all 17 subsystems. See `scaffold/README.md`.
 
+An intelligence analysis found the deterministic scaffold is only a narrow expert system, so
+`b60_content_intelligence/mind/` rebuilds the brain as an **LLM-run cognitive + memory system** — seven
+specialist-designed faculties (kernel/agency/attention/calibration/learning/generalization/memory) that
+close the learning, agency, calibration, generalization, multi-environment, and being-a-mind gaps using
+**persistent memory files** (diary/checkpoints/schedule) operated by an LLM, no Python pipeline. Run via
+`mind/KERNEL.md`; see `mind/GAP_MAP.md` for the honest closed/partial status of each gap.
+
 ## Pending (analyzed, not started — see scratchpad/IDEA_BRANCHES_REPORT.md)
 
 Suggested order honors local-first / eval-before-training / no-LoRA-before-failure-data.

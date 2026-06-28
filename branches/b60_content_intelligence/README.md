@@ -19,6 +19,7 @@ briefs for downstream operators and gates them.
 | **`BUILD.md`** | The same 10-specialist panel re-run **constructively** — the idea built forward into a buildable spec with a v1 MVP + phased roadmap. |
 | **`scaffold/`** | The v1 MVP **made to run** — offline, deterministic, stdlib-only code for the whole spine; `run_pipeline.py` ships a clearance-passing brief + returns a leakage-controlled verdict. Dissected into two steps: `orch/brain.py` (draft+flag) → `orch/gate.py` (stop/yellow check + emit). |
 | **`BRAIN_STEP1.md` / `GATE_STEP2.md`** | The two copy-paste **prompts** that make any capable AI *be* the brain (step 1: collect→connect→draft+flag) and the safety gate (step 2: stop/yellow verdict). |
+| **`mind/`** | The brain reborn as an **LLM-run cognitive + memory system** — closes the intelligence gaps (learning, agency, calibration, generalization, multi-environment, being-a-mind) with persistent memory (diary/checkpoints/schedule) instead of a Python pipeline. Run by an LLM via `mind/KERNEL.md`. |
 | `schema/information_node.schema.json` | The closed machine-facing record per ingested item (the "schema to think first"). |
 | `demo/*_findings.{json,md}` | Raw structured specialist output (scope, run, panel, build-forward). |
 
