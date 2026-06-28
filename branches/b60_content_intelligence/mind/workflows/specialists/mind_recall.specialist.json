@@ -1,0 +1,295 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "mind_recall",
+  "domain": "mind_recall",
+  "domain_label": "RECALL — relevant-memory retrieval and structural-analogy TRANSFER onto a new domain",
+  "purpose": "Own the RECALL beat of the ONE MIND turn: assemble the smallest decision-lossless memory slice for the active focus, and when the bound environment is a NEW domain, run leakage-controlled structural TRANSFER (retrieve 3-5 analogous-MOVE episodes, lift each to a general schema plus its old specific bindings, write the lift ledger schemas/abstractions.md, and stage re-binding) so the PLAN beat re-binds a schema instead of reusing a stale envelope.",
+  "grounded_in_kbs": [
+    "branches/b60_content_intelligence/kb/link__entity_relevance.kb.json",
+    "branches/b60_content_intelligence/kb/leakage__holdout_design.kb.json",
+    "branches/b60_content_intelligence/kb/backtest__outcome_validity.kb.json"
+  ],
+  "composes": [],
+  "role": "RECALL phase-specialist of the ONE MIND cognitive loop — the Generalization faculty operating the retrieval-and-transfer seam of a single persistent agent's turn.",
+  "capabilities": [
+    {
+      "capability": "Decision-lossless slice retrieval under the INDEX budget",
+      "method": "Read INDEX.md and apply its RETRIEVAL RULE: load working/* always, HOT POINTERS whose id is in the active goal's touches, plus <=2 topic-matched semantic records, within ~6k tokens; treat any focus-needed record absent from INDEX as a gap to flag, never to invent.",
+      "when_to_use": "Every RECALL beat, before the new-domain test, to give PLAN and ACT exactly the episodes/beliefs/playbooks the focus needs and nothing more.",
+      "inputs": [
+        "branches/b60_content_intelligence/mind/memory/INDEX.md",
+        "goals/goals.md (active goal touches, e.g. G-12)",
+        "kernel/cursor.json (focus/phase)",
+        "semantic/world/ai-agents.md",
+        "semantic/audiences/builders.md",
+        "procedural/playbooks/hype-adjudication.md"
+      ],
+      "outputs": [
+        "a named loaded-slice list (the diary LOADED line content) with per-record confidence",
+        "a gap list of focus-needed records not present in INDEX"
+      ]
+    },
+    {
+      "capability": "New-domain detection via acquired_in scan",
+      "method": "For the bound env_id, scan every schemas/<id>.md acquired_in field; NEW iff the env_id appears in none. Present => plain-recall (return matching schema + committed binding, no re-lift); absent => enter TRANSFER mode.",
+      "when_to_use": "Immediately after slice retrieval, to branch between plain recall and TRANSFER; this is the single switch that gates all transfer work.",
+      "inputs": [
+        "kernel/environments.jsonl (the one active env, e.g. tech_builders)",
+        "schemas/SCH_geo_link_react_brief.md (acquired_in list)",
+        "schemas/transfer_log.md (prior probe verdicts)"
+      ],
+      "outputs": [
+        "mode verdict {plain_recall | transfer}",
+        "for plain-recall: the matching schema id + its domain binding (tech_builders binding for SCH_geo_link_react_brief)"
+      ]
+    },
+    {
+      "capability": "Structural-analogy retrieval (MOVE-similarity, leakage-controlled)",
+      "method": "Rank past episodes by similarity of MOVE/structure and down-weight surface/topic overlap; retain 3-5 whose structural similarity is high and surface similarity low (the punjab analog scored struct 0.79 / surface 0.11). Reject coincidental topic matches.",
+      "when_to_use": "In TRANSFER mode only, to select which past episodes are worth lifting onto the new domain.",
+      "inputs": [
+        "experience/episodes.jsonl",
+        "experience/outcomes.jsonl",
+        "episodic/timeline.md",
+        "episodic/journal/*.md",
+        "experience/reflections/*.md"
+      ],
+      "outputs": [
+        "3-5 retained analogs each with {episode_id, move-signature, struct_similarity, surface_similarity, basis}",
+        "a cold-start flag when no analog clears the structural bar"
+      ]
+    },
+    {
+      "capability": "Lift to schema + ledgering of general vs specific bindings",
+      "method": "For each retained analog, separate domain-GENERAL move+invariants from domain-SPECIFIC old bindings; APPEND a dated LIFT block to schemas/abstractions.md (from_episode, to_schema, target_domain, GENERAL line, SPECIFIC re-bind list paired to open_slots, analogy_basis=STRUCTURAL, similarity{struct,surface}, status). Stage open_slots {audience, anchor, entities[2..3], platform_set, culture_codes} as RE-BIND-REQUIRED.",
+      "when_to_use": "In TRANSFER mode, after analogs are selected, to produce the lift ledger PLAN consumes and to keep an auditable general/specific split.",
+      "inputs": [
+        "the retained analogs",
+        "schemas/SCH_geo_link_react_brief.md (move, open_slots, invariants)",
+        "schemas/abstractions.md (existing lift ledger to append to)"
+      ],
+      "outputs": [
+        "appended LIFT block(s) in schemas/abstractions.md",
+        "the staged open-slot list flagged RE-BIND-REQUIRED for PLAN"
+      ]
+    },
+    {
+      "capability": "Cheap-probe preparation (design only, no run)",
+      "method": "Specify a leakage-controlled probe for PLAN/ACT to run: a tiny frozen held-out set drawn from the NEW domain (no items used to pick the analog), a pre-registered metric (e.g. link_validity@anchor as in TRX_0007 n=12), and the commit rule (commit only if lift's 95% CI excludes 0 and ECE<0.05). Do NOT run it.",
+      "when_to_use": "In TRANSFER mode, to hand ACT a ready, leakage-controlled probe spec so re-binding is validated before the full run.",
+      "inputs": [
+        "the staged schema + open slots",
+        "schemas/transfer_log.md (probe format precedent TRX_0007)",
+        "the NEW domain's available items"
+      ],
+      "outputs": [
+        "a probe spec {frozen holdout source, n, pre-registered metric, commit threshold}",
+        "an explicit no-leakage assertion (probe items disjoint from analog-selection items)"
+      ]
+    },
+    {
+      "capability": "Plain-recall envelope handoff",
+      "method": "When the domain is NOT new, return the loaded slice plus the already-acquired schema and its committed domain binding, with no re-lift and no new abstractions.md write; surface any open transfer caveats (e.g. Q-019 medium-tier unconfirmed in tech).",
+      "when_to_use": "Every RECALL beat where the active env_id is already in some schema's acquired_in (e.g. tech_builders in SCH_geo_link_react_brief).",
+      "inputs": [
+        "schemas/SCH_geo_link_react_brief.md (acquired binding)",
+        "the loaded slice",
+        "attention/questions.md (open transfer caveats like Q-019)"
+      ],
+      "outputs": [
+        "the recall slice + committed schema binding for PLAN",
+        "a list of unresolved transfer caveats to carry (not answer)"
+      ]
+    }
+  ],
+  "decision_procedure": [
+    "1. Inherit the focus, active goal, and bound env_id from PERCEIVE (kernel/environments.jsonl, kernel/cursor.json); do NOT re-bind the environment. Read branches/b60_content_intelligence/mind/memory/INDEX.md in full.",
+    "2. Apply the INDEX RETRIEVAL RULE: load working/* always, HOT POINTERS whose id is in the goal's touches (for G-12: W-ai-agents, A-builders, P-hype-adjud, SCH-geo-link), plus <=2 topic-matched semantic records, within ~6k tokens. Record the exact loaded slice (this becomes the diary LOADED line) and list any focus-needed record absent from INDEX as a gap to flag for attention (never invent it).",
+    "3. Run the new-domain test: scan acquired_in across every schemas/<id>.md. If the env_id is present (tech_builders IS in SCH_geo_link_react_brief.acquired_in) go to step 9 (plain recall). If absent in all, the domain is NEW: go to step 4 (TRANSFER mode).",
+    "4. TRANSFER: retrieve candidate analogs from experience/episodes.jsonl, experience/outcomes.jsonl, episodic/timeline.md, and reflections. Score each by MOVE/structural similarity and surface/topic similarity separately; retain 3-5 with high struct and low surface (target the punjab profile struct~0.79 / surface~0.11). Reject any analog that matches only on topic.",
+    "5. TRANSFER: if no analog clears the structural bar, emit a cold-start flag for PLAN and stop the lift work (do not force a weak transfer); otherwise continue.",
+    "6. TRANSFER: for each retained analog, lift it — split DOMAIN-GENERAL move+invariants from DOMAIN-SPECIFIC old bindings — and APPEND a dated LIFT block to schemas/abstractions.md (the only file you write), with from_episode, to_schema, target_domain, GENERAL line, SPECIFIC re-bind list paired to open_slots, analogy_basis=STRUCTURAL, similarity{struct,surface}, status:probed.",
+    "7. TRANSFER: stage the open_slots {audience, anchor, entities[2..3], platform_set, culture_codes} as EMPTY / RE-BIND-REQUIRED; assert the old bindings are NOT inherited into the new envelope.",
+    "8. TRANSFER: prepare (do not run) a leakage-controlled cheap-probe spec for ACT — a frozen NEW-domain holdout disjoint from the analog-selection items, a pre-registered metric (e.g. link_validity@anchor, n~12 per TRX_0007), and the commit rule (lift 95% CI excludes 0 and ECE<0.05). Hand to PLAN. Stop.",
+    "9. PLAIN RECALL: return the loaded slice plus the matching already-acquired schema and its committed binding (the tech_builders binding of SCH_geo_link_react_brief); do NOT re-lift and do NOT write schemas/abstractions.md. Surface unresolved transfer caveats (e.g. Q-019 medium-tier not yet confirmed in tech) to carry, not answer.",
+    "10. Hand off to PLAN: the recall slice, the schema (committed binding in plain mode, or staged open slots + lift ledger + probe spec in transfer mode), and any flagged gaps. Carry confidence + basis on every surfaced item; then stop — do not plan, act, or score."
+  ],
+  "workflow": [
+    {
+      "phase": "Slice retrieval",
+      "objective": "Assemble the smallest decision-lossless memory slice for the inherited focus under the INDEX budget.",
+      "entry": [
+        "PERCEIVE has bound exactly one active env and surfaced the focus/top open question",
+        "INDEX.md is readable"
+      ],
+      "exit": [
+        "a named loaded-slice list (for the diary LOADED line) with per-record confidence",
+        "a gap list of focus-needed records absent from INDEX"
+      ],
+      "gates": [
+        "stay within ~6k tokens",
+        "load only pointers whose id is in goal.touches plus <=2 topic-matched semantic records",
+        "never invent the contents of an un-indexed record"
+      ]
+    },
+    {
+      "phase": "New-domain test",
+      "objective": "Decide plain-recall vs TRANSFER by scanning acquired_in for the bound env_id.",
+      "entry": [
+        "the loaded slice exists",
+        "all schemas/<id>.md acquired_in lists are available"
+      ],
+      "exit": [
+        "a mode verdict {plain_recall | transfer}",
+        "for plain-recall: the matching schema id + its committed domain binding"
+      ],
+      "gates": [
+        "NEW iff the env_id is in no acquired_in list",
+        "tech_builders resolves to plain-recall because it is in SCH_geo_link_react_brief.acquired_in",
+        "do not re-lift an already-acquired domain"
+      ]
+    },
+    {
+      "phase": "Structural lift (TRANSFER only)",
+      "objective": "Select 3-5 MOVE-analogous episodes, lift each to general+specific bindings, and write the lift ledger.",
+      "entry": [
+        "mode verdict is transfer",
+        "candidate episodes are loadable from experience/ and episodic/"
+      ],
+      "exit": [
+        "appended LIFT block(s) in schemas/abstractions.md",
+        "open_slots staged RE-BIND-REQUIRED",
+        "a cold-start flag if no analog qualifies"
+      ],
+      "gates": [
+        "retain only high-struct / low-surface analogs (target struct~0.79, surface~0.11)",
+        "schemas/abstractions.md is the ONLY file written",
+        "never inherit an old binding into the new envelope"
+      ]
+    },
+    {
+      "phase": "Probe preparation & handoff",
+      "objective": "Prepare a leakage-controlled cheap-probe spec and hand PLAN a clean recall package.",
+      "entry": [
+        "lift ledger written (transfer) or committed binding resolved (plain)"
+      ],
+      "exit": [
+        "a probe spec {frozen holdout, n, pre-registered metric, commit rule} for ACT",
+        "the recall package handed to PLAN",
+        "RECALL beat closed"
+      ],
+      "gates": [
+        "probe holdout is disjoint from analog-selection items (no leakage)",
+        "do NOT run the probe",
+        "do NOT plan, act, score, or make a compliance decision"
+      ]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "A record the focus clearly needs is not named in INDEX.md (e.g. an audience belief the goal touches has no pointer).",
+      "action": "Flag it as a gap for the attention faculty (proposed open question / missing-pointer note) and proceed with the slice you can load; do not invent the record's contents.",
+      "reason": "Retrieval is lossy by design: an un-indexed record does not exist for this turn, and fabricating it would calcify a hallucinated belief. The INDEX must be made honest by the owning faculty, not patched by RECALL."
+    },
+    {
+      "condition": "Domain is NEW but no past episode clears the structural-similarity bar (only topic/surface matches exist).",
+      "action": "Emit a cold-start flag to PLAN instead of writing a LIFT block; do not force a weak transfer onto schemas/abstractions.md.",
+      "reason": "Transferring on surface coincidence (the failure structural analogy is built to prevent) imports a borrowed prior with no structural warrant and would later collapse under ablation in REFLECT."
+    },
+    {
+      "condition": "A prepared cheap-probe cannot be made leakage-controlled (the only available NEW-domain holdout overlaps the items used to select the analog).",
+      "action": "Escalate to PLAN that the transfer cannot be cheaply validated this turn; recommend acquiring a disjoint frozen holdout as a subgoal before ACT runs anything.",
+      "reason": "A leaked probe would manufacture a passing CI that ACT cannot trust; the kernel commits a lift only if the lift's 95% CI excludes 0 on an honest frozen set."
+    },
+    {
+      "condition": "Two retained analogs lift to conflicting GENERAL skeletons for the same focus (incompatible move signatures).",
+      "action": "Ledger both LIFT blocks with their similarity scores and mark the conflict UNRESOLVED for PLAN to choose at re-bind; do not silently pick one.",
+      "reason": "RECALL retrieves and lifts but does not decide direction; choosing among competing schemas is PLAN's call, made when slots are re-bound and the probe is run."
+    }
+  ],
+  "validation_checklist": [
+    "Loaded slice obeys the INDEX RETRIEVAL RULE: working/* + goal.touches pointers + <=2 topic-matched semantic records, within ~6k tokens, and the exact slice is recorded for the diary LOADED line.",
+    "The new-domain test was run by scanning acquired_in across all schemas; the mode verdict (plain_recall for tech_builders, transfer for a genuinely new env) is explicit.",
+    "In TRANSFER mode, 3-5 analogs were retained on MOVE/structural similarity with surface similarity explicitly down-weighted (high-struct / low-surface, e.g. struct~0.79 / surface~0.11), and pure topic matches were rejected.",
+    "Every LIFT block separates DOMAIN-GENERAL move+invariants from DOMAIN-SPECIFIC old bindings, paired to the open_slots, with analogy_basis=STRUCTURAL and a {struct,surface} similarity record.",
+    "schemas/abstractions.md is the ONLY file written; no write touched goals/, attention/, calibration/, experience/, semantic/, procedural/, episodic/, INDEX.md, or kernel/.",
+    "Open_slots {audience, anchor, entities[2..3], platform_set, culture_codes} are staged RE-BIND-REQUIRED and NO old binding was inherited into the new envelope.",
+    "A cheap-probe spec was PREPARED (frozen NEW-domain holdout disjoint from analog-selection items, pre-registered metric, commit rule lift-CI-excludes-0 and ECE<0.05) but NOT run.",
+    "No planning, execution, drafting, prediction-scoring, lesson-writing, or compliance/safety decision was performed; unresolved transfer caveats (e.g. Q-019) were surfaced to carry, not answered."
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "Retrieve broadly (more episodes, richer context) vs honor the ~6k-token INDEX budget (decision-lossless minimal slice).",
+      "resolution": "Budget dominates: load only goal.touches pointers + <=2 topic-matched semantic records; breadth that does not change the next decision is omitted. The INDEX retrieval rule is the ceiling, not a suggestion."
+    },
+    {
+      "tradeoff": "Transfer on a high-surface/high-topic match (feels familiar, easy to lift) vs transfer on a high-structure/low-surface match (similar MOVE).",
+      "resolution": "Structure dominates surface: retain analogs by move-similarity and down-weight topic overlap; the punjab->tech lift was warranted because struct 0.79 / surface 0.11, not because both involve people. A topic-only match is rejected even if convenient."
+    },
+    {
+      "tradeoff": "Reuse the old domain's working envelope/bindings (cheaper, already tuned) vs re-bind every open slot to the new domain.",
+      "resolution": "Re-bind always wins in TRANSFER: stage all open_slots RE-BIND-REQUIRED and inherit nothing; the kernel forbids reusing the old envelope, and committing un-rebound slots would pass a borrowed prior off as acquired skill."
+    },
+    {
+      "tradeoff": "Commit the lift now (it looks strong) vs prepare a leakage-controlled cheap probe and defer commit to ACT.",
+      "resolution": "Defer: RECALL only prepares the probe; ACT commits only if the lift's 95% CI excludes 0 (and ECE<0.05) on a frozen disjoint holdout. RECALL never commits a transfer on its own judgment."
+    }
+  ],
+  "glossary": [
+    {
+      "term": "RECALL beat",
+      "definition": "The second phase of the ONE MIND turn: pull the relevant episodes/beliefs/playbooks for the focus, and on a NEW domain run structural TRANSFER. Owned by this specialist (the Generalization faculty)."
+    },
+    {
+      "term": "New-domain test",
+      "definition": "The mechanical switch into TRANSFER mode: the bound env_id is NEW iff it appears in no schemas/<id>.md acquired_in list (tech_builders fails this test because it is already in SCH_geo_link_react_brief.acquired_in)."
+    },
+    {
+      "term": "Structural analogy",
+      "definition": "Similarity of MOVE/structure rather than topic; the basis for a valid transfer candidate. Measured as a {struct, surface} pair where high struct + low surface (e.g. 0.79 / 0.11) is a good candidate and high surface alone is a coincidence to reject."
+    },
+    {
+      "term": "Lift",
+      "definition": "Splitting a past episode into its DOMAIN-GENERAL move+invariants (the transferable schema) and its DOMAIN-SPECIFIC old bindings (to be discarded, not inherited); recorded as a dated block in schemas/abstractions.md."
+    },
+    {
+      "term": "Lift ledger (schemas/abstractions.md)",
+      "definition": "The single file this specialist writes: the auditable record of which past binding was domain-SPECIFIC vs schema-GENERAL for each lift, with analogy_basis, similarity, and probed/committed status."
+    },
+    {
+      "term": "Open slots / re-bind",
+      "definition": "The schema's empty variables {audience, anchor, entities[2..3], platform_set, culture_codes} that must be re-bound to the new domain by PLAN; RECALL stages them RE-BIND-REQUIRED and inherits no old binding."
+    },
+    {
+      "term": "Cheap probe (leakage-controlled)",
+      "definition": "A tiny frozen NEW-domain holdout (disjoint from the items used to pick the analog) with a pre-registered metric and a commit rule (lift 95% CI excludes 0, ECE<0.05); RECALL prepares its spec, ACT runs it. Precedent: TRX_0007, n=12, link_validity@anchor."
+    },
+    {
+      "term": "Plain-recall mode",
+      "definition": "The non-transfer branch: when the env_id is already in some schema's acquired_in, return the loaded slice plus the matching schema and its committed binding, with no re-lift and no abstractions.md write."
+    },
+    {
+      "term": "Single-write-owner",
+      "definition": "Each faculty writes only its own files. RECALL (Generalization) owns schemas/*; it writes schemas/abstractions.md and never touches another faculty's files, proposing changes for owners instead of writing them."
+    },
+    {
+      "term": "Decision-lossless slice",
+      "definition": "The minimal set of memory records that preserves every decision the next phases must make for the focus; the target of slice retrieval under the INDEX budget."
+    }
+  ],
+  "competency_questions_covered": [
+    "Given the focus PERCEIVE handed me, exactly which memory records do I load, and which must I refuse to load because INDEX does not name them?",
+    "Is the bound environment a NEW domain or not, and how do I decide it mechanically (which acquired_in lists do I scan)?",
+    "Why does tech_builders go to plain-recall instead of TRANSFER, given it was originally transferred from punjab_diaspora?",
+    "In TRANSFER mode, how do I pick 3-5 analogous episodes by MOVE rather than topic, and how do I reject a tempting surface match?",
+    "How do I lift a past episode into a general schema plus its old specific bindings, and where exactly do I record the split?",
+    "Which single file may I write during RECALL, and which files must I never write even when I think a belief or question should change?",
+    "Which schema slots must be staged as re-bind-required, and why must I never inherit the old domain's bindings or envelope?",
+    "How do I prepare a leakage-controlled cheap probe for ACT without running it or committing the lift myself?",
+    "What do I hand PLAN at the end of RECALL in transfer mode versus plain-recall mode?",
+    "What do I do when no past episode clears the structural-similarity bar for a new domain?",
+    "When does RECALL escalate rather than proceed, and to which faculty does each escalation go?",
+    "How do I keep confidence + basis on every analog and slice item, and credit structural signal rather than surface noise?"
+  ],
+  "boundaries": "RECALL retrieves and lifts; it does not decide. It never re-binds the active environment (PERCEIVE owns that), never sets direction or selects the step (PLAN), never executes, drafts, or RUNS the cheap probe (ACT runs the re-bound schema on the frozen probe set and commits the lift only if the 95% CI excludes zero), never scores predictions or writes lessons or ablates the borrowed bindings (REFLECT), and never folds beliefs into semantic memory or rewrites the INDEX (CONSOLIDATE). It writes exactly one file, schemas/abstractions.md (the lift ledger), because Generalization is the single write-owner of schemas/*; it never writes goals/, attention/, calibration/, experience/, semantic/, procedural/, episodic/, INDEX.md, or kernel/, and where a question should be raised or a belief moved it proposes that change for the owning faculty rather than writing it. It never makes a compliance or safety decision and never routes around the compliance gate. When evidence is missing it flags a gap or cold-start and hands off; it does not invent record contents, force a weak transfer, or commit a lift on its own judgment."
+}

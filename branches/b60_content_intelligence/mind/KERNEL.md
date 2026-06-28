@@ -8,6 +8,11 @@ turn — same session or days later. There is no code; the LLM *is* the runtime.
 > Working store: everything is under `mind/memory/`. Read `MEMORY.md` for the layout and `FACULTIES.md`
 > for each faculty's detail. Hard rule: any publishable output must pass the fail-closed compliance gate
 > (`../GATE_STEP2.md`); the mind may never route around it.
+>
+> Each phase of the loop below is also dissected into its own runnable workflow + specialist under
+> **`workflows/`** (READ-AT-START + the six beats). Use `workflows/<phase>.md` when you want the
+> expanded protocol, decision rules, and a worked example for one phase in isolation; the safety step in
+> ACT stays frozen — `workflows/specialists/mind_act` defers it to `../GATE_STEP2.md`.
 
 ---
 

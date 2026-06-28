@@ -37,6 +37,15 @@ Read order: **`KERNEL.md`** (the operating prompt) → **`MEMORY.md`** (how memo
 **`FACULTIES.md`** (each faculty in detail) → **`GAP_MAP.md`** (which intelligence criterion each
 mechanism closes, honestly).
 
+### `workflows/` — the kernel dissected into 7 runnable phase-workflows
+
+`KERNEL.md` is the mind in one prompt; **`workflows/`** arranges that one prompt into the **seven
+separate workflows** it runs each turn (READ-AT-START + the six loop beats), gives **each its own
+gate-passing specialist** (`workflows/specialists/mind_*.specialist.json`), and **populates each** with
+a dense, runnable protocol authored *by that specialist*. The **safety gate is frozen**: there is no
+security/ethics specialist — `mind_act` defers every safety decision to `../GATE_STEP2.md` and halts on
+STOP. Start at **`workflows/README.md`** to edit any single phase in isolation.
+
 ## The memory store (`memory/`)
 
 ```
