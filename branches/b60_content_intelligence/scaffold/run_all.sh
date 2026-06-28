@@ -30,7 +30,9 @@ run "creative: gen_brief (disclosure-or-die)" $PY creative/gen_brief.py
 run "compliance: clearance (green-lane+token)" $PY compliance/clearance.py
 run "psych: resonance (4-driver+safe-lane)"   $PY psych/resonance.py
 run "orch: blackboard (single-writer+outbox)" $PY orch/blackboard.py
-run "orch: controller (DAG spine -> emit)"    $PY orch/controller.py
+run "orch: brain (step 1: draft+flag)"        $PY orch/brain.py
+run "orch: gate (step 2: stop/yellow+emit)"   $PY orch/gate.py
+run "orch: controller (chains brain->gate)"   $PY orch/controller.py
 run "eval: harness (leakage-controlled)"      $PY eval/harness.py
 run "MVP: run_pipeline (a:brief + b:verdict)" $PY run_pipeline.py
 

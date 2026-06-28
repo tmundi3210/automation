@@ -30,6 +30,9 @@ REPO_ROOT = os.path.dirname(BRANCHES_DIR)
 
 SCHEMA_PATH = os.path.join(B60_DIR, "schema", "information_node.schema.json")
 OUTBOX_DIR = os.path.join(SCAFFOLD_DIR, "orch", "_outbox")
+# the brain (step 1) writes a Proposal here; the gate (step 2) reads it. The two steps
+# are deliberately decoupled through this on-disk handoff, not an in-process call.
+PROPOSALS_DIR = os.path.join(SCAFFOLD_DIR, "orch", "_proposals")
 
 # The five heavy specialists each stage is grounded in (provenance stamp).
 SPECIALIST_BY_STAGE = {
