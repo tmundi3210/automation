@@ -147,8 +147,10 @@ You supply per node: `criticality, business_value, user_value, technical_complex
 risk_if_wrong, cross_topic_coupling, irreversibility, confidence, node_conflict_pressure,
 acceptance_test_pass_rate, dependency_gate_pass_rate, prior_importance, evidence_confidence,
 failure_rate, downside_weight`, an `uncertainty_interval [lo,hi]`, and an `update_signal`.
-The forge will *refuse with a precise message* if a metric is out of `[0,1]`, a dependency is
-cyclic, a high-risk node lacks acceptance tests, or a conflict edge lacks a resolution rule.
+The forge will *refuse with a precise message* if a metric is out of `[0,1]`, a node id is not
+UPPER_SNAKE or is duplicated, a high-risk node lacks acceptance tests, or a conflict edge lacks
+a resolution rule. (Cyclic dependencies are **not** caught by the forge — they're rejected one
+step later by the gate in §4 Step 3, so keep your dependency graph acyclic.)
 
 > **Tip (how the repo actually does it):** instead of hand-writing 20 verbose node blocks,
 > the b60 authors wrote a tiny Python generator with `node()`/`b()` helpers that apply sane
@@ -256,7 +258,7 @@ the domain. That's it — no training, no setup.
 > specialist (spec already embedded). Pick a line, drop in your question.
 
 **Pick the right specialist automatically.** `dist/prompt_template.json` also has a
-`router_prompt`: give a model the routing table (`{code: route_when[]}` from `MANIFEST.json`
+`router_prompt`: give a model the routing table (`{code: route_when[]}` from `dist/MANIFEST.json`
 or `specialists/ROUTER.json`) + the question, and it returns the best specialist `code`.
 
 ---
@@ -267,8 +269,10 @@ One specialist answers one question. A **brain** is a thin controller that runs 
 specialists in a fixed order with deterministic gates — exactly what
 `branches/b60_content_intelligence/` demonstrates:
 
-- **`BRAIN.md`** — the controller that wires the 5 heavy specialists into one
-  map → link → signal → generate → **gate** → test loop.
+- **`BRAIN.md`** — the controller that wires **eight** heavy specialists (the 5 here + 3
+  existing reasoning-core specialists) into one frame → map-unknowns → plan → map+link →
+  signal → generate → **gate** → emit → test loop. *(The movie vertical re-scopes this to
+  exactly the 5 — see `movie/MOVIE_BRAIN.md`.)*
 - **`BRAIN_STEP1.md` + `GATE_STEP2.md`** — the two copy-paste prompts that make any model
   *be* the brain (collect → connect → draft + flag) and then a **separate frozen safety gate**
   (return one GREEN / YELLOW / STOP verdict). Splitting "think" from "decide" is the key move:
@@ -333,6 +337,6 @@ bash FACTORY/setup_local.sh            # (add --clone if you haven't cloned yet)
 | an AI to generate KB + specialist for you | `FACTORY/GENERATOR_PROMPT.md` |
 | the master KB generator (full power) | `schema/kb_generator_v1.4.1.txt` |
 | the specialist distillation spec | `prompts/_a5_specialist_job.md` |
-| real specialists to imitate | `specialists/*.json`, `branches/b60_content_intelligence/*.heavy.json` |
+| real specialists to imitate | `specialists/*.specialist.json`, `branches/b60_content_intelligence/*.specialist.heavy.json` |
 | a multi-specialist brain example | `branches/b60_content_intelligence/BRAIN.md` + `BRAIN_STEP1.md` + `GATE_STEP2.md` |
 ```

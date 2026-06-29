@@ -107,5 +107,5 @@ Next:
       cp FACTORY/specialist.template.json my.specialist.json  # ground it in the 3 KBs
       python3 validators/specialist_validator.py my.specialist.json
   • Or author with an AI: paste FACTORY/GENERATOR_PROMPT.md into a capable model.
-  • Use a finished specialist as a prompt: see "How to USE it" in MAKE_A_SPECIALIST.md.
+  • Use a finished specialist as a prompt: see "7. How to USE a finished specialist" in MAKE_A_SPECIALIST.md.
 EOF

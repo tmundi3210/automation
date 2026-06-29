@@ -79,7 +79,8 @@ AUDIENCE: <replace — or write "general" if none>
 #   "edge_type":"dependency|constraint|conflict|causal|sequence|feedback|similarity",
 #   "why_related":"...", "relation_strength":0.0-1.0 }
 #   - a "conflict" edge MUST also supply "resolution_rule":"...".
-#   - every from/to must be a real node id; dependency edges must not form a cycle.
+#   - every from/to must be a real node id (the forge checks this); dependency edges must
+#     not form a cycle (the dense gate checks this — keep the graph acyclic).
 
 # ---- SPECIALIST SPEC SHAPE (15 required keys) ------------------------------------
 #   { "_directive":"machine-facing specialist operating spec distilled from 3 dense KBs",
