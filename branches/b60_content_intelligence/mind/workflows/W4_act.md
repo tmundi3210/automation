@@ -1,6 +1,6 @@
-# W4_act — ACT — execute one step as a calibrated BET (safety gate FROZEN)
+# W4_act — ACT — execute one step as a calibrated BET (drafts + flags; the gate is a SEPARATE step)
 
-> Execute the ONE step PLAN already selected, as a calibrated bet: fire matching playbooks, draft the artifact, seal every falsifiable claim into `calibration/predictions.jsonl`, merge any parallel substeps in `kernel/blackboard/<env>/_merge/<step>`, and DEFER every safety/ethics/legal decision to the frozen `../GATE_STEP2.md`. Owner specialist: `mind_act`. Position in the loop: phase 4 of 6 (PERCEIVE → RECALL → PLAN → **ACT** → REFLECT → CONSOLIDATE). Single-write-owner files: `calibration/predictions.jsonl` (Calibration owns) and `kernel/blackboard/<env>/_merge/<step>` (Kernel owns).
+> Execute the ONE step PLAN already selected, as a calibrated bet: fire matching playbooks, draft the artifact, seal every falsifiable claim into `calibration/predictions.jsonl`, merge any parallel substeps in `kernel/blackboard/<env>/_merge/<step>`, then **assemble the draft + the SAFETY FACTS and hand them to the separate gate step ([`W4b_gate.md`](W4b_gate.md))**. ACT makes **no** safety decision and renders nothing — exactly like `BRAIN_STEP1` (step 1); all blockers live in the gate (step 2). Owner specialist: `mind_act`. Position in the loop: the ACT beat (PERCEIVE → RECALL → PLAN → **ACT → GATE** → REFLECT → CONSOLIDATE). Single-write-owner files: `calibration/predictions.jsonl` (Calibration owns) and `kernel/blackboard/<env>/_merge/<step>` (Kernel owns).
 
 ## Purpose
 
@@ -8,7 +8,7 @@ ACT is the one beat of the turn where the mind actually *does* something in the 
 
 The defining stance of ACT is **calibrated betting**: nothing leaves this phase as a bare assertion. Every falsifiable claim is first written as a sealed prediction with a confidence that has passed through the active recalibration correction, so REFLECT can later score it honestly against reality. ACT also owns the mechanics of fanning a `PARALLEL` step out to substep blocks and reducing them back to one provenance-ranked result, and it owns the transfer cheap-probe go/no-go when the step is a schema re-bind into a new domain.
 
-What ACT deliberately does NOT own: it does not pick the step, set direction, re-plan, or re-budget (Agency/PLAN); it does not rank questions (Attention); it does not score outcomes, fold belief deltas, or write lessons (REFLECT); it does not advance the cursor, append the diary, or checkpoint (CONSOLIDATE); and it does not make the safety/compliance/ethics/legal decision (that is FROZEN and owned by `../GATE_STEP2.md`). ACT executes, seals bets, merges substeps, defers the safety call, and hands back.
+What ACT deliberately does NOT own: it does not pick the step, set direction, re-plan, or re-budget (Agency/PLAN); it does not rank questions (Attention); it does not score outcomes, fold belief deltas, or write lessons (REFLECT); it does not advance the cursor, append the diary, or checkpoint (CONSOLIDATE); and — the point of this dissection — **it does not make the safety/compliance/ethics/legal decision at all.** ACT only *flags* the SAFETY FACTS and hands them off; the entire stop/yellow/green decision and every blocker live in the separate, frozen gate step ([`W4b_gate.md`](W4b_gate.md)). ACT executes, seals bets, merges substeps, flags the facts, hands off, and waits.
 
 ## Inputs (memory read) and Outputs (memory written)
 
@@ -25,7 +25,7 @@ All paths are relative to the run's memory root `branches/b60_content_intelligen
 - `schemas/SCH_geo_link_react_brief.md`, `schemas/abstractions.md`, `schemas/transfer_log.md` — read when the step is a draft-via-schema or a transfer re-bind.
 - `kernel/blackboard/<env>/` — prior scratch for this environment (`kernel/blackboard/tech_builders/`), including any earlier `_merge/` blocks.
 - `semantic/world/ai-agents.md`, `semantic/audiences/builders.md`, `semantic/glossary.md` — domain beliefs (B1, B2, B3) and audience codes the artifact draws on.
-- `../GATE_STEP2.md` — the FROZEN compliance gate prompt, run verbatim on any publishable output. (One directory above the workflow doc folder; ACT reads and obeys it, never rewrites it.)
+- [`W4b_gate.md`](W4b_gate.md) — the SEPARATE, frozen gate step (step 2). ACT does not run it or own it; ACT only assembles the draft + SAFETY FACTS into the Proposal it hands to the gate. The gate, in turn, mirrors `../GATE_STEP2.md` verbatim.
 
 **Outputs — single-write-owner for ACT (append-only; never overwrite another faculty's lines):**
 
@@ -95,16 +95,24 @@ The bet is **sealed pre-outcome**: `status:"open"`, `outcome:null`, `scored_ts:n
 
 The transfer cheap-probe (3A) and bet sealing (4) together cover "run before you trust." No separate action; this anchor exists so the protocol numbering matches the decision procedure's seal-then-gate order.
 
-### 6. GATE
+### 6. ASSEMBLE SAFETY FACTS + HAND OFF TO THE GATE (step 2)
 
-6.1 Route ANY publishable output through `../GATE_STEP2.md` **verbatim**, together with the brain's drafted artifact and its SAFETY FACTS list. "Publishable" = anything that would be rendered, voiced, posted, or emitted outside the mind. The active env `tech_builders` carries `compliance-gate-mandatory`, so this is non-optional here.
+6.1 ACT does **not** decide safety. Assemble the **Proposal**: the drafted artifact plus a plain
+SAFETY FACTS list that *reports* (does not judge) — is any subject a real identifiable person (name
+them)? political/election-related? a minor or protected person? does it use a real voice or likeness?
+is any source private/leaked or someone's copyrighted media? "Publishable" = anything that would be
+rendered, voiced, posted, or emitted outside the mind. (`tech_builders` carries
+`compliance-gate-mandatory`.)
 
-6.2 The gate returns exactly one verdict block: `VERDICT: GREEN/YELLOW/STOP`, `REASON`, `REQUIRED EDITS`, `DISCLOSURE LINE`, `CLEAR TO RENDER: yes/no`.
-   - On **STOP**: mark the step `blocked` in the hand-off and **HALT**. Do not soften, re-implement, route around, or re-judge the gate. The step does not emit.
-   - On **YELLOW**: proceed only as the gate allows — apply every REQUIRED EDIT and attach the DISCLOSURE LINE before the output travels. Re-run the gate on the edited output if the edits are material.
-   - On **GREEN**: proceed; attach the DISCLOSURE LINE the gate specifies.
+6.2 Hand the Proposal to the separate gate step ([`W4b_gate.md`](W4b_gate.md)) and **stop forward
+motion**. ACT renders nothing and assigns no verdict. The gate — not ACT — classifies against the
+blockers and returns the single `VERDICT / REASON / REQUIRED EDITS / DISCLOSURE LINE / CLEAR TO RENDER`
+block.
 
-6.3 Only when `CLEAR TO RENDER: yes` does the output finalize. See the SAFETY GATE — FROZEN callout below; ACT never owns this decision.
+6.3 The gate's verdict governs what happens next (handled in W4b, not here): on **STOP** the step is
+marked `blocked` and the loop halts — ACT does not emit and never routes around it; on **YELLOW/GREEN**
+the gate clears the output with its required edits + disclosure. ACT's only job at this seam is an
+honest, complete SAFETY FACTS list and a clean hand-off.
 
 ### 7. WRITE-OWNER WRITES, then HAND BACK
 
@@ -130,7 +138,7 @@ The moment you hit "I lack X" (a needed record absent from `INDEX.md`, a probe s
 - **A claim is not falsifiable.** It needs no bet, but it also may not be presented as a prediction. State it as a definition/constraint, with its source.
 - **Transfer probe CI includes zero.** Do NOT commit the re-bind. Revise the analog or cold-start and hand that back to PLAN; do not run the full schema on an uncommitted binding.
 - **Budget low mid-step.** Finish sealing any bet already in flight (so no claim travels unsealed), write what you have to the owned files, and hand back with a budget-low flag for PLAN's re-plan trigger. Never leave a traveled claim without its sealed bet.
-- **Gate returns STOP.** Mark `blocked`, HALT. This overrides every other rule in this section — no edge case justifies routing around a STOP.
+- **The gate (W4b) returns STOP.** The step is `blocked` and the loop halts; ACT does not emit. This overrides every other rule in this section — no edge case justifies routing around a STOP, and ACT cannot re-judge it (the decision is W4b's).
 
 ## Worked example (run R0631 / goal G-12)
 
@@ -148,21 +156,19 @@ The moment you hit "I lack X" (a needed record absent from `INDEX.md`, a probe s
 
 5. **TRANSFER (already committed, referenced at S4).** The brief is drafted via `SCH_geo_link_react_brief` re-bound to `tech_builders`. That re-bind was cheap-probed and committed earlier as **TRX_0007** (probe n=12, metric `link_validity@anchor`, lift `+0.23`, 95% CI `[0.06, 0.39]` excludes 0, ablation holds `+0.19`, ECE `0.04`, `schema.confidence[tech_builders]=0.71`). Because the binding is already committed, ACT runs the draft directly rather than re-probing; if it were the first run of a fresh binding, ACT would run the frozen probe first and commit only on a CI excluding zero.
 
-6. **GATE (S5).** The drafted brief + its SAFETY FACTS are routed through `../GATE_STEP2.md` verbatim. The topic is a public AI-agent trend with no real identifiable person depicted, so the gate returns **GREEN** with a disclosure line; `CLEAR TO RENDER: yes`. The brief proceeds to emit. (Had it depicted a real founder + their voice/likeness in a political frame, the gate would STOP and ACT would mark the step `blocked` and HALT.)
+6. **ASSEMBLE FACTS + HAND OFF (S5 boundary).** ACT assembles the Proposal — the drafted brief + a SAFETY FACTS list reporting "subject = public AI-agent trend; no real identifiable person; not political; no voice/likeness; public sources" — and hands it to the separate gate step (**W4b**). ACT assigns no verdict. (In W4b the frozen gate then returns **GREEN** + disclosure, `CLEAR TO RENDER: yes`, and the brief emits; on the counterfactual real-founder/political/voice draft, W4b returns **STOP** and the step is marked `blocked`.) ACT does not see itself as having "passed" anything — it only reported facts and handed off.
 
-7. **HAND BACK.** ACT hands REFLECT/Consolidate: the gate-cleared brief, the merged `kernel/blackboard/tech_builders/_merge/S2/` result, and sealed-bet ids `P-114`, `P-118`. ACT did NOT move belief **B2** from `.70`→`.74` (REFLECT/consolidation folded that after scoring), did NOT mark **P-114** refuted (REFLECT did), did NOT log candidate lesson **L-23** (REFLECT proposed it), and did NOT touch `schemas/transfer_log.md` (the schema/consolidation owner records TRX rows). ACT executed S2–S4, sealed the bets, merged the parallel substeps, deferred the safety call, and handed back.
+7. **HAND BACK.** ACT hands the gate (W4b) the Proposal, and hands REFLECT/Consolidate: the merged `kernel/blackboard/tech_builders/_merge/S2/` result and sealed-bet ids `P-114`, `P-118`. ACT did NOT move belief **B2** from `.70`→`.74` (REFLECT/consolidation folded that after scoring), did NOT mark **P-114** refuted (REFLECT did), did NOT log candidate lesson **L-23** (REFLECT proposed it), did NOT touch `schemas/transfer_log.md`, and did NOT make the safety verdict (W4b did). ACT executed S2–S4, sealed the bets, merged the parallel substeps, flagged the SAFETY FACTS, and handed off.
 
-## SAFETY GATE — FROZEN
+## Safety: deferred to the separate gate step (no blockers live here)
 
-> **SAFETY GATE — FROZEN. `mind_act` does NOT make the safety / compliance / ethics / legal decision.** That step is FROZEN and owned elsewhere. ACT calls `../GATE_STEP2.md` **exactly as written**, passes it the brain's drafted output plus the SAFETY FACTS, and **obeys its single verdict** — full stop. ACT must never re-implement, soften, re-judge, or route around the gate.
-
-What the verdicts mean for ACT:
-
-- **STOP** — the gate refused (a minor/protected person; a real identifiable person + political/election + their voice/likeness; fabricated wrongdoing / fake quotes / defamation; private-leaked or copyrighted material). ACT marks the step `blocked` in the hand-off and **HALTS**. Nothing renders, voices, or emits. ACT does not negotiate the STOP or look for a workaround.
-- **YELLOW** — allowed with REQUIRED EDITS (public policy/topic made factual-only with disclosure; clearly-labeled parody with no voice clone; a real person from an unclear source held for a license/consent check). ACT applies every REQUIRED EDIT and the DISCLOSURE LINE, re-running the gate if the edits are material, and proceeds only as the gate allows.
-- **GREEN** — your own original character/persona or a consented in-scope use. ACT proceeds and attaches the gate's DISCLOSURE LINE.
-
-Only when the gate returns `CLEAR TO RENDER: yes` does any output finalize. This is a fail-closed, path-to-yes gate: it hard-stops the genuinely risky combinations and otherwise finds the safe way to ship. It is **not owned by this specialist** precisely so that execution pressure (a deadline, a hot topic, a calibrated bet ACT is confident in) can never bend the safety call — the separation is the safeguard. ACT's role and its escalation trigger both state this deferral explicitly: any safety/ethics/legal judgment is the gate's, and on STOP, ACT halts.
+The blockers do **not** live in ACT — that is the whole point of the dissection. ACT flags the SAFETY
+FACTS (step 6) and hands off. The complete blocker catalog (🛑 STOP / 🟡 YELLOW / 🟢 GREEN), the
+verdict block, the disclosure token, and the worked GREEN/STOP examples all live in the separate,
+**frozen** step **[`W4b_gate.md`](W4b_gate.md)** (step 2; mirrors `../GATE_STEP2.md`). It is a separate
+step — not a section of this one — precisely so that execution pressure (a deadline, a hot topic, a
+calibrated bet ACT is confident in) can never bend the safety call. ACT must never re-implement,
+soften, re-judge, or route around it; on the gate's STOP, the step is `blocked` and the loop halts.
 
 ## Failure modes & escalation
 
@@ -174,7 +180,7 @@ Only when the gate returns `CLEAR TO RENDER: yes` does any output finalize. This
 - **Fabricated parallel branch.** Inventing a timed-out branch's result instead of marking the merge `partial`. Mitigation: drop-and-stamp, never fill.
 - **Transfer committed without a clean probe.** Running the full re-bound schema when the probe's 95% CI includes zero. Mitigation: cheap-probe gate (3A) blocks the commit.
 - **Writing outside ownership.** Editing `plan.md`, `semantic/`, `procedural/`, `cursor.json`, `checkpoint.jsonl`, or scoring a bet. Mitigation: the single-write-owner contract below; hand back instead of writing.
-- **Routing around the gate.** Emitting after a STOP, or softening REQUIRED EDITS. This is the most serious failure. Mitigation: the FROZEN gate deferral; STOP halts unconditionally.
+- **Making the safety call inside ACT, or routing around the gate.** Any STOP/YELLOW/GREEN decision taken in ACT (instead of flagging facts and handing to W4b), emitting after a STOP, or softening REQUIRED EDITS. This is the most serious failure and the reason the gate is a separate step. Mitigation: ACT only flags SAFETY FACTS; the frozen W4b gate owns the decision; STOP halts unconditionally.
 
 **When to ESCALATE to a human** (a goal can only end DONE / ABANDONED / ESCALATED):
 
@@ -185,15 +191,20 @@ Only when the gate returns `CLEAR TO RENDER: yes` does any output finalize. This
 
 ## Handoff
 
-**Next workflow:** REFLECT (phase 5 of 6), then CONSOLIDATE (phase 6).
+**Next workflow:** the GATE ([`W4b_gate.md`](W4b_gate.md), step 2), then REFLECT, then CONSOLIDATE. ACT → GATE → REFLECT → CONSOLIDATE.
 
-**State ACT must leave behind for REFLECT:**
+**State ACT must leave behind for the GATE (W4b):**
 
-- The gate-cleared output (or, on STOP, the step marked `blocked` with the gate's REASON), ready for REFLECT to compare claimed vs realized vs baseline.
+- The **Proposal**: the drafted artifact + the honest, complete SAFETY FACTS list (reported, not judged). The gate produces the verdict; ACT does not.
+
+**State ACT must leave behind for REFLECT (via/after the gate):**
+
 - The list of sealed-bet ids written this turn (e.g. `P-114`, `P-118`) with `status:open`, so REFLECT can score any that are due (it scored P-114 refuted, brier 0.42) and leave the rest open.
 - The merged `kernel/blackboard/<env>/_merge/<step>` result, including any `partial` note naming dropped branches, so REFLECT knows coverage.
 - Any playbook-conflict or provenance-tie flags raised during execution.
 - Any subgoal request raised at step 8 (handed to Agency), with its answerhood condition.
+
+The gate's own output — the cleared artifact + verdict on GREEN/YELLOW, or the `blocked` marker on STOP — is W4b's hand-off to REFLECT, not ACT's.
 
 **What ACT must NOT have done (left for the downstream phases):** scored outcomes, folded belief deltas (B2 `.70`→`.74` is REFLECT/consolidation's), written candidate lessons (L-23 is REFLECT's proposal), edited `semantic/` or `procedural/`, advanced `kernel/cursor.json`, or appended `episodic/journal/<today>.md` / `kernel/checkpoint.jsonl` (CONSOLIDATE's). REFLECT reads ACT's sealed bets and gate-cleared output; CONSOLIDATE later closes the turn by writing the diary, checkpoint, cursor advance, and INDEX update, and applies the proposed belief/lesson deltas at the scheduled consolidation pass.
 

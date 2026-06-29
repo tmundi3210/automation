@@ -11,8 +11,9 @@ turn — same session or days later. There is no code; the LLM *is* the runtime.
 >
 > Each phase of the loop below is also dissected into its own runnable workflow + specialist under
 > **`workflows/`** (READ-AT-START + the six beats). Use `workflows/<phase>.md` when you want the
-> expanded protocol, decision rules, and a worked example for one phase in isolation; the safety step in
-> ACT stays frozen — `workflows/specialists/mind_act` defers it to `../GATE_STEP2.md`.
+> expanded protocol, decision rules, and a worked example for one phase in isolation. The safety gate is
+> **its own separate step** there — `workflows/W4b_gate.md` (frozen, no specialist): ACT drafts + flags
+> the SAFETY FACTS, and W4b makes the only stop/yellow/green decision, mirroring `../GATE_STEP2.md`.
 
 ---
 
