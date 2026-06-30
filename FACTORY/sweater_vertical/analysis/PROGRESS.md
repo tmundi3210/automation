@@ -10,9 +10,9 @@ State lives here so the orchestrator can `/compact` and re-inject from this file
 | T1 | Ludhiana cluster | **SPECIALIST DONE & verified** — `ludhiana_sourcing_strategist`, 3 dense KBs, build.sh ALL GREEN, critic PASS (no honesty/templating issues) | specialists/ludhiana/ |
 | T2 | Yarn & fibre | **SPECIALIST DONE & verified** — `yarn_sourcing_strategist`, 3 dense KBs, build.sh ALL GREEN, critic PASS | specialists/yarn/ |
 | T3 | Machines | **SPECIALIST DONE & verified** — `knit_machine_strategist`, 3 dense KBs, build.sh ALL GREEN, critic PASS (1 templating fix applied: false template-as-source ref removed) | specialists/machines/ |
-| T4 | Manufacturing economics | **deep-dive DONE** (ex-factory cost model; [UNKNOWN] knit+link job-work rate = THE blocker; buy-don't-make). NOTE: analyst-B (make-vs-buy) timed out in wave 5 — writer reconstructed + flagged; adversarial analyst-B added in build wave 6. KB build running | analysis/mfg_economics/ |
-| T5 | Quality & thread checker | **deep-dive DONE** (3-layer QC; thread-checker = contract+QR not a machine, only L4 loop worth building; AI vision unproven on our knits); KB build running | analysis/quality_checker/ |
-| T6 | Post-treatment / finishing | **deep-dive DONE** (per-article recipe; outsource 100% wet processing; finishing's price not the constraint, its quality gate is); KB build running | analysis/finishing/ |
+| T4 | Manufacturing economics | **SPECIALIST DONE & verified** — `mfg_economics_strategist`, 3 dense KBs, ALL GREEN. Adversarial analyst-B written (make-vs-buy now a tested A/B B1/B2/B3 verdict); critic caught+fixed a stale "analyst-B absent" claim in kb1 + I corrected the upstream DEEPDIVE/reconciled erratum | specialists/mfg_economics/ |
+| T5 | Quality & thread checker | **SPECIALIST DONE & verified** — `quality_qc_strategist`, 3 dense KBs, ALL GREEN, critic PASS (no fixes) | specialists/quality_checker/ |
+| T6 | Post-treatment / finishing | **SPECIALIST DONE & verified** — `finishing_strategist`, 3 dense KBs, ALL GREEN, critic PASS (1 missing-tag fix) | specialists/finishing/ |
 | T7 | Brand & CA/Turlock market | todo | — |
 | T8 | Design specialist (AI/Flux) | todo | — |
 | T9 | Logistics & unit economics | todo | — |
