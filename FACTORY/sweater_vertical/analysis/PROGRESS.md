@@ -17,7 +17,12 @@ State lives here so the orchestrator can `/compact` and re-inject from this file
 | T8 | Design specialist (AI/Flux) | **SPECIALIST DONE & verified** — `design_strategist`, 3 dense KBs (design-line / sizing-grading / flux-method), ALL GREEN, critic PASS (no fixes); prompting-spec only per owner | specialists/design/ |
 | T9 | Logistics & unit economics | **deep-dive DONE** (CRITICAL: cotton duty is 16.5% not ~7%; acrylic A2 hit by 32% MMF duty; de-minimis repealed Aug-2025; viable led by A3+bundles at CAC<~$35, NOT as paid-social acrylic value brand). **SPECIALIST DONE & verified** — `unit_economics_strategist`, 3 dense KBs + adversarial analyst-C viability cross-exam, ALL GREEN, critic PASS; duty trio corrected (16.5/16/32) with anti-revert guardrails | specialists/unit_economics/ |
 | T10 | Macro / neutralize brain | **DONE** — DECISION_MEMO via advocate ‖ neutralize → compare → memo over all 9 dives. Verdict: **GATED conditional GO, do NOT launch** until 4 gates clear (live CAC<~$35, real knit+LINK rate, fundable working-capital cycle, PPS anti-pill ICI≥3-4); best config = A3 merino hero + 2-unit bundles, organic-led; "no load-bearing joint carries a FACT" | analysis/macro/DECISION_MEMO.md |
-| T11 | BRAIN controller | building (router + neutralize gate over the 9 specialists + macro memo) | specialists/BRAIN/ |
+| T11 | BRAIN controller | **DONE & verified** — `sweater_vertical_brain`: router.json (9 specialists wired, all paths resolve, 12 dominance rules, 7-item neutralize gate, macro standing verdict) + BRAIN.md (routing table, dominance rules, paste-prompt, value-chain map). Final sweep: 9/9 ALL GREEN, 27 dense KBs | specialists/BRAIN/ |
+
+---
+
+## BUILD COMPLETE
+All 12 segments done. **Glossary + 9 gated specialists + macro decision memo + BRAIN controller.** 27 dense KBs, 9/9 ALL GREEN, every wave adversarially critiqued, full duty `[FACT]` correction propagated + re-verified. Verdict: **GATED conditional GO** — best config A3-merino-hero + bundles, organic-led; do NOT spend inventory cash until the 4 gates clear (live CAC<~$35, real knit+LINK rate, fundable working-capital cycle, PPS anti-pill ICI≥3-4); de-risk in order: $1-2k CAC test → knit+LINK quote → dye-MOQ quote → PPS swatch.
 
 ## Pipeline per segment (recipe)
 2 analysts → reconcile → writer DEEPDIVE → 3 KB-authors (forge+dense-gate) → distiller (specialist+gate)
