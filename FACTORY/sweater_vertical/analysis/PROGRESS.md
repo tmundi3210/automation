@@ -13,9 +13,9 @@ State lives here so the orchestrator can `/compact` and re-inject from this file
 | T4 | Manufacturing economics | **SPECIALIST DONE & verified** — `mfg_economics_strategist`, 3 dense KBs, ALL GREEN. Adversarial analyst-B written (make-vs-buy now a tested A/B B1/B2/B3 verdict); critic caught+fixed a stale "analyst-B absent" claim in kb1 + I corrected the upstream DEEPDIVE/reconciled erratum | specialists/mfg_economics/ |
 | T5 | Quality & thread checker | **SPECIALIST DONE & verified** — `quality_qc_strategist`, 3 dense KBs, ALL GREEN, critic PASS (no fixes) | specialists/quality_checker/ |
 | T6 | Post-treatment / finishing | **SPECIALIST DONE & verified** — `finishing_strategist`, 3 dense KBs, ALL GREEN, critic PASS (1 missing-tag fix) | specialists/finishing/ |
-| T7 | Brand & CA/Turlock market | todo | — |
+| T7 | Brand & CA/Turlock market | **deep-dive DONE** (local-seed→social-scale; HARD NO on athlete/celebrity/meme names — CA §3344/§3344.1/Lanham/TM; safe coined+clearance path); KB build pending | analysis/brand_market/ |
 | T8 | Design specialist (AI/Flux) | todo — **OWNER DECISION: prompting-spec only** (specialist outputs ready-to-run Flux image prompts + sizing/grading math + 3-article line + trend-reading; owner runs the generation; NO Flux key needed by the orchestrator) | — |
-| T9 | Logistics & unit economics | todo | — |
+| T9 | Logistics & unit economics | **deep-dive DONE** (CRITICAL: cotton duty is 16.5% not ~7%; acrylic A2 hit by 32% MMF duty; de-minimis repealed Aug-2025; viable led by A3+bundles at CAC<~$35, NOT as paid-social acrylic value brand). Duty error being corrected upstream; KB build pending | analysis/unit_economics/ |
 | T10 | Macro / neutralize brain | todo | — |
 | T11 | BRAIN controller | todo | — |
 
