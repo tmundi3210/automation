@@ -6,8 +6,8 @@ State lives here so the orchestrator can `/compact` and re-inject from this file
 
 | Seg | Title | Stage | Output |
 |----|-------|-------|--------|
-| T0 | Scope & Glossary / Organizer | **wave 1 — running** | analysis/SCOPE_GLOSSARY.md |
-| T1 | Ludhiana cluster | **wave 1 — running** | analysis/ludhiana/DEEPDIVE.md |
+| T0 | Scope & Glossary / Organizer | **glossary DONE** (3,520w, 9 sections, ~95 terms); organizer specialist folded into T11 | analysis/SCOPE_GLOSSARY.md |
+| T1 | Ludhiana cluster | **deep-dive DONE** (2,750w, honesty-clean); **KB build running (wave 2)** | analysis/ludhiana/DEEPDIVE.md → specialists/ludhiana/ |
 | T2 | Yarn & fibre | todo | — |
 | T3 | Machines | todo | — |
 | T4 | Manufacturing economics | todo | — |
