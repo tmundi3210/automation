@@ -14,7 +14,7 @@ State lives here so the orchestrator can `/compact` and re-inject from this file
 | T5 | Quality & thread checker | **SPECIALIST DONE & verified** — `quality_qc_strategist`, 3 dense KBs, ALL GREEN, critic PASS (no fixes) | specialists/quality_checker/ |
 | T6 | Post-treatment / finishing | **SPECIALIST DONE & verified** — `finishing_strategist`, 3 dense KBs, ALL GREEN, critic PASS (1 missing-tag fix) | specialists/finishing/ |
 | T7 | Brand & CA/Turlock market | todo | — |
-| T8 | Design specialist (AI/Flux) | todo | — |
+| T8 | Design specialist (AI/Flux) | todo — **OWNER DECISION: prompting-spec only** (specialist outputs ready-to-run Flux image prompts + sizing/grading math + 3-article line + trend-reading; owner runs the generation; NO Flux key needed by the orchestrator) | — |
 | T9 | Logistics & unit economics | todo | — |
 | T10 | Macro / neutralize brain | todo | — |
 | T11 | BRAIN controller | todo | — |
