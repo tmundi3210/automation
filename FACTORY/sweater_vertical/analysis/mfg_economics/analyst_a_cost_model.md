@@ -25,7 +25,7 @@ full yarn cost  +  knitting job-work  +  LINKING job-work  +  finishing  +  trim
 ```
 
 **What this model is NOT** (and must not be read as):
-- **Not landed cost** — ocean freight, US duty (cotton 6110.20 ≈7%, wool 6110.11 ~16% [FACT — USITC]), insurance, broker, drayage all live in **T9**.
+- **Not landed cost** — ocean freight, US duty (cotton 6110.20.20 ≈16.5%, wool 6110.11 ~16%, acrylic/MMF 6110.30.30 ~32% [FACT — USITC]), insurance, broker, drayage all live in **T9**.
 - **Not a P&L** — CAC, returns, payment fees, AOV, contribution margin are the **D2C survival test (T7/T9)**, not here. Per T0: *contribution margin after CAC, not factory cost, decides viability.*
 - **Not a quote** — no live mandi/job-worker quote stands behind any number; bands only.
 
@@ -129,7 +129,7 @@ Cross-check sanity vs Ludhiana fragments found: a quoted "₹12/kg knitting" fra
 | + Overhead/margin | +$0.4–1.0 | `[ESTIMATE, LOW-MED]` |
 | **Illustrative ex-factory band** | **≈ $6–22+ / garment** | `[ESTIMATE, LOW — yarn-dominated and order-of-magnitude]` |
 
-*A3's band is dominated by yarn and is the **least reliable** of the three — the premium fibre price is order-of-magnitude only (T2 §3a, single stale anchor) and needs an importer quote before any margin use. The duty asymmetry (wool ~16% vs cotton ~7%, T2 §1d) hits A3 again downstream in T9, so its *landed* premium is wider still.*
+*A3's band is dominated by yarn and is the **least reliable** of the three — the premium fibre price is order-of-magnitude only (T2 §3a, single stale anchor) and needs an importer quote before any margin use. Wool duty (~16%, T2 §1d) is comparable to cotton (~16.5%), not lower, so A3's *landed* premium is widened by its high ex-factory yarn cost rather than by any duty advantage — while the acrylic article carries the highest duty (MMF ~32%).*
 
 ---
 

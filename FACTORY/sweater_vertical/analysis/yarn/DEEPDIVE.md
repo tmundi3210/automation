@@ -23,7 +23,7 @@ The line is built from the fibre tier ladder both analysts independently arrived
 
 | Article | Fibre | Gauge / count | Weight band | Role / why |
 |---|---|---|---|---|
-| **A1 — the 12-month core** | **Cotton-blend** (cotton-rich, e.g. cotton/acrylic or cotton/modal) | **12GG**, fine (high-Ne cotton / fine resultant) | ~200–350 g | The everyday seller. Breathable, no prickle, washable; carries the warm-climate calendar where heavy wool sells few months. Lowest US duty (cotton 6110.20 ≈7%). `[FACT — duty line, USITC]` |
+| **A1 — the 12-month core** | **Cotton-blend** (cotton-rich, e.g. cotton/acrylic or cotton/modal) | **12GG**, fine (high-Ne cotton / fine resultant) | ~200–350 g | The everyday seller. Breathable, no prickle, washable; carries the warm-climate calendar where heavy wool sells few months. It is the core on demand/sell-window/no-prickle/repeat-LTV grounds, NOT on a duty advantage — cotton duty (6110.20.20 ~16.5%) is comparable to wool (6110.11 ~16%) and far below acrylic/MMF (6110.30.30 ~32%). `[FACT — duty line, USITC]` |
 | **A2 — the value driver** | **Fine acrylic / acrylic-rich blend** | **7–12GG** (2/30, 2/32 Nm-class; finer to 12GG) | ~250–450 g | Ludhiana's base fibre = best cost + MOQ-flex + lead-time. Bright-dyeing, machine-wash, moth-proof. **Pills** — so this article lives or dies on the anti-pill spec (§3). |
 | **A3 — the seasonal premium capsule** | **Merino or lambswool** (thin Nov–Feb drop; optional cashmere-blend halo) | **7–12GG** (merino 2/48 Nm-class) | ~250–400 g | The price-justifying, margin-lifting halo. Merino "fine/superfine" (≤19.5 µm) is the soft-but-wearable sweet spot; lambswool is the below-merino soft-wool grade. Even 5–10% cashmere in a blend lifts perceived value. Demoted to a thin capsule by the climate. |
 
@@ -35,7 +35,7 @@ The line is built from the fibre tier ladder both analysts independently arrived
 - **Caveat, carried from the reconciler:** do **not** quote "2/48 Nm = 12GG" as a rule. On *resultant* count, 2/48 Nm (~24 Nm) is barely finer than a 2/30 Ne cotton (~25 Nm) — the move to a true 12GG hand comes from **finer singles + fewer ends fed + a tighter knit, confirmed at sampling**, not from the folded-count label. `[ESTIMATE: MED]` Misreading folded notation (2/30 vs 1/30 is a doubling error in fabric weight) is the classic spec mistake — confirm **singles count + ply + ends fed** before judging weight.
 
 ### 1d. The blend ratio is the brand's #1 controllable lever
-The ratio on the care label moves **cost, hand, warmth, care, perceived value, and US import duty simultaneously** (wool 6110.11 ~16% vs cotton 6110.20 ~7%). `[FACT — duty lines]` It's also a cheat-and-duty-risk surface, so it must be **written into the PO with a tolerance** — e.g. *"70/30 ± 3% by mass, verified by fibre-composition test."* Blend drift is both a quiet cost-down by the supplier and a duty-misdeclaration exposure for us as importer of record. `[ESTIMATE: industry-lore, HIGH]`
+The ratio on the care label moves **cost, hand, warmth, care, perceived value, and US import duty simultaneously** (wool 6110.11 ~16% ≈ cotton 6110.20.20 ~16.5%, while acrylic/MMF 6110.30.30 ~32% is the outlier that the border penalizes). `[FACT — duty lines]` It's also a cheat-and-duty-risk surface, so it must be **written into the PO with a tolerance** — e.g. *"70/30 ± 3% by mass, verified by fibre-composition test."* Blend drift is both a quiet cost-down by the supplier and a duty-misdeclaration exposure for us as importer of record. `[ESTIMATE: industry-lore, HIGH]`
 
 ---
 

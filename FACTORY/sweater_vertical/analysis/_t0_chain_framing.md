@@ -57,7 +57,7 @@ are the ones a yarn/garment importer actually negotiates. Definitions [FACT] (IC
 | **Lead time** | Calendar time from PO (or yarn-in) to goods-ready / to delivered. | Drives drop calendar + cash tied up; ocean India→US adds weeks (T9). [FACT concept]. |
 | **Landed cost** | True per-unit cost delivered to our US door: FOB price + freight + insurance + duty + broker + drayage + financing. | The number that actually sets margin; the whole T9 model computes it. [FACT definition]. |
 | **HS code / HTS code** | HS = 6-digit global product code; **HTS** = US 10-digit extension setting the duty rate. Sweaters/pullovers/cardigans = **heading 6110**. | Determines our import duty; mis-classification = penalties or overpaid duty. [FACT] (6110 = sweaters/pullovers, USITC). |
-| **Duty / tariff** | Tax on import, % of declared value (ad valorem). Cotton sweaters 6110.20 ≈ **7%**; wool 6110.11 higher (~16% range). | Direct cost line in landed cost; fibre choice changes the duty. [FACT] 6110.20 general ≈7%, 6110.11 ~16% (USITC/Flexport/UNIS); exact line + any 2025–26 add-on tariffs to confirm in T9. |
+| **Duty / tariff** | Tax on import, % of declared value (ad valorem). Cotton sweaters 6110.20.20 ≈ **16.5%**; wool 6110.11 ~**16%** range; acrylic/MMF 6110.30.30 ~**32%** (the outlier). | Direct cost line in landed cost; fibre choice changes the duty (cotton ≈ wool; acrylic far higher). [FACT] 6110.20.20 ≈16.5%, 6110.11 ~16%, 6110.30.30 ~32% (USITC/Flexport/UNIS); exact line + any 2025–26 add-on tariffs to confirm in T9. |
 | **Duty drawback (DBK)** | Indian rebate of **customs duty paid on imported inputs** used to make an exported good. | Lowers the exporter's effective cost → can lower our FOB if passed through. [FACT] (DGFT/CBIC). |
 | **RoDTEP / RoSCTL** | Indian export rebate schemes. For apparel (HS ch. 61/62/63) **RoSCTL** applies and **RoDTEP is not claimed on the same goods**. RoSCTL extended through 31 Mar 2026. | Affects how cheaply a Ludhiana exporter can quote us; a sourcing-leverage point. [FACT] (AEPC/DGFT); post-2026 continuation [UNKNOWN]. |
 | **LC / Letter of Credit** | Bank guarantee that the seller is paid once it presents shipping docs matching the LC terms. | De-risks first deals with an unknown Ludhiana supplier; costs bank fees + ties working capital. [FACT]. |
@@ -143,8 +143,8 @@ fabricated, in T1].
   [FACT] — Sameeeksha Ludhiana knitwear cluster profile (sameeeksha.org).
 - **Historic dominance:** early-1990s Ludhiana held >80% of India's woollen-knitwear firms and >90% of
   woollen/acrylic knitwear output. [FACT] — academic cluster study (ScienceDirect / World Development).
-- **HTS heading:** sweaters/pullovers/sweatshirts/cardigans = **6110**; cotton 6110.20 general duty ≈ **7%**,
-  wool/fine-hair 6110.11 ~16% range. [FACT] — USITC HTS, Flexport, UNIS/Datamyne tariff data. *Any 2025–26
+- **HTS heading:** sweaters/pullovers/sweatshirts/cardigans = **6110**; cotton 6110.20.20 duty ≈ **16.5%**,
+  wool/fine-hair 6110.11 ~16% range, acrylic/MMF 6110.30.30 ~**32%** (the outlier). [FACT] — USITC HTS, Flexport, UNIS/Datamyne tariff data. *Any 2025–26
   US tariff surcharges/Section-301-type add-ons are [UNKNOWN] here and must be confirmed in T9.*
 - **Incoterms 2020 (EXW/FOB/CIF/DDP):** cost/risk split per ICC. [FACT] — trade.gov "Know Your Incoterms".
 - **Export rebates:** DBK rebates customs duty on imported inputs; for apparel (ch. 61/62/63) **RoSCTL**

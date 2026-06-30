@@ -20,7 +20,7 @@ behaviour claims. Coverage is a **floor, not a ceiling**: `[UNKNOWN]` is a valid
 2. *Self-reference fixed.* Both source files pointed at a sibling `SCOPE_GLOSSARY.md` as "the other half."
    That split is now collapsed into THIS file; `SCOPE_GLOSSARY.md` is the downstream human artifact built
    *from* here, not a peer to cross-reference. Resolved: one master, no circular pointer.
-3. *Duty rate stated once.* Cotton 6110.20 ≈7% / wool 6110.11 ~16% appears once (Trade & sourcing §6),
+3. *Duty rate stated once.* Cotton 6110.20.20 ≈16.5% / wool 6110.11 ~16% / acrylic-MMF 6110.30.30 ~32% appears once (Trade & sourcing §6),
    tagged `[FACT]` with the 2025–26 surcharge caveat as `[UNKNOWN]` → deferred to T9. No double-quote.
 4. *"Captive power" appeared in two business sections* (model terms + Ludhiana context) — deduped to one
    entry in Manufacturing & business models §7, cross-linked from Ludhiana context §9.
@@ -333,8 +333,9 @@ Incoterms® 2020 = 11 ICC rules splitting cost/risk between seller and buyer. De
 - **HS code / HTS code** — HS = 6-digit global code; **HTS** = US 10-digit extension setting the duty rate.
   Sweaters/pullovers/cardigans = **heading 6110**. Mis-classification = penalties or overpaid duty.
   `[FACT — 6110 = sweaters/pullovers, USITC]`
-- **Duty / tariff** — Ad-valorem tax on import. Cotton 6110.20 ≈ **7%**; wool 6110.11 ~**16%** range —
-  fibre choice changes the duty. `[FACT — 6110.20 general ≈7%, 6110.11 ~16%, USITC/Flexport/UNIS]`. **Any
+- **Duty / tariff** — Ad-valorem tax on import. Cotton 6110.20.20 ≈ **16.5%**; wool 6110.11 ~**16%** range;
+  acrylic/MMF 6110.30.30 ~**32%** — fibre choice changes the duty (cotton ≈ wool; acrylic is the outlier).
+  `[FACT — 6110.20.20 ≈16.5%, 6110.11 ~16%, 6110.30.30 ~32%, USITC/Flexport/UNIS]`. **Any
   2025–26 US surcharges / Section-301-type add-ons are `[UNKNOWN]` here → confirm in T9.**
 - **Duty drawback (DBK)** — Indian rebate of customs duty paid on imported inputs used in an exported good;
   lowers exporter cost → can lower our FOB if passed through. `[FACT — DGFT/CBIC]`
@@ -493,7 +494,7 @@ generally, LOW/UNKNOWN on magnitude in Ludhiana specifically — revisited, neve
   https://sameeeksha.org/index.php?option=com_content&view=article&id=139&Itemid=502
 - ScienceDirect / World Development — early-1990s Ludhiana >80% of India's woollen-knitwear firms, >90% of
   woollen/acrylic knitwear output. https://www.sciencedirect.com/science/article/abs/pii/S0305750X99000790
-- USITC HTS; Flexport — heading 6110 = sweaters/pullovers; cotton 6110.20 ≈7%, wool 6110.11 ~16%.
+- USITC HTS; Flexport — heading 6110 = sweaters/pullovers; cotton 6110.20.20 ≈16.5%, wool 6110.11 ~16%, acrylic/MMF 6110.30.30 ~32%.
   https://hts.usitc.gov/search?query=6110 ;
   https://www.flexport.com/data/hs-code/6110-sweaters-pullovers-sweatshirts-waistcoats-vests-and-similar-articles-knitted-or-crocheted/
 - trade.gov "Know Your Incoterms" — EXW/FOB/CIF/DDP cost-risk split. https://www.trade.gov/know-your-incoterms

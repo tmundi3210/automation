@@ -34,7 +34,7 @@ These are not contested between A and the upstream make-vs-buy reasoning; they a
 - **The linker — not the knitting machine — caps a small line's daily output**, and it is the hardest skill to re-hire after the lean season. `[ESTIMATE, MED-HIGH; T3 §1, T1 §4]` This is why linking is both *the* throughput bottleneck **and** (per Analyst A) one of the two unpriced cost lines.
 - **The compliance loading is ~15%+ (EPF 12% + ESI 3.25%) on on-roll cash wages** — real, and the largest single *legal* cost disadvantage vs an off-roll competitor. `[ESTIMATE→arithmetic from statutory rates, HIGH on the ~15%; T1 §5b]`
 - **Do not own a dyehouse, and do not build a machine.** Dyeing is the highest-regulatory-risk node (all three Ludhiana CETPs non-compliant, crore-scale CPCB penalties, NGT review `[FACT, T1 §5b]`); building a flat-knit machine is ~$2M–10M+ over 3–7 years for a likely-inferior result vs a sub-$20k used Chinese machine `[ESTIMATE, HIGH on direction; T3 §3]`. Both are the highest-confidence "do-nots" in the venture.
-- **HSN/duty constants** (for whichever side of make-vs-buy imports goods or a machine): garments heading **6110** (cotton 6110.20 ≈7%, wool 6110.11 ~16%); knitting machines **HSN 8447** (~7.5% BCD + 18% IGST into India). `[FACT — USITC; HSN 8447 — T2/T3]`
+- **HSN/duty constants** (for whichever side of make-vs-buy imports goods or a machine): garments heading **6110** (cotton 6110.20.20 ≈16.5%, wool 6110.11 ~16%, acrylic/MMF 6110.30.30 ~32%); knitting machines **HSN 8447** (~7.5% BCD + 18% IGST into India). `[FACT — USITC; HSN 8447 — T2/T3]`
 
 ---
 
@@ -77,7 +77,7 @@ All three are **labelled illustrations, not quotes**; assumptions live in Analys
 |---|---|---|---|
 | **A1 — cotton-blend 12-month core (12GG)** | **≈ $4–9** | `[ESTIMATE, LOW-MED]` | blocked by the [UNKNOWN] knit/link rate |
 | **A2 — fine-acrylic value driver (7–12GG)** | **≈ $3.5–8** | `[ESTIMATE, LOW-MED]` | the **cost floor** of the three; best MOQ-flex; margin lives or dies on the anti-pill finish (ICI ≥3–4 post-wash, T2 §4) — a cheap line that, if cut, returns as the #1 return driver |
-| **A3 — merino/lambswool premium capsule (7–12GG)** | **≈ $6–22+** | `[ESTIMATE, LOW]` | **least reliable** — yarn-dominated and order-of-magnitude; duty asymmetry (wool ~16% vs cotton ~7%) widens the *landed* premium again in T9 |
+| **A3 — merino/lambswool premium capsule (7–12GG)** | **≈ $6–22+** | `[ESTIMATE, LOW]` | **least reliable** — yarn-dominated and order-of-magnitude; wool duty (~16%) ≈ cotton (~16.5%), so its *landed* premium is widened by high ex-factory yarn cost, not a duty gap; acrylic/MMF ~32% is the duty outlier |
 
 ### 3c. What gets DOWNGRADED (over-confident or thinly-sourced — flagged for the writer/critic)
 - **The conversion band "US$1.5–4.0/garment" for a mid-complexity FF pullover** is Analyst A's **single softest number**, and it is soft *because* the knit + link lines inside it are [UNKNOWN]. **Downgrade any temptation to treat the midpoint as a planning figure** — it is a width, not a point. `[DOWNGRADED — ESTIMATE, LOW-MED; rests on a wage-ratio adjustment off a non-Ludhiana study × an [UNKNOWN] Ludhiana productivity]`

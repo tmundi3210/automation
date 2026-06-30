@@ -235,7 +235,7 @@ The brand is viable **only if the line is inverted from the upstream plan:**
 - **Lead with A3 premium ($145) + 2-unit bundles (AOV ~$120–150)** — the only configs with positive contribution at CAC $45–70 and the only ones clearing 3:1.
 - **Hold blended CAC under ~$35** — which for a no-name brand means **acquisition cannot come mostly from cold paid social** (new cohorts pay $45–70+); it must lean **organic / community / affiliate / owner-audience** (≤ ~35–40% paid). **This is a go-to-market precondition, not a nicety — and it is the single most consequential lever in the whole stack.**
 - **Use A2 (acrylic) deliberately as a low-margin basket-filler inside bundles, never a standalone hero** — its landed cost is *not* meaningfully below cotton, and it loses money alone at any realistic CAC.
-- **Use A1 (cotton) as the margin-friendly core** — lowest-duty-tied, but needs repeat + a held-down blended CAC.
+- **Use A1 (cotton) as the margin-friendly core** — low-duty (~16.5%, ≈ wool; acrylic the 32% outlier), but needs repeat + a held-down blended CAC.
 - **Keep fixed cost bootstrap-lean (~$1,500–3,000/mo)** so break-even is ~75–150 orders/mo, reachable.
 - **Operate as a bulk Importer of Record → CA 3PL → domestic ship;** continuous bond above ~3 entries/yr; don't launch into the Jul–Oct Ludhiana cluster peak (carried from T1/T4).
 
