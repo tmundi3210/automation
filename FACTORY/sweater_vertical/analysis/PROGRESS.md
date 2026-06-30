@@ -6,8 +6,8 @@ State lives here so the orchestrator can `/compact` and re-inject from this file
 
 | Seg | Title | Stage | Output |
 |----|-------|-------|--------|
-| T0 | Scope & Glossary / Organizer | **glossary DONE** (3,520w, 9 sections, ~95 terms); organizer specialist folded into T11 | analysis/SCOPE_GLOSSARY.md |
-| T1 | Ludhiana cluster | **deep-dive DONE** (2,750w, honesty-clean); **KB build running (wave 2)** | analysis/ludhiana/DEEPDIVE.md → specialists/ludhiana/ |
+| T0 | Scope & Glossary / Organizer | **DONE** (glossary, 9 sections, ~95 terms); organizer specialist folded into T11 | analysis/SCOPE_GLOSSARY.md |
+| T1 | Ludhiana cluster | **SPECIALIST DONE & verified** — `ludhiana_sourcing_strategist`, 3 dense KBs, build.sh ALL GREEN, critic PASS (no honesty/templating issues) | specialists/ludhiana/ |
 | T2 | Yarn & fibre | **deep-dive DONE** (climate-first 3-article line; price not the binding constraint, dye-lot MOQ + anti-pill spec are); KB build pending | analysis/yarn/DEEPDIVE.md |
 | T3 | Machines | **deep-dive DONE** (subcontract→buy-used-never-build; AI on software/vision not iron; Stoll 2025 exit); KB build pending | analysis/machines/DEEPDIVE.md |
 | T4 | Manufacturing economics | todo | — |
