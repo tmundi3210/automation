@@ -24,10 +24,16 @@ fabricated dollar figure stated as fact. Coverage is always reported honestly (f
 ## Segments (done one by one; owner may reorder)
 
 - **S0 — DONE.** Organizer (meta) specialist `turlock_biz_organizer` + 197-business catalog (74 categories).
-- **S1 — Food & Dining** *(exemplar, in progress)*: deep-dive (supply chain · per-business enrichment ·
-  labeled benchmark revenue · saturation "why this many") → **Food & Dining sector specialist** (3 KBs + specialist).
-- **S2–S9 — the other 8 sectors**, same pattern, one at a time: Retail & Goods · Health & Wellness ·
-  Personal Care · Home & Contractor Trades · Automotive · Professional & Financial · Ag & Specialty · Ethnic Markets & Grocers.
+- **S1 — Food & Dining — DONE** *(exemplar)*: deep-dive (supply chain · per-business enrichment ·
+  labeled benchmark revenue · saturation "why this many") → **`turlock_fd_strategist`** (3 KBs + specialist).
+- **S2–S9 — the other 8 sectors — DONE** (same pattern, built in two batches of 4). All 9 sector specialists
+  re-gated **ALL GREEN**, 27 dense KBs total:
+  - `turlock_retail_strategist` (Retail & Goods, 27) · `turlock_hw_strategist` (Health & Wellness, 26) ·
+    `turlock_pc_strategist` (Personal Care, 25) · `turlock_trades_strategist` (Home & Contractor Trades, 22) ·
+    `turlock_auto_strategist` (Automotive, 19) · `turlock_prof_strategist` (Professional & Financial, 14) ·
+    `turlock_ag_strategist` (Ag & Specialty, 14) · `turlock_ethnic_strategist` (Ethnic Markets & Grocers, 10).
+  - Each: 3 dense KBs (models / operations+supply / market-economics; 22 nodes · 36 edges each) + a gated
+    specialist + a `DEEPDIVE.md` answering "why this many, not more" with labeled benchmark revenue bands.
 - **S10 — Macro / Comparative Economic Brain** (the owner's big questions), each via 2-analyst → compare → write:
   - **10a** Turlock economic base & *why this many businesses, not more* (population, business density, demand math, saturation).
   - **10b** Government / tax revenue — city budget, sales & property tax, what the city actually makes (public figures + labeled estimates, sourced).
