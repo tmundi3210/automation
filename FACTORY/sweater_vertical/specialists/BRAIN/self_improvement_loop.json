@@ -1,0 +1,85 @@
+{
+  "_directive": "machine-facing SELF-IMPROVEMENT LOOP protocol for the sweater vertical brain; defines how any one of the 9 gated specialists is made to interrogate its OWN analysis in FRESH agent contexts (the base unit) — chat-based self-LLM questioning — to surface gaps, contradictions, stale claims and over-claims, then converge on prioritized feedback; the loop only proposes and (for high-confidence in-scope items) applies improvements that still pass build.sh; it never fabricates content to fill a gap and never relaxes the honesty discipline.",
+
+  "meta": {
+    "loop_id": "sweater_vertical_self_improvement_loop",
+    "segment": "T12",
+    "belongs_to": "sweater_vertical_brain",
+    "purpose": "raise the quality and honesty of each specialist's analysis by making the specialist question itself in a fresh context and having a neutral judge score whether the specialist actually supports its own answers; output is prioritized, honesty-tagged feedback and a re-gated set of applied corrections.",
+    "base_unit": "one FRESH agent = one context window. Every role in a round is a NEW agent that reads only its named inputs and writes only its named output; no role sees another role's private reasoning. Fresh-context separation is what makes the self-questioning objective rather than self-confirming.",
+    "orchestrator_rule": "the orchestrator only plans, injects agents, names what to read/write, and runs build.sh to verify; it does not itself ingest or answer. State lives in files under analysis/self_loop/<slug>/, never in the orchestrator's memory."
+  },
+
+  "roles": [
+    {
+      "role": "R1_questioner",
+      "context": "fresh",
+      "reads": ["the target <slug>.specialist.json", "SELF_LOOP.md (this protocol)", "SCOPE_GLOSSARY.md"],
+      "may_read": ["the specialist's grounded_in_kbs (*.kb.json) for grounding checks"],
+      "task": "audit the specialist as an adversary who wants it to fail. Generate the hardest questions the specialist CLAIMS (via its competency_questions, owns[], decision_procedure, dominance) to be able to answer but is most likely to answer weakly, inconsistently, staleley, or by over-claiming. Target load-bearing joints (viability, duty trio, pilling floor, knit+LINK rate, CAC, AI autonomy, off-paper mechanism, naming legal). Do NOT answer them.",
+      "writes": "roundN_questions.json"
+    },
+    {
+      "role": "R2_answerer",
+      "context": "fresh",
+      "reads": ["the target <slug>.specialist.json", "roundN_questions.json", "SCOPE_GLOSSARY.md"],
+      "may_read": ["the specialist's grounded_in_kbs (*.kb.json)"],
+      "task": "you ARE this specialist. Answer each question strictly and only from your own spec (and your KBs), carrying the honesty tags [FACT]/[ESTIMATE]/[UNKNOWN]. Where your spec does not support an answer, say so plainly (specialist_supports=no/partial) and describe the GAP — never invent content to look complete. This is the self-LLM questioning turn: the specialist answering itself in a fresh window.",
+      "writes": "roundN_answers.json"
+    },
+    {
+      "role": "R3_judge",
+      "context": "fresh",
+      "reads": ["the target <slug>.specialist.json", "roundN_questions.json", "roundN_answers.json", "SELF_LOOP.md"],
+      "may_read": ["the specialist's grounded_in_kbs (*.kb.json)", "the DECISION_MEMO for cross-checks"],
+      "task": "neutral referee. For each answer decide whether the specialist genuinely supports it and classify any defect: gap | contradiction | stale | overclaim | untagged | scope | ok. Cite the exact spec location as evidence. Propose a concrete minimal fix and a disposition (apply_now | propose | watch). Set dry=true only if the round found NO material (high/med) issue.",
+      "writes": "roundN_judgment.json"
+    },
+    {
+      "role": "R4_synthesizer",
+      "context": "fresh",
+      "reads": ["all roundN_questions/answers/judgment.json for this slug", "the target specialist.json"],
+      "task": "merge the rounds into one convergent picture: dedupe findings, keep the strongest evidence, rank by severity, and split into apply_now / propose / watch. Preserve honesty tags. Produce the human-facing LOOP_REPORT.md and the machine-readable feedback.json.",
+      "writes": ["LOOP_REPORT.md", "feedback.json"]
+    }
+  ],
+
+  "round_cycle": "R1 questioner -> R2 answerer (blind to R1's reasoning) -> R3 judge -> (if judge.dry==false and rounds<max) start a new round whose questioner also reads the prior judgment and targets the surviving weak spots -> R4 synthesizer once the loop stops.",
+
+  "stop_conditions": {
+    "dry_stop": "stop when a round's judge returns dry=true (no high/med finding) — the loop has converged.",
+    "max_rounds": 2,
+    "note": "max_rounds is a cost cap, not a target; most healthy specialists converge in one round. A specialist that is still producing high-severity findings at max_rounds is flagged NOT-CONVERGED in its report rather than silently truncated."
+  },
+
+  "finding_types": {
+    "gap": "the specialist is silent on something its own scope (owns/competency) promises — a real hole, not an invented answer.",
+    "contradiction": "two parts of the specialist (or specialist vs its KB) disagree.",
+    "stale": "a claim contradicted by a later correction already made elsewhere in the brain (e.g. any residual ~7% cotton duty, any pre-correction analyst-B-absent language).",
+    "overclaim": "a capability asserted beyond what is supportable (Flux compiles a knit program, build-our-own-machine, AI replaces the programmer/linker/inspector, autonomy assumed instead of [UNKNOWN]).",
+    "untagged": "a load-bearing money/duty/CAC/capacity claim missing its [FACT]/[ESTIMATE]/[UNKNOWN] tag.",
+    "scope": "the specialist answers outside its lane or fails to defer to the dominance-rule owner.",
+    "ok": "the specialist supports the answer cleanly — recorded so the report shows verified strengths, not only defects."
+  },
+
+  "disposition": {
+    "apply_now": "high-confidence, in-scope, mechanical correction (fix a stale figure, add a missing tag, defer to the right owner, soften an over-claim). Applied by hand by the finalizer, then re-gated with build.sh; must stay ALL GREEN.",
+    "propose": "a real improvement that needs judgment or new research (a missing sub-analysis, a number to go measure). Written to PROPOSED_BACKLOG.md, NOT silently applied.",
+    "watch": "a low-severity or already-mitigated item recorded so it is not rediscovered every loop."
+  },
+
+  "honesty_binding": "the loop is bound by the same discipline as the brain (see BRAIN.md / router.json neutralize_gate N1-N7). It may NEVER fabricate content to close a gap, invent a named-firm figure, turn the off-paper mechanism into an accusation, relax the [UNKNOWN] status of the three governing blockers (knit+LINK rate, live CAC, forward duty), or introduce the discredited ~7% cotton duty. A correction that would require inventing a fact is downgraded to a [UNKNOWN]-named gap and a 'propose' item, never applied.",
+
+  "verification": "after the finalizer applies apply_now items, the orchestrator INDEPENDENTLY re-runs `bash FACTORY/build.sh FACTORY/sweater_vertical/specialists/<slug>` and confirms ALL GREEN, greps for residue (any ~7% duty, food-template residue, banned specialist tokens), and only then commits. Agent self-reports are never trusted without this re-gate.",
+
+  "files": {
+    "protocol_doc": "/home/user/automation/FACTORY/sweater_vertical/specialists/BRAIN/SELF_LOOP.md",
+    "protocol_json": "/home/user/automation/FACTORY/sweater_vertical/specialists/BRAIN/self_improvement_loop.json",
+    "per_specialist_memory": "/home/user/automation/FACTORY/sweater_vertical/analysis/self_loop/<slug>/ (roundN_*.json, LOOP_REPORT.md, feedback.json)",
+    "global_rollup": "/home/user/automation/FACTORY/sweater_vertical/analysis/self_loop/SELF_LOOP_SUMMARY.md",
+    "applied_log": "/home/user/automation/FACTORY/sweater_vertical/analysis/self_loop/APPLIED.md",
+    "backlog": "/home/user/automation/FACTORY/sweater_vertical/analysis/self_loop/PROPOSED_BACKLOG.md"
+  },
+
+  "reusable": "this loop is re-runnable at any time on any specialist (or all nine) by injecting the four roles as fresh agents per this protocol; the owner can also run a single manual pass with the paste-prompt in SELF_LOOP.md."
+}
