@@ -13,7 +13,7 @@
   "exclusions": [
     "the note-authoring / content-generation pipeline (card templates, cloze, media) beyond the genanki Model/Note/Deck object surface needed to emit a schedulable .apkg (that belongs to the content specialist)",
     "sync-server protocol internals, AnkiWeb account mechanics and conflict resolution beyond naming the sync action (that belongs to the sync/infra specialist)",
-    "the exact primary-source effect sizes of Ebbinghaus (1885), Cepeda et al. (2006) and Roediger & Karpicke (2006): the journals/primary texts were unreachable this session, so those figures are held UNKNOWN and mapped to EMPIRICAL_BASIS, never invented; only the two independently fetched quantitative findings (Rea & Modigliani 70% vs 53%; Donovan & Radosevich d=0.46) are stated as FACT",
+    "the exact primary-source effect sizes of Ebbinghaus (1885), Cepeda et al. (2006) and Roediger & Karpicke (2006): the journals/primary texts were unreachable this session, so those figures are held UNKNOWN and mapped to EMPIRICAL_BASIS, never invented; only the two independently fetched quantitative findings (Rea & Modigliani 70% vs 53%; Donovan & Radosevich effect size 0.46) are stated as FACT",
     "UI/UX of the review screen, keyboard mapping and mobile clients beyond the grade-button-count and fuzz consequences for the scheduler",
     "training-infrastructure choices (Burn vs PyTorch, GPU) beyond the fact that the optimizer fits the w-vector on revlog by maximum-likelihood / binary log-loss"
   ],
@@ -222,7 +222,7 @@
       "must_be_answerable_from": [
         "nodes"
       ],
-      "acceptance_condition": "EMPIRICAL_BASIS states flashcard review is simultaneously a test (testing effect) and a spaced exposure (spacing effect) that the FSRS SInc formula encodes, cites the two fetched findings (Rea & Modigliani 70% vs 53%; Donovan & Radosevich d=0.46, CI 0.42-0.50) as FACT, and holds the Ebbinghaus/Cepeda/Roediger primary-source figures UNKNOWN because the journals were unreachable",
+      "acceptance_condition": "EMPIRICAL_BASIS states flashcard review is simultaneously a test (testing effect) and a spaced exposure (spacing effect) that the FSRS SInc formula encodes, cites the two fetched findings (Rea & Modigliani 70% vs 53%; Donovan & Radosevich effect size 0.46, CI 0.42-0.50) as FACT, and holds the Ebbinghaus/Cepeda/Roediger primary-source figures UNKNOWN because the journals were unreachable",
       "covered_by": [
         "EMPIRICAL_BASIS",
         "DSR_MODEL"
@@ -2400,14 +2400,14 @@
     {
       "id": "REVLOG_SCHEMA",
       "topic": "anki_sqlite_schema_cards_revlog_columns",
-      "definition": "Map the revlog record onto Anki's actual SQLite schema so logs round-trip [FACT - AnkiDroid DB wiki, which reproduces the CREATE TABLEs]. Key tables: notes (raw facts; flds, mid model id, guid for dedup); cards (one per note-template; ivl = interval in days, factor = ease in PERMILLE so 2500=2.5x, plus due/queue/type/lapses/reps, odue for filtered decks); col (single row, collection conf + legacy JSON); revlog (ONE row per review ever: id epoch-ms, cid, usn, ease button 1-4, ivl, lastIvl, factor, time ms capped 60000, type 0=learn/1=review/2=relearn/3=cram); graves (deletions pending sync). When FSRS is enabled, cards.factor / revlog.factor is reused to carry FSRS difficulty normalized (permille 100-1100 / 100-1100-style). This table is exactly what the FSRS optimizer consumes. [ESTIMATE, medium-high: newer exports also use collection.anki21 / collection.anki21b (zstd) database variants, seen in ecosystem code but not verified against an official spec page this session.]",
+      "definition": "Map the revlog record onto Anki's actual SQLite schema so logs round-trip [FACT - AnkiDroid DB wiki, which reproduces the CREATE TABLEs]. Key tables: notes (raw facts; flds, mid model id, guid for dedup); cards (one per note-template; ivl = interval in days, factor = ease in PERMILLE so 2500=2.5x, plus due/queue/type/lapses/reps, odue for filtered decks); col (single row, collection conf + legacy JSON); revlog (ONE row per review ever: id epoch-ms, cid, usn, ease button 1-4, ivl, lastIvl, factor, time ms capped 60000, type 0=learn/1=review/2=relearn/3=cram); graves (deletions pending sync). When FSRS is enabled, revlog.factor is reused to carry FSRS difficulty normalized to 100-1100. This table is exactly what the FSRS optimizer consumes. [ESTIMATE, medium-high: newer exports also use collection.anki21 / collection.anki21b (zstd) database variants, seen in ecosystem code but not verified against an official spec page this session.]",
       "node_type": "work_unit",
       "group": "core",
       "scope_boundary": {
         "included": [
           "the notes/cards/col/revlog/graves tables and key columns",
           "ivl in days, factor in permille, the revlog per-review row",
-          "the FSRS-difficulty reuse of factor",
+          "the FSRS-difficulty reuse of revlog.factor",
           "the anki21/anki21b variant ESTIMATE"
         ],
         "excluded": [
@@ -2517,17 +2517,17 @@
           "evidence_refs": [
             "SRC_HEURISTIC_PRIOR"
           ],
-          "claim": "The schema overloads fields (factor carries ease OR FSRS difficulty) and legacy JSON lives in col, so naive mapping corrupts state",
-          "example": "writing a raw 2.5 into factor instead of 2500 permille, or misreading factor as ease when FSRS is on"
+          "claim": "The schema overloads fields (revlog.factor carries ease OR FSRS difficulty) and legacy JSON lives in col, so naive mapping corrupts state",
+          "example": "writing a raw 2.5 into factor instead of 2500 permille, or misreading revlog.factor as ease when FSRS is on"
         }
       ],
       "failure_modes": [
         "storing ease as a float instead of permille in factor",
-        "ignoring that factor carries FSRS difficulty when FSRS is enabled",
+        "ignoring that revlog.factor carries FSRS difficulty when FSRS is enabled",
         "assuming a single .anki2 name when anki21/anki21b variants exist"
       ],
       "acceptance_tests": [
-        "the design maps the log to notes/cards/col/revlog/graves with ivl-in-days, factor-in-permille, ease 1-4 and the FSRS-difficulty reuse, and flags the anki21b variant as ESTIMATE"
+        "the design maps the log to notes/cards/col/revlog/graves with ivl-in-days, factor-in-permille, ease 1-4 and the FSRS-difficulty reuse of revlog.factor, and flags the anki21b variant as ESTIMATE"
       ],
       "revisit_triggers": [
         "Anki's schema version changes",
@@ -2806,7 +2806,7 @@
         "overstating the immediate 70-vs-53 finding as a long-term retention result"
       ],
       "acceptance_tests": [
-        "the design states review as test + spaced exposure with SInc-encodes-spacing, cites Rea & Modigliani 70-vs-53 and Donovan & Radosevich d=0.46 as FACT, and holds the Ebbinghaus/Cepeda/Roediger figures UNKNOWN with the egress-block reason"
+        "the design states review as test + spaced exposure with SInc-encodes-spacing, cites Rea & Modigliani 70-vs-53 and Donovan & Radosevich effect size 0.46 as FACT, and holds the Ebbinghaus/Cepeda/Roediger figures UNKNOWN with the egress-block reason"
       ],
       "revisit_triggers": [
         "a blocked primary source becomes reachable to verify its figures",
@@ -5254,7 +5254,7 @@
     },
     {
       "description": "Anki's cards.factor is written as a raw float ease instead of permille and misread when FSRS is on",
-      "trigger": "a 2.5 ease is stored as 2.5 rather than 2500, or factor is read as ease while FSRS reuses it for difficulty",
+      "trigger": "a 2.5 ease is stored as 2.5 rather than 2500, or revlog.factor is read as ease while FSRS reuses it for difficulty",
       "affected_nodes": [
         "REVLOG_SCHEMA"
       ],
