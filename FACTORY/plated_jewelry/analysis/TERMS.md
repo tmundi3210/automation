@@ -1,0 +1,6392 @@
+# TERMS.md — P3 full taxonomy drill-down (plated_jewelry vertical)
+
+_Assembled 2026-07-02 from the nine per-domain drill files in `taxonomy/`; machine-readable master: `taxonomy/taxonomy.json`. Every domain > subdomain > topic > subtopic is listed with its complete granular term list, verbatim from the drill files. Honesty rules bind: hazard classes ride inline with hazardous chemistry; standards are cited by class/name; no invented supplier names, prices or process constants._
+
+## Totals
+
+| Level | Count |
+|---|---|
+| Domains | 9 |
+| Subdomains | 61 |
+| Topics | 205 |
+| Subtopics | 430 |
+| Terms | 4485 |
+
+### Domain index
+
+| # | Domain | ID | Subdomains | Topics | Subtopics | Terms |
+|---|---|---|---|---|---|---|
+| 1 | PVD / Sputtering Physics & Practice | `pvd-sputtering` | 7 | 27 | 57 | 588 |
+| 2 | Electrochemical & Wet-Chemical Plating | `electro-plating` | 7 | 22 | 46 | 449 |
+| 3 | Vacuum Engineering & the Feed-Through Machine Build | `vacuum-machine-build` | 7 | 23 | 46 | 593 |
+| 4 | Substrate Metallurgy & Post-Coat Forming | `substrate-forming` | 6 | 24 | 50 | 475 |
+| 5 | Production Engineering, Automation, Storage & Integration Errors | `production-ops` | 7 | 22 | 48 | 498 |
+| 6 | Quality Control, Testing & Durability | `qc-durability` | 7 | 21 | 42 | 452 |
+| 7 | Finishing, Product Design & Houseware Extension | `finishing-design-extension` | 6 | 19 | 41 | 474 |
+| 8 | Business, Cost Model & Procurement | `business-procurement` | 7 | 23 | 48 | 491 |
+| 9 | Safety & Regulatory Compliance | `safety-regulatory` | 7 | 24 | 52 | 465 |
+
+**Validation note:** all nine drill files parsed as strict JSON with band shapes intact. One finding (not silently fixed, carried verbatim in both places): the term "white bronze (Cu-Sn-Zn) nickel-free interlayer" appears twice within `substrate-forming` — under *Steel & Alloy Wire Substrate Selection > Nonferrous & Clad Alternatives > Nickel-allergy-aware substrate & stack choices* and under *Coating Mechanics During Bending > Ductile Interlayer & Stack Design > Interlayer selection for formability*. Term totals count occurrences as stored.
+
+---
+
+## 1. PVD / Sputtering Physics & Practice (`pvd-sputtering`) — 588 terms
+
+**Scope:** The physics and practical operation of sputter deposition of gold: plasma generation, target erosion, film nucleation and growth on moving wire, and the process parameters that set rate, coverage, adhesion and gold-usage efficiency. Owns the coating-process half of Q1/Q2 (what deposition conditions the machine must sustain) and the sputtering side of the cheapest-vs-best route comparison (Q6). Vacuum-generating hardware (pumps, chamber build, feedthrough seals) belongs to the vacuum-machine-build domain; wet electroplating chemistry belongs to the electroplating domain.
+
+### 1.1 Sputtering Fundamentals & Plasma Physics
+
+#### 1.1.1 Glow Discharge & Plasma Generation
+
+**DC glow discharge structure** (12 terms)
+
+- abnormal glow regime
+- cathode fall / cathode dark space (Crookes dark space)
+- negative glow region
+- breakdown voltage (V)
+- Paschen curve (pressure x gap product, Torr·cm)
+- Paschen minimum
+- self-sustaining discharge criterion
+- secondary electron emission coefficient (gamma)
+- Townsend ionization coefficient (alpha)
+- hollow cathode effect
+- anode placement / grounded chamber as anode
+- dark-space shield gap spacing (mm)
+
+**Plasma parameters & sheaths** (12 terms)
+
+- plasma density (ions/cm3)
+- electron temperature (eV)
+- Debye length (mm at process conditions)
+- plasma potential (V)
+- floating potential (V)
+- sheath thickness vs pressure
+- Bohm criterion / ion sound speed
+- ion flux to cathode (mA/cm2)
+- electron impact ionization of argon (15.76 eV threshold)
+- metastable argon states
+- Langmuir probe diagnostics
+- optical emission spectroscopy (OES) plasma monitoring
+
+#### 1.1.2 Power Delivery Modes
+
+**DC and pulsed-DC sputtering** (12 terms)
+
+- DC magnetron sputtering (DCMS)
+- target voltage (typically -300 to -600 V for Au on Ar)
+- discharge current (A)
+- constant-power vs constant-current vs constant-voltage regulation
+- pulsed-DC frequency (kHz range)
+- duty cycle (%)
+- reverse-voltage (positive pulse) charge clearing
+- asymmetric bipolar pulsing
+- arc-suppression / arc-detection circuitry in supply
+- power supply output ripple
+- ignition pressure boost (gas burst to strike plasma)
+- run-in / burn-in power ramp
+
+**RF sputtering** (11 terms)
+
+- RF sputtering at 13.56 MHz (ISM band)
+- RF matching network (L-network, pi-network)
+- automatic match tuner
+- DC self-bias voltage on capacitively coupled target
+- blocking capacitor
+- reflected power (W) minimization
+- forward power (W)
+- RF shielding and grounding straps
+- RF for insulating targets (not needed for metallic gold)
+- lower deposition rate of RF vs DC for metals
+- RF ground-loop and stray-coupling faults
+
+**HiPIMS and high-ionization modes** (10 terms)
+
+- HiPIMS (high-power impulse magnetron sputtering)
+- peak power density (kW/cm2 in pulse)
+- pulse width (µs) and repetition frequency (Hz)
+- ionized fraction of sputtered metal flux
+- self-sputtering runaway
+- denser, smoother films from ionized flux
+- rate loss vs DCMS at equal average power
+- synchronized substrate bias pulsing
+- gas rarefaction during HiPIMS pulse
+- HiPIMS supply capital cost premium (route-economics input)
+
+#### 1.1.3 Magnetron Confinement
+
+**Magnet configurations** (11 terms)
+
+- planar circular magnetron cathode
+- rectangular planar magnetron
+- cylindrical rotatable magnetron
+- inverted / post magnetron geometry (substrate inside annular target)
+- balanced vs unbalanced magnetron (type I / type II)
+- magnet pack (NdFeB or SmCo)
+- pole piece and yoke design
+- magnetic field strength parallel to target surface (typically 20-50 mT / 200-500 G)
+- magnet strength loss above magnet Curie/working temperature
+- field weakening as target erodes thinner
+- closed-field multi-cathode arrangement
+
+**Racetrack physics & electron drift** (10 terms)
+
+- E x B closed electron drift
+- Hall current loop above target
+- electron trapping and enhanced ionization zone
+- racetrack plasma torus
+- cross-field electron transport (anomalous diffusion)
+- ionization region vs bulk plasma
+- plasma impedance shift as racetrack deepens
+- magnetron operating pressure window (roughly 1-10 mTorr)
+- loss of confinement at end-of-life target
+- spokes / rotating ionization instabilities (HiPIMS regime)
+
+#### 1.1.4 Sputter Ejection & Species Transport
+
+**Sputter yield & collision cascade** (12 terms)
+
+- sputter yield (atoms per incident ion)
+- high sputter yield of gold under Ar+ (among the highest of common metals)
+- sputter threshold energy (tens of eV)
+- linear collision cascade regime
+- Sigmund sputtering theory
+- surface binding energy (eV, ~sublimation enthalpy)
+- energy distribution of sputtered atoms (Thompson distribution, peak few eV)
+- angular emission distribution (near-cosine)
+- ion incidence angle dependence of yield
+- yield amortized as nm removed per ion dose
+- SRIM/TRIM cascade simulation
+- momentum transfer mass matching (Ar on Au)
+
+**Gas-phase transport & thermalization** (11 terms)
+
+- mean free path vs pressure (cm at mTorr)
+- thermalization distance of sputtered Au
+- ballistic vs diffusive transport regimes
+- gas scattering losses to chamber walls
+- target-to-substrate distance (cm) vs flux
+- working gas argon (inert; asphyxiant in confined space displacement)
+- argon purity grade 5N (99.999%)
+- gas rarefaction (sputter wind heating)
+- backscattering / redeposition onto target
+- pressure-distance product as similarity parameter
+- krypton/xenon as heavier alternative sputter gases (yield/cost trade)
+
+**Substrate bombardment & energetic effects** (10 terms)
+
+- substrate bias voltage (negative DC or RF, V)
+- ion-to-atom arrival ratio at substrate
+- atomic peening (compressive stress mechanism)
+- resputtering of growing film
+- reflected energetic neutrals (Ar backscattered from Au target)
+- substrate heating flux from plasma (W/cm2)
+- bias-induced densification
+- sputter-etch pre-clean of substrate (in-situ ion cleaning)
+- floating vs grounded vs biased wire electrical configuration
+- bombardment damage / defect generation in soft gold
+
+### 1.2 Gold Target Engineering & Precious-Metal Economy
+
+#### 1.2.1 Target Design & Fabrication
+
+**Target body, purity & bonding** (12 terms)
+
+- gold sputter target purity 4N (99.99%)
+- target thickness (typically 1-6 mm for precious metals)
+- monolithic vs bonded target construction
+- indium solder bonding to backing plate
+- elastomer (conductive epoxy) bonding
+- OFHC copper backing plate
+- rolled vs cast target microstructure
+- target diameter / sputter-face area (cm2)
+- thin precious-metal target on reusable backing (capital-sparing design)
+- gold-alloy targets (Au-Co, Au-Ni, Au-Pd hard golds)
+- target flatness and surface finish spec
+- bond integrity / debond hot-spot failure
+
+**Cooling, mounting & shielding** (11 terms)
+
+- direct vs indirect target water cooling
+- cooling water flow rate (L/min) and interlock
+- target clamping ring
+- dark-space (ground) shield around cathode
+- shield-to-target gap smaller than cathode dark space
+- thermal runaway of poorly bonded target
+- indium bond melting (156 degC limit) under overpower
+- maximum power density rating (W/cm2 of target face)
+- O-ring cooled cathode feedthrough (hardware boundary with vacuum-machine-build)
+- magnet keeper removal during target change
+- target change cleanroom procedure / contamination avoidance
+
+#### 1.2.2 Erosion & Target Utilization
+
+**Racetrack erosion behavior** (10 terms)
+
+- erosion racetrack groove
+- erosion profile depth mapping
+- target burn-through (backing plate exposure, copper contamination of film)
+- end-of-life criterion (% of thickness at deepest groove)
+- voltage drift as erosion signature
+- redeposit zones outside racetrack
+- nodule growth on redeposit zones
+- racetrack width vs magnet design
+- erosion-driven rate drift over target life
+- target life bookkeeping in kWh
+
+**Utilization improvement strategies** (10 terms)
+
+- planar magnetron target utilization % (often ~25-40%)
+- rotatable cylindrical target utilization (can exceed 70-80%)
+- moving/scanning magnet packs
+- wider-racetrack magnet engineering
+- full-face erosion designs
+- target thickness optimization for precious metals (thin target, frequent recycle)
+- spent-target residual gold weight tracking
+- utilization vs uniformity trade-off
+- small-target/high-duty economics for DIY scale
+- target refurbishment / re-casting service
+
+#### 1.2.3 Gold Recovery & Mass Accounting
+
+**Overspray capture & in-chamber reclaim** (10 terms)
+
+- gold usage efficiency (% of sputtered Au deposited on product)
+- collection efficiency vs geometry (wire subtends small solid angle)
+- removable stainless or foil chamber shield liners
+- aluminum-foil overspray capture wrap
+- shield stripping for reclaim
+- aperture masks concentrating flux onto wire
+- close-coupled cathode-to-wire geometry to raise capture
+- sputter-down vs sputter-up vs side-sputter geometry
+- witness coupon mass-gain gravimetry
+- gold inventory per shield set (g)
+
+**Refining & precious-metal balance** (10 terms)
+
+- precious-metal mass balance ledger (target in, product + scrap + shields out)
+- refiner assay (fire assay / ICP)
+- refining loss and treatment charge (%)
+- aqua regia gold dissolution (hazard: highly corrosive, evolves toxic NOx fumes)
+- cyanide-based gold strippers (hazard: acutely toxic; cyanide-free alternative: iodine/iodide or thiosulfate strippers)
+- electrolytic gold stripping of racks and rejects
+- spent target buy-back programs
+- scrap lot documentation and chain of custody
+- karat/fineness verification of reclaimed gold
+- gold price exposure per production week (economics input to Q11)
+
+### 1.3 Film Nucleation, Growth & Adhesion on Wire
+
+#### 1.3.1 Nucleation & Microstructure
+
+**Island growth & coalescence** (11 terms)
+
+- Volmer-Weber (island) growth mode of Au on oxides/steel
+- nucleation density vs substrate temperature
+- adatom surface diffusion
+- island coalescence and percolation threshold thickness
+- electrically continuous film thickness (nm scale)
+- minimum pinhole-free thickness
+- dewetting/agglomeration of thin Au at elevated temperature
+- epitaxy vs polycrystalline growth on drawn steel wire
+- renucleation on defects and inclusions
+- substrate roughness replication by thin films
+- wetting/seed layers to force layer-like growth
+
+**Structure-zone models & film morphology** (11 terms)
+
+- Thornton structure-zone model (pressure-temperature map)
+- Movchan-Demchishin zones
+- homologous temperature T/Tm (Au Tm = 1064 degC)
+- zone 1 porous columnar structure (high pressure, cold substrate)
+- zone T dense fibrous transition structure
+- columnar grain boundaries as corrosion paths
+- grain size vs film thickness scaling
+- (111) fiber texture of sputtered gold
+- surface roughness evolution with thickness
+- specular vs matte appearance vs zone structure (premium-look driver)
+- film density relative to bulk gold (19.3 g/cm3)
+
+#### 1.3.2 Adhesion & Interlayers
+
+**Adhesion and barrier layer stacks** (12 terms)
+
+- Ti adhesion layer (typ. 5-50 nm)
+- Cr adhesion layer (hazard note: Cr metal target benign; hexavalent Cr only in wet chemistry, not PVD)
+- NiCr 80/20 adhesion/barrier layer
+- nickel diffusion barrier (hazard: nickel-release skin sensitization; EN 1811 nickel-release test class governs jewelry)
+- palladium barrier layer (nickel-free premium stack)
+- steel / Ti / Au vs steel / Ni / Au stack options
+- diffusion of substrate species into gold at forming temperature
+- interfacial oxide disruption by sputter etch
+- galvanic couple at coating discontinuities (Au cathodic to steel: accelerates substrate pitting at pinholes)
+- graded vs discrete interlayer
+- strike-layer analogy: Wood's nickel strike (electroplating comparator for adhesion on passive steel)
+- co-sputtered interface mixing
+
+**In-vacuum surface preparation** (10 terms)
+
+- in-situ sputter etch / RF plasma pre-clean
+- glow discharge cleaning step (Ar or Ar/H2)
+- native oxide and chromium-oxide passive film on stainless wire
+- ion etch dose (bias voltage x time) before deposition
+- no air break between etch and deposit (adhesion-critical)
+- outgassing bake of wire spool
+- residual drawing-lubricant burn-off
+- water desorption from wire surface
+- atmospheric pre-clean handoff (degrease/pickle owned by surface-prep domain)
+- recontamination time at base pressure (monolayer formation time)
+
+**Adhesion testing** (10 terms)
+
+- tape adhesion test (ASTM B571 class of coating-adhesion methods)
+- bend/mandrel wrap adhesion test
+- scratch test critical load (N)
+- cross-hatch cut test
+- thermal-cycle delamination screen
+- heat-quench adhesion test
+- pull-off (stud-pull) adhesion strength (MPa)
+- burnishing test for decorative coatings
+- adhesion failure locus analysis (interface vs cohesive)
+- post-forming adhesion re-test (Q3 acceptance gate)
+
+#### 1.3.3 Stress & Mechanical Behavior
+
+**Residual film stress** (10 terms)
+
+- intrinsic compressive stress from atomic peening
+- tensile stress from grain-boundary zipping (high pressure regime)
+- compressive-to-tensile stress transition vs Ar pressure
+- thermal mismatch stress (CTE of Au ~14 ppm/K vs steel ~11-17 ppm/K)
+- wafer-curvature stress measurement (Stoney equation)
+- stress-driven blistering and buckling
+- stress relaxation on annealing
+- stress in adhesion interlayer vs top gold
+- curl of thin coated strip as quick stress indicator
+- stress control via pressure/bias tuning
+
+**Hardness, ductility & formability (Q3 core)** (11 terms)
+
+- soft pure gold (~HV 60-90 as deposited) vs hard gold alloys (HV 130-200 class)
+- Au-Co and Au-Ni hardened gold (electro comparators; sputtered alloy targets equivalent)
+- coating elongation-to-crack (%) vs wire bending strain
+- bending strain at wire surface = r_wire / (r_wire + r_bend)
+- coating microcracking on post-coat ring forming
+- annealing softening of substrate during heat-assisted forming
+- Hall-Petch hardening of fine-grained sputtered Au
+- nanoindentation hardness of thin films (GPa)
+- ductile Au vs brittle interlayer as crack initiator
+- plate-then-form vs form-then-plate decision variables
+- temperature ceiling from interdiffusion (Au-Ni, Au-Fe) discoloration
+
+#### 1.3.4 Coverage on Cylindrical Substrates
+
+**Line-of-sight geometry & shadowing** (9 terms)
+
+- line-of-sight deposition (PVD fundamental constraint)
+- cosine flux distribution from planar target
+- half-shadow on far side of wire from single cathode
+- thickness profile around wire circumference (cos-theta falloff)
+- self-shadowing at grazing incidence (porous zone growth)
+- wire diameter vs source extension (extended source softens shadowing)
+- scattering-assisted wrap at higher pressure (coverage vs density trade)
+- step coverage jargon borrowed from semiconductor PVD
+- comparison anchor: electroplating throwing power covers all-around, PVD does not
+
+**Uniformity strategies for wire** (10 terms)
+
+- opposed dual-cathode 180-degree arrangement
+- triple cathode 120-degree array
+- cylindrical inverted magnetron (annular target surrounding wire axis)
+- wire twist/rotation during transit
+- multi-pass with wire re-orientation between passes
+- circumferential thickness uniformity spec (+/- %)
+- uniformity measurement by sectioned-wire SEM cross-section
+- flux integration model over wire rotation
+- helical wire path around a central cathode
+- aperture shaping to flatten axial profile
+
+### 1.4 Process Parameters & Thickness Control
+
+#### 1.4.1 Pressure & Gas Management
+
+**Base and working pressure** (10 terms)
+
+- base pressure before deposition (1e-6 to 1e-5 Torr class for decorative work)
+- working pressure (typ. 1-10 mTorr / 0.13-1.3 Pa argon)
+- pressure units fluency (Torr, mbar, Pa conversion)
+- base-to-working pressure ratio as purity metric
+- impurity flux vs deposition flux ratio
+- water vapor as dominant residual gas
+- pump-down curve interpretation
+- leak-up rate test (Torr·L/s)
+- process window where magnetron sustains vs film quality degrades
+- continuous wire feedthrough gas load as pressure floor (interface to vacuum-machine-build)
+
+**Gas delivery & pressure measurement** (10 terms)
+
+- argon mass flow controller (MFC, sccm)
+- upstream vs downstream pressure control
+- throttle/butterfly valve conductance control
+- capacitance manometer (gas-independent, process gauge of choice)
+- ionization gauge (base pressure) and its gas-correction factors
+- Pirani/thermocouple gauge crossover range
+- residual gas analyzer (RGA) leak and contamination fingerprinting
+- gas purifier / getter on Ar line
+- gas line purge discipline
+- flow-pressure operating map of the chamber
+
+#### 1.4.2 Power & Deposition Rate
+
+**Rate scaling & calibration** (10 terms)
+
+- deposition rate (nm/s or angstrom/s at fixed geometry)
+- rate proportional to target power (linear regime)
+- specific rate constant (nm/s per W/cm2) determined empirically per rig
+- dynamic deposition rate for moving substrate (nm·m/min)
+- rate calibration witness coupon
+- rate vs pressure non-monotonicity (scattering losses)
+- rate falloff with target-substrate distance
+- power density ceiling for indium-bonded Au target
+- run-to-run rate drift log
+- static vs dynamic rate conversion (dwell time arithmetic)
+
+**Target conditioning & shutter practice** (10 terms)
+
+- pre-sputter / target burn-in behind closed shutter
+- shutter as thickness start/stop gate
+- conditioning after venting (oxide/adsorbate removal)
+- first-article scrap length after startup
+- voltage-stability criterion for conditioned target
+- shutter shadowing artifacts
+- idle-state target protection
+- arc-rate decay during conditioning
+- plasma ignition sequence (gas burst, strike, stabilize, open shutter)
+- shutter-open timestamp in batch record
+
+#### 1.4.3 Thickness Metrology & Coating Classes
+
+**In-situ monitoring** (10 terms)
+
+- quartz crystal microbalance (QCM) rate/thickness monitor
+- tooling factor calibration (QCM position vs substrate position)
+- crystal health/life (%) and crystal change interval
+- Z-ratio / acoustic impedance setting for gold
+- QCM density parameter (Au 19.3 g/cm3)
+- rate averaging window and control loop
+- closed-loop power trim from QCM signal
+- optical emission intensity as rate proxy
+- in-line eddy-current or resistance monitoring of coated wire
+- thickness = rate x dwell time bookkeeping per spool
+
+**Ex-situ measurement & thickness classes** (12 terms)
+
+- XRF coating thickness measurement (ASTM B568 class method)
+- beta backscatter thickness method (ASTM B567 class)
+- coulometric stripping thickness method
+- stylus profilometry over masked step
+- SEM cross-section with FIB for thin stacks
+- gravimetric mass-gain per wire length (g/m)
+- flash gold decorative class (~0.05-0.175 um)
+- US FTC gold-plate marking classes (gold electroplate >= 0.175 um; heavy gold plate >= 2.5 um; vermeil = >= 2.5 um on sterling silver)
+- ASTM B488 gold coating classification (thickness class / hardness code system)
+- ISO 27874 class (gold coatings for electrical/decorative, named not numbered-by-memory beyond title)
+- micron-language of jewelry trade ('1-micron plate')
+- thickness class vs wear-life expectation mapping
+
+#### 1.4.4 Geometry, Masking & Zone Design
+
+**Working distance & flux geometry** (9 terms)
+
+- target-to-wire working distance (cm)
+- deposition zone axial length (cm) sets dwell at line speed
+- inverse-square-like flux falloff (extended-source corrected)
+- erosion-racetrack image in axial thickness profile
+- close-coupling for gold economy vs heating of wire
+- substrate heating vs distance trade
+- view-factor calculation for wire capture efficiency
+- multi-zone tandem cathodes for thickness building
+- zone separation to avoid cross-talk plasma
+
+**Masks, shutters & shields** (10 terms)
+
+- aperture mask defining coated band on wire
+- uniformity trim shields (shaped shadow masks)
+- shutter blade actuation in vacuum
+- mask-to-substrate gap penumbra
+- shield surface texturing (grit blast / arc-spray) for film retention
+- flaking threshold thickness on shields (particle source)
+- shield change interval
+- re-usable vs sacrificial masks
+- mask alignment to wire path
+- gold reclaim from masks (ties to precious-metal economy)
+
+### 1.5 Moving-Wire Coating Strategy
+
+#### 1.5.1 Wire Transport & Dwell Control
+
+**Speed-thickness arithmetic** (11 terms)
+
+- line speed (m/min)
+- dwell time in deposition zone (s) = zone length / speed
+- delivered thickness = static rate x dwell x passes
+- throughput (m/h and pieces/h after forming)
+- speed-thickness-power operating triangle
+- multi-pass serpentine wire path inside chamber
+- air-to-air continuous line vs batch spool-in-chamber
+- duty ratio of wire actually in flux
+- acceleration/deceleration transients producing thickness taper
+- spool changeover splice section (scrap window)
+- roll-to-roll / reel-to-reel coater jargon
+
+**Tension, spooling & drive** (10 terms)
+
+- payoff spool and take-up spool
+- capstan drive speed control
+- closed-loop tension control (N) via dancer arm or load cell
+- wire tension below yield of fine wire
+- slip-ring or rotary feedthrough for in-vacuum spool drive
+- traverse (level-wind) winding on take-up
+- wire cast and helix memory affecting tracking
+- guide pulley alignment
+- stepper/servo drive with vacuum-rated lubrication (interface to vacuum-machine-build)
+- static electricity and debris pickup on moving wire
+
+#### 1.5.2 Wrap-Around Coverage in Motion
+
+**Multi-cathode and rotation strategies** (9 terms)
+
+- opposed cathode pair coating both wire faces per pass
+- three cathodes at 120 degrees for near-uniform wrap
+- controlled wire twist per meter for rotational averaging
+- planetary-equivalent motion via serpentine with turn bars
+- pass-to-pass angular reindexing
+- coverage overlap factor
+- per-cathode power trim to balance circumference
+- cathode staggering along axis to avoid mutual shadowing
+- cross-contamination between dissimilar-material cathodes (Ti zone vs Au zone)
+
+**Cylindrical / inverted magnetron around wire** (10 terms)
+
+- inverted cylindrical magnetron (ICM) with wire on axis
+- hollow-cathode sputtering onto axial wire
+- annular gold target (high gold inventory, high capture efficiency)
+- axisymmetric flux eliminating rotation requirement
+- anode placement inside annular geometry
+- plasma uniformity along tube axis
+- wire centering tolerance on axis (mm)
+- target inventory cost vs capture efficiency trade (Q6/Q11 input)
+- published wire-coating ICM literature as design precedent
+- end-effect flux drop at tube mouths
+
+#### 1.5.3 In-line Pre-treatment Stations
+
+**In-vacuum cleaning zones** (10 terms)
+
+- sequential zones: etch -> interlayer -> gold -> exit
+- DC/RF glow-discharge cleaning station on the moving wire
+- wire-as-cathode etch configuration
+- etch dose matching to line speed
+- differential apertures between zones (pressure staging, boundary to vacuum-machine-build)
+- Ar/H2 reducing plasma for oxide removal
+- in-line radiant wire preheat (outgassing before coating)
+- wire temperature measurement (contactless pyrometry limits on thin bright wire)
+- etch endpoint verification via witness
+- carryover of etch redeposit into coating zone
+
+**Upstream atmospheric preparation handoff** (9 terms)
+
+- ultrasonic alkaline degrease before spooling (owned by surface-prep domain, interface here)
+- drawing-lubricant residue spec entering vacuum
+- lint-free dry and spool-under-cover protocol
+- electropolished vs as-drawn wire surface finish (Ra, um)
+- bright-annealed stainless wire surface state
+- wire cleanliness acceptance test (water-break test class)
+- shelf time limit between clean and coat
+- gloved/covered spool handling
+- incoming wire certification (alloy, temper, diameter tolerance)
+
+#### 1.5.4 Fresh-Coating Handling (Q2)
+
+**Contact management after deposition** (10 terms)
+
+- no-touch span from last coating zone to first contact point
+- coated-surface contact only on large-radius soft rollers
+- polymer-sleeved (PEEK/PTFE) guide rollers
+- roller vs sliding-guide abrasion difference
+- burnishing marks / gloss change at contact lines
+- galling of soft gold on hard guide edges
+- contact-point inspection under raking light
+- coating hardness vs guide material pairing
+- exit-seal wiping contact as coating hazard (design interface to feedthrough seals)
+- cooldown before contact (soft hot gold smears)
+
+**Take-up, storage & protection** (10 terms)
+
+- interleaving paper/tissue on take-up spool
+- large-drum take-up to limit bending strain
+- winding tension limit for coated wire
+- spool-to-spool transfer minimization
+- anti-tarnish storage (gold itself tarnish-free; Ni/steel at pinholes corrode)
+- desiccant and sealed-bag spool storage
+- handling-scratch defect taxonomy vs process-defect taxonomy
+- first-in-first-out spool inventory
+- coated-wire spool travel/vibration protection
+- traceability label per spool (run, thickness, date)
+
+### 1.6 Defects, Contamination & Quality Control
+
+#### 1.6.1 Coating Defect Taxonomy
+
+**Growth and appearance defects** (11 terms)
+
+- pinholes (porosity to substrate)
+- nodules / spits (particulate-seeded growths)
+- comet defects behind seed particles
+- hazy or matte film (zone 1 porous growth)
+- color drift (contamination or alloy composition shift)
+- rainbow interference tint on ultra-thin flash
+- stains from outgassing or fingerprints
+- orange peel replication of rough substrate
+- arc droplets embedded in film
+- particle inclusion density (defects/cm2)
+- porosity corrosion bloom at pinholes (red rust from steel)
+
+**Mechanical and adhesion failures** (10 terms)
+
+- delamination / flaking
+- blistering (stress or trapped gas)
+- crazing/microcracking on bend (post-forming failure mode)
+- scratch-through to interlayer color
+- coating pickoff at guide contact
+- buckling telephone-cord delamination (compressive stress signature)
+- interlayer-boundary failure locus
+- wear-through at ring high spots in service
+- fretting at spool contact points
+- failure-mode logbook feeding common-integration-errors KB
+
+#### 1.6.2 Arcing & Electrical Instabilities
+
+**Arc phenomena** (10 terms)
+
+- micro-arcing on target surface
+- unipolar arc
+- bipolar (hard) arc to ground
+- arcing at insulating inclusions/oxide patches on target
+- arc-ejected molten droplets (spit defects on wire)
+- arc rate (events/min) as process health metric
+- arcing at flaking shield edges
+- wire-to-guide intermittent contact discharge
+- plasma flicker from pressure instability
+- cable/connector corona at feedthrough
+
+**Arc mitigation & electrical hygiene** (10 terms)
+
+- power-supply arc detection threshold (V drop / current spike)
+- arc quench shutdown-and-restrike time (µs)
+- pulsed-DC reverse voltage as arc preventer
+- target surface reconditioning after venting
+- shield refurbishment schedule
+- smooth radiused cathode hardware (field-concentration control)
+- ground-strap integrity checks
+- isolation resistance measurement of cathode assembly
+- dark-space gap verification after every target change
+- arc-event correlation with defect maps on wire
+
+#### 1.6.3 Contamination Control
+
+**Chamber and pump-borne contamination** (10 terms)
+
+- diffusion pump oil backstreaming (hydrocarbon films kill adhesion)
+- rotary-pump oil suck-back on power loss
+- foreline trap / LN2 or molecular sieve trap
+- virtual leak (trapped volume outgassing)
+- real vs virtual leak discrimination via RGA cracking patterns
+- water-vapor dominated residual spectrum
+- chamber bakeout / warm dry-nitrogen purge cycles
+- elastomer O-ring outgassing and permeation
+- silicone contamination taboo (anti-adhesion residue)
+- vent-gas quality (dry N2 venting)
+
+**Handling, housekeeping & materials discipline** (10 terms)
+
+- powder-free glove protocol
+- fingerprint salt/oil defect signature
+- solvent residue spotting (IPA final wipe discipline)
+- lint and fiber control near open chamber
+- dedicated in-vacuum tools (no oiled shop tools)
+- shield flake particle rain during pump-down/vent
+- wire spool packaging debris
+- cross-contamination from previous non-gold runs
+- vacuum-compatible materials list (no PVC, no plasticizers, low-outgassing epoxies)
+- cleanliness audit witness slide (water-break / contact-angle check)
+
+#### 1.6.4 QC & Acceptance Testing (Q8 gate)
+
+**Durability, wear & corrosion tests** (10 terms)
+
+- adhesion tape/bend battery (ASTM B571 class)
+- Taber abrasion / abrasive wheel wear test class
+- Bass turbine or pin-on-disc wear screening
+- pencil hardness screening for topcoats
+- neutral salt spray exposure (ASTM B117 class)
+- artificial perspiration corrosion test (jewelry-specific, ISO 3160-2 class practice)
+- nitric acid vapor porosity test for gold coatings (ASTM B735 class)
+- sulfur-dioxide porosity/tarnish test class
+- nickel release compliance test (EN 1811 class, EU jewelry requirement)
+- wear-simulation ring-on-finger abrasion protocols (trade practice)
+
+**Thickness, composition & appearance verification** (10 terms)
+
+- XRF thickness and alloy composition verification
+- coulometric thickness spot check
+- SEM/EDS cross-section audit
+- CIELAB color measurement (L*a*b*) of gold finish
+- Swiss watch-industry gold color designations (1N, 2N, 3N, 4N, 5N hues)
+- gloss meter (GU) specular gloss
+- visual inspection under standardized illuminant
+- sampling plan per spool/batch (AQL class sampling)
+- certificate of conformity per production lot
+- pre-production first-article qualification report (owner's 'test before doing' requirement)
+
+### 1.7 Alternative PVD Routes & Route Economics
+
+#### 1.7.1 Evaporation Routes
+
+**Thermal (resistive) evaporation** (10 terms)
+
+- resistive boat/filament evaporation of gold
+- tungsten and molybdenum boat sources
+- alumina-coated boat liners
+- gold wire/pellet feedstock charge (g per charge)
+- source temperature vs vapor pressure curve of Au
+- batch recharge downtime (poor fit to continuous wire)
+- very line-of-sight flux (worse wrap than sputtering)
+- gentle low-energy adatoms (weaker adhesion without ion assist)
+- crucible wetting and boat degradation by molten Au
+- cheapest-capital PVD route (bell-jar evaporator class)
+
+**Electron-beam evaporation** (10 terms)
+
+- e-beam gun (270-degree bent-beam source)
+- water-cooled copper hearth and crucible liner
+- beam sweep/raster pattern over melt
+- high deposition rates achievable (nm/s class and above)
+- X-ray generation at gun voltages (hazard: ionizing radiation, shielding and interlocks required)
+- spitting from beam-agitated melt
+- pocket indexing multi-material hearth
+- ion-assisted deposition (IAD) add-on for adhesion/density
+- higher capital and HV-supply complexity vs magnetron (DIY-adverse)
+- material utilization similar-poor without close coupling
+
+#### 1.7.2 Energetic & Ionized Routes
+
+**Ion plating & ion-beam methods** (10 terms)
+
+- ion plating (evaporation or sputter source + substrate bias plasma)
+- excellent adhesion via interface mixing (classic decorative watch-case route)
+- ion beam sputter deposition (IBS/IBSD)
+- gridded ion source (Kaufman source)
+- end-Hall ion assist source
+- dual ion beam sputtering (DIBS)
+- low-pressure high-purity films from IBS
+- very low IBS rates and small areas (poor throughput fit)
+- substrate bias severity vs soft-gold resputter loss
+- ionized-PVD umbrella term
+
+**Cathodic arc & droplet control** (9 terms)
+
+- cathodic arc evaporation (high ionization, decorative-coating workhorse)
+- arc spot motion on cathode
+- macroparticle (droplet) emission defect burden
+- filtered cathodic arc (magnetic duct macroparticle filter)
+- steered-arc cathode designs
+- arc route common for TiN-class decorative, rare for pure Au jewelry film
+- duct transmission loss of coating flux
+- arc source robustness vs film smoothness trade
+- droplet density vs premium-finish requirement conflict
+
+#### 1.7.3 Decorative Hard-Coating Comparators (Q9 adjacent)
+
+**Nitride color coatings** (10 terms)
+
+- TiN gold-colored hard coating (imitation gold, HV ~2000 class)
+- ZrN pale-gold/champagne color
+- TiCN, TiAlN darker decorative shades
+- reactive sputtering with N2 (target poisoning control, hysteresis loop)
+- nitrides as wear-resistant underlayer below thin real gold
+- color tuning via stoichiometry
+- brass-color matching tolerance complaints (trade jargon: 'off-color lots')
+- reactive-gas partial pressure control (optical emission feedback)
+- hypoallergenic marketing angle of nitride coats
+- scratch-resistance gap: nitride >> hard gold >> soft gold
+
+**Hybrid stacks & industry color language** (10 terms)
+
+- TiN + Au flash top layer (watch industry standard premium stack)
+- IPG / 'ion-plated gold' trade label
+- PVD-gold marketing term vs actual stack disclosure
+- Swiss NIHS color references (1N-14, 2N-18, 3N, 4N, 5N rose)
+- karat-color equivalence talk (18k-look, 14k-look hues)
+- Au-alloy sputter targets for color control (AuCu rose, AuAg pale)
+- DLC (diamond-like carbon) black topcoat comparator
+- clear ALD/parylene/e-coat lacquer topcoats over gold (scratch and pinhole sealing)
+- vermeil vs gold-filled vs electroplate vs PVD terminology minefield (FTC marking classes)
+- stack drawing callout convention (substrate/interlayer/color layer/top flash, thicknesses in um)
+
+#### 1.7.4 Cheapest-vs-Best Route Economics (Q6/Q11 sputter side)
+
+**Capital & consumable cost structure** (10 terms)
+
+- capital tiers: bell-jar evaporator < DIY magnetron batch < wire feed-through line < turnkey inline coater
+- gold target inventory as locked working capital (g of Au on the shelf)
+- target vs bath-chemistry consumable comparison (sputter target recyclable at refiner; plating bath drag-out losses)
+- gold utilization ranking: close-coupled ICM > planar magnetron > evaporation (geometry dominated)
+- electricity per coated meter (kWh/m) at power and speed
+- argon consumption cost (minor line item)
+- shield reclaim credit in cost model
+- maintenance downtime cost (target change, shield strip, seal service)
+- amortization per piece = (capex/lifetime pieces) + consumables + gold
+- cost-per-micron-square-centimeter as cross-route comparator
+
+**Throughput ceilings & hybrid strategies** (10 terms)
+
+- PVD economic thickness ceiling (flash-to-~1 um; thick builds favor electroplating)
+- hybrid route: sputtered Ti/Au seed + electroplated gold thickening
+- hybrid route: electroplate bulk + PVD color/hard top flash
+- batch spool-in-chamber as cheapest entry, feed-through as scaling step
+- line speed ceiling set by rate x zone length at target power limit
+- duty-cycle (uptime) sensitivity of continuous lines
+- quality ranking vs cost ranking matrix (cheapest way vs best way deliverable)
+- make-vs-buy pivot points for the coater (interface to vacuum-machine-build and suppliers domains)
+- reject-rate term in cost model (defects x gold already spent)
+- scalability path: one wire -> multi-wire ribbon through same zone
+
+---
+
+## 2. Electrochemical & Wet-Chemical Plating (`electro-plating`) — 449 terms
+
+**Scope:** All wet deposition routes for gold on steel wire and formed parts: gold electroplating bath chemistries (cyanide-type always carried with hazard class; cyanide-free sulfite/thiosulfate alternatives named), strike and diffusion-barrier interlayers, electroless and immersion deposition including seed-layer metallization of non-conductors (glass/houseware, Q10), the full wet preparation sequence (degrease, electroclean, pickle, activate, rinse), continuous reel-to-reel wire plating cell design and throughput math, bath analysis/control/gold-inventory management, and the wet-route defect/test vocabulary (burning, porosity, adhesion, hydrogen embrittlement of steel wire). Forms the wet half of the Q6 route comparison and the chemistry core of Q8.
+
+### 2.1 Gold Bath Chemistries & Deposit Metallurgy
+
+#### 2.1.1 Cyanide-type gold electrolytes
+
+**Alkaline cyanide gold baths** (12 terms)
+
+- potassium gold cyanide KAu(CN)2 (acutely toxic, cyanide hazard class)
+- free cyanide concentration g/L
+- potassium cyanide KCN make-up salt (acutely toxic, cyanide hazard class)
+- HCN gas evolution on acidification (lethal gas; keep bath alkaline)
+- pH window >10 for free-cyanide baths
+- potassium carbonate buildup g/L
+- rack vs barrel cyanide gold plating
+- cyanide destruction with alkaline hypochlorite (waste treatment step)
+- gold metal content g/L as Au
+- conducting salt (dipotassium phosphate)
+- 24-karat soft gold deposit
+- cyanide antidote kit and gas monitoring (mandated for cyanide rooms)
+
+**Acid hard-gold baths (jewelry/contact grade)** (12 terms)
+
+- citrate-buffered acid gold bath pH 3.5-5.0
+- KAu(CN)2 stability at mildly acid pH (still cyanide hazard class)
+- cobalt-hardened gold (Au-Co)
+- nickel-hardened gold (Au-Ni)
+- brightener/grain-refiner metal additions ppm
+- operating temperature 30-50 degC
+- cathode current density 0.5-2 A/dm2
+- cathode current efficiency 30-50 % (acid gold, vs ~100 % alkaline)
+- karat rating of hard gold ~23.5k
+- Knoop microhardness 130-200 HK25 (hard gold) vs 60-90 HK25 (soft gold)
+- polymer (C/N) codeposition in hard gold
+- flash gilding 0.05-0.1 um decorative deposit
+
+**Neutral gold baths** (9 terms)
+
+- neutral gold electrolyte pH 6-8
+- phosphate-buffered gold bath
+- 99.99 % purity soft gold for bondability
+- low free-cyanide operation (reduced but not zero cyanide hazard)
+- photoresist-compatible gold plating (neutral pH avoids resist attack)
+- additive-free matte gold deposit
+- fine-grain equiaxed gold microstructure
+- deposit ductility % elongation
+- thermocompression-bondable gold surface
+
+#### 2.1.2 Cyanide-free gold chemistries
+
+**Sulfite gold systems** (12 terms)
+
+- gold(I) sulfite complex Na3Au(SO3)2
+- sodium/ammonium sulfite ligand excess g/L
+- bath disproportionation to metallic gold (sulfite instability failure)
+- bath stabilizers (amine or polyamine class)
+- arsenic-doped sulfite gold grain refiner (arsenic compound: toxic hazard class)
+- thallium grain refiner (thallium salts: highly toxic hazard class)
+- operating pH 8-10 sulfite window
+- sulfite oxidation to sulfate (air-sensitivity, bath aging)
+- bright leveled sulfite gold for decorative work
+- sulfite gold as drop-in cyanide-free alternative
+- spontaneous gold plate-out on tank walls
+- low internal stress sulfite deposits MPa
+
+**Thiosulfate and mixed-ligand systems** (10 terms)
+
+- gold thiosulfate complex Au(S2O3)2 3-
+- mixed sulfite-thiosulfate ligand bath (improved stability)
+- ammonium thiosulfate ligand
+- near-neutral pH operation 6-7.5
+- direct gold on nickel without strike (mixed-ligand claim)
+- sulfur codeposition risk in thiosulfate gold
+- thiourea-based gold stripping/leaching chemistry (thiourea: suspected carcinogen class)
+- electroless-compatible thiosulfate formulations
+- ligand decomposition products (tetrathionate) monitoring
+- shorter bath life vs cyanide systems (trade-off jargon)
+
+#### 2.1.3 Deposit properties, alloys and thickness classes
+
+**Hard gold alloy deposits** (10 terms)
+
+- Au-Co 0.1-0.3 wt% cobalt hard gold
+- Au-Ni hard gold (nickel: skin-sensitizer hazard class)
+- Au-Fe hardened gold
+- wear resistance vs contact resistance trade-off
+- contact resistance milliohm spec
+- hardness vs ductility loss when forming after plating (Q3 relevance)
+- grain-boundary codeposited polymer
+- cobalt-gold magnetic response (QC tell-tale)
+- hard gold cracking on post-plate bending
+- heat-treatment softening of hard gold >200 degC
+
+**Purity, thickness and classification systems** (10 terms)
+
+- ASTM B488 gold coating classification (type/code/grade)
+- MIL-DTL-45204 gold plating specification class
+- ISO 4524 gold coating test-method series
+- microinch thickness jargon (1 uin = 0.0254 um)
+- flash gold 0.05 um / gold plated >= 0.5 um / heavy gold plate 2.5 um trade tiers
+- vermeil definition: >= 2.5 um gold over sterling silver (FTC trade rule class)
+- karat vs fineness of deposit (995, 999 fine)
+- gold-filled vs gold-plated vs rolled-gold trade distinctions
+- underplate callout in plating drawings
+- thickness class vs wear-life relationship (decorative service classes)
+
+**Electrochemical fundamentals of gold deposition** (12 terms)
+
+- Faraday's law deposition calc (mg per A-min for Au ~ 2.04 at 100 % efficiency)
+- cathode current density A/dm2 (ASD jargon)
+- cathode current efficiency %
+- limiting current density and mass-transport control
+- throwing power and macro-throwing distribution
+- Hull cell 267 mL test panel
+- insoluble anode: platinized titanium mesh
+- anode-to-cathode area ratio
+- cell voltage V vs rectifier headroom
+- pulse plating (on/off ms duty cycle) for fine grain
+- periodic reverse plating
+- IR drop and current shielding/robbers (thieves) on cathode
+
+### 2.2 Strike Layers & Diffusion Barriers
+
+#### 2.2.1 Nickel strikes and nickel underplate
+
+**Wood's nickel strike** (10 terms)
+
+- Wood's nickel strike (nickel chloride ~240 g/L + HCl ~120 mL/L)
+- simultaneous activation and deposition on passive stainless
+- low cathode efficiency, high H2 evolution at strike
+- strike current density 3-10 A/dm2
+- strike time 1-4 min, live entry (hot wire into bath)
+- nickel chloride (skin sensitizer, carcinogen category hazard class)
+- hydrochloric acid content (corrosive hazard class)
+- no-rinse transfer strike-to-plate to avoid repassivation
+- sulfamate nickel strike variant
+- strike-then-plate adhesion logic on 304/316 stainless (Q5 relevance)
+
+**Watts and sulfamate nickel underplate** (11 terms)
+
+- Watts nickel bath (nickel sulfate + nickel chloride + boric acid)
+- nickel sulfamate low-stress bath
+- boric acid buffer 30-45 g/L (reprotoxic category hazard class in EU)
+- deposit internal stress MPa (sulfamate near-zero)
+- semi-bright vs bright nickel (sulfur content, leveling)
+- duplex nickel corrosion strategy
+- nickel thickness 1-5 um under decorative gold
+- EU Nickel Directive / EN 1811 nickel release limit ug/cm2/week (jewelry compliance)
+- nickel allergy driver for Pd or bronze alternatives
+- chloride content for anode corrosion
+- nickel anode (sulfur-depolarized rounds in titanium basket)
+
+#### 2.2.2 Copper and palladium interlayers
+
+**Copper strike and copper build** (10 terms)
+
+- cyanide copper strike (copper cyanide bath: cyanide hazard class)
+- alkaline non-cyanide copper strike (cyanide-free alternative, phosphonate/complexed)
+- immersion copper deposition on bare steel in acid copper sulfate (adhesion failure mechanism - why a strike is mandatory)
+- acid copper sulfate leveling build 10-25 um
+- copper as ductile leveling layer before nickel/gold
+- brightener/carrier/leveler three-additive acid copper system
+- copper strike current density and live entry
+- cuprous vs cupric chemistry distinction
+- copper migration/tarnish creep through thin gold
+- periodic reverse copper for smoothness
+
+**Palladium and Pd-Ni barriers** (10 terms)
+
+- palladium strike over nickel or direct on steel
+- Pd-Ni 80/20 alloy barrier deposit
+- palladium as nickel-free hypoallergenic barrier
+- pure Pd hydrogen absorption and microcracking
+- Pd flash 0.1-0.3 um under gold (gold-saving stack)
+- ammoniacal palladium electrolyte class
+- palladium chloride salt (sensitizer hazard class)
+- PGM price exposure vs nickel (cost trade-off, Q11)
+- crack-free Pd deposit spec
+- ENEPIG-style Pd barrier logic transferred to wire
+
+#### 2.2.3 Diffusion-barrier logic and stack design
+
+**Interdiffusion mechanisms** (9 terms)
+
+- Cu-Au interdiffusion at room-to-moderate temperature
+- Kirkendall void formation at interfaces
+- Fe diffusion and rust bleed-through on unbarriered steel
+- nickel as standard diffusion barrier under gold
+- tarnish creepage over gold from base-metal pores
+- post-plate forming heat (Q3) accelerating interdiffusion
+- time-temperature diffusion budget concept
+- solid-state dealloying discoloration of thin gold
+- barrier failure showing as color shift/yellow-to-pink drift
+
+**Layer stack architecture** (10 terms)
+
+- strike -> barrier -> gold canonical sequence on steel
+- steel / Cu strike / Ni 2 um / Au 0.5 um example jewelry stack
+- minimum barrier thickness vs porosity curve
+- pore density falling with total stack thickness
+- duplex barrier (Cu + Ni) for mild steel wire
+- stainless option: Wood's strike + Au direct (nickel-thin stack)
+- stack ductility matching for post-plate ring forming (Q3/Q5)
+- underplate hardness gradient design
+- total stack thickness vs wire diameter tolerance um
+- cost per micron per layer comparison (Q11 input)
+
+### 2.3 Surface Preparation & Pretreatment Chemistry
+
+#### 2.3.1 Degreasing and cleaning
+
+**Soak and ultrasonic cleaning** (11 terms)
+
+- alkaline soak cleaner 40-80 g/L builders
+- sodium hydroxide (corrosive hazard class)
+- sodium metasilicate / phosphate / carbonate builder system
+- nonionic surfactant wetting package
+- ultrasonic cleaning 25-40 kHz cavitation
+- drawing-lubricant removal from as-drawn steel wire (line-specific soil)
+- cleaner operating temperature 50-80 degC
+- water-break test (unbroken water film = clean)
+- silicate carryover causing adhesion failure
+- oil-splitting vs emulsifying cleaner distinction
+- cleaner titration (free vs total alkalinity)
+
+**Electrocleaning** (10 terms)
+
+- anodic (reverse) electrocleaning - standard for steel
+- cathodic (direct) electrocleaning and its smut/metal-film risk
+- periodic-reverse electrocleaning
+- electrocleaner current density 3-10 A/dm2
+- gas scrubbing action of O2/H2 evolution
+- smut (carbon/iron residue) and desmutting
+- cathodic cleaning hydrogen-charging risk on spring steel (embrittlement link)
+- steel vs stainless electroclean polarity practice
+- in-line electrocleaning cell on wire (reel-to-reel tie-in)
+- cleaner drag-in poisoning of downstream acid
+
+#### 2.3.2 Pickling and activation
+
+**Acid pickling of mild/carbon steel** (10 terms)
+
+- hydrochloric acid pickle 10-30 vol% (corrosive hazard class; HCl fume)
+- sulfuric acid pickle 5-15 vol% heated (corrosive hazard class)
+- pickling inhibitor to protect base metal (over-pickling control)
+- mill scale vs drawing-oxide removal
+- over-pickling pitting and hydrogen charging of wire
+- smut after pickling high-carbon steel
+- desmut dip (mixed acid or cyanide-free desmutter)
+- iron content buildup in pickle g/L (dump criterion)
+- acid activation dip 5-10 % just before strike
+- flash rusting in transfer between tanks (rinse-time discipline)
+
+**Stainless steel activation** (10 terms)
+
+- passive Cr2O3 film on 304/316 (why plating peels without activation)
+- Wood's nickel strike as combined activation (cross-ref)
+- cathodic activation in sulfuric acid
+- hydrochloric acid immersion activation of stainless
+- repassivation within seconds in air (transfer-time limit)
+- nickel strike live-entry requirement
+- anodic etch option for stainless
+- activation verification: strike adhesion bend coupon
+- sulfamic vs hydrochloric activation choice
+- 316L vs 304 activation aggressiveness difference (Q5 relevance)
+
+#### 2.3.3 Rinsing and water quality
+
+**Rinse engineering** (10 terms)
+
+- counterflow (cascade) rinse tanks 2-3 stage
+- drag-out volume mL per rack / per meter of wire
+- rinse criterion conductivity uS/cm setpoint
+- dead rinse (static drag-out recovery) before gold tank
+- spray rinse vs immersion rinse on wire
+- DI water quality MOhm-cm for final rinse
+- rinse water flow economy L/min vs dilution ratio
+- drag-in contamination chain between tanks
+- hot final rinse for spot-free drying
+- rinse-tank air agitation
+
+**Wastewater and chemical hygiene** (10 terms)
+
+- cyanide-bearing rinse segregation (never mix with acid lines - HCN hazard)
+- alkaline chlorination cyanide destruction step
+- heavy-metal precipitation (hydroxide) treatment
+- nickel-bearing waste classification
+- pH neutralization before discharge (local discharge-permit class)
+- spent pickle liquor disposal (hazardous waste class)
+- fume extraction/scrubbing over acid and cyanide tanks
+- secondary containment / bunding of tanks
+- PPE set for plating room (face shield, gauntlets, apron)
+- SDS-driven chemical storage segregation (acids vs cyanides)
+
+### 2.4 Electroless & Immersion Deposition
+
+#### 2.4.1 Electroless nickel (autocatalytic)
+
+**Ni-P bath chemistry and operation** (12 terms)
+
+- sodium hypophosphite reducing agent
+- nickel sulfate source salt (sensitizer/carcinogen category hazard class)
+- high-P (10-12 %) vs mid-P vs low-P Ni-P deposit classes
+- plating rate 10-20 um/h typical
+- bath operating temperature 85-92 degC, pH 4.5-5.0
+- metal turnover (MTO) bath-life unit
+- stabilizer (trace, historically lead - now lead-free class)
+- orthophosphite byproduct accumulation g/L
+- uniform coating regardless of geometry (no current distribution)
+- electroless nickel as solderable/platable barrier before gold
+- bath plate-out on tank walls / spontaneous decomposition
+- as-plated vs hardened (400 degC bake) Ni-P hardness HV
+
+**Electroless deposit engineering** (10 terms)
+
+- amorphous high-P Ni-P corrosion barrier
+- Ni-B (borohydride/DMAB-reduced) variant
+- compressive vs tensile stress vs P content
+- phosphorus content by XRF %
+- EN over mild steel wire as pre-gold barrier option (Q5/Q6)
+- EN adhesion bake 2-4 h at 150-200 degC
+- electroless nickel ductility limit for post-forming (low elongation caution, Q3)
+- nodulation defect in EN
+- skip plating on passive spots
+- EN bath poisoning by Zn/Pb drag-in ppm
+
+#### 2.4.2 Immersion and autocatalytic gold
+
+**Immersion (displacement) gold** (10 terms)
+
+- galvanic displacement mechanism (substrate metal dissolves, Au deposits)
+- self-limiting thickness ~0.05-0.15 um
+- immersion gold over nickel (ENIG-style stack)
+- black pad / hyper-corrosion of nickel under immersion gold (defect)
+- cyanide-free immersion gold formulations (sulfite/thiosulfate class)
+- porosity of ultrathin immersion gold
+- immersion gold as color flash on houseware (cheapest-tier option, Q6/Q11)
+- nickel corrosion spikes at grain boundaries
+- bath metal-loading and turnover limit
+- reduction-assisted immersion gold (RAIG) hybrid class
+
+**Autocatalytic (electroless) gold** (9 terms)
+
+- true autocatalytic gold with chemical reducer
+- borohydride / DMAB reducing agents (flammable/toxic hazard class)
+- thick electroless gold 0.3-1 um capability
+- ENEPIG stack (electroless Ni / electroless Pd / immersion Au)
+- electroless Pd layer 0.05-0.3 um
+- bath stability vs spontaneous plate-out trade
+- hydrazine-reduced systems (hydrazine: carcinogen/toxic hazard class - avoid DIY)
+- gold reduction on catalytic Ni/Pd surface only (selectivity)
+- cost per m2 vs electrolytic gold (Q11 comparison term)
+
+#### 2.4.3 Metallizing non-conductors (glass, ceramics, houseware seed layers)
+
+**Sensitize-activate-seed sequence** (11 terms)
+
+- stannous chloride SnCl2 sensitizer dip
+- palladium chloride activator (Sn/Pd colloidal catalyst)
+- one-step colloidal Pd-Sn activator commercial class
+- electroless copper or nickel seed on catalyzed glass
+- silver mirroring (Tollens ammoniacal silver - explosive fulminate risk if stored: hazard note)
+- conductive silver lacquer / paint seed (low-tech route)
+- graphite conductivizing (electroforming tradition)
+- surface roughening/etch of glass (HF-based etch: highly toxic corrosive hazard class - name only, avoid DIY)
+- adhesion on glass limited to mechanical/chemical keying (why plated glassware wears)
+- seed layer + electrolytic gold build sequence for cups/spoons (Q10)
+- food-contact caveat: plated drinkware coating compliance class (FDA/LFGB-type rules)
+
+**Route choice for houseware substrates** (10 terms)
+
+- stainless spoon: direct electroplate route (conductive, easiest)
+- glass cup: PVD or seed-then-plate only (non-conductive - physics constraint)
+- brass/zinc-diecast houseware: cyanide or non-cyanide copper strike first
+- aluminum houseware: zincate pretreatment step
+- large-area current distribution and conforming anodes
+- rack design and contact marks on visible ware
+- gold thickness economy on large ware cm2 (Q11 driver)
+- lacquer topcoat on decorative houseware gold
+- tarnish/handling-corrosion testing for houseware
+- wear pattern at lip/handle contact zones
+
+### 2.5 Continuous Reel-to-Reel Wire Plating
+
+#### 2.5.1 Line and cell architecture
+
+**Plating cell design for moving wire** (11 terms)
+
+- horizontal in-line cell train (clean-rinse-pickle-strike-plate-rinse-dry)
+- multi-pass wire routing (sheave towers) to extend dwell time
+- cell length m vs line speed m/min = dwell time s
+- flooded cell with weir overflow
+- jet/impingement electrolyte flow onto wire
+- anode geometry: concentric tube anode around wire
+- platinized titanium anode segments per cell
+- inter-cell wiper/seal to limit solution carryover
+- solution return sump and pump per module
+- modular tank materials: polypropylene/PVDF (chemical resistance)
+- strike cell placed immediately after activation (no-dry transfer)
+
+**Wire handling: payoff, tension, take-up** (10 terms)
+
+- pay-off spool with brake
+- dancer-arm tension control
+- wire tension setpoint cN (avoid stretch of fine wire)
+- capstan drive vs take-up-driven line
+- traverse (level-wind) take-up spooling
+- guide sheave material (ceramic/polymer) to protect fresh gold (Q2)
+- touchless catenary spans through cells
+- wire diameter range mm and speed scaling
+- snap/weld splice practice between spools
+- spool-to-spool continuous run hours (autonomy metric, Q7)
+
+#### 2.5.2 Electrical contact to moving wire
+
+**Contact methods** (10 terms)
+
+- sliding brush contact (carbon/metal) on wire
+- contact roller/sheave (rotating cathode contact)
+- contact before cell, in dry zone (avoid sparking in electrolyte)
+- arcing/spark burn marks at poor contact (defect)
+- mercury trough contact (historical - mercury toxic hazard class, obsolete)
+- liquid/electrolytic contact cell concept
+- bipolar (contactless) plating: wire polarized between two anodes
+- contact wear and gold scrape-off at contact point (Q2 risk)
+- voltage drop along thin wire (IR limit on cell spacing)
+- multiple distributed contacts for long lines
+
+**Current density and thickness math on moving wire** (10 terms)
+
+- wire surface area = pi x d x length (cm2 per m)
+- current per cell A = J x area in cell
+- thickness um = f(J, dwell, current efficiency, alloy density)
+- gold deposition constant ~2 mg/A-min basis for calc
+- line speed vs thickness inverse proportionality
+- current ramp across successive cells (strike low, build higher)
+- burning ceiling: J above limiting current on fast wire
+- flow-enhanced limiting current (jet cells allow higher A/dm2)
+- thickness CV % along wire length (uniformity spec)
+- amp-hour counter for gold consumption tracking (Q11 tie-in)
+
+#### 2.5.3 In-line rinse, dry and inspection
+
+**Exit treatment of plated wire** (8 terms)
+
+- cascade spray rinse boxes between cells
+- air-knife / air wipe water stripping
+- wiper die (soft) drag-out control on wire
+- hot-air drying tunnel
+- anti-tarnish/protective dip option before take-up
+- water spotting defect on dried wire
+- take-up under clean cover (fresh gold scratch protection, Q2)
+- drag-out per km of wire mL (gold-loss vector)
+
+**In-line QC on wire** (8 terms)
+
+- in-line XRF thickness gauge on running wire
+- eddy-current coating monitor class
+- continuity/holiday detection on coated wire
+- diameter laser micrometer um
+- surface camera inspection for burn/dull bands
+- periodic cut-sample coulometric thickness check
+- control chart on thickness (SPC jargon)
+- spool traceability lot marking
+
+### 2.6 Bath Control, Analysis & Gold Inventory
+
+#### 2.6.1 Bath analysis
+
+**Wet-chemical and instrumental analysis** (11 terms)
+
+- gold content by AAS / ICP-OES g/L
+- titration of free cyanide (silver nitrate method - cyanide handling hazard)
+- pH meter with calibrated buffers daily
+- Baume / specific gravity check of bath
+- cobalt/nickel hardener concentration ppm
+- conducting-salt concentration titration
+- carbonate content titration in cyanide baths
+- sulfite concentration iodometric titration
+- Hull cell panel throw/appearance diagnosis
+- cyclic voltammetric stripping (CVS) additive analysis class
+- bath analysis logbook cadence (per shift/day)
+
+**Replenishment and dosing** (8 terms)
+
+- gold replenisher salt additions g per A-h drawn
+- amp-hour based auto-dosing pump
+- brightener burn-out rate mL per kA-h
+- pH correction with dilute KOH/acid (never strong acid into cyanide bath - HCN hazard)
+- make-up water level control (evaporation)
+- hardener metal trim additions
+- wetting agent addition on pitting evidence
+- bath age tracking in MTO/A-h per L
+
+#### 2.6.2 Contamination and purification
+
+**Contamination sources and limits** (8 terms)
+
+- iron drag-in from steel wire ppm limit
+- copper/zinc metallic contamination ppm
+- organic contamination from cleaner/resist drag-in
+- chloride poisoning of gold baths
+- carbonate buildup dulling deposits (cyanide baths)
+- airborne dust/oil contamination of open tanks
+- contaminated-strike symptom: peeling gold downstream
+- drag-in audit along the line (root-cause method)
+
+**Purification operations** (8 terms)
+
+- dummy plating at low current density (metallic-impurity plate-out)
+- activated-carbon treatment for organics
+- carbon pack in filter chamber
+- continuous filtration 1-5 um cartridge, 2-5 turnovers/h
+- filter aid / precoat practice
+- freeze-out of carbonates (chilling cyanide bath)
+- bath decant and rebuild decision criteria
+- anode bag maintenance (where soluble anodes used)
+
+#### 2.6.3 Gold inventory, recovery and security
+
+**Gold accounting** (8 terms)
+
+- gold in solution troy oz / g inventory ledger
+- amp-hour vs gold-added mass balance
+- drag-out loss g per 1000 pieces (Q11 cost line)
+- plated-weight verification by weigh-before/after mg
+- scrap and reject gold stream tracking
+- monthly gold reconciliation audit
+- gold mass per piece mg (cost-per-piece basis, Q11)
+- insurance/security handling of KAu(CN)2 stock (high-value toxic store)
+
+**Gold recovery operations** (8 terms)
+
+- drag-out (dead) rinse recovery back-dosing
+- ion-exchange resin column gold scavenging
+- electrowinning cell on rinse waters
+- steel-wool cementation recovery (legacy method)
+- spent-bath refining via toll refiner
+- resin incineration/refining loop
+- filter/carbon ashing for gold recovery
+- recovered-gold assay and credit terms (refiner jargon)
+
+### 2.7 Wet-Route Defects, Substrate Damage & Acceptance Testing
+
+#### 2.7.1 Deposit appearance and coverage defects
+
+**Current/chemistry-driven defects** (10 terms)
+
+- burning (dark, powdery high-CD deposit)
+- dull/hazy deposit (organic contamination or additive imbalance)
+- skip plating / bare spots (passive surface, poor activation)
+- pitting from clinging hydrogen bubbles
+- nodules and roughness from particulate in bath
+- treeing/dendrites at wire edges and high-current tips
+- step plating band at solution line
+- color drift (rose/pale) from hardener imbalance
+- laminated deposit from current interruption
+- orange peel from substrate condition
+
+**Adhesion failures** (9 terms)
+
+- blistering (pre-plate cleaning failure)
+- peeling at strike interface (repassivated stainless)
+- flaking on bend (post-forming delamination, Q3)
+- tape adhesion test
+- bend-to-break adhesion test on wire
+- thermal shock adhesion test
+- ASTM B571 adhesion test methods class
+- adhesion vs immersion-deposit contamination (copper-on-steel classic)
+- chisel/scrape test (thick deposits)
+
+#### 2.7.2 Porosity and corrosion performance
+
+**Porosity testing** (8 terms)
+
+- nitric acid vapor porosity test (ASTM B735 class) (nitric acid: oxidizing corrosive hazard)
+- flowers-of-sulfur / sulfur vapor porosity test
+- electrographic porosity print method
+- pore density pores/cm2 metric
+- porosity vs thickness exponential decline rule-of-thumb
+- gel-bulk electrolyte porosity indicators
+- pore corrosion product creep over gold
+- pore sealing / post-dip sealant class
+
+**Corrosion and wear acceptance tests** (9 terms)
+
+- neutral salt spray exposure (ASTM B117 class) hours-to-red-rust
+- artificial sweat test for jewelry (ISO artificial perspiration class)
+- mixed flowing gas (MFG) test class
+- Taber abrasion / abrasive wear cycles
+- pencil hardness on lacquered ware
+- crockmeter rub test (decorative wear)
+- thiocetamide tarnish test class
+- wear-through-to-nickel endpoint definition
+- scratch resistance vs hard-gold/topcoat choice (Q9 tie-in)
+
+#### 2.7.3 Hydrogen embrittlement of steel wire
+
+**Mechanism and susceptibility** (8 terms)
+
+- atomic hydrogen uptake during pickling and cathodic steps
+- high-strength steel susceptibility threshold ~>= HRC 32 / >1000 MPa
+- spring steel (music wire) high susceptibility (Q5 substrate caution)
+- delayed brittle fracture under sustained load
+- internal vs environmental hydrogen embrittlement distinction
+- hydrogen traps at inclusions/dislocations
+- cadmium-plating notoriety (historical reference case)
+- austenitic stainless 304/316 low susceptibility (Q5 advantage)
+
+**Prevention and relief** (9 terms)
+
+- embrittlement relief bake 190-220 degC, 2-24 h
+- bake-within-4-hours-of-plating rule of practice
+- inhibited pickling to cut hydrogen charging
+- anodic-only electrocleaning for hardened steel
+- mechanical (blast) descaling as acid-free alternative
+- ASTM F519 hydrogen embrittlement test class (notched specimen sustained load)
+- ASTM B850 post-plate baking guideline class
+- bake-before-gold ordering (bake can discolor gold - sequence logic)
+- lot-based embrittlement coupon testing
+
+#### 2.7.4 Thickness and composition verification
+
+**Measurement methods** (9 terms)
+
+- XRF coating thickness measurement (ASTM B568 class)
+- coulometric (anodic dissolution) thickness test
+- cross-section metallographic measurement (microscopy, mounted/polished)
+- beta-backscatter gauge (legacy, sealed-source regulatory note)
+- microhardness HK25 on cross-section
+- layer-by-layer XRF on multi-stack (Au/Ni/Cu on Fe)
+- significant surface definition on drawings
+- calibration standards (certified thickness foils)
+- gravimetric strip-and-weigh thickness method
+
+**Composition assay and pre-production acceptance** (9 terms)
+
+- gold fineness assay of stripped deposit (995/999 fine)
+- hardener content in deposit by XRF/ICP wt%
+- EN 1811-class nickel release check on finished jewelry
+- minimum-thickness sampling plan (AQL jargon)
+- first-article inspection report (FAIR jargon)
+- pre-production acceptance test package (Q8 gate: thickness + adhesion + porosity + embrittlement)
+- lot certificate of conformance to ASTM B488 type/code/grade
+- retained reference sample per lot practice
+- process capability run before production release (Cpk jargon)
+
+---
+
+## 3. Vacuum Engineering & the Feed-Through Machine Build (`vacuum-machine-build`) — 593 terms
+
+**Scope:** Engineering and construction of the owner's central concept: a small, home-buildable continuous feed-through vacuum coater in which steel wire enters and exits a round chamber through elastomer seals while being sputter-coated. Owns vacuum fundamentals (pressure regimes, gas load, pumpdown), pumps/gauges/plumbing, the moving-wire feedthrough problem (wiper seals, differential pumping, load-lock alternatives — the heart of Q1), exit-side coating-protection hardware and in-vacuum wire transport (Q2), sputtering power supplies and plasma electrical systems including the magnetron cathode as hardware, and the DIY sourcing/assembly/commissioning path (hardware side of Q7). Deposition physics and film growth belong to the pvd-sputtering domain; wet chemistry belongs to electro-plating.
+
+### 3.1 Vacuum Fundamentals & Gas Behavior
+
+#### 3.1.1 Pressure Regimes, Units & Flow Physics
+
+**Pressure units and vacuum ranges** (14 terms)
+
+- Torr / mbar / Pascal unit conversion (1 Torr = 133.32 Pa)
+- rough vacuum regime (760–1 Torr)
+- medium vacuum regime (1–1e-3 Torr)
+- high vacuum regime (1e-3–1e-9 Torr)
+- sputtering process window (1–100 mTorr argon)
+- base pressure vs process pressure distinction
+- ultimate pressure of a pump
+- mean free path (cm) vs pressure
+- Knudsen number
+- viscous (continuum) flow regime
+- transitional flow regime
+- molecular flow regime
+- partial pressure vs total pressure
+- standard atmosphere (1013 mbar) as chamber load reference
+
+**Gas flow, throughput and conductance** (13 terms)
+
+- throughput Q (Torr·L/s or mbar·L/s)
+- pumping speed S (L/s, m3/h, cfm)
+- conductance C (L/s)
+- series conductance addition (1/C_total = sum 1/C_i)
+- effective pumping speed S_eff = S·C/(S+C)
+- molecular-flow orifice conductance (~11.6 L/s per cm2 for air)
+- long-tube conductance scaling (proportional to D^3/L in molecular flow)
+- annular-gap conductance (wire inside close-fit tube)
+- choked (sonic) flow through an orifice
+- gas species correction (argon vs nitrogen conductance)
+- conductance-limited pumping
+- continuity of throughput along a pumping line
+- chamber volume V (liters) in pumpdown math
+
+#### 3.1.2 Gas Load: Outgassing, Permeation & Leaks
+
+**Outgassing and internal gas sources** (14 terms)
+
+- water vapor desorption from chamber walls
+- outgassing rate (Torr·L/s per cm2)
+- specific outgassing of elastomers vs stainless steel
+- virtual leak (trapped volume)
+- vented (through-drilled) screws in blind holes
+- permeation through elastomer O-rings
+- bakeout temperature limits per seal material (°C)
+- fingerprint / hydrocarbon contamination
+- solvent wipe-down (IPA, acetone) — acetone flammable, hazard class flammable liquid
+- lint-free wipes and nitrile gloves protocol
+- monolayer formation time (~1 s at 1e-6 Torr)
+- first pumpdown conditioning of a new chamber
+- dry-nitrogen purge and backfill
+- surface area dominance over volume in high vacuum
+
+**Leaks and leak detection** (14 terms)
+
+- real leak vs virtual leak diagnosis
+- leak rate units (mbar·L/s, atm·cc/s)
+- rate-of-rise (leak-up) test
+- helium mass spectrometer leak detector (MSLD)
+- helium spray-probe technique
+- sniffer-mode leak detection
+- alcohol/acetone spritz method (gauge-dip response)
+- soap-bubble test under positive pressure
+- residual gas analyzer (RGA)
+- air-signature diagnosis (N2:O2 ratio ~4:1 indicates real leak)
+- acceptable integral leak rate class for sputtering systems (~1e-5 mbar·L/s order)
+- leak vs outgassing discrimination by rate-of-rise curve shape
+- gross leak vs fine leak
+- flange re-torque and O-ring re-seat as first remedy
+
+#### 3.1.3 Pumpdown Behavior & Residual Atmosphere
+
+**Pumpdown time and curves** (12 terms)
+
+- pumpdown equation t = (V/S)·ln(P1/P2)
+- volume-dominated vs surface-dominated pumpdown regimes
+- roughing time to crossover
+- turbo start / crossover pressure (~1e-1 Torr class)
+- base-pressure plateau
+- water-vapor-limited pumpdown tail
+- pump-purge cycling to displace water vapor
+- chamber heating lamps to accelerate desorption
+- pumpdown benchmark curve as machine health record
+- vent-to-atmosphere with dry gas to keep walls dry
+- time-to-base as commissioning metric (minutes/hours)
+- S(P) pumping-speed curve of a pump
+
+**Residual gas effects on the coating process** (12 terms)
+
+- base-pressure-to-process-pressure ratio
+- impurity flux vs deposition flux competition
+- oxygen and water partial pressure effect on film adhesion
+- hydrocarbon (pump oil) contamination of substrate
+- argon purity grade (99.999% / 5N process gas)
+- gas line purging before process
+- regulator and line dead-volume contamination
+- getter action of freshly sputtered metal
+- RGA scan before deposition as go/no-go check
+- process gas manifold leak-tightness
+- moisture spike after venting
+- background pressure drift during long runs
+
+### 3.2 Pumps, Gauges & Vacuum Plumbing
+
+#### 3.2.1 Roughing Pumps
+
+**Rotary vane and dry roughing pumps** (14 terms)
+
+- two-stage rotary vane pump
+- rotary vane ultimate pressure (~1e-3 Torr class)
+- pumping speed rating (m3/h, cfm, L/min)
+- gas ballast valve (water-vapor handling)
+- oil backstreaming into the chamber
+- foreline trap (zeolite / molecular sieve)
+- vacuum pump oil grades (mineral vs synthetic)
+- oil mist / exhaust filter
+- direct-drive vs belt-drive pump
+- dry scroll pump
+- scroll tip-seal wear and dust
+- diaphragm pump (oil-free backing)
+- HVAC/refrigeration service pump as budget roughing pump
+- pump ultimate vs blank-off pressure verification
+
+**Roughing pump operation and protection** (12 terms)
+
+- anti-suckback valve (oil suck-back on power loss)
+- automatic isolation valve on pump failure
+- oil level sight glass check
+- oil change interval and milky-oil (water) symptom
+- pump warm-up effect on ultimate pressure
+- roughing line diameter sizing
+- foreline (backing line) vs roughing line roles
+- pump exhaust venting to outside / oil mist hazard
+- solenoid-valve interlocked venting
+- pumping flammable or oxidizing gases prohibition on oil pumps
+- vibration isolation bellows on pump line
+- pump runtime hour logging
+
+#### 3.2.2 High-Vacuum Pumps
+
+**Turbomolecular pumps** (14 terms)
+
+- turbomolecular pump (TMP)
+- rotor speed (tens of krpm)
+- compression ratio vs gas species (low for H2, high for N2)
+- backing (foreline) pressure requirement
+- turbo controller and ramp-up time
+- maglev vs ceramic-bearing turbo
+- hybrid turbo-drag pump (Holweck stage) with higher foreline tolerance
+- soft-vent valve and maximum venting rate
+- turbo crash / rotor touchdown failure
+- foreign-object damage (FOD) screen at inlet
+- air vs water cooling of turbo body
+- throttled turbo operation at mTorr sputtering pressures
+- gate/throttle valve between chamber and turbo
+- used laboratory-surplus turbo market as DIY source
+
+**Diffusion pumps and other HV options** (12 terms)
+
+- oil diffusion pump (cheap high-vacuum workhorse)
+- silicone diffusion-pump fluid (DC-704/705 class)
+- diffusion pump backstreaming
+- water-cooled chevron baffle / cold cap
+- critical backing pressure of a diffusion pump
+- diffusion pump warm-up and cool-down time
+- fluid cracking from air exposure while hot
+- liquid-nitrogen cold trap
+- sorption (zeolite) pump
+- cryopump and regeneration cycle
+- diffusion vs turbo trade-off for a DIY sputter coater
+- heater wattage and boiler condition monitoring
+
+#### 3.2.3 Vacuum Gauges & Pressure Measurement
+
+**Rough and medium vacuum gauges** (12 terms)
+
+- Pirani gauge (thermal conductivity)
+- thermocouple gauge
+- convection-enhanced Pirani (Convectron-class)
+- gas-species dependence of thermal gauges
+- capacitance manometer (gas-independent, process control grade)
+- piezoresistive rough gauge
+- Bourdon dial gauge (atmosphere-to-rough only)
+- gauge zero and atmosphere calibration points
+- gauge tube contamination drift
+- analog vs digital gauge controller outputs
+- setpoint relays for interlocks
+- gauge argon correction factor
+
+**High-vacuum gauges** (12 terms)
+
+- hot-cathode ionization gauge (Bayard-Alpert)
+- ion gauge filament burnout above ~1e-3 Torr
+- cold-cathode gauge (Penning / inverted magnetron)
+- cold-cathode ignition delay at low pressure
+- wide-range combination gauge (Pirani + cold cathode)
+- gauge sensitivity factor per gas species
+- gauge placement away from plasma and magnetron stray field
+- X-ray limit of hot-cathode gauges
+- degas function of ion gauges
+- sputter-contamination of gauge electrodes
+- gauge controller emission current setting
+- crossover interlock between rough and HV gauges
+
+#### 3.2.4 Valves, Flanges & Gas Delivery
+
+**Flanges and fittings** (14 terms)
+
+- ISO-KF (QF) quick flange system (KF16/25/40/50)
+- centering ring and O-ring with hinge clamp
+- ISO-K claw-clamp flange (larger bores)
+- CF (ConFlat) knife-edge flange with copper gasket
+- CF bolt-torque star pattern
+- flexible stainless bellows hose
+- NPT threads with PTFE tape (virtual-leak caution)
+- compression (Swagelok-style) tube fittings
+- VCR metal-gasket face-seal fittings
+- blank-off flange for subsystem isolation testing
+- adapter reducers between flange standards
+- sanitary tri-clamp ferrules as budget KF substitute
+- weld stub / half nipple
+- flange scratch across sealing face defect
+
+**Valves and process gas control** (14 terms)
+
+- gate valve (chamber isolation)
+- butterfly throttle valve (process pressure control)
+- right-angle block valve
+- fine metering / needle valve for argon admit
+- up-to-air vent valve
+- normally-closed solenoid gas valve (fail-safe)
+- mass flow controller (MFC, sccm)
+- MFC gas correction factor
+- upstream vs downstream pressure control
+- argon cylinder regulator (two-stage)
+- gas line materials (stainless vs copper vs polymer permeation)
+- throttled-pumping sputter mode
+- burst disc / overpressure relief on backfilled chambers
+- valve seat elastomer compatibility
+
+### 3.3 Moving-Wire Feedthrough & Dynamic Sealing (Q1 core)
+
+#### 3.3.1 Elastomer Wiper-Seal Approach
+
+**Wiper seal design for a moving wire** (16 terms)
+
+- dynamic seal vs static seal distinction
+- elastomer wiper seal on axially moving wire
+- O-ring squeeze percentage on the wire (compression %)
+- Shore A durometer selection for wiper seals
+- spring-energized PTFE lip seal
+- PTFE ferrule / gland seal
+- felt pre-wiper for dust exclusion
+- seal gland (housing) geometry and retention
+- wire drag force through seals (N)
+- stick-slip friction of elastomer on wire
+- seal wear rate vs wire surface roughness
+- wire surface abrading the seal (drawn-wire die lines)
+- stacked seals with pumped interspace
+- seal leak rate as function of wire diameter tolerance
+- frictional heating of the seal at line speed
+- seal replacement as scheduled consumable
+
+**Seal materials and lubrication** (13 terms)
+
+- Buna-N (nitrile, NBR) O-ring — cheap default
+- Viton (FKM) — lower outgassing, higher temperature
+- silicone elastomer — high gas permeation caveat
+- PTFE — low friction, cold-flow (creep) caveat
+- polyurethane — abrasion resistance
+- compression set of elastomers
+- elastomer permeation rate ranking
+- high-vacuum grease (Apiezon-class hydrocarbon)
+- silicone grease migration and plasma contamination caution
+- dry-film lubricants (MoS2, PTFE spray) outgassing caution
+- O-ring shelf life and ozone cracking
+- durometer softening at temperature
+- gold pickup onto seal lips (exit-side contamination)
+
+#### 3.3.2 Differential Pumping (the canonical solution)
+
+**Staged pressure reduction design** (15 terms)
+
+- differential pumping stage
+- close-clearance capillary tube around the wire
+- annulus conductance calculation (wire in tube)
+- aperture / orifice plate sized to wire diameter
+- pressure ratio achievable per stage
+- number of stages from atmosphere to mTorr
+- dedicated roughing pump per intermediate stage
+- interstage plenum volume
+- gas load entering through the wire entry capillary (Torr·L/s)
+- sacrificial guide bushing at each aperture
+- wire centering to avoid aperture contact
+- diminishing-returns staging economics
+- entry/exit snorkel tube length vs conductance
+- stage pressure monitoring gauges
+- atmosphere-side air-knife / gas curtain
+
+**Industrial precedent: air-to-vacuum strip and wire lines** (12 terms)
+
+- air-to-air continuous vacuum coating line
+- in-line wire PVD metallizing precedent
+- roll-to-roll (web) vacuum coater architecture
+- continuous galvanizing line analogy (wet, not vacuum)
+- seal-roll / nip-roll entry systems for strip
+- vacuum sluice / pressure-stage tunnel
+- wire enamel and metallizing line layouts
+- throughput coupling: line speed vs stage gas load
+- entrance/exit chamber vestibules
+- boundary-layer gas dragged in by moving wire
+- moving-surface gas carry-in effect
+- commercial differential-seal cartridge assemblies (component category)
+
+#### 3.3.3 Load-Lock & In-Vacuum-Spool Alternatives
+
+**Batch and load-lock architectures** (12 terms)
+
+- load-lock chamber with transfer valve
+- pump-purge load-lock cycle time
+- spool-to-spool fully-in-vacuum layout (both reels inside chamber — eliminates the moving-wire seal entirely)
+- batch coil coating of pre-wound spools
+- shadowing of wire turns on a wound spool (coverage defect)
+- semi-continuous indexed advance
+- throughput penalty of batch venting
+- vent-pump cycle wear on seals
+- cassette / magazine substrate handling
+- isolation gate between lock and process chamber
+- rough-then-crossover sequencing of the lock
+- load-lock as stepping stone before continuous feed-through
+
+**Rotary motion coupling for in-vacuum spools** (12 terms)
+
+- ferrofluidic rotary feedthrough
+- magnetically coupled rotary drive (through-wall, zero leak)
+- O-ring-sealed rotating shaft (Wilson seal) leak trade-off
+- in-vacuum stepper motor (vacuum-prepared, low-outgassing)
+- motor winding outgassing and heating in vacuum
+- dry-lubricated or ceramic bearings for vacuum service
+- bearing lubricant vapor pressure requirement
+- torque transmission limit of magnetic couplings
+- encoder feedback through instrumentation feedthrough
+- rotary feedthrough speed and life ratings
+- eddy-current drag in magnetic couplings
+- drive-shaft alignment and bellows couplings
+
+### 3.4 Chamber Design & DIY Fabrication
+
+#### 3.4.1 Geometry & Structural Design
+
+**Shape, loads and sizing** (13 terms)
+
+- atmospheric pressure load (~10 N/cm2 on every surface)
+- cylindrical shell under external pressure (buckling, not hoop tension)
+- flat end-plate thickness sizing and deflection
+- dished / torispherical head advantage
+- stiffening rings on thin cylinders
+- viewport implosion hazard and guard screen
+- chamber volume minimization for fast pumpdown
+- pipe-as-chamber concept for an in-line wire coater
+- port placement for pumping speed at the process zone
+- internal fixture clearance to plasma dark space
+- center-of-gravity and lifting points for the vessel
+- vacuum vessel vs pressure vessel code distinction
+- safety factor on external-pressure collapse
+
+**Chamber materials** (13 terms)
+
+- 304/304L stainless steel chamber standard
+- 6061 aluminum chamber (easy machining, softer seal faces)
+- mild steel chamber — rust and outgassing penalty
+- borosilicate glass bell jar
+- acrylic/polycarbonate chamber — rough vacuum only, permeation and crazing
+- anodized aluminum outgassing caveat
+- surface finish Ra requirement on sealing faces
+- electropolished internal surfaces
+- weld porosity as virtual-leak source
+- leaded free-machining brass and zinc plating outgassing cautions
+- galling of stainless threads (anti-seize with vacuum-safe practice)
+- magnetic vs non-magnetic material choice near the magnetron
+- thermal expansion mismatch at sealed joints
+
+#### 3.4.2 Ports, Static Seals & Penetrations
+
+**Static O-ring and gasket sealing** (14 terms)
+
+- O-ring groove design (rectangular vs dovetail)
+- groove fill percentage (~70–85%)
+- static O-ring squeeze (15–30%)
+- surface finish across (not along) the seal line
+- L-gasket bell-jar base seal
+- wire-seal and metal C-ring options for heat
+- copper gasket CF sealing for bakeable ports
+- O-ring twist during installation defect
+- seal extrusion into the gap under load
+- double O-ring with pumped interspace on large doors
+- gasket witness mark inspection
+- greased vs dry O-ring policy
+- port weld-in half nipples (KF/CF stubs)
+- re-usable centering rings vs disposable gaskets
+
+**Electrical, motion and service feedthroughs** (12 terms)
+
+- high-voltage power feedthrough (ceramic-insulated)
+- feedthrough voltage and current ratings (kV, A)
+- instrumentation feedthrough (D-sub, BNC, thermocouple types)
+- thermocouple feedthrough with matched pins
+- water-cooling feedthrough for the magnetron
+- gas injection feedthrough / internal gas ring
+- linear motion feedthrough (edge-welded bellows)
+- rotary motion feedthrough options recap (ferrofluidic, magnetic, Wilson)
+- multi-pin feedthrough pin creepage in vacuum
+- feedthrough ceramic crack from over-torque
+- grounded shield sleeve over HV feedthrough inside chamber
+- spare-port philosophy (blank now, instrument later)
+
+#### 3.4.3 DIY Fabrication Methods & Limits
+
+**Welding, machining and budget hardware** (13 terms)
+
+- TIG (GTAW) welding for vacuum vessels
+- continuous internal-side weld rule (no trapped volume between stitch welds)
+- full-penetration weld preference
+- argon back-purge during welding
+- weld cleaning (pickling paste — hydrofluoric/nitric mix, hazard class corrosive/toxic; alternative: mechanical + citric passivation)
+- lathe-cut O-ring grooves tolerance
+- flatness lapping of sealing surfaces
+- sanitary tri-clamp (ISO 2852-style) hardware as budget vacuum fittings
+- repurposed pressure cooker / pipe caps as DIY chambers (rough vacuum tier)
+- surplus vacuum hardware market
+- helium or rate-of-rise check after every new weld/penetration
+- drilling and tapping blind holes — vent path requirement
+- hydro/pneumatic proof test vs vacuum test distinction
+
+**Cleaning and preparation for vacuum service** (12 terms)
+
+- degrease sequence: detergent wash, DI rinse, solvent wipe
+- IPA (isopropyl alcohol) final wipe — flammable liquid hazard class
+- acetone precleaning — flammable liquid hazard class
+- ultrasonic cleaning of small parts
+- no-silicone rule in the vacuum shop
+- lint-free cleanroom wipes
+- powder-free nitrile gloves handling rule
+- clean assembly bench and covered storage
+- bag-and-tag of cleaned components
+- compressed dry air / nitrogen blow-off
+- residue test (water-break test on metal surfaces)
+- marking inks and adhesives outgassing ban inside chamber
+
+### 3.5 Power Supplies & Plasma Electrical Systems
+
+#### 3.5.1 Sputtering Power Delivery
+
+**DC and pulsed-DC supplies** (14 terms)
+
+- DC magnetron power supply (0.5–1 kV, ampere-class)
+- constant-power vs constant-current vs constant-voltage regulation
+- ignition (strike) voltage vs running voltage
+- current-limiting ballast resistor (crude DIY regulation)
+- output ripple and film-quality effect
+- pulsed-DC frequency (kHz) and duty cycle (%)
+- reverse-pulse charge clearing
+- target power density (W/cm2)
+- supply output isolation from mains (safety transformer)
+- microwave-oven-transformer DIY supply — lethal-shock caution
+- neon-sign transformer + rectifier DIY route
+- laboratory-surplus sputtering supply market
+- remote analog/digital control interface of supplies
+- open-circuit voltage rating vs feedthrough rating match
+
+**RF option and impedance matching** (12 terms)
+
+- RF sputtering at 13.56 MHz (ISM band)
+- matching network (tune/load capacitor L-network)
+- forward vs reflected power (W)
+- self-bias DC offset on RF-driven cathode
+- RF unnecessary for conductive gold targets (DC suffices)
+- RF grounding straps and shield integrity
+- EMI/EMC leakage from a homebuilt RF system
+- RF burn hazard (non-perceptible deep burns)
+- coax and connector power ratings (N-type, 50 ohm)
+- auto-match vs manual matchbox
+- RF power meter / directional coupler
+- blocking capacitor in the RF feed
+
+#### 3.5.2 Arcing, Grounding & Electrical Safety
+
+**Arc phenomena and suppression** (12 terms)
+
+- micro-arc vs hard (unipolar) arc
+- arc detection by voltage-dip / current-spike sensing
+- arc-count logging as process health metric
+- supply arc-out shutdown and auto-restrike
+- target-surface nodule and debris arcing
+- dark-space shield gap spacing (mm) around the cathode
+- insulator flashover along coated surfaces
+- metallized (sputter-coated) insulator tracking failure
+- flaking film debris shorting the cathode
+- arc damage pits on target and substrate spatter defect
+- hipot (dielectric withstand) test of feedthroughs
+- stray plasma ignition in gauge ports (magnetically confined regions)
+
+**HV wiring and personnel safety** (13 terms)
+
+- protective earth bonding of chamber and racks
+- single-point ground / ground-loop avoidance
+- lid and door HV interlock switches
+- bleeder resistors on filter capacitors
+- lockout-tagout (LOTO) practice for the home shop
+- let-go and fibrillation current thresholds (mA) awareness
+- creepage and clearance distances for kV wiring
+- silicone HV lead wire (kV ratings)
+- corona discharge at sharp conductor edges
+- one-hand rule when probing live equipment
+- GFCI/RCD protection of the machine circuit
+- capacitor stored-energy discharge stick
+- ozone generation near HV in air — irritant gas hazard
+
+#### 3.5.3 Magnetron Cathode as Buildable Hardware
+
+**Magnetics and target mounting** (14 terms)
+
+- planar circular magnetron layout (center pole + annular ring)
+- NdFeB (neodymium) magnet array
+- magnet temperature demagnetization limit (grade-dependent, ~80 °C class for N-grades)
+- balanced vs unbalanced magnetron field
+- field strength at target surface (hundreds of gauss class)
+- racetrack erosion groove
+- target utilization percentage
+- target clamping ring vs bonded target
+- indium bonding of targets to backing plates
+- gold foil on copper backing plate (DIY thin-target economy)
+- target thickness vs magnetic field throw
+- cathode body insulation standoffs
+- anode ring / grounded shield geometry
+- magnetic short-circuit through steel chamber wall caution
+
+**Cathode cooling and shielding** (12 terms)
+
+- direct vs indirect water cooling of the target
+- cooling water flow switch interlock
+- deionized vs tap cooling water (electrolysis/leakage current)
+- water-to-vacuum leak as catastrophic failure mode
+- target burn-through from lost cooling
+- O-ring-sealed target well design
+- chimney / shutter over the cathode
+- deposition shutter for pre-sputter target cleaning
+- shield redeposition flaking maintenance
+- thermal cycling loosening of clamped targets
+- magnet corrosion protection (plated or encapsulated magnets)
+- cathode-to-wire working distance (cm)
+
+### 3.6 In-Vacuum Wire Transport & Fresh-Coating Protection (Q2)
+
+#### 3.6.1 Payoff, Take-up & Tension Control
+
+**Spool and drive hardware** (14 terms)
+
+- payoff (supply) spool
+- take-up (rewind) spool
+- traverse / level-wind mechanism
+- spool core diameter vs wire set (curl)
+- cast and helix of drawn wire
+- torque-mode winding drive
+- hysteresis brake payoff tensioner
+- magnetically coupled spool drive (in-vacuum option)
+- vacuum-prepared stepper/servo motors
+- dry-lubricant bearings (MoS2, PTFE) for in-vacuum rotation
+- slip-ring-free design preference in vacuum
+- spool flange edge burr inspection
+- interleaving paper on take-up (atmospheric side only)
+- line speed (m/min) as throughput master variable
+
+**Tension measurement and control** (12 terms)
+
+- dancer arm tension loop
+- load-cell tension roller (gram-force / N readout)
+- constant-tension closed-loop servo
+- tension below coating-crack strain threshold
+- wire yield strength vs applied tension margin
+- speed synchronization payoff-to-take-up
+- slack loop accumulation fault
+- wire break detection switch
+- tension transients at start/stop ramps
+- elastic elongation vs plastic stretch of moving wire
+- wrap-angle amplification of tension (capstan equation)
+- tension logging alongside deposition parameters
+
+#### 3.6.2 Guides & Contact Points that Must Not Mar the Coating
+
+**Contact management strategy** (14 terms)
+
+- coat-last / touch-first sequencing (all sliding contacts upstream of deposition zone)
+- rolling contact preferred over sliding contact downstream
+- V-groove ceramic wire guides
+- jeweled guides (sapphire, agate) from wire-EDM and textile trades
+- polished-crown idler pulleys
+- soft-durometer roller sleeves (polyurethane)
+- wrap angle minimization on coated-side contacts
+- as-deposited gold softness (low-HV film) as the vulnerability
+- gold transfer/pickup onto guide surfaces
+- exit wiper-seal contact as the highest-risk touch point
+- cool-down zone before first post-coat contact
+- non-contact wire position sensing (optical)
+- guide cleanliness schedule (coated debris)
+- single-sided coating means one safe-contact side caveat
+
+**Coating damage modes catalog** (13 terms)
+
+- scratch (linear gouge)
+- burnish (smeared gloss change)
+- galling / adhesive transfer
+- flaking and spallation
+- tension crazing (transverse micro-cracks)
+- spool crossover impression marks
+- seal-lip abrasion streaks
+- particulate embedding into soft gold
+- fingerprint corrosion staining (post-vacuum handling)
+- guide chatter marks
+- pinhole exposure of substrate (corrosion initiation)
+- haze from micro-abrasion
+- wear-through at repeated contact lines
+
+#### 3.6.3 Wire Path Through the Deposition Zone
+
+**Exposure geometry and coverage** (14 terms)
+
+- line-of-sight deposition single-sided coverage problem
+- dual opposed magnetrons for two-sided coating
+- three-cathode 120-degree arrangement for round wire
+- cylindrical / inverted-magnetron cathode surrounding the wire
+- wire twist between passes for circumferential coverage
+- multi-pass serpentine wire path through the zone
+- dwell time in plasma zone (s) = zone length / line speed
+- thickness = deposition rate (nm/s) x dwell time
+- thickness uniformity along and around the wire
+- deposition-zone aperture masks
+- wire flutter/vibration amplitude control
+- substrate (wire) bias voltage option
+- wire temperature rise from plasma flux (°C)
+- witness coupon placement beside the wire
+
+**In-line surface preparation zones** (12 terms)
+
+- in-line glow-discharge (plasma) cleaning of the wire
+- sputter-etch (ion) precleaning zone
+- wire preheating (radiant or resistive) for adhesion
+- degrease-before-vacuum requirement (drawing lubricant removal)
+- residual drawing soap/stearate contamination defect
+- adhesion interlayer flash (e.g. Ti or Cr strike) station
+- sequential dual-cathode interlayer-then-gold layout
+- inter-zone conductance baffles
+- zone-to-zone cross-contamination shielding
+- pre/post zone pressure gradient management
+- outgassing burst from heated wire
+- oxide regrowth time window between clean and coat
+
+### 3.7 DIY vs Kit: Sourcing, Assembly & Commissioning (Q7 hardware)
+
+#### 3.7.1 Component Sourcing & Cost Structure
+
+**Sourcing channels by category** (13 terms)
+
+- laboratory surplus dealers (pumps, gauges, chambers)
+- university/fab decommissioning auctions
+- online used-equipment marketplaces for turbos and gauges
+- KF/ISO fitting suppliers (vacuum-component category)
+- sputter-target vendors (precious-metal target category)
+- refrigeration-trade suppliers for budget roughing pumps
+- sanitary/dairy fitting suppliers for tri-clamp hardware
+- benchtop SEM sputter coater as donor/reference machine
+- amateur fusor and vacuum hobbyist community knowledge bases
+- custom chamber fabrication job shops (quote category)
+- buy-vs-build decision matrix per subsystem
+- lead-time risk on single-source components
+- counterfeit/cosmetically-refurbished pump risk on used markets
+
+**Cost drivers and budget tiers** (12 terms)
+
+- turbo pump + controller as dominant capital line item
+- diffusion-pump tier as low-capex alternative
+- gauge-and-controller cost tier ladder
+- gold target cost indexed to spot gold price plus fabrication premium
+- thin-foil target strategy to cut precious-metal lockup
+- MFC vs needle-valve instrumentation trade-off
+- chamber fabrication quote drivers (material, ports, finish)
+- power supply new-vs-surplus price gap
+- consumables budget (O-rings, oil, argon, seals)
+- electricity and cooling-water operating cost
+- spare-parts float for single points of failure
+- total installed cost vs benchtop-coater purchase comparison
+
+#### 3.7.2 Assembly Sequence & Build Milestones
+
+**Staged build order** (12 terms)
+
+- skeleton chamber + blank flanges first
+- rough-vacuum milestone (rotary pump only)
+- rate-of-rise acceptance before adding subsystems
+- one-penetration-at-a-time integration rule
+- leak-check after every added feedthrough
+- high-vacuum milestone (turbo/diffusion online)
+- first-plasma milestone (argon glow ignition)
+- first-deposition milestone on witness slide
+- wire-transport dry run at atmosphere before vacuum
+- full feed-through run milestone (wire moving under vacuum)
+- cable dressing, strain relief and service loops
+- documentation-as-built (port map, wiring diagram, seal list)
+
+**Utilities and installation infrastructure** (12 terms)
+
+- dedicated mains circuit sizing (breaker amps)
+- cooling water loop (closed chiller vs tap) with flow switch
+- argon cylinder restraint and regulator installation — compressed-gas hazard class
+- pump exhaust routing outdoors (oil mist)
+- ventilation of the work room
+- vibration isolation of pumps from chamber
+- bench/frame rigidity for wire-path alignment
+- ambient dust control around open-chamber work
+- fire extinguisher and electrical-fire class coverage
+- emergency stop placement and reach
+- noise level of roughing pumps (dBA) in a home shop
+- floor loading and machine footprint planning
+
+#### 3.7.3 Commissioning & Acceptance Testing
+
+**Vacuum system acceptance tests** (12 terms)
+
+- ultimate base-pressure test against specification
+- pumpdown-time benchmark curve archived as fingerprint
+- rate-of-rise leak-up test with pass threshold (mbar·L/s)
+- helium leak-check of all joints (acceptance class)
+- gauge cross-calibration sanity check
+- wire-stationary vs wire-moving pressure delta test (seal performance metric)
+- seal drag-force measurement at line speed
+- interstage pressure profile verification (differential pumping health)
+- vent/pump cycle endurance test
+- power-failure recovery behavior test
+- RGA or air-signature scan for residual leaks
+- 24-hour hold test at base pressure
+
+**Process commissioning tests** (12 terms)
+
+- argon flow vs chamber pressure calibration map (sccm vs mTorr)
+- Paschen-window ignition test
+- target burn-in / pre-sputter conditioning
+- deposition-rate calibration on glass witness slides
+- film thickness verification (XRF, stylus profilometry, weight-gain)
+- tape adhesion test (crosshatch, ASTM tape-test class)
+- thickness uniformity map along wire length
+- circumferential coverage check (metallographic cross-section)
+- arc-rate logging during endurance run
+- multi-hour continuous-run endurance trial
+- coated-wire bend test around mandrel (pre-forming sanity check)
+- process capability notes handed to the plating/forming domains
+
+#### 3.7.4 Autonomy, Controls & Instrumentation Level
+
+**Control architecture options** (12 terms)
+
+- manual-valve baseline operation mode
+- microcontroller (Arduino/ESP32) supervisory control tier
+- Raspberry Pi / PC SCADA-style logging tier
+- PLC-grade control tier
+- recipe sequencing (pump → purge → ignite → deposit → vent)
+- setpoint-relay driven interlock ladder from gauge controllers
+- analog I/O to power supply remote-control interface
+- MFC setpoint automation
+- line-speed and tension loop integration into the recipe
+- datalogging channels (pressure, power, flow, speed, tension, arc count)
+- alarm thresholds and operator paging
+- HMI panel vs headless web dashboard
+
+**Interlocks, fail-safes and unattended operation** (12 terms)
+
+- fail-safe valve states (gas valves normally closed, vent valve energized-to-open)
+- cooling-water flow-switch interlock on HV enable
+- over-temperature cutout on cathode and pumps
+- vacuum-loss HV shutdown interlock
+- turbo overspeed/overtemp controller trips
+- watchdog timer on the controller
+- e-stop chain hard-wired around software
+- power-failure safe sequencing (pump isolation, HV off, gas off)
+- wire-break and spool-empty sensors halting the line
+- unattended-run risk register (water leak, pump seizure, fire)
+- restart-permissive checklist after any trip
+- autonomy ceiling: supervised-continuous vs lights-out judgment
+
+---
+
+## 4. Substrate Metallurgy & Post-Coat Forming (`substrate-forming`) — 475 terms
+
+**Scope:** Choice and behavior of the steel or alloy wire substrate, and the downstream plate-then-form step: heat-assisted bending of coated wire into rings without coating failure. Owns Q3 (coating survival during forming: strain at the coating, adhesion, interlayer ductility, temperature limits), Q4 (achievable forming precision and tolerances, ring sizing), and Q5 (which steel/alloy best supports plate-then-form), including the strategic alternative of form-then-plate and hybrid sequences. Deposition physics belongs to the pvd-sputtering domain and wet chemistry to the electro-plating domain; this domain owns what happens to the substrate before coating and to the coated wire after it leaves the machine.
+
+### 4.1 Steel & Alloy Wire Substrate Selection
+
+#### 4.1.1 Austenitic Stainless Steels (304/316 family)
+
+**Grade chemistry & mechanical behavior** (14 terms)
+
+- AISI 304 (18-8) chromium-nickel composition
+- AISI 316 / 316L molybdenum addition (2-3 wt%)
+- 304L low-carbon variant (weldable, sensitization-resistant)
+- EN designations 1.4301 / 1.4404
+- austenite stability
+- deformation-induced martensite (alpha-prime)
+- magnetic response rise after cold drawing
+- Md30 temperature (martensite formation index)
+- work-hardening exponent n
+- cold-drawn tensile strength of stainless wire (up to ~2000 MPa class)
+- pitting resistance equivalent number (PREN)
+- sensitization window 450-850 °C (chromium carbide precipitation)
+- intergranular corrosion after sensitization
+- 302 spring-temper stainless wire
+
+**Passive film & plateability of stainless** (12 terms)
+
+- chromium oxide passive film (native, self-healing)
+- Wood's nickel strike (nickel chloride + hydrochloric acid, corrosive hazard)
+- sulfamate nickel strike alternative
+- cathodic activation of stainless
+- anodic etch in sulfuric acid
+- live entry (part cathodic before immersion)
+- repassivation time between activation and plating
+- flash adhesion failure on unactivated stainless
+- immersion (displacement) deposit prevention
+- strike current density (A/dm2, high-CD low-efficiency regime)
+- water-break test for surface cleanliness
+- sputter etch / ion pre-clean as PVD-side equivalent of the strike
+
+#### 4.1.2 Carbon & Spring Steel Wire
+
+**Music wire & high-carbon spring grades** (12 terms)
+
+- music wire (ASTM A228 class)
+- 1065 / 1075 / 1095 high-carbon steel grades
+- patenting heat treatment (pearlitic conditioning before draw)
+- oil-tempered spring wire
+- hard-drawn spring wire classes
+- pearlitic microstructure
+- decarburization layer on wire surface
+- tensile strength vs wire diameter relationship (finer = stronger)
+- torsion (twist) ductility test for wire
+- cast and helix of coiled wire
+- spring temper springback severity
+- corrosion vulnerability of bare carbon steel (needs full barrier)
+
+**Mild steel plus barrier-layer route** (12 terms)
+
+- 1008 / 1010 low-carbon steel wire
+- dead-soft annealed iron wire formability
+- copper underplate as barrier and strain buffer
+- nickel diffusion-barrier underplate (thickness in µm)
+- gold is cathodic to steel (coating is noble, not sacrificial)
+- pore corrosion / red rust creep through coating pores
+- porosity vs total coating thickness relationship
+- ferroxyl test for coating porosity
+- neutral salt spray exposure class (ASTM B117 class)
+- humid sulfur vapor porosity test class
+- cut-end exposure of bare steel core
+- cost advantage of mild steel vs stainless substrate
+
+#### 4.1.3 Nonferrous & Clad Alternatives
+
+**Copper-cored and clad wires** (12 terms)
+
+- copper-clad steel (CCS) wire
+- cladding ratio (% copper by cross-section)
+- conductivity rating (% IACS)
+- gold-filled construction (mechanically bonded sheet, e.g. 1/20 12K labeling convention)
+- rolled gold plate vs electroplate terminology distinction
+- cartridge brass CDA 260 jewelry wire
+- jeweler's bronze / gilding metal (high-copper brass)
+- nickel silver (Cu-Ni-Zn, contains no silver)
+- dezincification of brass
+- season cracking (stress-corrosion cracking of brass)
+- copper's annealing softness and easy forming
+- direct gold-on-copper interdiffusion risk (needs nickel barrier)
+
+**Nickel-allergy-aware substrate & stack choices** (11 terms)
+
+- EU REACH nickel restriction (entry 27) migration limit 0.5 µg/cm2/week for prolonged skin contact
+- EN 1811 nickel release reference test class
+- dimethylglyoxime (DMG) spot test for nickel release
+- allergic contact dermatitis / nickel sensitization
+- 316L 'surgical steel' marketing vs ~10-14% nickel content
+- nickel release retest after coating cracks or wear-through
+- palladium interlayer as nickel-free barrier
+- white bronze (Cu-Sn-Zn) nickel-free interlayer
+- titanium and niobium as inherently nickel-free substrates
+- 'hypoallergenic' as unregulated marketing term
+- nickel-free vs nickel-safe (release-compliant) distinction
+
+#### 4.1.4 Wire Procurement & Specification
+
+**Dimensional and surface specification** (10 terms)
+
+- wire gauge systems (AWG vs SWG vs metric mm)
+- diameter tolerance class of precision-drawn wire (±0.01 mm class)
+- ovality / out-of-roundness of drawn wire
+- surface roughness Ra (µm) of as-drawn wire
+- drawing die lines (longitudinal scratches)
+- residual drawing lubricant (calcium/sodium stearate soaps)
+- bright-drawn vs matte finish
+- cast and helix specification for smooth payoff
+- spool put-up weight and core diameter
+- mill test certificate / certificate of conformity
+
+**Cost and availability drivers** (9 terms)
+
+- commodity wire pricing per kg basis
+- stainless vs mild steel price multiple
+- minimum order quantity (MOQ) per coil
+- custom re-draw service (drawing to nonstandard diameter)
+- annealed vs tempered condition price delta
+- RoHS / REACH substance declarations from mill
+- traceability by heat/lot number
+- scrap and offcut recovery value
+- small-quantity jewelry-wire distributors vs industrial mills
+
+### 4.2 Wire Temper, Annealing & Heat Treatment
+
+#### 4.2.1 Cold Work & Temper States
+
+**Drawing metallurgy and temper designations** (11 terms)
+
+- cold-drawn reduction of area (%) per pass
+- drawing pass schedule
+- tungsten carbide vs diamond drawing dies
+- strain hardening / dislocation density buildup
+- temper ladder: dead soft, quarter-hard, half-hard, full-hard, spring temper
+- yield-to-tensile ratio rise with temper
+- residual stress from drawing (surface tensile)
+- elongation-at-break drop with temper (%)
+- wrap test (wire wound on own diameter)
+- reverse-bend fatigue test for wire
+- temper uniformity along a coil
+
+**Temper choice for plate-then-form** (9 terms)
+
+- dead-soft wire: max formability, min springback, easy handling damage
+- half-hard as ring-making compromise temper
+- spring temper: highest springback, highest crack risk at coating
+- minimum bend radius vs temper
+- work hardening accumulated during forming itself
+- temper effect on hydrogen embrittlement susceptibility
+- handling dents and kinks in soft wire (pre-coating defects)
+- temper vs joint-closing force for rings
+- re-annealing coated wire constrained by coating temperature limit
+
+#### 4.2.2 Annealing & Stress Relief
+
+**Annealing practice for wire** (11 terms)
+
+- recrystallization temperature (roughly 0.4 x melting point in K, rule of thumb)
+- process (partial) anneal vs full anneal
+- bright annealing in hydrogen or dissociated-ammonia atmosphere
+- solution annealing of austenitic stainless (~1010-1120 °C class) with rapid cool
+- avoiding the 450-850 °C sensitization window on cooldown
+- temper colors / oxide scale from air annealing
+- pickling stainless after anneal (nitric-hydrofluoric mix; HF: acutely toxic and corrosive hazard; electrolytic pickling as HF-free alternative)
+- grain growth from over-annealing (orange peel risk in forming)
+- batch (bell furnace) vs in-line strand annealing
+- in-line resistance annealing of moving wire
+- induction annealing of wire
+
+**Stress relief within coating limits** (8 terms)
+
+- stress-relief temperature range for steels (250-425 °C class)
+- stress relief vs recrystallization distinction (no softening intended)
+- residual stress relaxation fraction vs time-at-temperature
+- warpage / cast change on stress release
+- stress relieving BEFORE coating as default sequencing
+- post-coating stress relief bounded by gold/interlayer diffusion limits
+- inert or reducing atmosphere for any post-coat thermal step
+- spring 'set removal' (presetting) as mechanical alternative to thermal relief
+
+#### 4.2.3 Thermal Limits of Gold Coatings & Interlayers
+
+**Diffusion and interdiffusion phenomena** (10 terms)
+
+- Au-Cu interdiffusion (rapid above ~150-200 °C class)
+- Kirkendall voiding at interdiffused interfaces
+- Au-Ni solid-solution interdiffusion
+- substrate metal outdiffusion staining thin gold (tarnish, color shift)
+- nickel barrier effectiveness vs temperature and time
+- time-at-temperature budget concept (diffusion is cumulative)
+- purple plague (brittle Au-Al intermetallic, if aluminum contact present)
+- color drift of thin gold films on heating
+- grain growth in gold film reducing hardness
+- diffusion couple / Arrhenius temperature dependence
+
+**Safe process windows for heated post-coat steps** (10 terms)
+
+- hard gold (cobalt/nickel-hardened) softening on prolonged heating (~300 °C class ceiling)
+- loss of electroplated brightness on annealing
+- PVD adhesion layer (Ti/Cr) oxidation if heated in air at exposed edges
+- hydrogen-embrittlement relief bake window (190-230 °C class, ASTM B850 class)
+- argon or nitrogen shroud for post-coat heating
+- thermal-shock adhesion test (quench after bake, ASTM B571 class method)
+- differential thermal expansion loading the coating during heating
+- temperature-indicating crayons / IR pyrometer verification
+- oven profiling and soak-time control
+- ASTM B488 gold coating classification (type/code/service class) as spec language
+
+#### 4.2.4 Hydrogen Embrittlement Management
+
+**Sources and mechanism** (9 terms)
+
+- hydrogen pickup during acid pickling
+- cathodic hydrogen evolution during electroplating
+- internal vs environmental hydrogen embrittlement
+- delayed brittle fracture under sustained load
+- susceptibility threshold around high-strength steels (~1000+ MPa class)
+- spring steel and full-hard wire as high-risk tempers
+- hydrogen trapping sites (dislocations, carbides, inclusions)
+- intergranular fracture surface as diagnostic
+- gold layer as hydrogen diffusion barrier (traps hydrogen if bake delayed)
+
+**Prevention and relief practice** (9 terms)
+
+- post-plating hydrogen relief bake (ASTM B850 class; start within hours of plating)
+- bake duration scaling with strength level (multi-hour to 24 h class)
+- inhibited pickling acids (reduced hydrogen charging)
+- mechanical descaling instead of pickling
+- low-hydrogen-embrittlement (LHE) plating process selection
+- sustained-load embrittlement test (ASTM F519 class)
+- notched-bend / wrap test on plated wire samples
+- lot-based embrittlement verification before forming
+- records: bake start-delay and temperature log per lot
+
+### 4.3 Coating Mechanics During Bending
+
+#### 4.3.1 Strain at the Coating
+
+**Bending strain fundamentals** (10 terms)
+
+- outer-fiber strain formula e = d/(2R + d) (wire diameter d, bend radius R)
+- bend-radius-to-diameter ratio (R/d) as design variable
+- neutral axis shift under plastic bending
+- tension side vs compression side of the bend
+- ring inner diameter sets the forming radius
+- worked example scale: 1 mm wire on 17 mm ID ring ≈ 5-6% outer-fiber strain
+- strain concentration at grips and joint ends
+- sequential-bend strain accumulation
+- torsional strain in helical coiling (coil-and-cut method)
+- strain rate effect on cracking
+
+**Coating thickness vs strain tolerance** (10 terms)
+
+- crack-onset strain of thin metal films
+- thinner coating tolerates higher strain (crack-onset scales inversely with thickness)
+- crack density saturation with increasing strain
+- soft (pure) electroplated gold elongation vs hard gold brittleness
+- cobalt-hardened gold reduced ductility
+- sputtered gold columnar microstructure and its strain response
+- nanocrystalline grain size effect on film ductility
+- flash (0.1-0.5 µm class) vs heavy (1-5 µm class) gold thickness strain behavior
+- substrate roughness as crack initiation sites
+- coating ductility test by mandrel bend series
+
+#### 4.3.2 Failure Modes of Coatings in Forming
+
+**Cracking and crazing** (9 terms)
+
+- channel cracking (through-thickness parallel cracks on tension side)
+- mud-cracking pattern
+- crazing (fine crack network)
+- transverse crack spacing vs strain level
+- crack opening displacement exposing interlayer/substrate
+- orange peel roughening from coarse substrate grain
+- fish-scaling / flaking on severe bends
+- microcracked hard chrome analogy (intentional vs accidental crack networks)
+- crack arrest at ductile interlayer
+
+**Delamination and spallation** (9 terms)
+
+- interfacial delamination
+- buckling delamination on the compression side
+- spallation of coating fragments
+- strain energy release rate vs interfacial adhesion energy
+- blistering over trapped contamination or plating pits
+- edge lift-off at cut wire ends
+- tape test on the formed bend (ASTM B571 class tape method)
+- adhesion failure locus analysis (interface vs cohesive)
+- poor strike = adhesion failure signature on stainless
+
+**Post-forming corrosion consequences** (9 terms)
+
+- galvanic couple at cracks (small anode steel, large cathode gold — accelerated attack)
+- pore and crack corrosion sites
+- crevice corrosion inside closed ring joints
+- nickel release increase once nickel interlayer is exposed
+- sweat/perspiration simulation testing (artificial sweat class)
+- salt spray after forming vs before forming comparison
+- humid sulfur vapor test class for porosity/cracks
+- tarnish creep from exposed copper interlayer
+- field failure mode: skin discoloration (green/black marks) from corrosion products
+
+#### 4.3.3 Ductile Interlayer & Stack Design
+
+**Interlayer selection for formability** (10 terms)
+
+- sulfamate nickel underplate (low stress, 10-30% class elongation)
+- Watts bright nickel embrittlement by sulfur-bearing brighteners
+- duplex nickel systems
+- copper underplate as compliant strain buffer
+- palladium or palladium-nickel interlayer
+- white bronze (Cu-Sn-Zn) nickel-free interlayer
+- coating-to-interlayer thickness ratio as design variable
+- leveling vs ductility trade-off in bright deposits
+- interlayer hardness ladder (soft under hard top vs graded stacks)
+- barrier function vs ductility function separation (two-layer strategy)
+
+**Adhesion engineering and test menu** (10 terms)
+
+- Wood's nickel strike as adhesion foundation on stainless
+- sputter etch / ion bombardment pre-clean (PVD route)
+- Ti or Cr adhesion layer under PVD gold
+- interfacial intermetallic growth control
+- mechanical keying (anchor profile) vs bright-finish requirement
+- ASTM B571 class adhesion test menu: bend, tape, file, chisel, thermal shock
+- pull-off adhesion test (ASTM D4541 class, dolly method)
+- scratch adhesion test (progressive-load stylus)
+- bake-and-blister adhesion screening
+- adhesion qualification per wire lot, not once
+
+#### 4.3.4 Residual Stress in the Coating Stack
+
+**Origins and control of coating stress** (9 terms)
+
+- intrinsic stress of sputtered films (compressive at low Ar pressure, tensile at high)
+- atomic peening (energetic bombardment) compaction stress
+- thermal mismatch stress from CTE difference (Au ~14 x10^-6/K vs steels ~11-17 x10^-6/K class)
+- electroplated deposit internal stress (bath chemistry dependent)
+- saccharin-type stress reducers (lower stress, add sulfur embrittlement risk)
+- pulse plating for stress management
+- stress gradient through deposit thickness
+- tensile residual stress pre-loads the coating toward earlier crack onset in bending
+- compressive residual stress delays cracking but risks buckling delamination
+
+**Measuring coating stress** (8 terms)
+
+- spiral contractometer
+- bent-strip deposit stress analyzer (two-legged test strips)
+- wafer-curvature method with Stoney equation
+- XRD sin^2(psi) residual stress measurement
+- crack/curl pattern of peeled foil as quick indicator
+- stress in MPa as reported unit
+- witness coupon plated alongside production wire
+- stress drift as bath-aging diagnostic
+
+### 4.4 Ring-Forming Methods & Practice
+
+#### 4.4.1 Mandrel Winding & Coiling
+
+**Manual mandrel work** (10 terms)
+
+- graduated (stepped or tapered) ring mandrel, hardened steel
+- wrapping tension control by hand
+- coil winding then cutting into ring blanks (coil-and-cut)
+- jump-ring coiling tools / winding jigs
+- mandrel taper compensation (wind a step small, size up)
+- ring-bending pliers (concave/convex jaw)
+- rawhide or nylon mallet for truing on mandrel
+- half-round vs round wire orientation on mandrel
+- hand-feed pitch consistency
+- burnish-on-mandrel truing pass
+
+**Machine coiling and CNC wire bending** (10 terms)
+
+- spring coiling machine (coiling point, pitch tool, arbor, feed rolls)
+- CNC wire bender / 3D wire forming machine
+- wire straightener (roller cassette) ahead of former
+- servo feed-length accuracy (mm)
+- coiling point wear and its diameter drift
+- payoff (de-reeler) tension control
+- tooling changeover per ring size
+- camless (servo) vs mechanical cam formers
+- in-machine cutoff tooling
+- guarding and pinch-point safety on coilers
+
+#### 4.4.2 Cutting & Joining Coated Wire
+
+**Cutting methods and cut-end condition** (9 terms)
+
+- flush cutters vs bevel cutters (burr size difference)
+- jeweler's saw with fine blades (8/0-4 size class)
+- abrasive cutoff wheel heat damage risk
+- burr formation and smearing at the cut
+- bare substrate always exposed at the cut face
+- deburring by tumbling or hand-filing
+- cut-end sealing options (flash re-plate, lacquer dot)
+- saw kerf loss vs shear cut deformation trade
+- wire shear station on coiling machines
+
+**Joining and closing rings** (11 terms)
+
+- open-back (unjoined, adjustable) ring design avoids joining entirely
+- butt-joint closure alignment
+- torch soldering damages surrounding gold plating (heat + flux staining)
+- solder color mismatch against gold plating
+- laser spot welding (minimal heat-affected zone)
+- pulse-arc (capacitive micro-TIG) welder
+- resistance (spot) welding of wire ends
+- cold connections: wrapped, coiled, riveted joints
+- join-then-replate as the standard jewelry sequence
+- heat-affected zone (HAZ) discoloration on plated wire
+- flux residue corrosion if not fully cleaned
+
+#### 4.4.3 Heat-Assisted Bending
+
+**Warm forming practice on coated wire** (9 terms)
+
+- warm forming window kept below coating diffusion/degradation limits
+- localized induction heating of the bend zone only
+- hot mandrel forming
+- torch heating risks: interlayer oxidation at cut ends, gold color drift
+- argon/nitrogen shroud during heated bending
+- temperature-indicating sticks and IR pyrometer checks
+- heat-sink clamps protecting adjacent coated zones
+- controlled ramp and short soak discipline
+- post-heat inspection for discoloration and adhesion
+
+**When heat helps and when it does not** (8 terms)
+
+- flow stress reduction with temperature (easier bending, less springback)
+- most jewelry-gauge wire bends cold — heat is for heavy gauge or spring temper
+- blue brittleness / dynamic strain aging of carbon steel (~200-350 °C class) — avoid forming there
+- differential expansion stressing the coating during local heating
+- heat does not fix a brittle coating — only substrate flow stress
+- warm forming vs choosing a softer temper (usually the better fix)
+- stress-relief effect of warm forming on the finished ring
+- temperature-time budget shared with any relief bakes
+
+#### 4.4.4 Tooling Hygiene & Handling of Plated Wire
+
+**Surface-protective tooling** (9 terms)
+
+- nylon/delrin-jaw pliers
+- urethane pad dies and V-blocks
+- PTFE or polyurethane sleeves over mandrels
+- highly polished hardened tool-steel forming surfaces
+- never serrated jaws on plated surfaces
+- tool-mark burnishing vs scratching distinction
+- embedded grit transfer from dirty tooling
+- dedicated 'gold-only' tool set discipline
+- masking tape / painter's tape temporary wraps
+
+**Handling and transport of coated wire** (9 terms)
+
+- payoff and take-up spool tension (N) limits for fresh coating
+- minimum spool core diameter vs allowable coating strain
+- guide roller materials: polyurethane, PTFE, polished ceramic
+- grooved vs flat rollers and line-contact marking
+- interleaving paper between coil layers
+- lint-free gloves (fingerprint salts etch gold surfaces over time)
+- cut-length trays and part separation (no part-on-part rubbing)
+- VCI (vapor corrosion inhibitor) paper for steel-cored stock
+- labeling by lot: wire heat, coating run, bake record
+
+### 4.5 Forming Precision, Springback & Sizing
+
+#### 4.5.1 Springback
+
+**Mechanics and prediction** (9 terms)
+
+- elastic springback scales with yield strength over Young's modulus (sigma_y/E)
+- springback ratio Ks = unloaded curvature / loaded curvature
+- higher temper = more springback
+- stainless (high work-hardening) vs mild steel springback difference
+- radius growth on release from mandrel
+- springback variation lot-to-lot from temper scatter
+- residual stress redistribution on unloading
+- coating contribution to springback negligible at jewelry thicknesses
+- trial-bend characterization per wire lot
+
+**Compensation techniques** (8 terms)
+
+- overbending to a smaller radius than target
+- mandrel undersize calibration table per wire lot and size
+- bottoming / coining the bend to set final shape
+- stretch forming (winding under tension) to reduce springback
+- warm forming to cut springback
+- iterative size-check-adjust loop on the ring stick
+- closed-loop springback correction on servo benders
+- set removal (over-stress then release) practice
+
+#### 4.5.2 Ring Sizing Standards & Metrology
+
+**Ring size systems** (9 terms)
+
+- ISO ring-size standard class (inner circumference in mm, ISO 8653 class)
+- US/Canada numerical ring sizes
+- UK/Australia alphabetical ring sizes
+- inner diameter vs inner circumference conversion (C = pi x D)
+- half and quarter sizes
+- common adult range roughly 14-22 mm inner diameter class
+- comfort-fit profile changes effective size
+- wide-band sizing allowance (size up for wide bands)
+- regional size-system conversion charts as customer-service asset
+
+**Measuring tools** (8 terms)
+
+- ring stick / triblet gauge (graduated cone)
+- finger gauge (sizer) sets
+- digital caliper inside-jaw ID measurement
+- GO/NO-GO ring gauges for production
+- optical comparator / profile projector
+- ovality = max diameter minus min diameter
+- gauge repeatability and operator technique (insertion force)
+- calibration of ring sticks against master gauges
+
+#### 4.5.3 Achievable Tolerances: DIY vs Machine
+
+**DIY hand-forming capability** (8 terms)
+
+- hand-mandrel repeatability around ±0.25-0.5 ring size class
+- operator skill variance dominates hand tolerance
+- wire diameter tolerance stack-up into ring ID
+- joint gap variation in closed rings
+- ovality from uneven hand pressure
+- truing pass on mandrel with mallet improves roundness
+- ring stretcher/reducer for post-adjustment — stretching thins and cracks plating (use before plating or accept damage)
+- batch sorting into size bins as low-tech tolerance strategy
+
+**Machine forming capability and SPC** (9 terms)
+
+- CNC coiler ring-ID repeatability (±0.05-0.1 mm class)
+- servo feed-length accuracy as the precision driver
+- tool wear drift and periodic re-mastering
+- first-article inspection per setup
+- SPC control charts on ring ID (Cp/Cpk)
+- gauge R&R study on ring measurement
+- temperature of shop floor affecting steel tooling dimensions (minor)
+- AQL sampling per lot (ISO 2859 class)
+- scrap/rework rate tracking by size
+
+#### 4.5.4 Post-Form Finishing & Verification
+
+**Finishing without removing the gold** (8 terms)
+
+- burnishing (plastic smearing, no metal removal) vs abrasive polishing (removes µm of gold)
+- steel-shot tumble burnishing with burnishing soap
+- polish-through risk on micron-thin coatings at high spots
+- final flash re-plate as finishing repair option
+- ultrasonic cleaning safety check on plated parts (can lift marginal adhesion)
+- protective topcoats: e-coat lacquer, nano-ceramic clear, anti-tarnish dip
+- wax buffing as gentle luster step
+- no aggressive compounds (tripoli/rouge cut rates vs gold thickness)
+
+**Verification after forming** (9 terms)
+
+- XRF thickness map: bend apex vs shank comparison
+- adhesion tape test placed on the formed bend
+- stereo-microscope crack inspection (10-40x)
+- artificial sweat / wear simulation exposure
+- nickel-release retest after forming (EN 1811 class) for skin-contact claims
+- salt spray or humid sulfur exposure on formed samples
+- sample-per-lot destructive cross-section (metallographic mount)
+- acceptance criteria written per Q8 test plan before production
+- defect library photos for operator training
+
+### 4.6 Route Strategy: Plate-Then-Form vs Form-Then-Plate
+
+#### 4.6.1 Plate-Then-Form Route
+
+**Advantages and enablers** (9 terms)
+
+- reel-to-reel continuous coating economics (matches feed-through machine concept)
+- uniform thickness on straight moving wire (no shape shadowing)
+- in-line QA on moving wire (eddy current, XRF head)
+- coil-form storage of coated stock (WIP flexibility)
+- one coating setup serves many downstream products
+- lower per-piece coating labor
+- continuous process control vs batch variability
+- line speed (m/min) x wire diameter sets throughput
+- coated-wire stock as sellable intermediate product
+
+**Risks and mitigations** (9 terms)
+
+- forming strain cracking at ring radius (the core Q3 risk)
+- cut-end substrate exposure is unavoidable in this route
+- joint/solder zone coating damage
+- handling scratches between coating and forming
+- mitigation stack: soft gold + ductile sulfamate nickel + soft temper wire
+- generous R/d ratio product design rule
+- post-form flash repair plating station
+- open-back ring designs sidestep joint damage
+- lot-based bend-test qualification before committing coated stock
+
+#### 4.6.2 Form-Then-Plate Route
+
+**Rack and barrel electroplating of formed rings** (9 terms)
+
+- rack plating with spring-clip contacts (contact mark defect)
+- barrel plating of small parts (tumbling contact)
+- current density distribution over ring geometry
+- low-current-density dullness in recesses
+- auxiliary and conforming anodes
+- dragout losses on shaped parts
+- part-on-part nesting marks in barrels
+- plating racks: jigging density vs shadowing trade
+- burn (high-CD) defect on ring edges
+
+**Batch PVD on formed rings** (9 terms)
+
+- planetary (double-rotation) fixturing for coverage
+- line-of-sight shadowing inside the ring bore
+- fixture contact points remain uncoated
+- batch cycle time: pump-down dominates small batches
+- load-size economics per chamber cycle
+- re-fixturing (flip) runs for full coverage
+- witness coupons per batch for thickness/adhesion
+- outgassing of fixtures and tumbled parts extending pump-down
+- drum/cage PVD coaters for bulk small parts
+
+**Where form-then-plate wins** (8 terms)
+
+- zero forming strain on the finished coating
+- covers cut ends, joints, and weld zones
+- standard industry sequence for plated jewelry (solder-then-plate)
+- simpler rework loop (strip and replate the part)
+- higher per-piece handling and fixturing labor
+- coating thickness variation over shaped parts as its own QA burden
+- final finish applied after all heat/mechanical damage steps
+- best route for closed, soldered, or complex-geometry rings
+
+#### 4.6.3 Hybrid & Rework Sequences
+
+**Hybrid sequences** (9 terms)
+
+- barrier-on-wire then form then final gold (strike/nickel survives forming better than gold finish)
+- plate-form-flash sequence (heavy coat on wire, thin repair flash after forming)
+- selective brush (pen) plating touch-up of joints and cut ends
+- masking during re-plate to protect finished zones
+- solder-then-plate as inherited jewelry-trade default
+- hybrid PVD-base + electroplated-top stacks across the forming step
+- sequence decision recorded as routing per SKU
+- nickel-then-form-then-gold keeps precious metal off the strain step
+- finish-last principle (decorative layer applied after the last damaging operation)
+
+**Rework and repair economics** (9 terms)
+
+- gold stripping chemistry: cyanide-based strippers (hydrogen cyanide risk — highly toxic, hazard class acute toxicity; strict pH/ventilation controls)
+- cyanide-free strippers (thiourea/thiosulfate systems) as the named alternative
+- stripped-gold reclaim value stream
+- strip-and-replate labor per piece
+- scrap-vs-rework decision threshold (defect severity x gold content)
+- rework travelers and re-inspection gates
+- repeat-strip substrate damage limit (etching, dimension loss)
+- electrolytic vs immersion stripping methods
+- refiner assay and settlement terms for gold-bearing waste
+
+#### 4.6.4 Decision Framework & Economics
+
+**Cost and throughput comparison** (9 terms)
+
+- pieces per hour per route (continuous line vs batch)
+- gold usage per piece (mg) per route as the cost driver
+- capital cost: continuous feed-through line vs batch tank/chamber
+- labor minutes per ring by route
+- yield loss % at forming (plate-then-form's tax)
+- yield loss % at fixturing/contact points (form-then-plate's tax)
+- cost of quality: defect escape cost to brand
+- changeover time between ring sizes per route
+- break-even volume between routes
+
+**Acceptance-test placement and gating** (8 terms)
+
+- test-before-form vs test-after-form gate placement
+- in-line eddy-current and XRF monitoring on wire
+- bend-test coupon at the head of every coated coil
+- AQL sampling plans (ISO 2859 class) per lot
+- first-pass yield tracking by route
+- stop-the-line rule on adhesion failure
+- defect propagation cost: catching cracks before joining/finishing
+- route-comparison pilot: same wire lot split across both routes
+
+---
+
+## 5. Production Engineering, Automation, Storage & Integration Errors (`production-ops`) — 498 terms
+
+**Scope:** Turning the plating processes into a running continuous line: process sequencing and wire-speed matching across wet (electroplating) and dry (sputter/PVD) sections, buffer and accumulator design, changeovers, line balance and throughput math; automation and sensing for maximum autonomy (closed-loop thickness/rate control, interlocks, unattended-operation limits); scale-up paths from a single home unit to a mass-production unit (parallelization vs speed, capacity and OEE math, utilities and layout); the two owner-named first-class knowledge sets — practical storage (gold targets/salts security, plating-chemical compatibility, wire and coated-WIP protection, tarnish-safe finished goods) and the common errors and breakdowns of practical integration (seal wear, pump failures, bath crashes, wire breaks, contamination events); plus maintenance/spares/uptime discipline and workflow: piece tracking, batch records, yield accounting and rework loops. Deposition physics belongs to pvd-sputtering, bath chemistry to electro-plating, chamber construction to vacuum-machine-build; this domain owns making them run together, day after day.
+
+### 5.1 Continuous-Line Integration & Line Balance
+
+#### 5.1.1 Process Sequencing & Line Architecture
+
+**End-to-end process route design** (14 terms)
+
+- payoff spool / de-reeler stand
+- inline ultrasonic degrease module
+- electrocleaning cell (anodic vs cathodic mode)
+- counterflow rinse cascade
+- acid pickle station
+- Wood's nickel strike cell
+- barrier-layer plating cell in-line placement
+- air-wipe / squeegee drying station
+- wire pre-bake / degas zone before vacuum
+- sputter zone sequencing (strike layer then gold)
+- take-up winder with traverse
+- process order-of-operations map
+- wet-to-vacuum transition drying requirement
+- dead-loop threading path documentation
+
+**Coupling the wet line to the vacuum line** (12 terms)
+
+- air-to-vacuum moving-wire feedthrough
+- differential pumping stage count
+- inter-stage orifice sizing vs wire diameter clearance
+- wiper seal stack drag on wire
+- load-lock batch decoupling as alternative to true continuous feed
+- residual rinse-water carryover into chamber
+- outgassing spike from entrained moisture
+- dry nitrogen purge tunnel between sections
+- vacuum interlock gate valve at section boundary
+- hybrid route sequencing (electroplate strike + PVD topcoat)
+- chamber ingress particulate contamination
+- wire surface temperature entering seals
+
+**Takt time and line balancing** (12 terms)
+
+- takt time (s/piece)
+- cycle time vs takt comparison
+- bottleneck station identification
+- line balance efficiency %
+- rate-limiting deposition zone length (m)
+- bath dwell time (s) vs current density trade
+- coating-zone residence time at line speed
+- Yamazumi (stacked cycle) chart
+- drum-buffer-rope (theory of constraints) pacing
+- paced vs unpaced line sections
+- work-in-process cap between sections
+- station cycle chart
+
+#### 5.1.2 Wire Speed Matching & Tension Control
+
+**Wire transport and tension hardware** (12 terms)
+
+- dancer arm tension control
+- load-cell tension feedback (N / grams-force)
+- capstan drive
+- S-wrap drive roll pair
+- godet roll
+- slip-core / torque-controlled winder
+- level-wind traverse pitch (mm/rev)
+- back-tension setpoint
+- servo-driven nip roll
+- tension taper profile across spool build
+- elongation under tension vs coating micro-cracking
+- payoff overrun / free-spool brake
+
+**Speed synchronization across stations** (12 terms)
+
+- master-follower speed control
+- electronic gearing between drives
+- line-speed encoder (m/min)
+- VFD (variable frequency drive) synchronization
+- PID speed loop tuning
+- draw / speed-ratio mismatch fault
+- speed-thickness coupling (thickness inversely proportional to line speed)
+- ramp-rate limit (m/min per s)
+- slack-loop optical sensing
+- accumulator-mediated speed decoupling
+- creep speed for threading
+- zero-speed hold with plasma/current cutback
+
+#### 5.1.3 Buffers, Accumulators & Changeovers
+
+**Accumulator and buffer design** (10 terms)
+
+- festoon accumulator
+- vertical dancer accumulator
+- accumulator capacity (m of wire stored)
+- buffer sizing vs mean-time-to-repair of downstream station
+- zero-speed splice window
+- flying splice / on-the-fly spool change
+- minimum bend radius of coated wire on accumulator sheaves
+- accumulator wrap count vs added tension
+- wire cast/helix memory picked up in accumulator
+- sheave groove material (polyurethane-lined) for coated wire
+
+**Changeover and product transitions** (10 terms)
+
+- SMED (single-minute exchange of die) analysis
+- changeover checklist by product family
+- purge length (scrap meters between products)
+- recipe management system with parameter sets
+- bath makeup vs whole-bath swap changeover
+- target swap vent-and-pumpdown cycle time
+- first-article verification after changeover
+- from-to changeover time matrix
+- campaign length optimization vs changeover loss
+- wire-size change reseal of feedthrough stages
+
+### 5.2 Automation, Sensing & Autonomy
+
+#### 5.2.1 In-line Sensing & Measurement
+
+**Thickness and deposition-rate sensing** (12 terms)
+
+- quartz crystal microbalance (QCM) rate monitor
+- QCM crystal life % and replacement threshold
+- tooling factor calibration of QCM to wire position
+- deposition rate readout (angstrom/s)
+- in-line XRF coating thickness gauge
+- beta backscatter thickness gauge
+- eddy-current coating thickness sensor
+- laser micrometer diameter gauge (micron resolution)
+- ampere-hour counter as plated-mass proxy
+- coulometric thickness verification (offline check)
+- thickness-per-ampere-hour proportionality constant
+- optical emission monitoring of plasma line intensity
+
+**Process-state sensing** (12 terms)
+
+- capacitance manometer for process pressure
+- Pirani + cold-cathode gauge pair coverage
+- residual gas analyzer (RGA) leak/contaminant fingerprint
+- argon mass-flow controller (sccm) feedback
+- bath pH probe with automatic calibration
+- ORP (oxidation-reduction potential) electrode
+- bath temperature RTD (deg C) with high/low alarm
+- solution conductivity sensor (mS/cm)
+- gold concentration (g/L) by titration or AAS lab check
+- anode voltage drift monitoring
+- wire-break detector (proximity or photoelectric)
+- rectifier ripple monitoring
+
+**Vision and surface inspection** (8 terms)
+
+- line-scan camera wire inspection
+- dark-field illumination for scratch detection
+- machine-vision defect classifier (nodule/pinhole/skip)
+- defect map keyed to wire odometer position
+- colorimeter (CIELAB) gold-color tracking
+- gloss / specular reflectance sensor (gloss units)
+- diameter ovality trending from two-axis micrometer
+- automatic reject-flagging marker (ink/tag)
+
+#### 5.2.2 Closed-Loop Control & Interlocks
+
+**Closed-loop control strategies** (10 terms)
+
+- rate-controlled magnetron power regulation
+- feedforward from line speed to plating current setpoint
+- adaptive current density control (A/dm2)
+- ampere-hour-based brightener dosing (mL per A·h)
+- replenishment dosing pump loop
+- cascade control (bath temperature to heater duty)
+- deadband and anti-windup settings
+- SPC control limits triggering automatic hold
+- gain scheduling across line-speed range
+- auto-compensation for target erosion (power vs rate drift)
+
+**Interlocks and fail-safes** (12 terms)
+
+- vacuum interlock (HV inhibited above pressure setpoint)
+- cooling-water flow interlock on magnetron
+- over-temperature cutout on baths and PSU
+- bath low-level switch heater cutoff (dry-fire prevention)
+- ventilation-flow interlock for plating room
+- door/lid safety switch on chamber and tanks
+- E-stop chain wiring
+- fail-closed argon and gas valves
+- ground-fault protection on rectifier output
+- watchdog timer on PLC
+- alarm severity tiers (warning / hold / abort)
+- safe-state definition per fault class
+
+#### 5.2.3 Control Architecture & Unattended Operation
+
+**Control-system architecture** (11 terms)
+
+- PLC ladder logic program
+- HMI touchscreen recipe screens
+- SCADA data historian
+- Modbus RTU / RS-485 device network
+- OPC UA connectivity for logging
+- 4-20 mA instrument loops
+- PID autotune routine
+- alarm rationalization (ISA-18.2-style practice)
+- recipe parameter audit trail
+- data-logging interval selection (s)
+- UPS-backed control power for safe shutdown
+
+**Unattended-operation limits** (12 terms)
+
+- lights-out operation risk assessment
+- autonomy tiers (attended / monitored / lights-out)
+- remote alarm push (SMS / e-mail / app)
+- auto-shutdown safe-state sequence
+- HCN gas monitor for cyanide-bath areas (hydrogen cyanide: acutely toxic gas) with cyanide-free bath as the design-out alternative
+- no-unattended rule for cyanide-bearing baths without gas monitoring
+- fire risk of unattended rectifiers and heaters
+- spool-end auto-stop sensor
+- fault ride-through vs immediate safe abort policy
+- runtime-limited batch authorization
+- camera-based remote line watch
+- maximum unattended run length set by consumables (crystal, target, bath additive)
+
+### 5.3 Scale-Up Paths & Capacity Engineering
+
+#### 5.3.1 From Home Unit to Production Unit
+
+**Prototype-to-production translation** (10 terms)
+
+- pilot-line qualification run
+- design freeze milestone
+- process capability study (Cp / Cpk)
+- duty-cycle rating gap: DIY vs industrial power supply
+- industrialization of DIY components (connectors, cooling, enclosures)
+- MTBF target setting per subsystem
+- CE / UL-class equipment compliance gap on home-built gear
+- three-phase utility upgrade requirement
+- single-wire chamber to multi-wire chamber redesign
+- documentation package (P&ID, wiring diagram, spares list) as scale-up prerequisite
+
+**Parallelization vs line speed** (10 terms)
+
+- N-up parallel lane capacity math
+- multi-strand payoff creel
+- multi-wire seal/feedthrough manifold
+- lane-to-lane thickness uniformity spec
+- deposition-rate ceiling as speed-up limit
+- target power density limit (W/cm2) constraint
+- longer deposition zone vs higher rate trade-off
+- redundancy via several small identical units
+- single-point-of-failure consolidation risk of one big machine
+- shared vs dedicated pumping per lane
+
+#### 5.3.2 Capacity Math & Scale Economics
+
+**Capacity and OEE math** (10 terms)
+
+- OEE = availability x performance x quality
+- nameplate vs demonstrated capacity
+- line speed (m/min) x gold loading (g/m) usage rate
+- pieces per hour from ring cut pitch (mm/ring)
+- annual capacity in wire-kilometers per shift model
+- planned vs unplanned downtime split
+- utilization % vs saturation planning
+- ramp-up learning curve allowance
+- Little's law WIP-throughput relation
+- capacity buffer reserved for rework
+
+**Scale-up cost drivers** (10 terms)
+
+- capex step at each added lane
+- marginal cost per additional lane vs per speed increment
+- gold inventory float scaling with bath volume and targets
+- labor per shift vs autonomy level
+- electric power (kWh per km of coated wire)
+- argon consumption (L/min) scaling
+- floor footprint (m2) per lane
+- effluent-treatment capacity scaling
+- spares pooling across identical units
+- insurance and security cost step with gold on site
+
+#### 5.3.3 Facility, Utilities & Layout
+
+**Utilities and environment** (10 terms)
+
+- chilled-water loop for magnetron (L/min, delta-T)
+- compressed dry air (pressure dew point, deg C)
+- three-phase supply sizing (kVA)
+- local exhaust ventilation (LEV) capture velocity (m/s)
+- fume scrubber on acid/pickle stations
+- DI water system quality (MOhm-cm)
+- drain segregation: cyanide drains never meeting acid drains (HCN generation hazard - fatal gas)
+- temperature/humidity control in winding and inspection areas
+- emergency/backup power for vacuum gauges and pump controllers
+- dust control (cleanroom-lite) around open chamber work
+
+**Layout and material flow** (9 terms)
+
+- U-shaped line layout for one-operator coverage
+- wet/dry area segregation
+- gold-area security zone with access control
+- spaghetti diagram of material flow
+- gravity-fed counterflow rinse layout
+- maintenance access clearance around chamber
+- vibration isolation of vacuum chamber from winders
+- one-way flow from dirty (pickle) to clean (final coat) processes
+- chemical delivery route avoiding finished-goods area
+
+### 5.4 Practical Storage: Gold, Chemicals, Wire, WIP & Finished Goods
+
+#### 5.4.1 Gold & Precious-Inventory Security
+
+**Gold target, anode and salt custody** (11 terms)
+
+- sputter-target vault/safe storage
+- dual-control (two-person) gold access rule
+- potassium gold cyanide salt locked storage (hazard: acutely toxic, HCN-releasing on acid contact; cyanide-free alternative: sulfite/thiosulfate gold complexes)
+- weighed-in / weighed-out gold ledger
+- balance calibration for gold accounting (0.001 g class)
+- tamper-evident bags for targets and salts
+- bath gold content as live inventory (g/L x tank L)
+- spent-target reclaim lot documentation
+- insurance-rated safe class selection
+- chain-of-custody log per gold movement
+- refiner return manifest and assay reconciliation
+
+**Gold-bearing scrap and recovery storage** (8 terms)
+
+- segregated gold-bearing scrap bins by stream
+- dragout tank as recoverable gold store
+- ion-exchange resin cartridge staging and spent-resin lots
+- filter and anode-bag incineration/ash lot
+- sweeps and floor-dust collection routine
+- electrowinning cell sludge containment
+- assay sampling of scrap lots before shipment
+- precious-scrap shipping documentation and declared value
+
+#### 5.4.2 Plating-Chemical Storage & Compatibility
+
+**Segregation and compatibility** (12 terms)
+
+- strict cyanide/acid segregation (mixing releases HCN - fatal; cyanide-free bath chemistry as design-out)
+- chemical incompatibility matrix posted at store
+- corrosives cabinet for acids (GHS corrosive class)
+- oxidizer separation from organics
+- flammables cabinet for solvent degreasers (GHS flammable liquid class)
+- nickel salt storage note (nickel compounds: skin sensitizer / carcinogen category - glove and label discipline)
+- secondary containment sized to 110% of largest container
+- ventilated cabinet for ammonia/amine-bearing products
+- GHS label integrity checks on decanted bottles
+- SDS station placement at chemical store
+- cyanide-specific and acid-specific spill kits staged separately
+- peroxide-former date tracking on aged solvents
+
+**Shelf life and condition control** (10 terms)
+
+- brightener/additive shelf life (months, some refrigerated)
+- gold replenisher salt expiry tracking
+- amber bottles for light-sensitive chemistry
+- freeze protection of aqueous stock solutions
+- hygroscopic salt storage with desiccant
+- FIFO rotation of chemical stock
+- opened-container date marking
+- temperature-logged chemical store
+- sealed-drum bung torque and venting check
+- quarantine shelf for expired or suspect lots
+
+#### 5.4.3 Wire, WIP & Finished-Goods Protection
+
+**Bare and coated wire storage** (11 terms)
+
+- VCI (vapor corrosion inhibitor) paper wrap
+- desiccant-in-barrier-bag spool packaging
+- wire store relative humidity below ~40% RH
+- rust bloom on stored steel wire as reject driver
+- oiled vs degreased wire storage trade-off
+- spool flange edge protection
+- soft-core spools to prevent contact marks on coated wire
+- interleaved tissue on coated spools
+- wire cast/helix preservation in storage orientation
+- lint-free glove rule at wire handling
+- silica gel regeneration/replacement schedule
+
+**WIP between process stages** (8 terms)
+
+- flash-rust window: post-rinse hold limit (minutes) before next wet step
+- activated-surface time-to-plate limit after strike
+- no-hold rule for bath-wet parts
+- inter-process passivation or hold dip
+- WIP staging under dry nitrogen
+- covered WIP totes with soft liners
+- WIP identification tags (bath lot, ampere-hours, odometer range)
+- reclean requirement after expired hold time
+
+**Finished-goods tarnish-safe storage** (10 terms)
+
+- anti-tarnish tissue and strips in pack
+- zip-seal bags with anti-tarnish insert
+- activated-carbon storage inserts
+- sulfur-source avoidance (rubber bands, off-gassing cardboard, some felts)
+- nitrile-gloves-only handling of finished rings
+- individually pocketed ring trays
+- humidity-controlled display/storage cases
+- porosity-driven substrate corrosion vs surface tarnish distinction
+- final tumble/wipe before pack
+- pack-date and lot label on finished goods
+
+### 5.5 Common Integration Errors & Breakdown Catalog
+
+#### 5.5.1 Vacuum-Side Failure Modes
+
+**Seal and feedthrough failures** (12 terms)
+
+- wiper-seal abrasion by moving wire
+- elastomer compression set (seal ageing)
+- seal debris embedding into fresh coating
+- stick-slip squeal of wire through seal
+- PTFE ferrule cold flow loosening
+- O-ring gland over-compression damage
+- virtual leak from trapped volume
+- differential-stage orifice clogging with wear debris
+- vacuum grease migration into chamber
+- helium leak-check after every seal change
+- leak-up (rate-of-rise) test (mbar-L/s)
+- weld/splice bead tearing the wire seal
+
+**Pump and gauge failures** (12 terms)
+
+- rotary-vane pump oil backstreaming
+- diffusion pump backstreaming (oil on substrate)
+- pump oil emulsification from water carryover
+- foreline trap saturation
+- turbo pump bearing failure signature (pitch change, vibration)
+- turbo crash from accidental vent under speed
+- Pirani gauge contamination drift
+- cold-cathode gauge failure-to-strike
+- gauge tube blinded by coating deposit
+- belt slip on belt-drive roughing pumps
+- exhaust mist filter clogging
+- base-pressure creep as compound-fault symptom
+
+**Plasma and power failures** (10 terms)
+
+- target arcing tracks and pitting
+- target poisoning by reactive contaminant gas
+- racetrack burn-through at end of target life
+- magnetron cooling-water leak into vacuum
+- flaking shield debris shorting the dark space
+- disappearing anode effect in dirty chambers
+- arc-suppression settings mis-set (micro-arc spatter)
+- plasma impedance drift with chamber conditioning
+- MOSFET/IGBT failure in DIY HV supplies
+- HV cable corona and insulation tracking
+
+#### 5.5.2 Wet-Line Failure Modes
+
+**Bath crashes and contamination** (12 terms)
+
+- bath crash (sudden deposit-quality collapse)
+- metallic contamination limits (Cu, Zn, Fe in ppm)
+- organic contamination from tank/liner leachate
+- chloride contamination of gold bath
+- brightener overdose streaking
+- pH excursion crash
+- carbon treatment (activated-carbon pack) recovery
+- low-current-density dummy plating cleanup
+- anode bag rupture releasing particulates
+- algae/biofilm growth in stagnant rinse tanks
+- dragout-in cross-contamination between tanks
+- decant-and-rebuild vs treat-in-place decision
+
+**Rectifier and electrical faults** (9 terms)
+
+- rectifier ripple % out of specification
+- diode failure giving half-wave output
+- burned saddle/rack contact points
+- busbar corrosion voltage drop
+- stray-current corrosion of fixtures
+- accidental polarity reversal (deplating event)
+- current robber/thief mis-installed
+- blown ammeter shunt misreading current
+- loose lug thermal runaway
+
+#### 5.5.3 Wire-Handling & Coating-Defect Events
+
+**Wire breaks and transport faults** (10 terms)
+
+- wire break at weld/splice point
+- tension-spike snap
+- hydrogen-embrittlement snap after plating (delayed fracture)
+- birdsnest/tangle at payoff
+- spool crush from over-tension winding
+- guide-roller groove wear scoring the coating
+- capstan slip burnishing the gold
+- level-wind pattern fault (cross-overs)
+- misthreading after a break (skip of a station)
+- broken-wire whip damage to seals and guides
+
+**Contamination and coating-defect events** (11 terms)
+
+- fingerprint staining before plate
+- oil-mist recontamination after cleaning
+- water spotting / drying stains
+- embedded lint or fiber inclusion
+- nodule from particulate co-deposition
+- pinhole porosity cluster event
+- blistering / adhesion-loss field return
+- skip plating (unplated bands) from contact loss
+- chatter marks from roller vibration
+- longitudinal scratch line from a fixed worn guide
+- discoloration band from bath temperature excursion
+
+#### 5.5.4 Systemic Integration & Human-Factor Errors
+
+**Cross-process integration mistakes** (10 terms)
+
+- insufficient rinsing poisoning the next bath
+- wet wire entering vacuum (pressure crash from outgassing)
+- speed mismatch producing a thickness ramp along the coil
+- unit confusion in recipes (A/dm2 vs A/ft2)
+- ground loop between line sections corrupting sensors
+- analog scaling mismatch between sensor and PLC
+- sensor placed after the buffer measuring stale wire
+- startup sequence race condition
+- missing interlock discovered only by incident
+- calibration drift with no scheduled recal
+
+**Startup, shutdown and human-factor errors** (10 terms)
+
+- cold start without chamber conditioning/bakeout
+- venting with hot target (surface oxidation)
+- valve sequence error sucking pump oil into foreline
+- skipped leak check after seal change
+- tank filled with tap water instead of DI
+- additive dosing order error at bath makeup
+- forgotten dummy plate after carbon treatment
+- lockout/tagout bypass near-miss
+- shift-handover information loss
+- checklist fatigue and pencil-whipping
+
+### 5.6 Maintenance, Spares & Uptime Discipline
+
+#### 5.6.1 Preventive & Condition-Based Maintenance
+
+**PM schedules by asset** (12 terms)
+
+- roughing-pump oil change interval (run-hours)
+- O-ring and wiper-seal replacement calendar
+- magnetron target utilization % tracking
+- target thickness check at racetrack
+- anode inspection and anode-bag change
+- filter cartridge change by micron rating and delta-P
+- vacuum gauge recalibration interval
+- tension load-cell zero/span check
+- bearing lubrication schedule on winders
+- thermal-camera scan of busbars and lugs
+- chamber fastener torque check
+- rectifier fan and heatsink cleaning
+
+**Condition-based monitoring** (10 terms)
+
+- pump vibration signature trending
+- motor current signature analysis
+- base-pressure trend as chamber-health metric
+- leak-up rate trending after each campaign
+- deposition rate at fixed power as target-ageing metric
+- QCM crystal life % replacement threshold
+- seal drag-force trending on the wire
+- pump oil colorimetry / oil analysis
+- bath analysis cadence (titration per shift)
+- pump-down curve compared to golden baseline
+
+#### 5.6.2 Spares & Consumables Management
+
+**Critical spares strategy** (10 terms)
+
+- min/max spares stocking levels
+- insurance spare for long-lead items (magnetron, turbo)
+- spare gold target economics (capital tied up in stock)
+- seal-kit standardization across stations
+- consumables bill of materials per 1000 run-hours
+- single-source component risk register
+- vendor lead-time register
+- shutdown kitting (parts staged before PM window)
+- shelf-life-limited elastomer spares rotation
+- obsolescence watch on DIY electronics modules
+
+**Downtime economics** (9 terms)
+
+- downtime cost per hour model
+- MTBF / MTTR tracking per asset
+- availability % target setting
+- Pareto of downtime causes
+- planned-maintenance window scheduling
+- run-to-failure vs PM decision rule
+- spare-on-shelf vs downtime-risk trade calculation
+- campaign length vs changeover and PM cadence
+- deferred-maintenance debt tracking
+
+#### 5.6.3 Troubleshooting & Requalification Discipline
+
+**Structured diagnosis** (9 terms)
+
+- fault tree analysis
+- 5-why root cause analysis
+- FMEA (failure mode and effects analysis) register
+- half-split isolation method
+- known-good component swap testing
+- quarantine of suspect consumable lots
+- incident log with full process-parameter fingerprint
+- symptom-cause-remedy troubleshooting table per subsystem
+- CAPA (corrective and preventive action) loop
+
+**Post-repair requalification** (9 terms)
+
+- restart qualification checklist
+- golden-sample re-verification after repair
+- first-article inspection after maintenance
+- seal-change burn-in run before product
+- pump-down curve acceptance vs baseline
+- bath requalification via Hull cell test
+- adhesion spot-check (bend/tape practice) after line repair
+- PM-effectiveness review (did failures drop)
+- maintenance record tied to affected lot numbers
+
+### 5.7 Workflow, Handling & Production Records
+
+#### 5.7.1 Piece Tracking & Traceability
+
+**Identification and tracking** (10 terms)
+
+- lot/batch numbering scheme
+- wire odometer position referencing
+- meter-marked defect log per spool
+- spool traveler card
+- barcode/QR spool labels
+- bath-lot genealogy linking
+- target lot linked to coated lot
+- serialized ring batches
+- date-code marking convention
+- traceability from finished ring back to wire heat number
+
+**Batch records** (9 terms)
+
+- batch record sheet with signed-off parameters
+- ampere-hour log per plated lot
+- deposition run log (power, pressure, speed, rate)
+- bath analysis record attached to lot
+- deviation note procedure
+- lightweight electronic batch record (EBR)
+- retention samples per lot
+- operator sign-off and second-check rule
+- record retention period policy
+
+#### 5.7.2 Yield Accounting & Rework Loops
+
+**Yield and scrap accounting** (9 terms)
+
+- first-pass yield %
+- rolled throughput yield across stations
+- scrap meters per wire-break event
+- gold loss per reject (mg/piece)
+- yield-loss Pareto by defect type
+- purge-scrap accounting at changeover
+- gold mass balance (input vs on-product vs waste streams)
+- reject-bin audit routine
+- yield-adjusted cost per good piece
+
+**Rework loops** (9 terms)
+
+- strip-and-replate decision rules
+- gold stripping bath (cyanide-type stripper - hazard: acutely toxic; cyanide-free alternative: thiourea-based stripper, thiourea being a suspected carcinogen)
+- re-clean and re-strike rework route
+- rework traveler tag
+- maximum rework count per piece
+- downgrade-to-seconds quality path
+- rework cost vs scrap-to-refiner comparison
+- re-inspection gate after rework
+- rework gold recovery credit in costing
+
+#### 5.7.3 Handling Discipline & Standard Work
+
+**Clean-handling rules** (9 terms)
+
+- lint-free nitrile glove rule after final clean
+- no-bare-hands zone from strike onward
+- felt/polyurethane-lined contact surfaces for coated wire
+- no-steel-tools rule on coated surfaces
+- tacky mat at vacuum-room entry
+- soft-cradle spool handling cart
+- drop-damage quarantine rule
+- workstation 5S audit
+- dedicated inspection bench with controlled lighting
+
+**Standard work and operator qualification** (9 terms)
+
+- station SOP (standard operating procedure) set
+- visual work instructions with defect photo catalog
+- operator skill matrix
+- training-to-qualification sign-off
+- first-piece approval authority
+- abnormality response rule (stop-call-wait)
+- standard work combination sheet
+- glove and wipe change frequency rule
+- shift-start line verification walk
+
+---
+
+## 6. Quality Control, Testing & Durability (`qc-durability`) — 452 terms
+
+**Scope:** How to prove the gold-on-steel product before and during production: coating thickness measurement (XRF, microsection, coulometric) and the thickness-class vocabulary that prices the product; adhesion and formability testing for the plate-then-form-into-rings sequence; hardness, scratch and wear science behind the owner's scratch-resistant premium-finish goal; corrosion, tarnish and porosity testing of thin gold over an ignoble steel substrate (artificial sweat, salt spray, porosity indicators); the pre-production acceptance-test plan with sampling and pass/fail criteria that Q8 demands before production starts; the standards and jewelry-trade designation landscape (engineering gold-coating specs, FTC-style marking thresholds, nickel-release limits, food-contact framing for plated houseware); and the defect taxonomy for both wet-plated and sputtered coatings, mapped to root causes to feed corrective action.
+
+### 6.1 Coating Thickness Measurement & Thickness Classes
+
+#### 6.1.1 X-ray fluorescence (XRF) thickness gauging
+
+**XRF instrumentation and calibration** (14 terms)
+
+- energy-dispersive XRF (EDXRF) coating gauge
+- proportional-counter detector
+- silicon drift detector (SDD)
+- micro-focus X-ray tube voltage kV
+- collimator spot size µm
+- Au L-line fluorescence peak
+- measurement (acquisition) time s vs counting statistics
+- fundamental-parameters (FP) calibration
+- empirical calibration with certified Au/Ni/Fe foil standards
+- certified thickness-standard recertification interval
+- multilayer deconvolution Au/Ni/steel stack
+- infinite-thickness (saturation) limit of gold for XRF
+- ASTM B568 XRF coating-thickness method
+- ISO 3497 XRF metallic-coating thickness standard
+
+**XRF practice on plated wire and small parts** (10 terms)
+
+- V-block wire fixture under XRF head
+- curvature correction factor for round wire
+- spot-to-wire-axis alignment via video microscope
+- repeatability standard deviation µm on curved surface
+- per-spool thickness sampling map (start/middle/end of coil)
+- line-speed vs thickness correlation log
+- gold alloy density assumption error (hard gold vs pure Au g/cm³)
+- daily drift check against reference standard
+- minimum measurable thickness µm vs noise floor
+- measurement uncertainty budget for XRF
+
+#### 6.1.2 Destructive reference methods
+
+**Cross-section metallography** (13 terms)
+
+- ASTM B487 microscopical cross-section method
+- epoxy cold mounting of wire samples
+- protective nickel overplate for edge retention
+- SiC grinding paper grit sequence P320 to P4000
+- diamond polishing suspension 1 µm final step
+- smearing artifact of soft gold during polishing
+- calibrated eyepiece reticle / stage micrometer
+- taper (angle-lapped) section magnification enhancement
+- metallurgical microscope 500x-1000x thickness read
+- SEM cross-section with backscattered-electron layer contrast
+- EDS line scan across Au/Ni/Fe interfaces
+- focused ion beam (FIB) cross-section for sub-µm layers
+- wire potting orientation (transverse vs longitudinal)
+
+**Coulometric and gravimetric methods** (10 terms)
+
+- coulometric anodic-dissolution thickness test
+- ISO 2177 coulometric method
+- ASTM B504 coulometric thickness standard
+- gasketed measuring cell defined area cm²
+- coating-specific stripping electrolyte selection
+- endpoint detection by potential jump
+- destructive spot footprint on part
+- beta-backscatter thickness gauge (ASTM B567 class)
+- weigh-strip-weigh gravimetric method
+- coating mass per unit area mg/dm² conversion to µm
+
+#### 6.1.3 Thickness classes and gold-layer vocabulary
+
+**Trade and legal thickness designations** (12 terms)
+
+- gold flash / gold wash (below ~0.175 µm, FTC guide class)
+- gold electroplate (GEP) minimum ~0.175 µm (7 µin)
+- heavy gold electroplate (HGE) minimum ~2.5 µm (100 µin)
+- vermeil (≥2.5 µm gold over sterling silver base)
+- gold-filled 1/20 by weight (mechanically clad, not plated)
+- "1-micron" / "2-micron" plating trade jargon
+- karat fineness of the deposited gold layer (e.g. hard gold ~23k)
+- micron-plating price tiering per µm of gold
+- flash-over-nickel budget finish
+- PVD 'gold ion plating' trade label vs true thickness
+- underkarating / thickness misdeclaration risk
+- ISO 8654 gold colour designation (1N-5N shades)
+
+**Engineering thickness specification vocabulary** (10 terms)
+
+- significant surface definition on a ring
+- minimum local thickness vs average thickness
+- thickness class callout per coating standard (e.g. ASTM B488 class)
+- lower specification limit (LSL) µm
+- thickness distribution across wire circumference (sputter shadowing side)
+- throwing-power-driven thickness variation % (wet route)
+- coefficient of variation of thickness per lot
+- worst-case point measurement location rule
+- nominal vs guaranteed-minimum quoting to customers
+- thickness-vs-service-life derating table
+
+### 6.2 Adhesion & Formability Testing
+
+#### 6.2.1 Qualitative adhesion test battery
+
+**ASTM B571-family bench tests** (12 terms)
+
+- ASTM B571 adhesion test practices (umbrella standard)
+- bend test over mandrel to fracture
+- burnishing test with smooth tool
+- file test at 45° to coating edge
+- grind-saw test edge examination
+- chisel-knife lift test
+- scribe-grid (cross-hatch) test
+- pressure-sensitive tape pull after cross-hatch
+- peel test on tab of coating
+- draw (deformation) test
+- pass criterion: no flaking/lifting at 4x magnification
+- adhesion failure locus: intercoat vs coating-substrate
+
+**Thermal-cycle and bake adhesion tests** (9 terms)
+
+- heat-quench test (heat then water quench)
+- test temperature selection by substrate/coating pair °C
+- thermal-shock cycling ΔT with cycle count
+- blister formation on baking as adhesion failure
+- diffusion-anneal discoloration during heat test
+- hydrogen-embrittlement relief bake (ASTM B850 class, °C x h)
+- coefficient-of-thermal-expansion mismatch stress
+- post-forming stress-relief temperature window
+- oven bake test 200 °C class for blister screening
+
+#### 6.2.2 Wire bend and forming-simulation tests
+
+**Mandrel and wrap testing of coated wire** (12 terms)
+
+- wrap test around own-diameter mandrel (1D, 2D, 4D severity)
+- 180° bend-and-return cycle count to crack
+- ASTM B489 bend-ductility practice for deposits
+- deposit elongation-to-crack %
+- crack onset strain vs ring-forming strain check
+- spiral wrap under stereo microscope 10x-40x
+- crazing (fine crack network) on tension side
+- coating crack spacing µm vs bend radius mm
+- springback allowance effect on final strain
+- soft (ductile) gold vs hard (brittle) gold bendability
+- nickel interlayer cracking before gold layer
+- wrap-test coupon cut from every spool end
+
+**Post-forming inspection of ring blanks** (9 terms)
+
+- 10x loupe inspection (jewelry-trade default magnification)
+- tension-side vs compression-side defect asymmetry
+- dye-penetrant-style visual crack enhancement
+- cut-and-flare test of formed joint area
+- solder/weld joint plating integrity check
+- re-plating decision rule after forming damage
+- formed-ring adhesion tape re-test
+- burnish-polish response after forming
+- reject code for forming-induced coating failure
+
+#### 6.2.3 Quantitative adhesion for PVD coatings
+
+**Scratch and indentation adhesion metrics** (11 terms)
+
+- progressive-load scratch tester
+- Rockwell diamond stylus 200 µm radius
+- critical load Lc1/Lc2/Lc3 N
+- acoustic-emission detection of coating fracture
+- ASTM C1624 scratch-adhesion method class
+- VDI 3198 Rockwell-C indentation adhesion test
+- HF1-HF6 adhesion grade chart (indentation crack network)
+- buckling vs chipping vs conformal cracking failure modes
+- substrate hardness effect on measured Lc
+- scratch-track SEM examination
+- load ramp rate N/min parameter
+
+**Pull-off and interface characterization** (9 terms)
+
+- stud pull-off test with epoxy-bonded dolly
+- pull-off strength MPa
+- glue-failure invalidation rule (epoxy weaker than interface)
+- interfacial oxide as adhesion killer (Cr2O3 on stainless)
+- sputter-etch pre-clean effect on adhesion
+- adhesion interlayer vocabulary (Ti, Cr strike layers)
+- XPS/Auger interface contamination analysis
+- peel strength N/mm for foil-type samples
+- residual stress in coating MPa (curvature method)
+
+### 6.3 Hardness, Scratch & Wear Durability
+
+#### 6.3.1 Deposit hardness measurement
+
+**Microhardness methods** (12 terms)
+
+- Knoop microhardness HK25 (25 gf load)
+- Vickers microhardness HV0.025
+- ASTM B578 Knoop microhardness of electrodeposits
+- ISO 4516 micro-hardness of metallic coatings
+- soft (pure) gold deposit ~40-90 HK range
+- hard (alloyed) gold deposit ~130-200 HK range
+- cobalt-hardened vs nickel-hardened gold
+- indent on metallographic cross-section vs on surface
+- minimum coating thickness for valid indent (10x indent depth rule)
+- load dwell time s
+- anvil/substrate effect on thin-coating hardness
+- hardness drop after annealing (grain growth)
+
+**Nanoindentation and thin-coating corrections** (9 terms)
+
+- instrumented nanoindentation (Oliver-Pharr analysis)
+- Berkovich diamond indenter
+- indentation depth limit <10% of coating thickness
+- hardness GPa vs HV conversion
+- elastic modulus of deposit GPa
+- indentation size effect in thin gold
+- surface roughness Ra requirement for valid nanoindent
+- pile-up correction for soft metals
+- H/E ratio as wear-resistance predictor
+
+#### 6.3.2 Scratch and abrasion testing
+
+**Standardized abrasion testers** (11 terms)
+
+- Taber rotary abraser (ASTM D4060 class)
+- CS-10 resilient abrasive wheel
+- load 250/500/1000 g arm weights
+- mass loss mg per 1000 cycles metric
+- wear index calculation
+- pin-on-disc tribometer
+- coefficient of friction trace vs cycles
+- wear scar profilometry µm depth
+- reciprocating (linear) wear tester
+- ball-on-flat fretting test
+- counterbody selection (100Cr6 steel ball, alumina ball)
+
+**Practical scratch screening** (9 terms)
+
+- pencil hardness scratch ladder (6B-9H)
+- 0000 steel-wool rub test cycle count
+- fingernail scratch benchmark (~2-2.5 Mohs)
+- Mohs pick hardness kit
+- crockmeter-style rub fixture
+- eraser abrasion test (trade screening)
+- gloss retention % after rub cycles
+- scratch visibility under D65 lamp inspection
+- key-and-coin pocket-wear simulation jar
+
+#### 6.3.3 Real-world wear correlation and durability levers
+
+**Service-wear mechanisms and correlation** (11 terms)
+
+- two-body abrasive wear vs adhesive (galling) wear regime
+- burnishing (plastic smearing) vs material-removal wear
+- ring high-spot wear-through to nickel underlayer
+- in-service gold loss rate µm/year (trade rule-of-thumb, use as estimate)
+- EN 12472 simulated wear-and-corrosion pretreatment
+- rotating-drum tumble test with abrasive media
+- Archard wear equation (volume ∝ load x sliding distance / hardness)
+- sweat + abrasion combined degradation
+- wear acceleration factor lab-to-field
+- customer-return wear pattern mapping
+- edge and inner-band wear asymmetry on rings
+
+**Hardening levers: alloys, interlayers, topcoats** (13 terms)
+
+- hard-gold alloying additions ~0.1-0.5 wt% Co or Ni
+- grain refinement by brightener/additive systems
+- sulfamate nickel underlayer HV ~200-400 leveling coat
+- palladium or Pd-Ni 80/20 barrier-hardening interlayer
+- TiN / ZrN color-matched hard undercoat (PVD route)
+- gold-on-TiN duplex coating architecture
+- load-support effect of hard interlayer under thin gold
+- e-coat / cataphoretic clear lacquer topcoat
+- nano-ceramic clear topcoat (sol-gel class)
+- anti-tarnish passivation dip
+- hardness vs solderability/karat-look trade-off
+- duplex hardness rule: coating no harder than support allows
+- thickness increase vs hardness increase cost comparison
+
+### 6.4 Corrosion, Tarnish & Porosity Testing
+
+#### 6.4.1 Skin-contact and artificial sweat testing
+
+**Artificial sweat methods** (11 terms)
+
+- synthetic sweat solution (NaCl + lactic acid + urea, pH ~4.5-6.5)
+- ISO 3160-2 watch-case artificial sweat class test
+- acid vs alkaline sweat formulations
+- sweat-soaked pad contact test 24-96 h
+- 37 °C incubation (body temperature) condition
+- discoloration/green-stain (copper salt) evaluation
+- skin-contact corrosion ranking scale
+- chloride pitting of exposed steel at pores
+- lactic acid (mild irritant) reagent handling
+- post-test rinse and 10x inspection protocol
+- wear-then-sweat sequential test order
+
+**Nickel-release compliance testing** (10 terms)
+
+- EU REACH Annex XVII nickel restriction (entry 27)
+- nickel release limit 0.5 µg/cm²/week (prolonged skin contact)
+- piercing-post limit 0.2 µg/cm²/week
+- EN 1811 nickel-release reference method
+- EN 12472 wear-and-corrosion pre-conditioning before EN 1811
+- dimethylglyoxime (DMG) spot test for nickel (screening)
+- nickel underlayer exposure risk on worn plating
+- nickel-free interlayer strategy (Pd, bronze, white bronze)
+- ICP-OES/AAS quantification of released nickel µg
+- declaration of nickel-safe compliance to buyers
+
+#### 6.4.2 Accelerated corrosion chambers
+
+**Salt spray family** (12 terms)
+
+- neutral salt spray (NSS) 5% NaCl at 35 °C
+- ASTM B117 salt-spray practice
+- ISO 9227 NSS/AASS/CASS variants
+- acetic-acid salt spray (AASS) pH 3.1-3.3
+- copper-accelerated CASS test (CuCl2 addition)
+- exposure duration ladder 24/48/96 h
+- red rust (iron corrosion) rating on steel-cored parts
+- corrosion rating scale by % affected area
+- salt-fog chamber calibration (collection rate mL/h per 80 cm²)
+- post-exposure rinse/dry inspection protocol
+- creepage from cut edge or pore mm
+- salt spray as porosity amplifier for Au-over-steel
+
+**Humidity and gas exposure tests** (9 terms)
+
+- damp heat 85 °C / 85% RH storage test
+- condensing-humidity cycle test
+- Kesternich SO2 test (sulfur dioxide: toxic corrosive gas)
+- flowers-of-sulfur vapor test (sulfur: flammable solid, low toxicity)
+- ASTM B809 moist sulfur-vapor porosity/tarnish test
+- mixed flowing gas (MFG) test class for electronics-grade gold
+- tarnish film interference colors as thickness indicator
+- hydrogen sulfide trace exposure (H2S: toxic flammable gas) in MFG
+- desiccator-scale DIY humidity test with saturated salt solutions
+
+#### 6.4.3 Porosity testing of thin gold over steel
+
+**Chemical porosity indicators** (12 terms)
+
+- nitric-acid vapor porosity test (nitric acid: corrosive oxidizing acid, toxic fumes)
+- ASTM B735 nitric-acid vapor method for gold coatings
+- sulfurous-acid/sulfur-vapor pore bloom method
+- ferroxyl test: potassium ferricyanide + NaCl gel, Prussian-blue spots at iron pores (reagent low-hazard; never acidify strongly - traces of HCN)
+- electrographic porosity print on gelatin-coated paper
+- pore count per cm² acceptance metric
+- pore corrosion-product creep (spot growth) grading
+- thickness-porosity law: porosity falls steeply up to ~1-2.5 µm gold
+- pore vs pit vs pinhole terminology discipline
+- witness coupon vs actual part porosity correlation
+- substrate roughness Ra effect on pore density
+- porosity as the failure mode of thin gold over active steel (galvanic pore cell)
+
+**Electrochemical porosity assessment** (10 terms)
+
+- galvanic couple Au(cathode)/steel(anode) pore-cell mechanism
+- small-anode/large-cathode acceleration of pore corrosion
+- open-circuit potential (OCP) drift mV as porosity indicator
+- linear polarization resistance (LPR) porosity screening
+- electrochemical impedance spectroscopy (EIS) coating rating
+- potentiodynamic anodic scan in NaCl electrolyte
+- porosity % from corrosion-current ratio method
+- saturated calomel / Ag-AgCl reference electrode
+- deaerated vs aerated electrolyte condition
+- barrier-interlayer (Ni, Pd) effect on pore-cell current
+
+### 6.5 Acceptance Test Plan & Production QC
+
+#### 6.5.1 Pre-production qualification
+
+**Qualification protocol design** (12 terms)
+
+- pre-production qualification run (PQR)
+- qualification test matrix (test x sample x criterion)
+- design of experiments (DOE) screening of process window
+- pass/fail criteria table with numeric limits
+- kill criteria (stop-conditions) before scale-up
+- witness coupon plated/coated alongside every run
+- worst-case specimen selection (thinnest spot, sharpest bend)
+- three-consecutive-conforming-lots qualification rule
+- requalification trigger list (new bath make-up, new target, new wire lot)
+- process window edges qualification (min/max line speed)
+- test sequencing: thickness -> adhesion -> forming -> porosity -> sweat
+- qualification report sign-off before first sale
+
+**First-article inspection** (9 terms)
+
+- first-article inspection (FAI) report
+- ballooned drawing / characteristic numbering
+- 100% characteristic verification on first article
+- first-off / last-off piece retention per shift
+- golden sample (boundary sample) retention
+- deviation/waiver record for non-nominal first article
+- customer approval sample loop
+- FAI repeat after process relocation or long stoppage
+- reference photo standard for premium finish appearance
+
+#### 6.5.2 Sampling and statistics
+
+**Lot sampling plans** (11 terms)
+
+- acceptable quality limit (AQL) selection e.g. 1.0/2.5
+- ISO 2859-1 / ANSI-ASQ Z1.4 attribute sampling tables
+- lot definition for continuous wire (one spool = one lot rule)
+- sample-size code letter by lot size
+- single vs double sampling plan
+- c=0 (accept-on-zero) sampling plan
+- tightened/normal/reduced inspection switching rules
+- destructive-test sample budget per lot
+- critical vs major vs minor defect classification
+- consumer's risk / producer's risk %
+- skip-lot sampling after sustained conformance
+
+**Measurement-system and process capability** (10 terms)
+
+- gauge R&R study (%GRR <10% target)
+- repeatability vs reproducibility components
+- measurement uncertainty vs tolerance ratio
+- process capability index Cpk ≥1.33 convention
+- Ppk long-term performance index
+- thickness histogram vs LSL visualization
+- non-normal thickness distribution handling
+- calibration schedule and sticker discipline
+- reference-standard traceability chain
+- operator qualification for XRF and bend tests
+
+#### 6.5.3 In-process control and documentation
+
+**SPC and control points** (11 terms)
+
+- control plan document (characteristic -> method -> frequency -> reaction)
+- X-bar/R control chart on XRF thickness
+- individuals/moving-range (I-MR) chart for low-volume lots
+- control limits vs specification limits distinction
+- Western Electric run rules for drift detection
+- reaction plan on out-of-control point
+- per-spool start/middle/end thickness check frequency
+- bath-analysis schedule tied to amp-hours (wet route)
+- target-erosion / rate-monitor log (sputter route)
+- line-speed and current-density traveler entries
+- hourly visual inspection at unwind/rewind
+
+**Records, traceability, outside labs** (10 terms)
+
+- lot traveler with process-parameter capture
+- spool/lot serialization and label discipline
+- certificate of conformance (CoC) issuance
+- nonconformance report (NCR) and quarantine shelf
+- material review board (MRB) disposition (use-as-is/rework/scrap)
+- corrective and preventive action (CAPA) record
+- ISO/IEC 17025 accredited external lab for referee tests
+- outsourced nickel-release and salt-spray test strategy for DIY shop
+- retained-sample archive with date code
+- test-report retention period policy
+
+### 6.6 Standards & Quality Designations
+
+#### 6.6.1 Coating standard families
+
+**Engineering gold-coating standards** (10 terms)
+
+- ASTM B488 electrodeposited gold for engineering use (Type/Code/Class system)
+- ASTM B488 Type I/II/III gold purity grades
+- ASTM B488 hardness Code A-D (Knoop bands)
+- ISO 27874 gold and gold-alloy electrodeposited coatings
+- MIL-DTL-45204 gold plating (legacy MIL-G-45204) class system
+- ISO 4524 test-methods family for gold coatings
+- electrodeposited nickel underlayer standards family (ASTM B689 class)
+- PVD decorative-coating specification practice (no single jewelry PVD standard - buyer specs rule)
+- purity designation 99.9 / 99.7 / 99.0 % Au minimum
+- standard's 'significant surface' and 'severe service' language
+
+**Test-method standards map** (12 terms)
+
+- thickness: ASTM B568 (XRF) / B487 (microsection) / B504 & ISO 2177 (coulometric)
+- thickness (other): ASTM B567 beta backscatter, ISO 2178 magnetic, ISO 2360 eddy current
+- adhesion: ASTM B571 practice family
+- ductility/bend: ASTM B489 practice class
+- microhardness: ASTM B578 / ISO 4516
+- abrasion: ASTM D4060 Taber class
+- salt spray: ASTM B117 / ISO 9227
+- porosity: ASTM B735 (nitric vapor) / B809 (sulfur vapor)
+- nickel release: EN 1811 with EN 12472 pre-wear
+- hydrogen-embrittlement relief: ASTM B850 class
+- sampling: ISO 2859-1 / ANSI-ASQ Z1.4
+- which-standard-for-which-claim crosswalk table
+
+#### 6.6.2 Jewelry-trade and legal designations
+
+**Marketing and marking terms with thresholds** (12 terms)
+
+- FTC Jewelry Guides terminology regime (US)
+- gold flashed / gold washed (< ~0.175 µm) - lowest tier
+- gold electroplate (GEP) ≥ ~0.175 µm equivalent of fine gold
+- heavy gold electroplate (HGE) ≥ ~2.5 µm
+- vermeil marking rules (sterling base + ≥2.5 µm gold)
+- gold-filled (GF) 1/20 weight fraction clad stock
+- karat quality mark applies to the gold layer fineness
+- 'PVD gold' / 'ion plated' as unregulated marketing terms
+- 'tarnish-free' claim substantiation duty
+- misrepresentation liability for thickness shortfalls
+- assay/hallmark offices do not hallmark plated goods (base-metal core)
+- country-specific marking law check before export
+
+**Regulatory limits for jewelry and houseware** (11 terms)
+
+- EU REACH nickel-release restriction for skin-contact articles
+- REACH/consumer limits on lead and cadmium in jewelry (lead, cadmium: toxic heavy metals)
+- CPSIA lead limits for children's jewelry (US)
+- California Proposition 65 disclosure exposure
+- food-contact framework for plated cups/spoons: EU 1935/2004 class / FDA food-contact rules
+- metal-release migration testing into food simulants (acetic acid 4% simulant)
+- gold and silver as accepted food-contact surfaces vs nickel restriction
+- no-cyanide-residue verification on finished goods (cyanide salts: acutely toxic - wet route legacy)
+- RoHS-style substance declarations requested by retailers
+- SDS retention for all QC reagents
+- test-house compliance certificate as retail gatekeeper
+
+#### 6.6.3 Writing the product specification
+
+**Spec structure and callouts** (10 terms)
+
+- coating callout syntax: substrate / interlayer+thickness / gold class+thickness
+- significant-surface sketch attached to spec
+- minimum thickness at significant surface µm
+- appearance clause referencing boundary samples
+- color specification vs 1N-5N gold shade chart
+- gloss units (GU at 60°) for premium-finish clause
+- adhesion clause naming the test practice and severity
+- porosity clause with pore-count limit and method
+- packaging/anti-tarnish storage clause (VCI paper, sealed bags with desiccant)
+- shelf-life and storage humidity limit % RH
+
+**Acceptance clauses for buyers and suppliers** (8 terms)
+
+- incoming-inspection clause for purchased wire (diameter tolerance µm, surface finish Ra)
+- supplier CoC with actual thickness readings requirement
+- right-to-audit and retained-sample clause
+- acceptance sampling plan reference in purchase order
+- rejection/return and rework-cost allocation clause
+- referee-test laboratory nomination clause
+- quality agreement severity table (critical/major/minor)
+- change-notification requirement (bath chemistry, target alloy, wire source)
+
+### 6.7 Defect Taxonomy & Root-Cause Analysis
+
+#### 6.7.1 Electroplating defect catalogue
+
+**Appearance and coverage defects** (13 terms)
+
+- pinholes (gas or particle occlusion)
+- pitting from hydrogen bubble adherence
+- burning (powdery deposit at excessive current density)
+- dull / hazy / milky deposit (additive imbalance, contamination)
+- nodules and roughness from bath particulates
+- skip plating / bare spots (poor contact or masking residue)
+- step plating line at liquid level or contact point
+- streaking in wire travel direction (flow marks)
+- orange peel texture
+- color drift (karat shade off 1N-5N target)
+- haze from organic brightener breakdown products
+- edge build-up / dog-boning at high-current edges
+- whisker/dendrite growth at high current density points
+
+**Adhesion and substrate-driven wet defects** (10 terms)
+
+- blistering from poor pre-clean or trapped hydrogen
+- peeling at strike/underlayer interface
+- laminar (inter-deposit) delamination between layers
+- hydrogen embrittlement cracking of high-strength steel wire
+- smut re-deposition after over-pickling
+- passive stainless surface causing zero adhesion (needs Wood's nickel strike)
+- bipolar (stray-current) etching marks
+- rust bloom under coating from pre-existing corrosion
+- drawing-lubricant residue stain plated over
+- water-spot pattern from poor final rinse/dry
+
+#### 6.7.2 PVD/sputter defect catalogue
+
+**Growth and particle defects** (12 terms)
+
+- nodular growth defect seeded by surface particle
+- pinhole from flake-off of chamber-wall deposit
+- macroparticle/droplet inclusion (arc events)
+- columnar zone-1 porous microstructure (low adatom mobility)
+- shadowing thin-side on wire circumference (single-target geometry)
+- poor step coverage in surface scratches of wire
+- comet-tail defect around seed particle
+- coating dust (gas-phase nucleation at high pressure)
+- flaking of thick built-up coating on fixtures
+- thickness banding from wire vibration in plasma
+- rainbow interference discoloration (thin/varying film)
+- target metal cross-contamination tint
+
+**Process-instability defects** (10 terms)
+
+- arcing tracks from target surface oxide/nodules
+- target poisoning shift (if reactive gas present)
+- racetrack-erosion-driven rate drift over target life
+- virtual leak outgassing causing hazy film
+- water-vapor dominated residual gas -> poor adhesion film
+- backstreamed pump oil film under coating (oil-sealed/diffusion pump risk)
+- moving-wire seal debris scoring the fresh coating
+- take-up spool contact marks on soft gold
+- temperature overshoot annealing/discoloring the wire
+- plasma instability flicker -> layer banding
+
+#### 6.7.3 Root-cause methodology
+
+**Structured problem-solving tools** (11 terms)
+
+- fishbone (Ishikawa) diagram: man/machine/material/method/measurement/environment
+- 5-Whys drill on a single defect instance
+- Pareto chart of defect counts per category
+- 8D structured corrective-action report
+- process FMEA with severity x occurrence x detection RPN
+- is/is-not (Kepner-Tregoe style) problem framing
+- concentration diagram (defect location map on part)
+- designed experiment to confirm suspected cause
+- one-factor-at-a-time trap vs factorial confirmation
+- control-chart timestamp cross-reference to process events
+- defect photo library with graded exemplars
+
+**Defect-to-cause mapping practice** (10 terms)
+
+- defect-to-process-step traceback matrix (prep vs deposition vs handling)
+- pinhole density vs substrate cleanliness correlation
+- blister rate vs degrease/electroclean effectiveness check
+- porosity vs thickness and vs substrate Ra correlation
+- adhesion failure locus analysis (which interface let go)
+- bath age / metal turnover (MTO) vs dullness trend
+- target life hours vs particle-defect rate trend
+- seal wear cycles vs coating scratch rate trend
+- first-lot-of-day effect (chamber humidity, cold bath)
+- quarantine-and-bracket method to isolate the defective interval of wire
+
+---
+
+## 7. Finishing, Product Design & Houseware Extension (`finishing-design-extension`) — 474 terms
+
+**Scope:** Everything that turns gold-coated steel wire into a premium product and extends the process beyond wire rings: engineering the scratch-resistant premium look (substrate polish before plating, brightness and leveling, gold color and karat-look control, hard-gold finish alloys and interlayer hardness stacks as design choices, protective topcoats from e-coat lacquer to nano-ceramic and their wear trade-offs); product design methods for the jewelry line (Q12: wire-formed shape vocabulary, ring-sizing standards, finish specification on drawings, range/collection logic and design-for-manufacture within the wire-forming constraint); and the extension to glass, cups and spoons (Q10), where non-conductive substrates force different metallization routes (PVD direct, conductive seed paints, electroless seed then electroplate) and food-contact use imposes different suitability constraints on layer-stack and placement design. Testing methods live in qc-durability; compliance rules live in safety-regulatory; deposition process detail lives in pvd-sputtering and electro-plating.
+
+### 7.1 Premium Finish Engineering (Pre-Plate Surface & Deposit Brightness)
+
+#### 7.1.1 Mechanical surface preparation and polishing before coating
+
+**Abrasive polishing and buffing sequence** (14 terms)
+
+- grit progression 400 to 1200 grit
+- tripoli cutting compound
+- jeweler's rouge (red rouge) coloring compound
+- muslin buffing mop
+- stitched vs loose calico wheel
+- cut-down vs color buffing pass
+- greaseless satin-finish compound
+- scotch-brite satin brushing
+- Ra surface roughness in um
+- mirror finish target Ra below 0.05 um
+- buffing compound residue (drag-in contamination)
+- orange-peel surface from over-buffing
+- wire burnishing die
+- polishing lathe spindle speed rpm
+
+**Mass finishing for wire parts and small pieces** (14 terms)
+
+- vibratory tumbler (vibratory bowl finisher)
+- rotary barrel tumbling
+- ceramic bonded-abrasive media
+- porcelain polishing media
+- hardened steel shot burnishing media
+- magnetic pin finisher (stainless pins)
+- drag finishing machine
+- centrifugal disc finisher
+- burnishing soap compound
+- media-to-part ratio
+- cycle time in hours per finish stage
+- edge radiusing / deburring of cut wire ends
+- part-on-part impingement marks
+- media lodging in coiled parts
+
+**Electropolishing and chemical brightening** (13 terms)
+
+- electropolishing of stainless steel
+- phosphoric-sulfuric acid electropolish electrolyte (corrosive, hazard class 8)
+- anodic current density A/dm2
+- bath temperature setpoint degC
+- viscous anolyte film mechanism
+- micro-smoothing vs macro-leveling
+- anodic leveling of asperities
+- bright dip (chemical polish)
+- post-electropolish passivation of stainless
+- rack contact (bipolar) marks
+- gassing streaks defect
+- over-etch frosting defect
+- electropolish stock removal in um
+
+#### 7.1.2 Brightness and leveling in the plated deposit
+
+**Brightener and leveler additive chemistry** (13 terms)
+
+- primary (carrier) brightener
+- secondary brightener
+- leveling agent
+- grain refiner
+- throwing power
+- covering power
+- Hull cell test panel
+- brightener burn (high-current-density dullness)
+- organic additive breakdown products
+- carbon treatment of aged bath
+- cobalt/nickel co-deposit as brightener-hardener in acid gold
+- dull low-current-density zone
+- additive dosing by amp-hour meter
+
+**Leveling underlayer stacks** (12 terms)
+
+- bright acid copper leveling underplate
+- bright nickel leveling underplate
+- semi-bright nickel layer
+- duplex nickel system
+- sulfur co-deposit embrittlement from brighteners
+- micro-throwing power into scratches
+- copper flash over strike
+- palladium underlayer as bright barrier
+- underplate thickness in um per layer
+- leveling ratio (scratch fill per um plated)
+- laminated multilayer luster stack
+- step coverage over wire draw lines
+
+#### 7.1.3 Gold color and karat-look control
+
+**Gold alloy color space and color measurement** (12 terms)
+
+- CIELAB L*a*b* color coordinates
+- NIHS/Swiss 1N-2N-3N-4N gold color designation classes
+- 24k pure-gold color vs 18k karat look
+- rose gold via copper co-deposit
+- green gold via silver co-deposit
+- pale (hamilton-type) gold shade
+- white-gold look via palladium alloying
+- color drift with bath aging
+- color matching under D65 illuminant
+- spectrophotometer color QC
+- delta-E color difference tolerance
+- master color reference chip
+
+**Color control in PVD gold and gold-look coatings** (12 terms)
+
+- TiN gold-look (titanium nitride) coating
+- ZrN pale-gold coating
+- TiN vs real-gold hue mismatch
+- sputtered Au-Cu alloy target for rose tone
+- co-sputtering for alloy color
+- reactive nitrogen flow in sccm shifting nitride color
+- interference tint at sub-0.1 um thickness
+- flash gold over TiN for true-gold color
+- target poisoning color drift
+- witness coupon color check per batch
+- rainbow discoloration defect
+- substrate reflectivity influence on final color
+
+**Flash gold and karat-look trade vocabulary** (11 terms)
+
+- flash gold layer 0.05-0.175 um
+- decorative flash vs functional gold thickness
+- gold strike bath
+- micron plating trade term (1-micron, 2.5-micron)
+- vermeil trade class (gold over sterling silver, minimum thickness)
+- gold-tone vs gold-plated vs gold-filled distinctions
+- top-flash color unification over mixed lots
+- karat declaration of deposit (e.g. 23k+ hard gold)
+- duplex flash (color gold over hard gold)
+- skip plating (missed flash) defect
+- burn-through of flash during buffing
+
+### 7.2 Scratch-Resistance Strategy: Hard Gold & Interlayer Stacks
+
+#### 7.2.1 Hard gold finish alloy systems
+
+**Acid hard gold (cobalt/nickel hardened) systems** (12 terms)
+
+- acid hard gold bath (cobalt-hardened)
+- nickel-hardened gold deposit
+- potassium gold cyanide KAu(CN)2 salt (toxic, hazard class 6.1)
+- citrate-buffered acid gold electrolyte pH 3.5-5
+- Knoop hardness 130-200 HK25 for hard gold
+- soft pure gold circa 60-90 HK25 comparison
+- polymer (carbon) co-deposit in cobalt gold
+- 99.7 percent minimum gold purity class of hard gold
+- karat drop with hardener content
+- hardener metal ppm control in bath
+- ductility loss of hardened gold (forming risk)
+- contact-grade vs decorative-grade hard gold jargon
+
+**Cyanide-free and specification landscape** (11 terms)
+
+- gold sulfite bath (cyanide-free alternative)
+- gold thiosulfate chemistry
+- sulfite bath disproportionation instability
+- cyanide-free vs cyanide bath adhesion trade-off
+- ASTM B488 gold coating classification (type/code/grade)
+- legacy MIL-G-45204 gold plating classes
+- hardness code grading of gold deposits
+- type I/II/III purity typing of engineering gold
+- thickness class callout per service condition
+- mixed-ligand gold electrolytes
+- arsenic/thallium grain refiners in some gold baths (toxic, hazard note)
+
+#### 7.2.2 Interlayer hardness stacks (design intent)
+
+**Electroplated interlayers and barrier layers** (13 terms)
+
+- Wood's nickel strike
+- Watts bright nickel bath
+- sulfamate nickel (low-stress) layer
+- electroless nickel-phosphorus (Ni-P) circa 500-600 HV
+- palladium-nickel 80/20 alloy interlayer
+- palladium strike under gold
+- white bronze (Cu-Sn-Zn) nickel-free underlayer
+- bronze (Cu-Sn) barrier layer
+- copper diffusion barrier function of nickel
+- nickel allergy driver for nickel-free stacks
+- hardness gradient stack design (soft-to-hard sequencing)
+- interlayer thickness budget in um
+- diffusion of substrate iron through thin stacks
+
+**PVD hard interlayers and load-support design** (12 terms)
+
+- TiN interlayer hardness circa 2000 HV
+- CrN interlayer
+- ZrN interlayer
+- diamond-like carbon (DLC) layer concept
+- Ti or Cr adhesion layer 10-50 nm
+- nano-laminate multilayer stack
+- eggshell effect (hard thin film on soft substrate)
+- load support from hard sublayer
+- substrate hardness HV vs scratch performance
+- compressive residual stress in PVD films
+- H/E ratio (hardness to elastic modulus) design heuristic
+- graded interface vs sharp interface adhesion
+
+#### 7.2.3 Thickness strategy and wear budget
+
+**Thickness classes versus service life** (11 terms)
+
+- gold flash under 0.5 um
+- standard decorative plate 0.5-1 um
+- heavy gold plate 2.5 um and above
+- service condition classes (light/moderate/severe use)
+- wear-through to nickel undertone
+- pore density decrease with thickness
+- corrosion path through pores in thin gold
+- gold cost per um per part trade-off
+- minimum thickness at significant surface
+- thickness distribution on wire circumference
+- dog-boning (edge build-up) on profiles
+
+**Wear mechanisms informing finish design** (11 terms)
+
+- adhesive wear of gold-on-gold
+- two-body abrasive wear
+- three-body abrasive wear (grit entrapment)
+- fretting wear at contact points
+- galling of soft gold
+- lubricity of cobalt-gold polymer co-deposit
+- work hardening of deposit surface
+- transfer film formation
+- burnishing-in during early wear
+- scratch visibility vs gloss level (matte hides scratches)
+- wear-zone mapping on a ring (edge vs face)
+
+### 7.3 Protective Topcoats & Anti-Tarnish Systems
+
+#### 7.3.1 Organic clearcoats and electrophoretic lacquer
+
+**E-coating (electrophoretic lacquer)** (13 terms)
+
+- cathodic electrophoretic lacquer (cathodic e-coat)
+- anodic e-coat variant
+- acrylic-urethane e-lacquer chemistry
+- bath solids content percent
+- deposition voltage in V
+- self-limiting film build mechanism
+- cure oven schedule degC x minutes
+- e-coat film thickness 5-25 um class
+- throwing power of e-coat into recesses
+- ultrafiltration rinse loop
+- e-coat yellowing over gold
+- edge pull-back (thin edge coverage) defect
+- colored e-coat tinting of gold tone
+
+**Spray, dip and UV clearcoats** (12 terms)
+
+- 2K polyurethane clearcoat
+- UV-curable clearcoat (photoinitiator system)
+- nitrocellulose jewelry lacquer (flammable, hazard class 3)
+- dip-spin coating of small parts
+- dry film thickness (DFT) in um
+- crosslink density vs flexibility
+- pencil hardness scale (test class)
+- adhesion promoter / tie coat
+- flash-off time before cure
+- isocyanate hardener exposure hazard (sensitizer, hazard note)
+- recoat window
+- solvent-borne vs waterborne clear trade-off
+
+#### 7.3.2 Nano-ceramic, sol-gel and conversion protection
+
+**Nano-ceramic and thin inorganic barriers** (11 terms)
+
+- sol-gel silica hybrid hardcoat
+- organosilane-derived nano-ceramic layer
+- atomic layer deposition (ALD) Al2O3 barrier at nm scale
+- plasma-polymerized (HMDSO-type) topcoat
+- hydrophobic finish contact angle in degrees
+- abrasion resistance vs flex-crack trade-off of ceramics
+- 9H hardcoat marketing claim vs pencil-hardness reality
+- transparent barrier optical clarity requirement
+- cure/densification temperature limit of substrate
+- nano-coat thickness 50-500 nm class
+- hybrid organic-inorganic gradient coat
+
+**Anti-tarnish passivates and inhibitors** (11 terms)
+
+- benzotriazole (BTA) inhibitor for copper alloys
+- thiol self-assembled monolayer (SAM) anti-tarnish
+- electrolytic anti-tarnish dip
+- chromate-free passivate
+- tarnish inhibitor for silver underlayers
+- anti-tarnish paper/strips in packaging
+- volatile corrosion inhibitor (VCI) storage
+- invisible-film vs lacquer-film protection trade
+- sulfide tarnish (Ag2S) mechanism on silver layers
+- inhibitor bake-off / durability limit
+- residue-free rinse-and-dry after passivation
+
+#### 7.3.3 Topcoat trade-offs and failure modes
+
+**Wear and appearance trade-offs** (11 terms)
+
+- topcoat dulling of metallic luster
+- refractive-index shift of perceived gold color
+- plastic feel vs bare-metal feel objection
+- flex cracking at bend radius (coat-before vs coat-after forming)
+- UV yellowing of clearcoats
+- dishwasher stripping of lacquer
+- sweat/sebum chemical attack on clearcoat
+- scratch whitening of clearcoat vs metal scratch
+- recoat/repair strategy for returns
+- coat only wear-protected zones strategy
+- gloss retention after abrasion
+
+**Coating application defects** (12 terms)
+
+- cratering
+- cissing / fish-eyes
+- dust inclusion (dirt-in-film)
+- pinholes in clearcoat
+- blushing (moisture haze)
+- runs and sags
+- solvent pop
+- orange peel in sprayed clear
+- under-cure solvent retention
+- crosshatch adhesion failure (test class)
+- bridging over fine wire detail
+- wicking into coil gaps
+
+### 7.4 Metallizing Non-Conductors (Glass, Ceramic, Plastic Routes)
+
+#### 7.4.1 Direct PVD onto glass and ceramic
+
+**Adhesion engineering on glass** (13 terms)
+
+- Cr adhesion layer on glass
+- Ti or NiCr adhesion layer
+- silane coupling agent pretreatment
+- plasma/corona surface activation
+- sputter-etch (glow discharge) pre-clean
+- ultrasonic detergent cleaning of glass
+- deionized water final rinse
+- water-break test for cleanliness
+- CTE mismatch (thermal expansion, ppm/K) stress
+- glass surface outgassing/adsorbed water
+- thin-film stress delamination (crazing, flaking)
+- tape-test adhesion screening (test class)
+- alkali migration from soda-lime glass
+
+**Decorative PVD glassware practice** (12 terms)
+
+- batch box coater vs inline coater
+- rotary planetary fixturing of tumblers
+- double-rotation substrate holders
+- masking for partial gold banding
+- rim-band gold decoration
+- electron-beam evaporation vs magnetron sputtering choice
+- line-of-sight coverage limitation
+- interior-of-cup shadowing problem
+- iridescent (interference) decorative coatings on glass
+- metallized-then-lacquered glassware stack
+- coating adhesion on glazed ceramic vs bare glass
+- batch throughput parts per pump-down cycle
+
+#### 7.4.2 Conductive seed routes enabling electroplating
+
+**Conductive paints and inks** (12 terms)
+
+- silver conductive paint
+- graphite/carbon conductive lacquer
+- copper conductive spray
+- sheet resistance in ohms per square
+- seed coat dry thickness in um
+- brush vs spray vs dip application of seed
+- contact-wire burn-through at high current
+- bridge plating outward from contact point
+- low-current strike onto resistive seed
+- seed paint adhesion as stack weak link
+- silver migration under humidity
+- conductive paint pot life
+
+**Electroless and chemical-silvering seed metallization** (13 terms)
+
+- stannous chloride (SnCl2) sensitization
+- palladium chloride (PdCl2) activation
+- tin-palladium colloid activator
+- electroless copper bath (formaldehyde reducer - toxic/carcinogen concern, hazard note)
+- electroless nickel-phosphorus seed layer
+- two-gun spray silvering (silver + reducer streams)
+- ammoniacal silver nitrate spray (fulminating-silver explosion risk on storage, hazard note)
+- glucose/Rochelle-salt reducer solutions
+- chromic acid etch for plastics (hexavalent chromium, carcinogenic, hazard note)
+- chrome-free etch alternatives for plastics
+- copper backing layer over silver film
+- mirror-silvering line heritage process
+- seed continuity check by resistance measurement
+
+**Hybrid PVD-seed plus electroplate build** (10 terms)
+
+- sputtered copper seed then acid-copper build
+- sputtered gold seed then gold electro-thickening
+- seed layer continuity/coalescence threshold nm
+- step coverage of seed on textured surface
+- oxidation window between seed and plate steps
+- rack contact design onto fragile seed
+- current ramping onto thin seed
+- seed undercut during plating-bath attack
+- PVD seed vs paint seed adhesion ranking
+- capex vs chemical-line cost trade of hybrid route
+
+#### 7.4.3 Route selection for conductive vs non-conductive substrates
+
+**Decision factors and constraints** (10 terms)
+
+- electrolytic plating requires conductive surface (physics constraint)
+- PVD line-of-sight vs wet-plating conformality
+- throwing power into hollowware interiors
+- auxiliary/conforming anodes for deep recesses
+- part geometry class (flatware vs tumbler vs stemware)
+- adhesion durability ranking by route
+- cost per part vs capital cost per route
+- strippability/rework options per route
+- batch size economics per route
+- thermal tolerance of substrate to process
+
+**Failure modes specific to metallized non-conductors** (10 terms)
+
+- seed blistering under plated stress
+- plating stress peeling entire stack off glass
+- stair-step voids at masking edges
+- black spotting from activation residues
+- skip metallization (uncatalyzed zones)
+- galvanic attack of silver seed in gold bath
+- crazing of metallized film on flexing plastic
+- adhesion loss after thermal shock (hot fill)
+- haze from residual sensitizer
+- edge lifting at rim bands
+
+### 7.5 Houseware Products: Gold-Finished Cups, Spoons, Glassware
+
+#### 7.5.1 Substrate preparation for flatware and hollowware
+
+**Stainless flatware and metal hollowware prep** (12 terms)
+
+- 18/10 stainless flatware alloy class
+- 18/0 ferritic flatware alloy class
+- passive chromium-oxide layer on stainless
+- Wood's nickel strike to activate stainless before plating
+- anodic vs cathodic electrocleaning
+- ultrasonic degreasing tank
+- spoon-bowl buffing
+- hollowware racking and contact points
+- internal throwing power of cups
+- auxiliary anode for cup interior
+- handle-to-bowl weld zone plating variation
+- smut removal after pickling
+
+**Glass and ceramic drinkware prep** (10 terms)
+
+- soda-lime vs borosilicate glass substrate
+- glazed ceramic surface as coating base
+- annealing (residual) stress in glassware
+- cerium oxide polishing of glass
+- ultrasonic detergent clean then DI rinse
+- dust-controlled drying before PVD
+- water-spot staining defect
+- rim chip/seed defect screening before coating
+- mold-seam line telegraphing through coating
+- fingerprint contamination control (glove handling)
+
+#### 7.5.2 Wear environment engineering for houseware
+
+**Dishwashing and cleaning durability** (11 terms)
+
+- dishwasher detergent alkalinity pH 10-12
+- silicate/phosphate detergent attack on decoration
+- thermal cycling wash 65-75 degC
+- chlorine sanitizer attack on nickel interlayers
+- cutlery-basket abrasion
+- hand-wash-only durability rating
+- gold-band fading on glass rims over wash cycles
+- cycles-to-visible-wear concept (test lives in qc-durability)
+- microwave arcing of metallic bands (design exclusion)
+- tarnishing of silver underlayers by detergent
+- spot corrosion at coating pores after washing
+
+**Utensil-contact and handling wear** (10 terms)
+
+- spoon-in-cup interior abrasion
+- cutlery-on-plate scratch exposure
+- stacking wear between nested pieces
+- avoid gold on cutting/scraping edges
+- matte finish hiding wear vs bright showing wear
+- wear-through undertone color mismatch
+- handling patina vs defect distinction
+- point-of-sale scratch from packaging
+- felt/flocked packaging inserts
+- high-touch zone mapping on a cup
+
+#### 7.5.3 Food-contact suitability engineering (compliance itself in safety-regulatory)
+
+**Layer-stack material selection for lip and food contact** (11 terms)
+
+- gold nobility/inertness as food-side advantage
+- nickel release concern - design nickel out of food side
+- lead/cadmium-free requirement class for rim decoration
+- metal migration into acidic food simulants (concept; testing elsewhere)
+- acid-food exposure (vinegar, citric) on plated stack
+- hot-beverage exposure circa 90 degC
+- sulfurous foods tarnishing silver layers
+- food-grade lacquer selection question
+- copper verdigris risk on exposed underlayer
+- onglaze precious-metal decoration comparison (fired gold on ceramic)
+- liquid bright gold (fired-on organometallic gold for ceramic/glass) as alternative route
+
+**Design placement strategies for food-contact products** (10 terms)
+
+- exterior-only gilding design
+- lip-and-rim decoration zone rule (trade practice)
+- handle-only gilding
+- uncoated stainless food surface + gold accents
+- masking fixtures for selective plating
+- wear-zone avoidance layout
+- band width and offset from rim in mm
+- inside-of-bowl exclusion zone
+- decoration below liquid line decision
+- care-instruction labeling as design mitigation
+
+### 7.6 Jewelry Product Design & Collection Development
+
+#### 7.6.1 Wire-formed shape vocabulary
+
+**Ring and band forms from wire** (13 terms)
+
+- plain wire band
+- stacking ring set
+- open (adjustable) bypass ring
+- wrap ring / multi-coil ring
+- twisted two-wire ring
+- knot ring
+- hammered-texture band
+- wire gauge in AWG and mm
+- half-round wire profile
+- square and D-profile wire
+- mandrel-formed ring blank
+- coil-cut ring blanks
+- comfort-fit inner edge break
+
+**Beyond rings: earrings, bracelets, chain elements** (12 terms)
+
+- French hook ear wire
+- hoop earring former
+- bangle vs cuff bracelet
+- jump ring (open/closed)
+- lobster clasp / spring-ring clasp
+- cable, curb and figaro chain link styles
+- pendant bail forms
+- torque (torc) style neckpiece
+- hair pin / bobby forms
+- ear-post vs ear-wire allergy zone note
+- wire-wrapped stone setting
+- S-hook and toggle closures
+
+#### 7.6.2 Ring sizing standards and fit engineering
+
+**Sizing systems and measurement tools** (10 terms)
+
+- ISO circumference-in-mm ring sizing system
+- US numerical ring sizes
+- UK alphabetical ring sizes
+- EU/Vienna circumference sizing
+- inside diameter mm to circumference conversion
+- ring mandrel / triblet (stepped vs graduated)
+- ring sizer gauge set
+- half-size and quarter-size increments
+- digital caliper ID measurement
+- size marking/stamping on band
+
+**Fit, comfort and forming allowances** (10 terms)
+
+- wide-band size-up allowance
+- springback compensation in wire forming
+- knuckle-to-base finger taper fit
+- comfort-fit radius on inner edge
+- burr-free end finishing of cut wire
+- target piece weight in grams
+- coating thickness effect on inner diameter fit
+- open-ring adjustability range
+- wire stiffness vs wearing comfort
+- seasonal finger-size variation allowance (trade lore)
+
+#### 7.6.3 Finish specification on drawings and tech packs
+
+**Plating and finish callouts** (12 terms)
+
+- plating stack note format (e.g. Au over Ni over Cu, minimum um per layer)
+- minimum vs nominal thickness callout
+- significant surface definition on drawing
+- no-plate / masked zone symbols
+- surface roughness Ra callout in um
+- gloss level in gloss units (GU)
+- color reference standard chip callout
+- finish type keywords (bright, satin, matte, brushed, hammered)
+- gold coating classification reference (ASTM B488-class spec)
+- sampling/acceptance reference (AQL class; plan lives in qc-durability)
+- anti-tarnish packaging spec line
+- hallmarking/quality-mark placement note
+
+**Design documentation artifacts** (10 terms)
+
+- tech pack
+- bill of materials for a plated stack
+- control drawing with critical dimensions
+- golden sample / boundary sample
+- engineering change note (ECN)
+- revision control block
+- CMF (color-material-finish) specification sheet
+- render vs physical prototype signoff
+- measurement datum definition on formed wire part
+- tolerance table (dimensional vs cosmetic)
+
+#### 7.6.4 Range/collection design and design-for-manufacture
+
+**Collection and range logic** (10 terms)
+
+- hero piece anchoring a collection
+- core (carryover) vs seasonal range split
+- colorway variants (yellow/rose/pale gold)
+- SKU proliferation control
+- price laddering across thickness classes
+- capsule collection drop
+- modular reuse of formed components across SKUs
+- size-run planning (which ring sizes to stock)
+- trend sources (fashion-week jewelry direction, marketplace bestsellers)
+- storytelling around plated-vs-solid honesty in marketing
+
+**Design-for-manufacture within the wire-forming constraint** (12 terms)
+
+- constant cross-section constraint of wire products
+- minimum bend radius vs coating crack onset
+- springback allowance in tooling design
+- plate-then-form vs form-then-plate decision per design
+- solder joint placement (post-plate soldering burns coating)
+- laser tack welding as coating-friendly join
+- sharp inside corners vs plating throwing power
+- nesting/racking density for batch plating
+- coil-winding tolerance stack
+- coating thickness consuming dimensional tolerance
+- avoid crevices trapping plating solution (bleed-out staining)
+- design symmetry easing mass finishing
+
+---
+
+## 8. Business, Cost Model & Procurement (`business-procurement`) — 491 terms
+
+**Scope:** The economic and commercial layer of the gold-plated jewelry micro-manufacturing venture: gold consumption per piece and the cheapest-vs-premium cost-per-piece model (Q11); machine-acquisition economics comparing DIY build vs buying used/new vs custom commission (the commercial half of Q7); mapping and vetting the supplier landscape by category (vacuum components, sputter targets, plating chemistry, steel wire, forming tooling, testing services) without inventing any supplier name or price; the outreach/RFQ discipline in which every message is drafted and SAVED for the owner and nothing is ever sent without the owner; market positioning and pricing of plated jewelry so cost answers connect to sellable price points and legal marketing claims; and venture planning — phased budgets, kill-criteria checkpoints, and working capital tied up in gold inventory. Process physics belongs to pvd-sputtering and electro-plating, machine construction to vacuum-machine-build, quality testing to qc-durability; this domain owns what everything costs, who could supply it, how to ask them, and whether the business clears its gates. Gaps (unknown local prices, unnamed vendors) are findings, not blanks to fill.
+
+### 8.1 Gold Consumption & Precious-Metal Mass Model
+
+#### 8.1.1 Gold Mass per Piece from Geometry
+
+**Coating-mass calculation** (14 terms)
+
+- gold density 19.32 g/cm3
+- plated surface area per piece (mm2)
+- coating thickness (um) as primary cost driver
+- mass = area x thickness x density model
+- wire lateral surface area per metre (mm2/m) vs wire diameter
+- ring blank cut length (mm) from ring size circumference
+- microns-to-milligrams conversion per cm2
+- coverage factor for guides/clamp shadow zones
+- gold alloy karat fraction in deposit (Au weight %)
+- troy ounce = 31.1035 g
+- tola = 11.664 g (Indian bullion unit)
+- pennyweight (dwt) = 1.555 g trade unit
+- grams-of-gold-per-1000-pieces roll-up
+- pieces-per-gram maximization objective
+
+**Thickness tiers and labeling classes** (12 terms)
+
+- flash / gold-washed layer (below 0.175 um, FTC cannot be called gold electroplate)
+- FTC gold electroplate minimum 0.175 um
+- FTC heavy gold electroplate 2.5 um class
+- vermeil definition (2.5 um gold over sterling silver)
+- ASTM B488 gold coating classification (type/code/grade/class)
+- ISO 10713 jewellery gold alloy coatings standard
+- micron-plating trade grades (0.5 um / 1 um / 2.5 um tiers)
+- thickness tier vs wear-life expectation mapping
+- thickness tier vs gold cost per piece curve
+- minimum thickness for scratch-resistant premium claim
+- nominal vs minimum local thickness spec distinction
+- XRF thickness verification per lot (links to qc-durability)
+
+#### 8.1.2 Process Losses & Material Utilization
+
+**Sputtering-route gold utilization** (12 terms)
+
+- magnetron target utilization % (planar racetrack limit)
+- racetrack erosion groove end-of-life
+- chamber wall and shield overspray fraction
+- deposition collection efficiency (flux on wire vs total sputtered)
+- spent target residual gold scrap value
+- indium-bonded target backing plate return
+- gold sputter target purity grade 99.99% (4N)
+- target mass accounting log (g in / g on product / g recoverable)
+- shield strip-and-recover cycle
+- rotatable vs planar target utilization difference
+- target thickness (mm) vs campaign length
+- witness coupon mass-gain check
+
+**Electroplating-route gold utilization** (12 terms)
+
+- bath gold metal concentration (g/L Au)
+- cathode current efficiency % of gold bath
+- drag-out loss volume per rack/spool withdrawal (mL)
+- drag-out recovery (save) rinse tank
+- counterflow rinse gold reclaim
+- insoluble (platinized titanium) anode - gold fed as salt not anode
+- replenisher gold salt dosing schedule
+- plate-out losses on racks, contacts and tank hardware
+- bath bail-out and end-of-life gold inventory
+- amp-hour meter based gold consumption tracking
+- faradaic prediction vs weighed actual reconciliation
+- gold-in-rinse-water assay (mg/L)
+
+**Recovery and refining of gold scrap** (13 terms)
+
+- electrowinning cell for spent bath and rinses
+- ion-exchange resin gold recovery column
+- activated-carbon capture of gold from dilute rinse
+- rack and shield stripping bath
+- aqua regia dissolution (hazard: highly corrosive, toxic NOx fumes)
+- cyanide-based stripper (hazard: acute toxicity GHS06) vs cyanide-free stripper alternative
+- sodium metabisulfite gold precipitation
+- toll refining lot charge and lot minimum
+- refiner assay fee and accountability %
+- settlement terms (days to payment, % of contained gold paid)
+- melt-assay-settle chain of custody
+- sweeps and floor-waste recovery category
+- in-house vs send-out recovery breakeven
+
+#### 8.1.3 Gold Purchasing & Inventory Control
+
+**Buying forms of gold** (12 terms)
+
+- spot gold price (XAU/USD) reference
+- LBMA gold price benchmark fix
+- fabrication premium over spot (targets and salts cost more than grain)
+- potassium gold cyanide KAu(CN)2 ~68.3% contained Au (hazard: acute toxicity GHS06)
+- cyanide-free sulfite gold plating salt alternative
+- casting grain 99.99 fine gold form
+- sputter target price = contained gold + fabrication + bonding
+- certificate of analysis (COA) for purity
+- assay verification of incoming lots
+- KYC / precious-metals dealer onboarding requirements
+- minimum order gold content per purchase
+- price-lock vs floating-price purchase order
+
+**Inventory custody and shrinkage** (11 terms)
+
+- 0.001 g resolution analytical balance for gold accounting
+- gold mass balance ledger (input/output/WIP/scrap)
+- shrinkage tolerance threshold and investigation trigger
+- two-person custody rule for gold handling
+- safe / vault storage of targets and salts
+- insurance rider for precious-metal stock
+- WIP gold value on coated-but-unsold wire
+- cycle count schedule for precious metals
+- scrap segregation bins by recovery grade
+- consignment gold stock (vendor-owned inventory) option
+- gold loan / metal account financing structure
+
+### 8.2 Cost-per-Piece Model: Cheapest vs Premium Route
+
+#### 8.2.1 Cost Model Architecture
+
+**Cost driver structure** (12 terms)
+
+- bill of materials (BOM) roll-up per piece
+- cost driver tree (gold, base metal, chemistry, energy, labor, capex)
+- activity-based costing per process step
+- unit economics worksheet
+- direct vs indirect cost allocation
+- variable vs fixed cost split
+- contribution margin per piece
+- batch-size amortization of setup cost
+- cost per plated square centimetre metric
+- cost stack waterfall chart
+- should-cost model for sanity-checking quotes
+- yield-adjusted cost per GOOD piece (cost / first-pass yield)
+
+**Sensitivity and scenario analysis** (10 terms)
+
+- gold spot price sensitivity (cost vs $/g input)
+- tornado diagram of cost drivers
+- breakeven thickness between routes
+- cheapest-vs-best decision matrix
+- volume-scaling curve (cost vs pieces/month)
+- learning-curve labor reduction assumption
+- Monte Carlo cost range vs point estimate
+- worst-case yield scenario costing
+- route-switch trigger price (electroplate vs PVD crossover)
+- estimate confidence banding (per honesty rules: tagged [ESTIMATE])
+
+#### 8.2.2 Cheapest-Route Costing
+
+**Minimum-cost process choices** (11 terms)
+
+- flash gold over bright nickel cheapest stack
+- mild steel wire cost per kg (commodity grade)
+- brush/pen plating for spot repair instead of full replate
+- sub-0.5 um thickness floor for cosmetic-only product
+- barrel plating batch economics vs continuous line
+- generic (non-proprietary) bath chemistry cost saving
+- single-layer stack (skip barrier layer) cost/risk trade
+- manual load/unload labor vs automation capex avoidance
+- used/surplus equipment substitution
+- consumable stretch practices (bath life extension) and their defect risk
+- cheapest-route hidden costs: rework, returns, tarnish complaints
+
+**Consumables and utilities at the low end** (10 terms)
+
+- degreaser and pickle acid cost per kg wire
+- rinse water cost and discharge fee
+- nickel strike consumption per m2 (nickel salts hazard: skin sensitizer, Ni compounds carcinogen category)
+- rectifier electricity kWh per amp-hour delivered
+- vacuum pump oil change interval cost
+- argon gas cost per sputter-hour (bottle rental + fill)
+- anode bag / filter cartridge replacement cadence
+- labor minutes per piece at manual stations
+- packaging at commodity grade (poly bag) cost
+- per-piece allocation of waste-disposal fees
+
+#### 8.2.3 Premium-Route Costing
+
+**Premium stack cost adders** (11 terms)
+
+- 2.5 um heavy gold plate gold cost multiple vs flash
+- hard gold (Co- or Ni-hardened alloy deposit) chemistry premium
+- palladium or Pd-Ni barrier interlayer metal cost
+- duplex stack (electroplate strike + PVD gold topcoat) double-process cost
+- TiN / ZrN colored hard undercoat PVD adder
+- anti-tarnish nano-ceramic or e-coating topcoat cost per piece
+- extended process time = lower line throughput cost
+- tighter thickness tolerance = higher scrap cost
+- premium packaging (box, pouch, card) cost share
+- hallmark-style quality stamping cost
+- warranty / free re-plating service reserve per piece
+
+**Testing and assurance overhead** (10 terms)
+
+- XRF thickness test cost per lot
+- adhesion (bend/tape) test scrap allowance
+- salt-spray / artificial-sweat corrosion test outsourcing fee
+- nickel-release compliance test (EN 1811 class) per SKU
+- abrasion/wear test (Taber-class) certification cost
+- retained-sample program storage cost
+- certificate-of-conformance paperwork labor
+- cost of quality: prevention vs appraisal vs failure buckets
+- AQL sampling plan inspection labor
+- premium claim substantiation file maintenance
+
+#### 8.2.4 Yield, Energy, Labor & Overhead
+
+**Yield economics** (9 terms)
+
+- first-pass yield % by process step
+- rolled throughput yield across the line
+- rework loop cost (strip and replate)
+- strip-and-recover vs scrap decision value
+- defect Pareto by cost impact
+- startup/shutdown transient scrap length (m of wire)
+- coating defect escape cost (customer return)
+- yield ramp assumption for new line
+- scrap gold recovery credit against scrap cost
+
+**Energy, labor and fixed overhead** (10 terms)
+
+- vacuum pump-down energy per batch (kWh)
+- continuous pump idle power draw (kW) if line kept under vacuum
+- plating rectifier and bath heater energy per shift
+- labor rate fully-loaded ($/h incl. overhead)
+- operator span (machines per operator) assumption
+- equipment depreciation per piece (capex / lifetime pieces)
+- facility rent and utilities absorption
+- maintenance and spares budget % of capex per year
+- regulatory/permit annual fee allocation
+- insurance premium allocation per piece
+
+### 8.3 Machine Acquisition Economics: DIY vs Buy vs Commission
+
+#### 8.3.1 DIY Build Cost Structure
+
+**Component-level capex categories** (12 terms)
+
+- chamber fabrication (welded stainless vs modified surplus vessel) cost class
+- rotary vane roughing pump - used/surplus market tier
+- turbomolecular vs diffusion pump acquisition trade (diffusion cheaper, backstreaming risk)
+- DC/pulsed-DC magnetron power supply cost tier
+- magnetron sputter source (bought head vs self-built) decision
+- KF/ISO/CF flange hardware and viton seals budget line
+- vacuum gauge set (Pirani + capacitance manometer/ion gauge) budget line
+- mass flow controller (argon) new vs surplus
+- wire feedthrough / differential pumping stage - custom machining cost
+- take-up and payoff winders (repurposed wire-handling gear)
+- control/PLC and interlock electronics budget
+- contingency % for DIY unknowns
+
+**DIY hidden costs and risks** (10 terms)
+
+- builder learning-curve time cost (unpaid engineering hours)
+- leak-hunting iteration time (helium leak detector rental)
+- scrapped first-article parts budget
+- no-warranty exposure on surplus parts
+- counterfeit/misgraded surplus component risk
+- safety compliance retrofit cost (electrical, interlocks)
+- documentation debt (no manuals) maintenance penalty
+- single-builder key-person risk
+- time-to-first-good-part as the real DIY cost metric
+- resale value near zero for one-off DIY machine
+
+#### 8.3.2 Buying Used or New Equipment
+
+**Used/refurbished market** (10 terms)
+
+- benchtop SEM sputter coater class (small batch, not continuous)
+- lab-surplus auction and dealer channels
+- decommissioned coating-line auction lots
+- refurbished-with-warranty vs as-is pricing tiers
+- inspection before purchase (pump-down test witnessed)
+- crating, rigging and freight cost adder
+- missing-accessories trap (controllers, cables, manuals)
+- spare-parts availability check for discontinued models
+- import duty and customs brokerage on used machinery
+- power/utility mismatch retrofit (voltage, phase, cooling water)
+
+**New-equipment purchase** (10 terms)
+
+- budgetary quote vs firm quote distinction
+- standard-catalog machine vs configured-to-order
+- installation and commissioning fee line item
+- operator training included/excluded in quote
+- warranty period and what it covers (consumables excluded)
+- service contract / preventive-maintenance plan pricing
+- lead time (weeks) from PO to delivery
+- acceptance test at vendor (FAT) before shipment
+- payment schedule (deposit / pre-ship / post-acceptance)
+- price escalation clause exposure
+
+#### 8.3.3 Custom Commissioning a Machine
+
+**Contracting structures** (11 terms)
+
+- design-build contract vs build-to-print contract
+- non-recurring engineering (NRE) charge
+- functional specification as contract exhibit
+- performance guarantee clause (throughput m/min, vacuum level mbar, thickness uniformity %)
+- factory acceptance test (FAT) and site acceptance test (SAT)
+- milestone payment schedule tied to gates
+- change-order pricing mechanism
+- IP ownership of the custom design (who keeps drawings)
+- liquidated damages for late delivery
+- escrow of design files against integrator failure
+- integrator vs component-vendor-with-engineering-services choice
+
+**Commissioning risk management** (9 terms)
+
+- proof-of-concept / pilot rig phase before full contract
+- vendor reference checks on similar wire-coating builds
+- novel-concept risk premium (continuous wire feedthrough is non-catalog)
+- spec creep cost control
+- acceptance criteria measurability (test method named per criterion)
+- punch list closure before final payment
+- spares package negotiated at PO time (cheapest moment)
+- training and documentation deliverables list
+- post-acceptance support hours retainer
+
+#### 8.3.4 Comparison Framework & Decision
+
+**Financial comparison tools** (10 terms)
+
+- total cost of ownership (TCO) over machine life
+- payback period per acquisition path
+- net present value (NPV) of path options
+- capex vs opex structure difference
+- lease / rental option for pilot equipment
+- cost of delay (months of lost revenue per path lead time)
+- real-options staging (small DIY pilot buys information)
+- salvage/resale value by path
+- make-vs-buy analysis template
+- risk-adjusted cost (probability-weighted overrun)
+
+**Non-financial decision factors** (8 terms)
+
+- technical risk ranking per path (DIY highest, catalog lowest)
+- autonomy/serviceability (DIY = self-repairable)
+- upgrade path to mass-production unit
+- vendor lock-in on chemistry or spares
+- owner skill inventory match to DIY demands
+- kill-criteria linkage: path must be reversible cheaply
+- regulatory/safety certification burden per path
+- throughput scalability ceiling per path
+
+### 8.4 Supplier Landscape Mapping & Vetting
+
+#### 8.4.1 Supplier Category Map
+
+**Equipment and component categories** (10 terms)
+
+- vacuum pump manufacturers/rebuilders category
+- vacuum fittings and feedthrough suppliers category
+- magnetron source and sputter power-supply vendors category
+- sputter target fabricators and target bonding services category
+- custom machine shops / stainless fabricators category
+- plating rectifier suppliers category
+- used-lab-equipment dealers category
+- gas suppliers (argon, nitrogen) category
+- PLC/automation integrators category
+- no supplier NAME is asserted without verified search - gap logged as [UNKNOWN]
+
+**Materials and chemistry categories** (10 terms)
+
+- gold plating chemistry houses (cyanide and cyanide-free lines) category
+- precious-metal salt distributors category (hazard-classed goods, KAu(CN)2 GHS06)
+- bullion/target-grade gold dealers category
+- steel and stainless wire mills / redraw houses category
+- nickel and palladium salt suppliers category
+- pretreatment chemical (degreaser, pickle, electrocleaner) suppliers category
+- topcoat / anti-tarnish coating suppliers category
+- jewelry findings and mandrel/forming tooling suppliers category
+- refiners and precious-metal recyclers category
+- hazardous-waste transporters and treatment facilities category
+
+**Services categories** (8 terms)
+
+- XRF testing and assay labs category
+- corrosion/wear test labs category
+- contract plating job shops (benchmark and fallback capacity) category
+- calibration services (gauges, balances) category
+- helium leak-check service category
+- regulatory/EHS consultants for plating shops category
+- freight forwarders and customs brokers category
+- insurance brokers for precious-metal inventory category
+
+#### 8.4.2 Search Channels & Discovery
+
+**Where to find suppliers** (10 terms)
+
+- industrial B2B directories (Thomasnet-class)
+- global sourcing platforms (Alibaba-class) with trade-assurance escrow
+- Society of Vacuum Coaters (SVC) exhibitor lists
+- surface-finishing trade associations and their member directories
+- trade shows: vacuum/coating expos and jewelry-manufacturing fairs
+- surplus/auction platforms for lab and fab equipment
+- manufacturer-direct vs distributor channel choice
+- regional plating-supply distributors (small-quantity friendly)
+- peer forums and finishing-industry Q&A archives as leads (verify before trust)
+- university lab surplus programs
+
+**Search hygiene and honesty rules** (8 terms)
+
+- no invented supplier names rule
+- no invented prices rule - only quoted or published figures, else [UNKNOWN]
+- source-and-date logging for every found supplier
+- search-term matrix per category (synonyms, trade jargon)
+- shortlist-of-N per category target
+- duplicate/reseller detection (same OEM behind many storefronts)
+- country-of-origin and export-control flag per lead
+- lead status taxonomy: found / contacted-draft-ready / quoted / vetted
+
+#### 8.4.3 Vetting Criteria & Supplier Risk
+
+**Vetting checklist items** (11 terms)
+
+- minimum order quantity (MOQ) fit to micro-scale buying
+- sample availability and sample cost policy
+- quoted lead time (weeks) and its reliability
+- quality system certification class (ISO 9001-type)
+- certificate of analysis (COA) per lot availability
+- SDS availability for all chemicals (mandatory for hazardous goods)
+- REACH/RoHS compliance documentation for EU-bound product
+- references from comparable small customers
+- years in business / financial stability signal
+- responsiveness during quoting as a service proxy
+- small-quantity technical support willingness (bath analysis help)
+
+**Supplier risk controls** (10 terms)
+
+- single-source dependency register
+- dual-sourcing for gold salts and argon
+- counterfeit/purity-fraud risk on gold targets - independent assay on receipt
+- escrow or trade-assurance payment for unvetted vendors
+- incoming-inspection plan per category
+- supplier scorecard (on-time %, defect PPM, responsiveness)
+- price benchmarking against contained-metal value
+- contract terms red flags (no returns, no COA, prepay-only)
+- geopolitical/logistics disruption exposure per source country
+- exit plan per critical supplier
+
+### 8.5 Outreach, RFQ & Procurement Process
+
+#### 8.5.1 Draft Governance & the Never-Send Rule
+
+**Owner-controlled sending discipline** (10 terms)
+
+- never-send-without-owner rule (drafts saved, owner clicks send)
+- draft repository folder structure (per supplier category)
+- draft status header block (TO / SUBJECT / STATUS: DRAFT - NOT SENT)
+- send-approval checklist (recipient verified, no invented claims, budget authority)
+- version stamp and edit history on each draft
+- contact log (who, when, channel, outcome)
+- placeholder convention for unverified fields ([SUPPLIER NAME - TBD])
+- one-draft-one-purpose rule (intro vs RFQ vs follow-up)
+- owner identity/signature block kept accurate, never impersonated
+- no commitment language in drafts (no PO promises before owner review)
+
+**Draft types in the outreach kit** (10 terms)
+
+- capability inquiry (RFI) draft
+- request for quotation (RFQ) draft
+- sample request draft
+- custom-build feasibility inquiry draft (continuous wire coater concept)
+- NDA request draft before sharing machine spec
+- follow-up / quote clarification draft
+- negotiation counter draft
+- polite decline / keep-on-file draft
+- refiner terms inquiry draft
+- test-lab quote request draft
+
+#### 8.5.2 RFQ Content & Vendor Question Bank
+
+**What a good RFQ contains** (11 terms)
+
+- technical spec sheet attachment (substrate, thickness um, throughput m/min)
+- quantity tiers requested (pilot / monthly / annual volumes)
+- target application disclosure level (enough to quote, no over-share)
+- drawing with tolerance callouts for machined parts
+- requested incoterms (EXW / FOB / CIF / DDP) per quote
+- quote validity period request (days)
+- requested lead time and delivery schedule
+- packaging and documentation requirements (COA, SDS)
+- acceptance criteria stated up front
+- RFI vs RFQ vs RFP escalation ladder
+- apples-to-apples quote template so vendors answer comparably
+
+**Questions to ask vendors** (10 terms)
+
+- target: purity grade, bonding type, backing plate return policy
+- chemistry: gold content g/L, cyanide vs cyanide-free line, analysis support offered
+- chemistry: bath life (amp-hours/L) and replenishment scheme
+- equipment: MTBF/service-interval data availability
+- equipment: spares list with prices and stocking lead times
+- equipment: installation, training and documentation package contents
+- wire: alloy certs, diameter tolerance (um), spool sizes, surface condition
+- refiner: accountability %, assay method, settlement days, lot minimum
+- all: MOQ, payment terms, warranty scope
+- all: references from similar-scale customers
+
+#### 8.5.3 Quote Handling, Negotiation & Purchase Orders
+
+**Quote comparison and landed cost** (9 terms)
+
+- quote comparison matrix (normalized to same incoterms)
+- landed cost = unit price + freight + duty + brokerage + inspection
+- currency of quote and FX risk buffer
+- contained-gold-value sanity check on metal quotes
+- hidden-cost probe (crating, docs fees, minimum billing)
+- quote expiry tracking
+- total-package vs line-item cherry-picking trade
+- requote trigger on spec change
+- budgetary vs binding quote labeling in records
+
+**Terms and purchase-order discipline** (9 terms)
+
+- payment terms ladder (prepay -> deposit -> net-30 as trust builds)
+- letter of credit vs telegraphic transfer for import orders
+- deposit percentage exposure cap
+- PO terms: acceptance criteria and right-of-return clause
+- warranty and epidemic-failure clause
+- delivery-date penalty / remedy clause
+- change-order written-approval requirement
+- record retention: quote + PO + COA + receiving inspection linked per lot
+- owner sign-off required on every PO (mirror of never-send rule)
+
+### 8.6 Market Positioning & Pricing of Plated Jewelry
+
+#### 8.6.1 Product Tiers, Claims & Legal Marketing
+
+**Tier vocabulary and legal claim classes** (12 terms)
+
+- gold-flashed / gold-washed tier (thinnest, lowest claim)
+- gold-plated (GP) tier claim threshold
+- heavy gold plated (HGP) tier claim
+- gold vermeil tier (gold over sterling, legally defined)
+- gold-filled (mechanically bonded, NOT achievable by plating - claim boundary)
+- FTC Jewelry Guides compliance for plating claims
+- karat marking rules for coatings (claim must match deposit alloy)
+- hypoallergenic claim caution - nickel barrier layer vs EN 1811 nickel-release limit class
+- REACH nickel restriction for skin-contact articles
+- "tarnish-free" claim substantiation requirement
+- country-specific hallmarking exemptions/rules for plated goods
+- truth-in-advertising exposure for thickness overstatement
+
+**Positioning the premium-look product** (10 terms)
+
+- premium cues: weight-in-hand, mirror polish, color match to karat gold
+- scratch-resistance as the differentiating claim (backed by wear test)
+- thickness disclosure as trust marketing (microns on the label)
+- re-plating / lifetime-finish warranty as premium signal
+- story positioning: micro-manufactured, made-in-house
+- steel-core honesty vs perceived-value tension
+- competitor tier mapping (fashion vs demi-fine vs fine)
+- demi-fine market segment (plated/vermeil price band between costume and fine)
+- unit price psychology thresholds per channel
+- photography/finish presentation standards for premium perception
+
+#### 8.6.2 Price Architecture
+
+**Pricing methods** (11 terms)
+
+- cost-plus pricing floor (yield-adjusted cost x multiplier)
+- value-based pricing vs cost-plus gap capture
+- keystone markup (2x) wholesale convention
+- 2.2-2.5x wholesale-to-retail convention in jewelry trade
+- price anchoring with a premium hero SKU
+- tiered line architecture (entry / core / premium)
+- MSRP vs MAP (minimum advertised price) policy
+- gold-price surcharge / repricing trigger mechanism
+- discount ladder and its margin erosion tracking
+- bundle pricing (ring sets) margin math
+- psychological price points per market
+
+**Margin management** (9 terms)
+
+- gross margin % target per tier
+- channel margin stack (maker -> wholesale -> retail)
+- marketplace fee + payment fee deduction from realized price
+- returns/warranty reserve as margin deduction
+- shipping-included pricing trap
+- contribution margin ranking across SKUs
+- kill-SKU rule for persistently sub-margin items
+- price-volume elasticity testing (A/B price tests)
+- gold price pass-through vs margin absorption decision
+
+#### 8.6.3 Channels & Go-to-Market
+
+**Channel options** (10 terms)
+
+- DTC own webshop (Shopify-class) economics
+- handmade marketplaces (Etsy-class) fee structure
+- general marketplaces (Amazon-class) fee + competition profile
+- wholesale to boutiques (line sheets, MOQ per style)
+- consignment terms (payment on sale, shrink risk)
+- craft fairs / pop-ups as validation channel
+- B2B corporate gifting channel
+- social-commerce and live-selling channels
+- export/cross-border compliance for jewelry parcels
+- channel-fit vs price tier matrix
+
+**Launch validation** (9 terms)
+
+- smoke-test listing before capacity build
+- pre-order model to fund working capital
+- minimum viable assortment size
+- sell-through rate % as kill/scale signal
+- customer-acquisition cost vs contribution margin per unit
+- review/return-rate monitoring in first 90 days
+- wear-complaint rate as coating-quality field signal
+- repeat-purchase rate tracking
+- wholesale buyer feedback loop into spec
+
+### 8.7 Venture Planning, Budget Phasing & Financial Controls
+
+#### 8.7.1 Budget Phasing & Stage Gates
+
+**Phased spending plan** (10 terms)
+
+- phase 0: bench experiments budget (coupon plating, adhesion trials)
+- phase 1: pilot batch machine budget cap
+- phase 2: continuous-feed prototype budget gate
+- phase 3: production line scale-up budget
+- contingency reserve % per phase
+- burn rate ($/month) tracking
+- capex release only on prior-gate pass
+- cheapest-information-first sequencing (spend where uncertainty is largest)
+- budget vs actual variance review cadence
+- sunk-cost discipline at each gate
+
+**Kill criteria and checkpoints** (10 terms)
+
+- kill-criteria defined BEFORE spending each phase
+- adhesion pass-rate threshold as technical kill gate
+- feedthrough vacuum-holding demonstration as concept kill gate
+- cost-per-piece ceiling vs sellable price kill gate
+- pilot first-pass yield floor
+- time-boxed experiment (calendar kill trigger)
+- market-validation kill gate (sell-through below floor)
+- pivot options ledger (job-shop plating, batch-only PVD, buy-coated-wire)
+- pre-mortem exercise per phase
+- decision log with dated go/no-go records
+
+#### 8.7.2 Working Capital & Gold Exposure
+
+**Working-capital structure** (9 terms)
+
+- gold inventory as dominant working-capital line
+- days inventory outstanding (DIO) for gold stock
+- cash conversion cycle of the venture
+- WIP valuation on coated-but-unformed wire
+- reorder point for gold salts vs lead time
+- small-lot buying premium vs capital tied up trade
+- consignment gold stock to shift capital to vendor
+- receivables terms risk in wholesale channel
+- seasonal demand working-capital swing (gift seasons)
+
+**Gold price risk management** (8 terms)
+
+- gold price exposure window (buy-to-sell lag)
+- natural hedge: repricing product on gold moves
+- forward purchase / price-lock with dealer
+- futures/ETF hedge feasibility at micro scale (often impractical - cost vs exposure)
+- matched buying (buy gold only against orders)
+- scrap float as internal gold buffer
+- mark-to-market of gold inventory in monthly accounts
+- hedging cost vs exposure materiality threshold
+
+#### 8.7.3 Compliance, Insurance & Business Admin Costs
+
+**Regulatory cost lines** (10 terms)
+
+- business licensing and home-industry zoning constraints (plating at home often restricted)
+- hazardous-waste generator status fees (plating rinses = hazardous waste class)
+- wastewater discharge permit for metal-bearing rinse water
+- cyanide possession/storage regulation burden (if cyanide route; cyanide-free route reduces it)
+- precious-metals dealer registration (jurisdiction-dependent)
+- EHS training and PPE recurring cost
+- fire-code compliance for compressed argon storage
+- SDS library and chemical inventory reporting obligations
+- product liability insurance for skin-contact jewelry
+- jurisdiction check logged as [UNKNOWN] until owner location confirmed
+
+**Record-keeping and controls** (8 terms)
+
+- gold mass-balance audit trail (regulator- and insurer-relevant)
+- lot traceability: wire lot -> bath/target campaign -> SKU lot
+- quote/PO/COA document retention policy
+- monthly management accounts pack (cost, yield, margin, gold position)
+- separation of personal and venture finances
+- asset register for machine components
+- insurance schedule review on inventory growth
+- data room readiness if seeking partner/investor
+
+---
+
+## 9. Safety & Regulatory Compliance (`safety-regulatory`) — 465 terms
+
+**Scope:** All hazard and legal-compliance knowledge cutting across the other plated-jewelry domains: plating-bath chemical hazards (cyanide gold chemistry always carried with its acute-toxicity hazard class and the cyanide-free sulfite/thiosulfate alternatives named), nickel-release and skin-contact regulation for jewelry (EN 1811 family, REACH nickel restriction), food-contact regulation for the cups/spoons/glassware extension (EU 1935/2004 framework, Council of Europe metals-and-alloys release limits, FDA framework), electrical/high-voltage/RF and vacuum-equipment safety including argon asphyxiation and implosion risk, waste and effluent handling (cyanide destruction, F006-class plating sludge, sewer-discharge rules, gold-bearing waste as recoverable regulated stream), truth-in-marking and consumer law for selling gold-plated goods (FTC jewelry-guide vocabulary, vermeil/gold-electroplate thickness conventions, hallmarking exclusions), and the legality plus insurability of running these processes in a home workshop (zoning, fire-code chemical quantity thresholds, insurance exclusions, cyanide acquisition controls). Feeds the safety-regulatory risk domain of P2 and constrains Q6-Q11 answers.
+
+### 9.1 Plating-Bath Chemical Hazards & Handling
+
+#### 9.1.1 Cyanide gold chemistry hazards
+
+**Cyanide compounds and acute toxicity** (12 terms)
+
+- potassium gold cyanide KAu(CN)2 (acutely toxic, cyanide hazard class)
+- potassium cyanide KCN make-up salt (GHS Acute Tox. Category 1; fatal if swallowed or in contact with skin)
+- sodium cyanide NaCN (acute toxicity hazard class)
+- free cyanide vs complexed cyanide speciation
+- hydrogen cyanide HCN gas evolution on acidification (lethal gas)
+- pH >10 alkalinity rule for cyanide baths
+- dermal absorption route of cyanide salts
+- cytochrome-c oxidase inhibition mechanism of cyanide poisoning
+- bitter-almond odor unreliability (genetic anosmia)
+- UN Class 6.1 toxic substances transport classification
+- GHS06 skull-and-crossbones pictogram
+- copper cyanide strike bath (same cyanide hazard class)
+
+**Cyanide exposure response and antidotes** (10 terms)
+
+- cyanide antidote kit stocking policy
+- hydroxocobalamin antidote (Cyanokit-type)
+- nitrite/thiosulfate antidote sequence (sodium nitrite + sodium thiosulfate)
+- 100% oxygen first-aid administration
+- HCN gas detector with ppm alarm setpoints
+- emergency eyewash and drench shower (ANSI Z358.1 class)
+- buddy-system rule for cyanide handling (never work alone)
+- poison-control pre-notification for cyanide on premises
+- surface decontamination with dilute hypochlorite
+- medical-surveillance baseline for cyanide workers
+
+**Incompatibility and segregation** (9 terms)
+
+- acid-cyanide segregation rule (HCN generation on contact)
+- dedicated cyanide-only tools and drip trays
+- locked poison cabinet storage
+- secondary containment sized 110% of largest container
+- separate ventilation paths for acid and cyanide stations
+- GHS/CLP hazard-communication labeling (signal word, H/P statements)
+- spill kit with alkaline absorbent for cyanide solutions
+- cyanide inventory log and mass reconciliation
+- chemical compatibility chart for plating shops
+
+#### 9.1.2 Acids, alkalis and preparation chemicals
+
+**Pickling and activation acids** (10 terms)
+
+- hydrochloric acid HCl pickle (corrosive hazard class)
+- sulfuric acid H2SO4 electrocleaner addition (corrosive)
+- nitric acid HNO3 bright dip (corrosive, oxidizing; NOx fume evolution)
+- aqua regia gold stripping (corrosive, oxidizing; toxic fume evolution)
+- hydrofluoric-acid exclusion policy for home shops (skin-penetrating systemic toxin)
+- acid-into-water addition rule
+- fume hood face velocity m/s for acid work
+- nitrogen dioxide NO2 delayed pulmonary edema hazard
+- acid-resistant PVC/CPVC/polypropylene tank materials
+- citric acid and sulfamic acid as lower-hazard pickle alternatives
+
+**Alkaline cleaners and solvents** (9 terms)
+
+- sodium hydroxide electrocleaner (corrosive, severe burns)
+- hot alkaline soak-cleaner splash hazard 60-90 °C
+- trichloroethylene vapor degreasing legacy hazard (carcinogen class; avoid)
+- aqueous ultrasonic degreasing as safer substitution
+- isopropanol flammability (flammable liquid class, low flash point)
+- acetone storage in flammables cabinet
+- PFAS/PFOS chromium-era fume suppressant phase-out awareness
+- occupational exposure limit (OEL/PEL) concept for solvent vapors
+- cadmium- and lead-bearing brightener avoidance
+
+**Nickel and interlayer chemical hazards** (9 terms)
+
+- nickel sulfate / nickel chloride salts (skin sensitizer; nickel compounds carcinogen class, IARC Group 1)
+- Wood's nickel strike (concentrated HCl + nickel chloride; corrosive plus sensitizer)
+- boric acid in Watts nickel bath (EU CLP reprotoxic classification)
+- palladium chloride activator handling
+- hexavalent chromium exclusion (Cr(VI) carcinogen; unnecessary for gold route)
+- acid copper bath as lower-hazard alternative to copper cyanide strike
+- plater's nickel dermatitis as occupational disease
+- air sampling for nickel aerosol above tanks
+- sensitizer-specific glove and sleeve protocol
+
+#### 9.1.3 Cyanide-free substitution and hierarchy of controls
+
+**Cyanide-free gold electrolytes** (10 terms)
+
+- sodium gold sulfite Na3Au(SO3)2 electrolyte
+- ammonium gold sulfite chemistry
+- thiosulfate-sulfite mixed-ligand gold bath
+- sulfite-bath instability/disproportionation trade-off
+- near-neutral pH operating window of sulfite gold
+- gold(I) vs gold(III) oxidation state in electrolyte
+- immersion/electroless gold (ENIG-type) as low-hazard thin-gold route
+- cyanide-free strike layer options
+- residual toxicity caveat (still a heavy-metal solution)
+- supplier SDS comparison as substitution evidence
+
+**Hierarchy of controls applied to route choice** (9 terms)
+
+- elimination/substitution before PPE principle
+- PVD sputtering as dry-route substitution for wet cyanide chemistry
+- engineering controls: tank lip extraction
+- administrative controls: written cyanide SOP and permit-to-work
+- bath volume minimization L as quantity control
+- pre-dissolved proprietary replenisher vs weighing raw cyanide salts
+- closed-loop transfer (pump, not pour) handling
+- COSHH-style written risk assessment document
+- beaker-cell trial scale before tank scale
+
+#### 9.1.4 PPE, storage and hazard communication
+
+**PPE selection** (9 terms)
+
+- nitrile vs butyl vs neoprene glove permeation ratings
+- glove breakthrough time minutes per SDS Section 8
+- chemical splash goggles plus face shield combination
+- corrosive-rated apron/bib
+- respirator cartridge selection (acid gas vs particulate)
+- respirator fit testing requirement
+- disposable coverall for cyanide weighing
+- PPE donning/doffing sequence to avoid self-contamination
+- contaminated-PPE disposal as chemical waste
+
+**Storage and hazard communication** (10 terms)
+
+- SDS 16-section format and Section 8 exposure controls
+- GHS/CLP label elements on decanted containers
+- flammables cabinet vs corrosives cabinet vs locked poison cabinet
+- ventilated acid cabinet with polypropylene shelving
+- oxidizer separation from organics
+- chemical inventory with maximum-on-hand quantities kg/L
+- NFPA 704 hazard diamond at workshop entrance
+- emergency-responder pre-plan sheet for the premises
+- temperature-stable storage for unstable electrolytes
+- original-container retention rule for poisons
+
+### 9.2 Nickel-Release & Skin-Contact Regulation
+
+#### 9.2.1 Nickel restriction regimes
+
+**EU/UK nickel rules** (9 terms)
+
+- REACH Annex XVII entry 27 nickel restriction
+- 0.5 µg/cm²/week nickel release limit for prolonged skin contact
+- 0.2 µg/cm²/week limit for piercing post assemblies
+- 'prolonged contact with the skin' scoping definition
+- two-year-normal-use wear coverage requirement
+- UK REACH mirror restriction post-Brexit
+- Safety Gate/RAPEX recall notifications for nickel-failing jewelry
+- importer and distributor due-diligence duty
+- coating wear-through as the compliance failure mode
+
+**Other jurisdictions and voluntary standards** (8 terms)
+
+- absence of a US federal nickel-release limit (litigation exposure instead)
+- California Proposition 65 listed jewelry metals (lead, cadmium, nickel compounds)
+- CPSIA lead-content limits for children's jewelry
+- ASTM children's jewelry safety specification class (lead/cadmium)
+- historic Danish nickel order as EU precursor
+- 'hypoallergenic' as an unregulated marketing term
+- retailer restricted-substances lists (RSL)
+- Chinese GB harmful-elements jewelry standard class
+
+#### 9.2.2 Nickel release testing
+
+**Reference and screening tests** (10 terms)
+
+- EN 1811 reference nickel release test (artificial sweat immersion)
+- artificial sweat composition (lactic acid, urea, sodium chloride)
+- one-week 30 °C immersion protocol
+- EN 12472 wear-and-corrosion simulation prior to release testing
+- dimethylglyoxime (DMG) spot test pink-complex screening
+- ICP-OES/ICP-MS quantification of released nickel µg/L
+- specimen surface-area determination cm²
+- release-rate normalization to µg/cm²/week
+- ISO/IEC 17025-accredited test-house class
+- coating porosity as a driver of anomalous release results
+
+**Design responses to nickel limits** (8 terms)
+
+- nickel-free interlayer stacks (copper/bronze/white bronze, palladium)
+- palladium-nickel alloy caveat (still contains nickel)
+- barrier-layer thickness µm vs pore density trade-off
+- clear topcoat sealing to suppress release (e-coat, nano-ceramic)
+- 316L stainless substrate as low-release choice
+- 'nickel-safe' vs 'nickel-free' claim wording distinction
+- post-forming re-test (bend-induced microcracking raises release)
+- batch conformity-testing cadence for production lots
+
+#### 9.2.3 Allergy science and customer aftercare
+
+**Sensitization mechanisms** (9 terms)
+
+- nickel allergic contact dermatitis (Type IV delayed hypersensitivity)
+- sensitization vs elicitation dose thresholds
+- dermatology patch testing with nickel sulfate
+- high nickel-allergy prevalence in pierced populations
+- cobalt and palladium cross-reactivity
+- sweat chloride corrosion pathway through pores to nickel interlayer
+- wear-through of thin gold exposing sensitizing interlayer
+- gold sodium thiosulfate as a rare gold-allergy patch allergen
+- green-skin (copper corrosion) vs itch/rash (nickel) complaint differential
+
+**Consumer communication and aftercare** (8 terms)
+
+- voluntary 'contains nickel' disclosure practice
+- piercing vs prolonged-contact product categorization at listing time
+- aftercare instructions reducing dermatitis complaints (dry, remove for swimming)
+- no-medical-claims rule for allergy wording
+- replating/refresh service disclosure
+- rash-complaint triage and product retrieval procedure
+- fit design avoiding sweat traps against skin
+- warning wording for known-sensitized customers
+
+### 9.3 Food-Contact Compliance (Houseware Extension)
+
+#### 9.3.1 Regulatory frameworks for metal food-contact coatings
+
+**EU framework** (9 terms)
+
+- Regulation (EC) 1935/2004 food-contact framework
+- Article 3 general safety requirement (no health endangerment, no organoleptic change)
+- GMP Regulation (EC) 2023/2006 for food-contact manufacturing
+- no harmonized EU measure for metals (national rules apply)
+- Council of Europe 'Metals and Alloys' technical guide specific release limits (SRLs)
+- declaration of compliance (DoC) document
+- traceability requirement for food-contact articles
+- national metal decrees class (e.g. French arrêté regime)
+- ceramic articles directive class for lead/cadmium (glassware analogy)
+
+**US and other frameworks** (8 terms)
+
+- FDA indirect food additive / food-contact framework (21 CFR class)
+- gold and silver as traditionally accepted food-contact surfaces
+- FDA compliance policy on silver-plated hollowware lead leaching class
+- California Proposition 65 warning trigger for leachable lead/cadmium
+- NSF/ANSI 51 food-equipment materials certification
+- 'food grade' vs 'food safe' vs 'food contact compliant' terminology discipline
+- state attorney-general enforcement actions on leaching tableware
+- import detention risk for decorated drinkware
+
+#### 9.3.2 Migration and release testing
+
+**Metal release test methods** (10 terms)
+
+- food simulant selection (dilute citric acid for metals per CoE guide)
+- 3% acetic acid simulant convention for ceramics/glassware
+- time-temperature exposure protocols class (e.g. 24 h ambient, 2 h at 70 °C)
+- specific release limit (SRL) mg/kg food per metal
+- lip-and-rim lead/cadmium test class (ASTM C927 type)
+- ISO 8442 cutlery and hollowware standard family
+- repeat-use article third-migration concept
+- ICP-MS quantification of leached metals µg/L
+- surface-to-volume ratio dm²/kg convention
+- worst-case foodstuff rationale (hot, acidic, prolonged contact)
+
+**Failure modes driving migration** (9 terms)
+
+- pore-path corrosion through thin gold to the substrate
+- galvanic couple gold/steel accelerating substrate dissolution
+- copper interlayer verdigris formation in acidic contact
+- nickel release into acidic food from exposed interlayer
+- dishwasher chemistry attack (alkaline detergent plus chlorine)
+- cutlery/scouring abrasion exposing base metal
+- silver-sulfide tarnish transfer as organoleptic failure
+- coating flake-off as physical contaminant in food
+- hot-fill thermal cycling delamination
+
+**Permissible layer systems for houseware** (9 terms)
+
+- solid 316 stainless contact surface with exterior-only decoration strategy
+- gold-on-silver (vermeil-type) stack as food-tolerant system
+- no-nickel-interlayer rule on food-contact side
+- E175 gold as authorized food additive (edible gold-leaf precedent)
+- PVD TiN gold-look coating precedent on cutlery
+- decoration keep-out zone below the rim contact area
+- food-contact status question for lacquer/topcoat layers
+- spoon-bowl vs handle zoning of decorative plating
+- thick-gold vs flash-gold durability distinction for wetted surfaces
+
+#### 9.3.3 Glass and decorated-article specifics
+
+**Decorated drinkware compliance** (8 terms)
+
+- lip-and-rim decoration keep-out band on drinkware (top ~20 mm convention)
+- lead and cadmium in decorating fluxes and enamels
+- externally decorated vs internally coated article distinction
+- test-buy market surveillance of decorated tumblers
+- cold-end coating interaction with applied metal films
+- decal/organic-ink coexistence with metallization
+- lead-crystal decanter interior-contact precedent as cautionary case
+- child-appeal decoration heightened scrutiny
+
+**Non-conductive substrate coating routes and their hazards** (8 terms)
+
+- PVD metallization of glass exterior as the compliant default
+- electroless silvering chemistry hazard (ammoniacal silver forms explosive residues on storage; discard immediately)
+- conductive-seed spray metallization for subsequent electroplating
+- mirror-industry copper-backed silvering precedent
+- metal-on-glass adhesion failure flaking into drink
+- double-wall tumbler design isolating coating from contents
+- protective lacquer overcoat migration status question
+- rim-offset mm specification in decoration drawings
+
+### 9.4 Equipment & Physical Safety
+
+#### 9.4.1 Electrical, high-voltage and RF safety
+
+**Plasma power-supply hazards** (11 terms)
+
+- magnetron DC supply open-circuit voltage (hundreds of V to kV)
+- stored capacitor energy J discharge before service
+- bleeder-resistor verification and shorting stick use
+- RF 13.56 MHz supply burn hazard (RF burns bypass pain sensation)
+- RF ground-strap and shield integrity checks
+- chamber-door and HV-enclosure interlock switches
+- creepage and clearance distances mm at kV
+- lockout/tagout (LOTO) for supply maintenance
+- GFCI/RCD protection on wet-bench circuits
+- isolation transformer for bench rectifier work
+- single-fault-tolerant interlock design principle
+
+**Plating rectifier and wet-area electrics** (9 terms)
+
+- low-voltage high-current rectifier hazard profile (safe-touch V, hundreds of A)
+- busbar joint heating and torque-check schedule
+- arc flash from shorted plating busbar
+- IP-rated enclosures adjacent to tanks
+- corrosive-atmosphere insulation degradation
+- bonding of tanks, racks and anode bars
+- immersion heater dry-fire and earth-leakage failure mode
+- 30 mA residual-current device class for wet areas
+- cable routing clear of acid drip zones
+
+**Stray-emission awareness** (8 terms)
+
+- soft X-ray generation risk in vacuum gear above ~20 kV
+- e-beam evaporator X-ray shielding (if that route is chosen)
+- UV emission from plasma glow (viewport filtering)
+- welding-shade glass for prolonged plasma viewing
+- ozone generation near arcs and corona
+- EMI from RF supplies corrupting gauge readings
+- X-ray survey-meter spot check policy for >30 kV equipment
+- capacitor re-charge (dielectric absorption) after discharge
+
+#### 9.4.2 Vacuum and pressure hazards
+
+**Implosion and mechanical vacuum risks** (9 terms)
+
+- glass bell-jar implosion and guard-screen requirement
+- polycarbonate implosion shield
+- chamber wall buckling under ~101 kPa external load
+- atmospheric force awareness ~10 N/cm² on door area
+- viewport pressure rating and scratch inspection
+- KF/ISO/CF flange correct clamping practice
+- slow-vent valve to prevent part ejection and turbulence
+- hinged-door pinch hazard during venting
+- foreline hose whip on sudden failure
+
+**Pump-specific hazards** (8 terms)
+
+- rotary-vane pump oil-mist exhaust and mist filter
+- turbomolecular pump crash energy (rotor at tens of krpm)
+- turbo venting-rate rules to avoid rotor overstress
+- diffusion pump oil ignition on air inrush (silicone-oil mitigation)
+- diffusion pump backstreaming as contamination and exposure path
+- hot pump-oil burn during maintenance
+- belt-drive guarding on older pumps
+- pump exhaust routed outdoors or to extraction
+
+#### 9.4.3 Compressed gas and asphyxiation
+
+**Argon cylinder and inert-gas handling** (10 terms)
+
+- argon cylinder ~200 bar handling, upright chaining
+- regulator and cylinder-valve fitting match (CGA/BS class)
+- argon asphyxiation in enclosed and low-lying spaces (denser than air)
+- oxygen-depletion monitor alarm at 19.5% O2
+- no-cylinder-in-cellar rule for home shops
+- MFC/needle-valve leak-by as slow room inertization
+- leak-detection fluid check on fittings
+- cylinder transport rules in private vehicles (ventilation, valve cap)
+- lecture bottle vs full cylinder quantity trade-off
+- purge and vent lines discharged to outside air
+
+**Process byproduct exposure** (8 terms)
+
+- sputtered metal nanoparticle exposure during chamber cleaning
+- HEPA-vacuum and wet-wipe chamber cleaning protocol
+- flaking shield debris handling (fine metal dust)
+- reactive-gas admixture hazards if reactive sputtering is attempted
+- ozone/NOx from atmospheric plasma cleaning
+- solvent vapor plus ignition source co-location risk
+- disposable respirator vs half-mask for chamber entry cleaning
+- post-clean surface wipe-sampling for metal dust
+
+#### 9.4.4 Thermal and mechanical machine hazards
+
+**Hot surfaces and process heat** (8 terms)
+
+- bakeout band-heater surfaces >150 °C
+- quartz-lamp radiant-heat exposure
+- magnetron cooling-water loss target-burnout scenario
+- cooling-water flow interlock switch
+- hot bath tanks 60-90 °C scald-plus-chemical splash combination
+- ring-forming/annealing furnace burn hazard
+- rated hot-work gloves for substrate handling
+- overtemperature cutout on heaters and baths
+
+**Reel-to-reel line mechanical hazards** (8 terms)
+
+- wire payoff/take-up pinch points and nip guarding
+- tensioned-wire whip recoil on breakage
+- sharp wire-end puncture (eye and hand protection)
+- rotating spool entanglement (no loose clothing or lanyards)
+- emergency-stop placement along a continuous line
+- guarded drive belts and sprockets
+- manual-handling weight of transformers and pumps kg
+- hose and cable trip-hazard management
+
+### 9.5 Waste, Effluent & Environmental Compliance
+
+#### 9.5.1 Spent-bath treatment
+
+**Cyanide destruction** (9 terms)
+
+- alkaline chlorination (hypochlorite) two-stage cyanide destruction
+- stage 1 at pH >10.5 to cyanate, stage 2 near pH 8.5 to CO2/N2
+- ORP endpoint control mV during destruct
+- hydrogen peroxide oxidation as alternative destruct chemistry
+- never-acidify rule for cyanide waste (HCN release)
+- cyanate and ammonia treatment byproducts
+- iron-complexed cyanide (ferrocyanide) resistance to chlorination
+- batch treat-then-test-before-discharge discipline
+- licensed hazardous-waste contractor as the home-scale default route
+
+**Acid, alkali and metal-bearing solution treatment** (9 terms)
+
+- neutralization to pH 6-9 window before any discharge
+- hydroxide precipitation with metal-specific optimum pH
+- sulfide polishing precipitation for residual metals
+- flocculation, settling and filter-press dewatering
+- spent pickle liquor as a distinct waste stream
+- elementary neutralization exemption concept
+- calibrated pH meter with buffer verification
+- sludge drying and containerization
+- treatment-log record keeping
+
+#### 9.5.2 Rinse water and discharge rules
+
+**Sewer and surface-water rules** (9 terms)
+
+- POTW pretreatment program local limits mg/L
+- US metal-finishing effluent guidelines class (40 CFR metal finishing category)
+- no-discharge-to-septic rule for plating rinses (critical for homes)
+- UK trade effluent consent / indirect discharge permit
+- prohibition of dilution as a substitute for treatment
+- pH, total cyanide and total metals as permit parameters
+- grab vs composite sampling methods
+- storm-drain discharge as a surface-water offense
+- enforcement precedents against domestic sewer misuse
+
+**Rinse-water minimization** (8 terms)
+
+- dragout reduction (drain dwell s, drip bars, air knives)
+- counterflow cascade rinsing stages
+- static drag-out (dead) rinse as gold-recovery point
+- ion-exchange polishing of rinse water
+- conductivity-controlled rinse make-up µS/cm
+- evaporative volume reduction of concentrates
+- reverse-osmosis rinse recycling
+- zero-liquid-discharge ambition vs micro-shop cost reality
+
+#### 9.5.3 Regulated waste streams and gold recovery
+
+**Waste classification and shipment** (10 terms)
+
+- F006 wastewater-treatment-sludge listing (US RCRA electroplating sludge)
+- D003 reactive characteristic for cyanide-bearing waste
+- hazardous-waste generator size categories (VSQG/SQG class)
+- EU List of Wastes chapter for metal surface-treatment wastes
+- waste manifest / consignment-note chain of custody
+- licensed waste carrier requirement
+- lab-pack disposal for small mixed chemical lots
+- accumulation time and quantity limits at generator
+- UK duty-of-care documentation
+- waste characterization records retention
+
+**Gold-bearing waste as recoverable stream** (9 terms)
+
+- gold-loaded ion-exchange resin sent for incineration/refining
+- electrowinning cell recovery from drag-out rinse
+- zinc or steel-wool cementation of gold from solution
+- spent sputtering target and bonding-plate reclaim
+- peelable chamber shield foils as gold reclaim stream
+- refiner assay, accountability and return terms (Au grams)
+- filters, rags and floor sweeps as refinable ash
+- precious-metal accounting vs waste-classification tension
+- security of the gold-scrap stream against theft
+
+#### 9.5.4 Air emissions and ventilation discharge
+
+**Capture and scrubbing** (8 terms)
+
+- tank lip-extraction capture velocity m/s
+- packed-bed scrubber / mist eliminator on acid exhaust
+- cyanide mist capture and dedicated stack routing
+- corrosion-resistant PVC/PP ductwork
+- pump-exhaust oil-mist filtration
+- activated-carbon filter for solvent vapors
+- fan placement pulling (not pushing) contaminated air
+- make-up air provision for extracted rooms
+
+**Small-source permitting and neighbors** (8 terms)
+
+- permit-exempt small-emission-source threshold concept
+- nuisance and odor complaints as the practical enforcement trigger
+- pump and blower noise dB(A) at property line
+- discharge-point placement away from windows and neighbors
+- home-business environmental complaint escalation path
+- visible plume avoidance
+- operating-hours self-restriction as mitigation
+- emissions and maintenance log as complaint defense
+
+### 9.6 Marking, Claims & Consumer Law
+
+#### 9.6.1 Plating nomenclature and marking rules
+
+**US FTC jewelry-guide vocabulary** (10 terms)
+
+- FTC Guides for the Jewelry Industries (16 CFR Part 23)
+- 'gold electroplate' minimum-thickness convention (~0.175 µm of 10k+ gold)
+- 'heavy gold electroplate' 2.5 µm convention
+- 'gold flashed' / 'gold washed' terms for sub-minimum coatings
+- 'vermeil' = sterling-silver base plus minimum-thickness gold coating
+- 'gold filled' 1/20-by-weight bonded sheet (not electroplate)
+- 'rolled gold plate' fractional weight marking
+- karat quality disclosure of the coating alloy
+- net-impression deception standard (must not read as solid gold)
+- surface-application disclosure requirement
+
+**Hallmarking and international marking** (8 terms)
+
+- UK Hallmarking Act exclusion: plated articles cannot bear precious-metal hallmarks
+- assay-office scope excludes coatings
+- GEP/HGE/GP stamp trade conventions
+- micron thickness stamps as trade practice
+- non-harmonized EU national precious-metal marking regimes
+- trade-descriptions-type offense for misdescribed plated goods
+- 'gold tone'/'gold colour' as safe wording for TiN look-alike finishes
+- country-of-origin marking on imported blanks
+
+#### 9.6.2 Thickness and quality claims substantiation
+
+**Substantiating claims** (10 terms)
+
+- XRF coating-thickness measurement as claim evidence (ASTM B568 class)
+- ASTM B488 electrodeposited gold classification (type/code/class)
+- coulometric thickness verification as referee method
+- documented sampling plan behind any thickness claim
+- durability claims ('plated for life') substantiation burden
+- 'waterproof' / 'tarnish-free' claim risk
+- 'nickel-free' claim vs detectable-trace reality
+- 'hypoallergenic' unsubstantiated-claim exposure
+- µin vs µm unit confusion in listings
+- batch test records as due-diligence defense
+
+**Marketplace and platform rules** (8 terms)
+
+- marketplace category rules for using the 'gold' keyword
+- platform test-buy takedown programs
+- wear-complaint reviews as evidence against the seller
+- listing-photo color accuracy for gold tone
+- care-instruction disclosure limiting wear claims
+- returns/refund law interaction with plating wear
+- affiliate/influencer claim liability pass-through
+- counterfeit/lookalike flagging risk for branded styles
+
+#### 9.6.3 Consumer protection and liability exposure
+
+**Regulatory and civil exposure** (9 terms)
+
+- FTC Act Section 5 unfair-or-deceptive-practices authority
+- state UDAP statutes / consumer-rights acts
+- EU Unfair Commercial Practices and Consumer Rights directives class
+- class-action exposure for systematic under-thickness
+- product-liability claims for skin injury (nickel rash)
+- CPSC recall mechanics for children's jewelry metals
+- EU General Product Safety Regulation responsible-person requirement
+- distance-selling information duties for online jewelry
+- test-certificate retention period practice
+
+**Record-keeping and due diligence** (8 terms)
+
+- technical file per product line
+- supplier declarations for raw-material composition (nickel, lead, cadmium)
+- batch traceability from wire lot to sold ring
+- due-diligence defense doctrine
+- written recall/withdrawal procedure
+- authorized-representative arrangements for EU distance sales
+- marketplace seller-verification regimes (GPSR/DSA era)
+- complaint register linked to batch numbers
+
+### 9.7 Home-Workshop Legality & Insurability
+
+#### 9.7.1 Zoning and premises
+
+**Zoning and home-occupation rules** (9 terms)
+
+- home-occupation permit conditions (hazardous-process exclusion clauses)
+- residential zoning prohibition on light-industrial use
+- HOA and lease covenants banning workshops
+- landlord consent requirement for tenant workshops
+- change-of-use / planning-permission trigger (UK material change of use)
+- customer-visit and delivery limits in home-occupation rules
+- detached garage vs dwelling classification difference
+- business registration exposing the address to inspection
+- neighbor complaint as the dominant enforcement trigger
+
+**Premises suitability** (8 terms)
+
+- through-wall extraction retrofit and building consent
+- dedicated electrical circuit capacity A and single-phase kW limits
+- chemical-resistant flooring and floor bunding
+- separation from living areas / no shared HVAC return
+- domestic drainage unsuitability for plating effluent
+- secure outbuilding chemical store option
+- child and pet access control as a legal duty
+- escape route kept clear of cylinders and chemicals
+
+#### 9.7.2 Fire-code and chemical-quantity thresholds
+
+**Quantity thresholds and codes** (9 terms)
+
+- maximum allowable quantity (MAQ) per control area concept (fire-code class)
+- NFPA hazardous-materials code class (NFPA 400 family)
+- flammable-liquid storage limits in dwellings L
+- toxic-solid and toxic-gas MAQ triggers
+- indoor compressed-gas cylinder count limits
+- DSEAR/ATEX-style flammable-atmosphere assessment (UK/EU)
+- hazardous-materials notification to fire service
+- extinguisher classes on site (ABC plus metal-fire awareness)
+- layered smoke, CO and toxic-gas detection
+
+**Inspections and permits** (8 terms)
+
+- fire-marshal inspection authority over home businesses
+- electrical-work certification rules (Part P-style notifiable work)
+- building permit for duct penetrations and ventilation
+- pressure-equipment rules class for gas manifolds
+- jurisdictional gap: no hazardous-process license path for dwellings
+- insurance-warranty compliance inspections
+- documented risk assessment as inspection currency
+- stop-use / prohibition notice powers
+
+#### 9.7.3 Insurance and liability
+
+**Insurance realities** (10 terms)
+
+- homeowner-policy business-activity exclusion
+- hazardous-chemical exclusion clauses
+- in-home business endorsement and its low limits
+- separate commercial general liability (CGL) policy
+- product-liability rider for jewelry sales
+- policy voiding by undisclosed cyanide storage
+- material-fact disclosure duty to the insurer
+- premises pollution liability (rarely written for homes)
+- gold-stock theft cover and safe-rating requirements
+- claims-made vs occurrence policy distinction
+
+**Chemical acquisition and security controls** (9 terms)
+
+- supplier KYC / end-user declarations for cyanide sales
+- supplier refusal to ship cyanides to residential addresses
+- poison-licensing regimes for cyanide purchase (jurisdiction-dependent)
+- US chemical-facility security screening class (CFATS chemicals of interest)
+- EU explosives-precursor-style concentration thresholds (e.g. nitric acid)
+- acquisition and disposal record-keeping
+- secure storage as a license condition
+- dangerous-goods small-load transport exemptions (ADR class)
+- pre-mixed proprietary solutions vs raw salts as a legality easing path
+
+---
