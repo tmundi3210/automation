@@ -93,6 +93,14 @@ PLACEHOLDERS = {
     "which_side_dominates_or_how_to_resolve_when_conflict_constraint_or_feedback_occurs",
 }
 
+# generic draft markers that must NOT survive into a populated KB (word-boundary,
+# uppercase-only for the code-style markers so prose words like "autodoc" never match;
+# verified 0 hits across all 204 repo KBs before adding — T13 fault-injection fix)
+DRAFT_MARKER_RES = [
+    re.compile(r"\bTODO\b"), re.compile(r"\bFIXME\b"), re.compile(r"\bTBD\b"),
+    re.compile(r"\bXXX\b"), re.compile(r"lorem\s+ipsum", re.IGNORECASE),
+]
+
 EDGE_ID_RE = re.compile(r"^EDGE_\d+$")
 
 
@@ -399,6 +407,7 @@ def check_dependency_acyclicity(kb, r, nid_set):
 
 def check_placeholders(raw_text, r):
     hits = sorted({p for p in PLACEHOLDERS if p in raw_text})
+    hits += sorted({m.group(0) for rx in DRAFT_MARKER_RES for m in [rx.search(raw_text)] if m})
     (r.ok if not hits else r.fail)("placeholders.none_leaked", f"found={hits}")
 
 
