@@ -832,7 +832,7 @@
     {
       "id": "AUDIO_CAPTURE_RECORD",
       "topic": "per_answer_audio_capture_format",
-      "definition": "Specify the capture step: record one audio file per spoken answer, storing lossless-enough compressed audio at 16 kHz mono \u2014 which is exactly what Whisper consumes anyway, so no resampling loss is introduced [FACT \u2014 Whisper input format; ESTIMATE \u2014 the one-file-per-answer choice is design]. Capture is deliberately dumb and fast: it writes the file and hands off to storage/enqueue, doing no transcription itself (that is the async posture). One-file-per-answer keeps the {answer_id \u2194 audio} mapping trivial and makes per-question grading and audit linkage clean.",
+      "definition": "Specify the capture step: record one audio file per spoken answer, storing lossless-enough compressed audio at 16 kHz mono \u2014 which is exactly what Whisper consumes anyway, so no resampling loss is introduced [ESTIMATE \u2014 design, research \u00a7B4; ESTIMATE \u2014 the one-file-per-answer choice is design]. Capture is deliberately dumb and fast: it writes the file and hands off to storage/enqueue, doing no transcription itself (that is the async posture). One-file-per-answer keeps the {answer_id \u2194 audio} mapping trivial and makes per-question grading and audit linkage clean.",
       "node_type": "work_unit",
       "group": "core",
       "scope_boundary": {
@@ -971,7 +971,7 @@
     {
       "id": "STORE_ENQUEUE_SQLITE",
       "topic": "file_plus_sqlite_metadata_row_enqueue",
-      "definition": "Specify durable storage + enqueue [ESTIMATE \u2014 design, research \u00a7B4 step 2]: write the audio file to a directory and insert a metadata row {answer_id, question_id, session_id, recorded_at, duration, language_hint?, status:queued} into a SQLite table. A directory-of-files plus one SQLite table is fully sufficient at single-user scale and a message broker (Kafka/RabbitMQ/SQS) would be overkill. The row is the unit of work the nightly worker drains; the file path lives on the row so audio, transcript and grade can later be linked. This is the durability boundary: once the row is committed as queued, the answer cannot be silently lost.",
+      "definition": "Specify durable storage + enqueue [ESTIMATE \u2014 design, research \u00a7B4 step 2]: write the audio file to a directory and insert a metadata row {answer_id, question_id, session_id, recorded_at, duration, language_hint?, status:queued} into a SQLite table. A directory-of-files plus one SQLite table is fully sufficient at single-user scale and a message broker would be overkill. The row is the unit of work the nightly worker drains; the file path lives on the row so audio, transcript and grade can later be linked. This is the durability boundary: once the row is committed as queued, the answer cannot be silently lost.",
       "node_type": "work_unit",
       "group": "core",
       "scope_boundary": {
@@ -1250,13 +1250,13 @@
     {
       "id": "LOCAL_WHISPER_IMPL",
       "topic": "local_whisper_cpp_faster_whisper_path",
-      "definition": "Specify the LocalWhisper implementation behind the seam. whisper.cpp is a dependency-free C/C++ Whisper port running on macOS/iOS/Android/Linux/Windows/Raspberry Pi/WASM with NEON/Metal/CUDA/Vulkan acceleration, quantization and word timestamps [FACT \u2014 fetched github.com/ggml-org/whisper.cpp]; its memory/disk table shows the large model at 2.9 GiB disk / ~3.9 GB RAM, so the full-quality multilingual model runs in under 4 GB RAM on CPU [FACT \u2014 fetched table]. faster-whisper reimplements Whisper on CTranslate2 and claims up to 4\u00d7 faster at the same accuracy with less memory [FACT \u2014 fetched github.com/SYSTRAN/faster-whisper]. Because the nightly batch has no latency constraint, CPU-only whisper.cpp medium/large is sufficient; use faster-whisper if an NVIDIA GPU is present [ESTIMATE \u2014 design].",
+      "definition": "Specify the LocalWhisper implementation behind the seam. whisper.cpp is a dependency-free C/C++ Whisper port running on macOS/iOS/Android/Linux/Windows/Raspberry Pi/WASM with NEON/Metal/CUDA/Vulkan acceleration, quantization and word timestamps [FACT \u2014 fetched github.com/ggml-org/whisper.cpp]; its memory/disk table shows the large model at 2.9 GiB disk / ~3.9 GB RAM [FACT \u2014 fetched table], so the full-quality multilingual model runs in under 4 GB RAM on CPU [ESTIMATE \u2014 direct inference from the table, HIGH]. faster-whisper reimplements Whisper on CTranslate2 and claims up to 4\u00d7 faster at the same accuracy with less memory [FACT \u2014 fetched github.com/SYSTRAN/faster-whisper]. Because the nightly batch has no latency constraint, CPU-only whisper.cpp medium/large is sufficient; use faster-whisper if an NVIDIA GPU is present [ESTIMATE \u2014 design].",
       "node_type": "work_unit",
       "group": "implementations",
       "scope_boundary": {
         "included": [
           "whisper.cpp and faster-whisper as the local engines",
-          "the RAM/disk feasibility (large <4 GB RAM on CPU) [FACT]",
+          "the RAM/disk feasibility (large <4 GB RAM on CPU) [ESTIMATE \u2014 inference from the fetched table]",
           "the batch-has-no-latency-so-CPU-suffices recommendation"
         ],
         "excluded": [
@@ -1376,7 +1376,7 @@
         "picking a model too large for the target device's RAM"
       ],
       "acceptance_tests": [
-        "the local path names whisper.cpp/faster-whisper, cites the <4 GB-RAM large-model feasibility as FACT, and states CPU-only batch suffices with GPU as optional"
+        "the local path names whisper.cpp/faster-whisper, cites the <4 GB-RAM large-model feasibility as an ESTIMATE inferred from the fetched table, and states CPU-only batch suffices with GPU as optional"
       ],
       "revisit_triggers": [
         "target-device RAM/CPU changes the feasible model size",
@@ -5035,7 +5035,7 @@
       "node_ref": "LOCAL_WHISPER_IMPL",
       "description": "Name whisper.cpp/faster-whisper and cloud engines with honesty-tagged coverage and the 100-language fact",
       "artifact": "transcription engines + coverage note",
-      "gate": "the local <4 GB-RAM feasibility [FACT], the cloud options with UNKNOWN counts, and the exact 100-language Whisper count [FACT] are stated",
+      "gate": "the local <4 GB-RAM feasibility [ESTIMATE \u2014 inference from the fetched table], the cloud options with UNKNOWN counts, and the exact 100-language Whisper count [FACT] are stated",
       "id": "WF_06",
       "step": 6
     },
