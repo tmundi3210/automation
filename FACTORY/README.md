@@ -14,6 +14,7 @@ pip install, no GPU, no keys, no network at build time.
 | `GENERATOR_PROMPT.md` | A paste-into-any-AI prompt that mints a new specialist + its 3 KBs in this repo's schema. |
 | `specialist.template.json` | Blank specialist spec (15 required fields) to copy and fill. |
 | `kb_spec.template.json` | Blank compact KB content-spec for the deterministic forge. |
+| `SELF_LOOP.md` | Run the fresh-context self-improvement loop on ANY vertical's specialists (slot bindings for the canonical sweater T12 protocol). |
 
 ## The 30-second version
 
@@ -59,6 +60,31 @@ forged, gates the specialist, and prints `ALL GREEN` or a per-file `FAIL` with
 the exact re-run command. It **only runs** the forge + gates — it never writes
 prose. Tip: use **absolute** paths in `grounded_in_kbs` so the specialist gate
 passes from any directory.
+
+## The determinism boundary — read before trusting a green gate
+
+The gates prove **structure + math only**: schema keys, reference integrity,
+count bands, numeric bounds, and every node/edge formula recomputed (tol 0.02).
+They do **not** judge whether the prose is true — a fabricated-but-well-formed KB
+passes every check. **`ALL GREEN` = schema-true, never content-true.**
+
+Content truth is a **process** guarantee, layered on top of the gates. The process
+lane this repo uses (replicate it in your own vertical — not just the gates):
+
+1. **Honesty tags** — every load-bearing claim carries `[FACT]` / `[ESTIMATE]` /
+   `[UNKNOWN]`; an estimate names its method + basis; unknowns stay unknown
+   (rule N1 in `sweater_vertical/specialists/BRAIN/BRAIN.md`). The one slice the
+   gate *does* check deterministically: no `observed`/`experimentally_validated`
+   evidence labels without supplied data.
+2. **Neutralize (skeptic) gate N1–N7** — no fabricated firm figures; off-paper
+   economics described as **mechanism, never accusation**; no invented rates
+   (same file; machine form in `router.json`).
+3. **Fresh-context critic loops** — every critic/judge role is a NEW context
+   window that reads only its named inputs, so the audit cannot be the model
+   agreeing with itself (`sweater_vertical/specialists/BRAIN/SELF_LOOP.md`;
+   run it on YOUR vertical via the slot bindings in `FACTORY/SELF_LOOP.md`).
+
+If a claim matters, check its tag and its critique trail — not its exit code.
 
 All commands are confirmed working on Python 3.11; the same code is stdlib-only back to 3.8.
 See `MAKE_A_SPECIALIST.md` §10 for the full cheat sheet.

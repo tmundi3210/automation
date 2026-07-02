@@ -57,6 +57,32 @@ REQUIRED_TOP_LEVEL = [
 LEGAL_EVIDENCE_LABELS = {"heuristic", "expert_estimate", "observed", "experimentally_validated"}
 LEGAL_EDGE_TYPES = {"dependency", "constraint", "conflict", "causal", "sequence", "feedback", "similarity"}
 
+# ---- schema-version pin (T13/G6) -------------------------------------------
+# The kernel (schema/kb_generator_v1.4.1.txt, VERSIONING MODEL) mandates that the
+# top-level schema_version IS the KB schema version and MUST equal
+# generation_metadata.kb_schema_version. This validator transcribes the v1.3-style
+# KB schema bands/formulas; it therefore only supports the versions listed here.
+# A future kernel bump must extend this set CONSCIOUSLY (after re-deriving bands
+# and formulas), never silently. Verified 2026-07-02: all 204 *.kb.json artifacts
+# in this repo declare schema_version == generation_metadata.kb_schema_version == "1.3".
+SUPPORTED_KB_SCHEMA_VERSIONS = {"1.3"}
+
+# ---- source_registry entry contract (T13/G4, warn-level) --------------------
+# Kernel "source_registry item structure": every source record must carry these
+# fields ("citation_or_locator when available" — empty string is legal for
+# heuristic priors: "user_supplied_identifier_or_empty_string").
+SOURCE_ENTRY_FIELDS = [
+    "source_id", "source_type", "label_eligibility", "description",
+    "citation_or_locator", "supports", "does_not_support", "freshness_status",
+    "provenance", "grounding_limits",
+]
+# source types that legitimately carry an empty locator (model-internal priors);
+# any OTHER source_type claims external authority and should name its locator.
+INTERNAL_SOURCE_TYPES = {"heuristic_prior", "expert_estimate"}
+STRONG_EVIDENCE_LABELS = {"observed", "experimentally_validated"}
+DOI_RE = re.compile(r"^10\.\d{4,9}/\S+$")
+URL_RE = re.compile(r"^https?://\S+\.\S+")
+
 # literal template placeholders that must NOT survive into a populated KB
 PLACEHOLDERS = {
     "precise_pro", "precise_con", "concrete_example", "concrete_domain_specific_example",
@@ -128,6 +154,21 @@ def check_counts(kb, mode, r):
     for key, (lo, hi) in tgt.items():
         n = len(sized[key])
         (r.ok if lo <= n <= hi else r.fail)(f"count.{key}", f"{n} (target {lo}-{hi})")
+        # ADDITIVE ANNOTATION ONLY (T13/G9). Kernel CORE GUARANTEE ORDER ranks
+        # "Useful density" #9 (last); a <=10% band miss is machine-flagged here so the
+        # orchestrator can route a RECORDED, HUMAN-GATED waiver decision. This warn
+        # fires only next to an already-FAILED count check: overall_status and the
+        # exit code are unchanged (the KB still fails). Never an automatic waiver —
+        # the bands are calibrated cut scores (calibration/results/DECISION.json);
+        # changing acceptance requires standard-setting review, not code.
+        if n < lo and (lo - n) <= max(1, round(0.10 * lo)):
+            r.warn(f"count.{key}.near_miss",
+                   f"{n} misses lo={lo} by {lo - n} (<=10% of band edge); "
+                   "eligible for orchestrator/human-gated waiver review, NOT auto-accept")
+        elif n > hi and (n - hi) <= max(1, round(0.10 * hi)):
+            r.warn(f"count.{key}.near_miss",
+                   f"{n} exceeds hi={hi} by {n - hi} (<=10% of band edge); "
+                   "eligible for orchestrator/human-gated waiver review, NOT auto-accept")
     for key, (lo, hi) in GLOBAL_COUNTS.items():
         n = len(kb.get(key, []))
         # compact mode may relax these per schema "unless compact mode is required"
@@ -416,6 +457,131 @@ def check_formulas(kb, r, tol, allow_observed):
     (r.ok if not errs else r.fail)("formula.consistency", f"mismatches={errs[:25]} total={len(errs)}")
 
 
+def check_schema_version(kb, r):
+    """T13/G6 — pin gate to the KB schema versions it actually implements.
+
+    Both checks are FAIL-level assertions VERIFIED to hold for every existing
+    artifact (204/204 *.kb.json in-repo declare "1.3" == "1.3" as of 2026-07-02),
+    so no currently-passing KB changes status. They exist to make a future
+    kernel/schema bump fail LOUDLY here instead of silently desynchronizing the
+    gate from the generator (kernel VERSIONING MODEL: schema_version "must match
+    generation_metadata.kb_schema_version")."""
+    sv = kb.get("schema_version")
+    gm = kb.get("generation_metadata")
+    kv = gm.get("kb_schema_version") if isinstance(gm, dict) else None
+    (r.ok if sv == kv else r.fail)(
+        "version.schema_matches_metadata",
+        f"schema_version={sv!r} generation_metadata.kb_schema_version={kv!r}")
+    (r.ok if sv in SUPPORTED_KB_SCHEMA_VERSIONS else r.fail)(
+        "version.supported",
+        f"schema_version={sv!r} supported={sorted(SUPPORTED_KB_SCHEMA_VERSIONS)}"
+        " (validator bands/formulas transcribe this KB schema family only)")
+
+
+def check_source_registry(kb, r):
+    """T13/G4 — constrain what a source_registry ENTRY is (warn-level only).
+
+    evidence_refs already must RESOLVE to entries (evidence_refs.resolve); this
+    adds the entry-quality layer the fabricated-sources critique named. All
+    checks are WARN so no existing pass can flip (verified: zero warns across
+    all 144 in-scope KBs; the only repo files that would warn are two _drafts
+    that already fail, plus unreferenced-source warns in phase_b whose exit
+    code is unaffected). True source EXISTENCE is not deterministically
+    checkable offline — that lane is the sampled source-verification protocol
+    (PLAN.md section 3d), never this gate."""
+    reg = kb.get("source_registry", [])
+    entries = [s for s in reg if isinstance(s, dict)]
+
+    # 1) entry shape per kernel "source_registry item structure"
+    bad_shape = [(s.get("source_id"), [k for k in SOURCE_ENTRY_FIELDS if k not in s])
+                 for s in entries if any(k not in s for k in SOURCE_ENTRY_FIELDS)]
+    if not entries and reg:
+        bad_shape.append((None, ["<entries are not objects>"]))
+    (r.ok if not bad_shape else r.warn)("source_registry.entry_shape",
+                                        f"missing_fields={bad_shape[:10]}")
+
+    # 2) external-authority sources must name a locator (heuristic priors may not)
+    bad_loc = [s.get("source_id") for s in entries
+               if s.get("source_type") not in INTERNAL_SOURCE_TYPES
+               and not (isinstance(s.get("citation_or_locator"), str)
+                        and s.get("citation_or_locator").strip())]
+    (r.ok if not bad_loc else r.warn)("source_registry.external_locator_present",
+                                      f"external_source_without_locator={bad_loc}")
+
+    # 3) locator format sanity: only fires when the string CLAIMS a DOI/URL/ISBN shape
+    bad_fmt = []
+    for s in entries:
+        loc = s.get("citation_or_locator")
+        if not (isinstance(loc, str) and loc.strip()):
+            continue
+        loc = loc.strip()
+        low = loc.lower()
+        if low.startswith(("doi:", "https://doi.org/", "http://doi.org/")):
+            d = loc.split("doi.org/")[-1]
+            if d.lower().startswith("doi:"):
+                d = d[4:].strip()
+            if not DOI_RE.match(d):
+                bad_fmt.append((s.get("source_id"), "doi", loc[:60]))
+        elif low.startswith(("http://", "https://")):
+            if not URL_RE.match(loc):
+                bad_fmt.append((s.get("source_id"), "url", loc[:60]))
+        elif low.startswith("isbn"):
+            digits = re.sub(r"[^0-9Xx]", "", loc[4:])
+            if len(digits) not in (10, 13):
+                bad_fmt.append((s.get("source_id"), "isbn", loc[:60]))
+    (r.ok if not bad_fmt else r.warn)("source_registry.locator_format",
+                                      f"malformed_identifier={bad_fmt[:10]}")
+
+    # 4) label_eligibility must be a non-empty list (what labels may cite this source)
+    bad_elig = [s.get("source_id") for s in entries
+                if not (isinstance(s.get("label_eligibility"), list) and s.get("label_eligibility"))]
+    (r.ok if not bad_elig else r.warn)("source_registry.label_eligibility_nonempty",
+                                       f"bad={bad_elig}")
+
+    # 5) decorative sources: registry entries never cited by any evidence_refs
+    cited = set()
+
+    def _collect_refs(obj):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if k == "evidence_refs" and isinstance(v, list):
+                    cited.update(x for x in v if isinstance(x, str))
+                else:
+                    _collect_refs(v)
+        elif isinstance(obj, list):
+            for v in obj:
+                _collect_refs(v)
+    _collect_refs(kb)
+    unref = [s.get("source_id") for s in entries if s.get("source_id") not in cited]
+    (r.ok if not unref else r.warn)("source_registry.unreferenced",
+                                    f"never_cited_by_evidence_refs={unref[:10]}")
+
+    # 6) strong labels must be ELIGIBLE under a cited source (groundedness of the
+    #    label itself; complements evidence.no_observed_without_data)
+    by_id = {s.get("source_id"): s for s in entries}
+    bad_strong = []
+
+    def _check_strong(obj, where):
+        if isinstance(obj, dict):
+            lab = obj.get("evidence_label")
+            if isinstance(lab, str) and lab in STRONG_EVIDENCE_LABELS:
+                refs = obj.get("evidence_refs") or []
+                eligible = any(
+                    isinstance(by_id.get(x), dict)
+                    and lab in (by_id[x].get("label_eligibility") or [])
+                    for x in refs if isinstance(x, str))
+                if not eligible:
+                    bad_strong.append((where, lab))
+            for k, v in obj.items():
+                _check_strong(v, f"{where}.{k}")
+        elif isinstance(obj, list):
+            for i, v in enumerate(obj):
+                _check_strong(v, f"{where}[{i}]")
+    _check_strong(kb, "$")
+    (r.ok if not bad_strong else r.warn)("source_registry.strong_label_source_eligible",
+                                         f"strong_label_without_eligible_source={bad_strong[:10]}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("kb", help="path to KB JSON file")
@@ -457,12 +623,14 @@ def main():
             return None
 
     _guard(check_top_level, kb, r)
+    _guard(check_schema_version, kb, r)
     _guard(check_counts, kb, args.mode, r)
     nid_set = _guard(check_ids_and_refs, kb, r) or set()
     _guard(check_bounds_and_obligations, kb, r, args.allow_observed)
     _guard(check_dependency_acyclicity, kb, r, nid_set)
     _guard(check_placeholders, raw, r)
     _guard(check_formulas, kb, r, args.tolerance, args.allow_observed)
+    _guard(check_source_registry, kb, r)
 
     out = r.to_dict(args.mode)
     if args.report:

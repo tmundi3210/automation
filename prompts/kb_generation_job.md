@@ -12,6 +12,9 @@ helper writes files, returns a compact report.
 - {{VALIDATION_REPORT_PATH}} : knowledge_base/<set>/<GROUP_ID>.validation.json
 - {{METRICS_REPORT_PATH}} : knowledge_base/<set>/<GROUP_ID>.metrics.json
 - {{ADAPTER_SCHEMA_PATH}} : optional EXISTING_SCHEMA (Phase B domain-adapter), else empty
+- OUTPUT_BUDGET_HINT      : fixed default below (calibrated ~45k-token single-response
+  ceiling — PLAN.md §A.3 / GRAIN_OPTIMUM). The kernel has accepted this optional input
+  since v1.4.1; it was never wired into any job template until T13/G11.
 
 ## Helper instructions (inject verbatim)
 ```
@@ -22,6 +25,7 @@ You are a HELPER executing one KB_GENERATION run. Do NOT chat. Return only the f
      MODE: KB_GENERATION
      DENSITY_MODE: {{DENSITY_MODE}}
      DOMAIN: {{DOMAIN_INPUT}}
+     OUTPUT_BUDGET_HINT: one single-response output; keep the whole KB <= ~45000 estimated tokens (calibrated ceiling)
      {{#ADAPTER_SCHEMA_PATH}}EXISTING_SCHEMA: <contents of {{ADAPTER_SCHEMA_PATH}}>{{/ADAPTER_SCHEMA_PATH}}
    Honor pipeline directive: "losslessly compressed, token-efficient, information-dense,
    fully detailed, machine-facing; optimized for model parsing over human readability."

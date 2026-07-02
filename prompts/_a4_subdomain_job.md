@@ -14,6 +14,7 @@ SCOPE_HINT, KEY_BOOKS, OUTPUT_BASENAME.
    - DENSITY_MODE: dense
    - DOMAIN: {{SUBDOMAIN}} (subdomain of {{PARENT_DOMAIN}})
    - DOMAIN_CONTEXT: {{SCOPE_HINT}} . key_books: {{KEY_BOOKS}}
+   - OUTPUT_BUDGET_HINT: one single-response output; keep the whole KB <= ~45000 estimated tokens (calibrated ceiling — PLAN.md §A.3)
    - PURPOSE_HINT: this KB is a subdomain node in a "knowledge searcher" meta-KB about WHERE and HOW to find, retrieve, evaluate, and synthesize authoritative knowledge. Nodes are concrete, evaluable work units / methods / decision areas of this subdomain.
 3. Honor this pipeline directive while generating (do NOT embed it; the KB must stay strict JSON): "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability."
 

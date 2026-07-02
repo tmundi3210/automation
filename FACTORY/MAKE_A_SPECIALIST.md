@@ -22,6 +22,13 @@ of ~20 "work units" (nodes), their dependencies/conflicts (edges), risk/priority
 workflow, and competency questions. The specialist is the *distilled operating layer* over
 its 3 KBs.
 
+> **Boundary rule (what "one specialist" means):** a specialist's boundary is **domain
+> coherence** — one specialist per coherent domain of practice, grounded in ALL (and only)
+> that domain's gate-passing KBs. Three KBs is the house default decomposition, not a gate
+> requirement (the gate requires a non-empty `grounded_in_kbs`; this repo's
+> `phase_b/specialists/` legitimately ground in 2). Never split or merge a specialist to
+> chase a KB count or token ceiling — the KB count follows the domain's decomposition.
+
 ```
    3 dense KBs  ──distill──►  1 specialist spec  ──fill template──►  a model acts as the expert
   (the knowledge)              (the operating layer)                  (the answer)
@@ -191,7 +198,11 @@ DOMAIN: <the subdomain this KB covers>
 DOMAIN_CONTEXT: <audience, constraints, what it must support>
 PURPOSE_HINT: <what an expert in this subdomain must be able to decide/do>
 DENSITY_MODE: dense
+OUTPUT_BUDGET_HINT: one single-response output; keep the whole KB <= ~45000 estimated tokens
 ```
+
+(`OUTPUT_BUDGET_HINT` is an optional input the generator has always accepted; ~45k is this
+repo's calibrated single-response ceiling — the largest gate-passing dense KB measured 40.6k.)
 
 The model returns **strict JSON** (first char `{`, last char `}`, nothing else). Save it as
 `my_topic.kb.json`.
@@ -238,6 +249,29 @@ echo "EXIT=$?"   # 0 = pass
 
 If it fails, read the report, do one repair pass, re-run. Done: you have a specialist built
 the same way every specialist in this repo was built.
+
+**Step 3 — read the advisory warnings (never block, always mean something).** The gate
+(v1.1) also emits WARN-level checks that do **not** change the exit code
+(`overall_status` becomes `pass_with_warnings`):
+
+- `grounding.node_ids_resolve` — every `UPPER_SNAKE` id-like token your spec cites
+  (e.g. `KR_PROBLEM_FRAMING`) is looked up in the ids of your grounded KBs
+  (nodes/edges/CQs/sources/axes/rules). Unresolved tokens are either dangling KB
+  references (fix them) or legitimate non-KB names (fine — that's why it's a warn).
+- `coverage.cq_floor` — `competency_questions_covered` should carry at least one
+  question per grounded KB.
+- `grounded_in_kbs` paths now resolve **cwd-independently** (as given, then against
+  the spec file's directory and its ancestors), so repo-root-relative paths gate
+  correctly from any working directory.
+
+**Step 4 — the CQ acceptance test (LLM lane, sampled — the gate cannot judge this).**
+The free acceptance test for a specialist is derivable from its own KBs: a **fresh
+context** that loads ONLY the specialist JSON (no KBs, no chat history) must be able to
+answer a sample (>=3 per KB) of the `competency_questions` of each grounded KB, judged by
+a second fresh context holding the KB. A specialist that cannot answer its own KBs'
+gated questions standalone is under-distilled — send it back to Step 1 with the missed
+CQs listed. This is process, not gate: record the sample and verdict beside the
+specialist's `.validation.json`.
 
 ---
 
