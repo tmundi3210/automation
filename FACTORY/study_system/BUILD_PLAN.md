@@ -1,0 +1,32 @@
+# BUILD_PLAN.md — L2: specialist roster + KB decomposition for the study_system vertical
+
+_Seeded from `OWNER_BRIEF.md` (L0) + `research/` (L1). Boundary rule applies: one specialist per coherent domain, grounded in ALL (and only) that domain's gate-passing KBs; 3 KBs is the house default, 2 is legitimate (repo precedent). Pipeline per `FACTORY/MAKE_A_SPECIALIST.md` Path B: hand-authored `*.spec.json` → `branches/_forge/kb_forge.py` → `validators/kb_validator.py --mode dense` → distilled `*.specialist.json` → `validators/specialist_validator.py` → `bash FACTORY/build.sh <dir>` ALL GREEN._
+
+## The roster (9 specialists, 24 KBs)
+
+| # | code | domain_label | grounds on (L1) | KBs |
+|---|------|--------------|------------------|-----|
+| 1 | `sched` | Scheduling & Spaced Repetition | `spaced_repetition_and_anki.md` | kb1 spaced-repetition algorithms (SM-2 verbatim math, Anki deviations, FSRS-6 DSR model, forgetting curve, desired-retention/workload trade); kb2 scheduler system design (the (grade, elapsed)→next-interval contract, response+time dependence, revlog-shaped logging, Anki integration: .apkg/AnkiConnect/genanki/FSRS params); kb3 timeline planning (working back from an exam date, daily load shaping, backlog handling, deadline-constrained retention targets) |
+| 2 | `qcraft` | Question Craft & Answering | `question_types_and_answering.md` | kb1 exam item typology (INBDE standalones/itemsets/cases + Patient Box, TOEFL 2026 + legacy types, timing per item); kb2 item writing (NBME principles, one-best-answer discipline, distractor craft, Bloom levels, bank metadata p-value/point-biserial/IRT); kb3 answering strategy — directive learning (stem-first reading, elimination, case-cluster strategy, time budgeting, integrated-task note templates) |
+| 3 | `dental` | INBDE Content & FMG Pathway | `exam_dental_us_fmg.md` | kb1 exam + licensure pathway (INBDE identity/eligibility/format/scoring, ECE→CAAPID→advanced standing, bench/clinical exams, state variation); kb2 Foundation Knowledge material map (FK areas with study-source mapping); kb3 Clinical Content material map + resource shelf (CC coverage as far as verified — unverified areas carried [UNKNOWN], never invented) |
+| 4 | `toefl` | TOEFL Content (from zero) | `exam_toefl.md` | kb1 exam structure (2026 adaptive format + 1–6 bands + legacy 2023 format side-by-side, scoring/rubrics, delivery/retakes); kb2 section skills syllabus (every 2026 question type → skill → practice form); kb3 from-zero ladder (CEFR mapping, vocabulary anchors, stage gates A1→target band, official + free resource shelf) |
+| 5 | `contenteng` | Content Engineering (books → knowledge → cards) | `flashcards_and_book_decomposition.md` | kb1 book decomposition (textbook anatomy, chunking, prerequisite mapping, units→terms→claims→relations pipeline); kb2 flashcard quality (Wozniak 20 rules, minimum information, cloze/image-occlusion/relation-"edge" cards, bad-card taxonomy + fixes); kb3 knowledge layering (terminology → basic facts → paired relations → compositions → 2–3-step inference; Bloom mapping; card-type per layer) |
+| 6 | `learner` | Learner Model & Adaptivity | `learner_model_and_adaptivity.md` | kb1 knowledge tracing (BKT update math, DKT, Elo/IRT for single-user); kb2 weakness diagnosis (misconception vs missing-prerequisite vs retrieval-failure, probe-question design, "why is the weakness there", easy-detection → lower repetition); kb3 challenge calibration (desirable difficulties, success-rate targets, interleaving, keeping it challenging without burnout) |
+| 7 | `engage` | Engagement, Gamification & Progress Visuals | `gamification_visuals_multimodal.md` §A | kb1 the owner's calendar spec as product truth (per-day boxes, white→green fill-bar, tick at 100%, 5%-increment percentages, week/month views, course-level progress) + progress-visual patterns (heatmaps, bars, goal-gradient); kb2 gamification mechanics + hazards (streaks/freezes, confidence rating, habit loops; overjustification, streak anxiety — what NOT to copy) |
+| 8 | `voice` | Multimodal Capture & Voice Answering | `gamification_visuals_multimodal.md` §B | kb1 capture + STT (speak-any-language answers, local whisper-class vs cloud STT trade, privacy constraints, voice note-making); kb2 queue + grading pipeline (record→store→enqueue→batch transcribe→LLM rubric-grade→write back to learner model; local-vs-cloud as deferred config flag per owner) |
+| 9 | `sysloops` | System Feedback Loops & Nightly Analysis | `learner_model_and_adaptivity.md` §5–6 + `competitors.md` | kb1 nightly analysis mode (retention actual-vs-predicted, weakness clusters, tomorrow's schedule, calibration checks, system self-metrics); kb2 competitor mechanisms + faults (mechanism-extraction table: what to copy, what to avoid; benchmark loop) |
+
+Cross-cutting: every KB carries its claims with the L1 honesty tags and source URLs inside node prose; [UNKNOWN]s from L1 (e.g. full CC enumeration, exact 2026 TOEFL module counts) are carried as named [UNKNOWN] nodes/edge-cases, never resolved by invention.
+
+## Build procedure (per specialist directory `FACTORY/study_system/specialists/<code>/`)
+
+1. One author-agent per KB: reads its L1 research file + `FACTORY/kb_spec.template.json` + one green example spec (`FACTORY/sweater_vertical/specialists/yarn/*.spec.json`), hand-authors `kb<N>_<slug>.spec.json`, then loops `kb_forge.py` → `kb_validator.py --mode dense` until exit 0. Dense bands: nodes 19–24, edges 32–40, conflict_axes 8–10, edge_cases 10–12, workflow 9–12, CQs 10–14, dominance 7–12, anti-rework 7–12, iteration 6–10. No placeholder tokens anywhere.
+2. One distiller-agent per specialist: reads the gated KBs, writes `<code>.specialist.json` (15 required keys, `grounded_in_kbs` = ABSOLUTE paths), loops `specialist_validator.py` until exit 0.
+3. Orchestrator independently re-runs `bash FACTORY/build.sh FACTORY/study_system/specialists/<code>` — accepts only ALL GREEN (trust-but-verify; agent self-reports are never the verdict).
+4. Commit per specialist directory, one by one.
+
+## Sequencing
+
+L3+L4 run as one orchestrated wave: per domain, KB authors in parallel → distiller → build verdict; domains pipelined so fast domains finish while slow ones still author. After the wave: full independent re-gate of all 9 dirs, then per-dir commits, push, then the L5 offer (flashcards/decks/system) goes back to the owner.
+
+_Gates check STRUCTURE + MATH, never prose truth — prose truth is carried by the L1 citations inside the specs. Exit 0 = schema-true, never content-true._
