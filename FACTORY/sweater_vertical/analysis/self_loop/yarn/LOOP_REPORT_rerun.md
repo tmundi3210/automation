@@ -64,3 +64,17 @@ Round-3 tally: **1 HIGH / 4 MED / 3 LOW / 2 clean (R3Q1, R3Q6)**.
   "note": "F2 verified closed on all five criteria (distinct layer, [UNKNOWN], G5-mapped, no rate invented, US trio intact with zero ~7% hits). F1 closed at every headline node across kb1/kb2/kb3 + specialist, but two flat '[FACT -- player roster]' self-test tags (kb2 lines 672, 1226) and three unhedged 'in-house lab QC' supports (kb2 lines 1124, 1258, CQ_04 line 103) survive in kb2 sub-fields, plus the kb2 .spec.json twin — one HIGH remains, so not converged. Remaining apply_now: R3Q2 kb2 sub-field rescope, R3Q3 kb2 CQ_04 soften, R3Q10 role/boundaries entry-point de-conflation. All three are mechanical tag/wording edits; re-gate with build.sh and re-verify after applying."
 }
 ```
+
+---
+
+## Round-3 closure addendum (orchestrator, 2026-07-02)
+
+The three remaining apply_now items were applied at the spec layer and independently re-gated:
+
+- **R3Q2 (HIGH)** — kb2 SUPPLIER_UNIVERSE + INCLUSTER pros examples re-scoped: `[FACT -- player roster]` now attaches to the roster only; the self-test/certify capability carries `[ESTIMATE: industry-lore, MED-HIGH]` and specific-firm certification `[UNKNOWN]`. scope_boundary and MICRO_SPINNER_MANDI hedged (`class-level in-house lab QC [ESTIMATE]`).
+- **R3Q3 (MED)** — kb2 CQ_04 acceptance_condition softened to `(class-level in-house lab QC [ESTIMATE], firm certification [UNKNOWN])`.
+- **R3Q10 (MED)** — yarn.specialist.json role + boundaries row 3 now carry the India-side/US-side duty de-conflation at the entry points (US 6110 line → T9; India-side raw-fibre layer noted separately, `[UNKNOWN]`, → DECISION_MEMO G5), mirroring escalation_triggers 2.
+
+All edits were made in `kb2_yarn_sourcing_supply.spec.json` (the re-import surface the judge flagged) and re-forged, so the `.kb.json` and the spec twin agree. `build.sh` re-gate: **ALL GREEN**. Residue sweep: zero unhedged `in-house lab QC` strings; every remaining `[FACT - player roster]` tag is roster-scoped with the three-way split adjacent.
+
+**Post-closure status: F1 RESOLVED, F2 RESOLVED — yarn CONVERGED** (subject to any future round re-opening it).

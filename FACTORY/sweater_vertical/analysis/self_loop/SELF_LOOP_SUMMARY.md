@@ -12,7 +12,7 @@ The brain came out of the self-improvement loop **honesty-clean and structurally
 | slug | health | rounds | converged | #apply_now | #propose | top finding |
 |---|---|---|---|---|---|---|
 | ludhiana | NOT-CONVERGED | 2 | no | 6 | 2 | F1 (HIGH): no in-spec "a cluster GO is NOT a venture GO" guardrail; a founder loading only this file can promote a sourcing GO into a venture GO |
-| yarn | NOT-CONVERGED | 2 | no | 12 | 5 | F1 (HIGH): named spinners attributed "in-house USTER-class lab QC" as flat fact in file AND KB — must be demoted to class-level `[ESTIMATE]` at the KB layer |
+| yarn | CONVERGED (round-3 verification + closure, 2026-07-02) | 3 | yes | 12 | 5 | F1 fixed KB-wide (three-way split incl. kb2 sub-fields + spec twin) and F2 duty de-conflation verified closed on all five criteria; see `yarn/LOOP_REPORT_rerun.md` |
 | machines | NOT-CONVERGED | 2 | no | 3 | 6 | F2 (med): "sub-$20k used vs ~$2M-10M+ build" anchor is cherry-picked; own glossary prices used whole-garment at $20k-90k (conclusion unharmed) |
 | mfg_economics | HEALTHY-WITH-HARDENING | 2 | yes | 3 | 3 | M1: own-knitting breakeven asserts ">1.0 so subcontract wins" with no inlined worked illustration (lives only in KB2) |
 | quality_checker | CONVERGED-with-fixes | 2 | yes | 8 | 2 | F1 (med): no conflicts_and_dominance row naming yarn_sourcing as the pilling FLOOR owner; owning the TEST misread as owning the FLOOR |
