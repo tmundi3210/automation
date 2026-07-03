@@ -36,7 +36,7 @@
 
 ## 2. Speech Approach
 
-**DECISION: VOICEOVER-DRIVEN.** A classic-luxurious male **brand presenter** is shown in cutaways (mid-shots, wrist/forearm, an approving glance); the **product macros carry the hero beats**; the **VO carries the words**. No sustained tight talking-head lip-sync.
+**DECISION: VOICEOVER-DRIVEN — LOCKED (owner-confirmed 2026-07-03; talking-presenter alternate declined).** A classic-luxurious male **brand presenter** is shown in cutaways (mid-shots, wrist/forearm, an approving glance); the **product macros carry the hero beats**; the **VO carries the words**. No sustained tight talking-head lip-sync.
 
 **Why:** tight talking-head lip-sync is a known AI-realism risk (mouth/teeth/phoneme sync is a frequent tell). Decoupling voice from a locked-on mouth lets us cut to product macros exactly when the claims land, and keeps the presenter in flattering, low-risk framings. It also serves the **silent-legibility gate** (SILENT_LEGIBILITY_GATE): feed video autoplays muted, so the story must read with sound off — the product hero shots + on-screen text carry meaning; the VO is the bonus for the minority who unmute, never a dependency.
 
