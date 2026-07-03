@@ -1,0 +1,2488 @@
+{
+  "domain": "director_shot_pipeline",
+  "domain_label": "Movie Studio Director — Brief-to-Shot-List Pipeline with Transition-First Planning",
+  "purpose": "A method for the direction work that turns a creative brief into a locked, generation-ready shot list for stitched 3-6 s vertical reels: concept intake, beat sheet, transition-first seam planning that fixes the END frame of clip N and the START frame of clip N+1 before any generation, complete shot cards (intent, shot size, camera move, lighting, model pick, aspect ratio, duration, transition frame constraints, persona and wardrobe refs), designing around the known-hard shot list, and scene continuity across clips — with every Higgsfield model name, parameter and duration quoted only from the live MCP surface enumeration and every physics or artifact claim carried at its research-file honesty tag.",
+  "assumptions": [
+    "no generation runs have happened yet; all scores are heuristic priors and every credit-cost figure is a named [UNKNOWN] to be preflighted with get_cost:true in the run phase",
+    "every Higgsfield model id, parameter, duration range, aspect-ratio set and media role comes from the read-only live MCP surface enumeration of 2026-07-03 (higgsfield_surface.md); nothing is quoted from marketing memory, and the MCP catalog is authoritative over web pages that name absent models",
+    "the known-hard shot list and physics failure rates come from the realism research file with their tags intact: eating/drinking and dexterous hand-object work are documented open problems [FACT], VideoPhy best-model physics adherence 39.6% and VideoPhy-2 hard-subset 22% are fetched abstract figures [FACT], the crowds entry is an [ESTIMATE] from taxonomy categories",
+    "transition definitions (match cut, whip pan, masked wipe, invisible cut) are canonical craft corroborated by multiple search excerpts; the flash-cut entry is convention-grade [ESTIMATE] carried as such",
+    "the output format is 9:16 1080x1920 stitched reels of 3-6 s clips; safe-zone pixel figures are practitioner ranges, not an official Meta spec (held one notch down)"
+  ],
+  "exclusions": [
+    "prompt-text engineering per model and the artifact-mitigation QC rubric internals (owned by the prompting/QC specialist; this KB only places the QC gates in the pipeline)",
+    "timeline execution of transitions, color grading and cover selection (editor specialist); this KB ends where the locked shot list and paired keyframes hand off",
+    "posting cadence, trial reels, analytics and platform policy (media-manager specialist)",
+    "music/soundtrack sourcing and J/L-cut audio construction beyond noting seams should plan a sound bridge",
+    "any guidance for evoking a specific real person's likeness while concealing or avoiding the face — this lane is deliberately closed and stays closed",
+    "inventing credit costs, rate limits, engagement statistics or model capabilities the MCP surface enumeration did not carry"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "How does a creative brief become a beat sheet, and how many shots does a 15 s or 30 s stitched reel actually carry?",
+      "must_be_answerable_from": [
+        "BRIEF_CONCEPT_INTAKE",
+        "BEAT_SHEET_PACING"
+      ],
+      "acceptance_condition": "BRIEF_CONCEPT_INTAKE states the intake fields (genre register, personas, location, the not-look-AI floor) and BEAT_SHEET_PACING gives the arithmetic: 3-6 s clips mean a 15 s reel is 3-5 shots and a 30 s reel 6-9, with the strongest image first because up to ~50% of viewers drop off in the first 3 seconds",
+      "covered_by": [
+        "BRIEF_CONCEPT_INTAKE",
+        "BEAT_SHEET_PACING"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What does transition-first planning mean, and what exactly is fixed before any video generation happens?",
+      "must_be_answerable_from": [
+        "TRANSITION_FIRST_PLANNING"
+      ],
+      "acceptance_condition": "states that the transition is chosen per seam FIRST and that it dictates the END-frame spec of clip N and the START-frame spec of clip N+1, so a stitched reel's shot list is really a transition list and both boundary frames are designed as stills before any clip is generated",
+      "covered_by": [
+        "TRANSITION_FIRST_PLANNING"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What fields must every shot card carry before it is generation-ready?",
+      "must_be_answerable_from": [
+        "SHOT_CARD_SCHEMA"
+      ],
+      "acceptance_condition": "enumerates intent, shot size, camera move (one main move + speed modifier), lighting recipe, model pick, aspect ratio, duration, transition-in and transition-out frame constraints, and persona/wardrobe refs, and states a card with any empty field is not generation-ready",
+      "covered_by": [
+        "SHOT_CARD_SCHEMA"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What END/START frame constraints does each transition type impose on the two clips it joins?",
+      "must_be_answerable_from": [
+        "SEAM_FRAME_CONSTRAINTS"
+      ],
+      "acceptance_condition": "gives per-type pairs: match cut (same dominant shape/position), match-on-action (same motion mid-arc and pose), whip pan (same-direction blur out/in), masked wipe (frame fully occluded both sides), invisible cut (near-identical low-detail frames), flash cut (near-white/black boundary), jump cut (identical framing, changed content), and notes whip/wipe are the most forgiving for AI mismatch",
+      "covered_by": [
+        "SEAM_FRAME_CONSTRAINTS"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "What is the known-hard shot list and how does a director design around each entry?",
+      "must_be_answerable_from": [
+        "HARD_SHOT_DESIGN_AROUND"
+      ],
+      "acceptance_condition": "lists eating/drinking to the mouth, dexterous hand-object work, athletic full-body action, feet-prominent walking, legible text/badges, mirrors showing the subject, crowds/extras, and hero liquid pours held long, with the imply-not-show workarounds (glass already full, feet out of frame, reflections defocused, logo-free styling) and the honesty tags each entry carries",
+      "covered_by": [
+        "HARD_SHOT_DESIGN_AROUND"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "Which Higgsfield models accept BOTH start_image and end_image, and which are start-only or neither?",
+      "must_be_answerable_from": [
+        "END_FRAME_MODEL_ELIGIBILITY"
+      ],
+      "acceptance_condition": "names the both-frames set (cinematic_studio_3_0, cinematic_studio_video_v2, cinematic_studio_video, seedance_2_0, seedance_2_0_mini, seedance1_5, kling3_0, minimax_hailuo, veo3_1_lite, wan2_7, marketing_studio_video), the start-only set (kling2_6, kling3_0_turbo, veo3, veo3_1, grok_video, grok_video_v15) and the neither set (gemini_omni, wan2_6), all as live-surface facts",
+      "covered_by": [
+        "END_FRAME_MODEL_ELIGIBILITY"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do per-model duration bands constrain 3-6 s clip planning?",
+      "must_be_answerable_from": [
+        "CLIP_DURATION_BANDS"
+      ],
+      "acceptance_condition": "states that every both-frames model covers the 3-6 s band except seedance1_5 (min 4), minimax_hailuo (min 6) and marketing_studio_video (min 12), that wan2_7 is the only model reaching 2-3 s natively, and that unsupported durations are clamped to the nearest allowed value so the beat math must be checked against the band",
+      "covered_by": [
+        "CLIP_DURATION_BANDS"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How is a 9:16 frame composed for reels, and when is generate-wide-then-reframe the fallback?",
+      "must_be_answerable_from": [
+        "VERTICAL_FRAMING_SAFE_ZONES"
+      ],
+      "acceptance_condition": "gives the 1080x1920 canvas, the safe-zone pattern (bottom ~20%, right ~10%, top ~15% covered by UI; practitioner ranges, not Meta-official), centered composition over horizontal thirds, eyes in the upper third with ~8-12% headroom, and names the reframe tool as fallback with native 9:16 preferred",
+      "covered_by": [
+        "VERTICAL_FRAMING_SAFE_ZONES"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How are the camera move and lighting written onto a shot card so a video model actually carries them?",
+      "must_be_answerable_from": [
+        "CAMERA_MOVE_ASSIGNMENT",
+        "LIGHTING_RECIPE_ASSIGNMENT"
+      ],
+      "acceptance_condition": "CAMERA_MOVE_ASSIGNMENT states one main move per shot with a speed modifier, that no Higgsfield model exposes a camera-move enum so the move lives in prompt text, presets, cinematic-studio genre/speedramp or motion_control; LIGHTING_RECIPE_ASSIGNMENT states lighting is the most impactful prompt lever (per the Veo guidance) and every light must be motivated by an in-world source",
+      "covered_by": [
+        "CAMERA_MOVE_ASSIGNMENT",
+        "LIGHTING_RECIPE_ASSIGNMENT"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How are persona and wardrobe refs bound to shots, given the one-Soul-per-generation limit?",
+      "must_be_answerable_from": [
+        "PERSONA_WARDROBE_BINDING"
+      ],
+      "acceptance_condition": "contrasts trained Souls (5-20 images, ~10 min, usable only with soul_2/soul_cinematic, ONE soul_id per generation) against instant Reference Elements (<<<element_id>>> placeholders, multiple per prompt, the designated path for two-persona shots), and states wardrobe/props ride as Elements while the element-compatible video-model list is partly [UNKNOWN]",
+      "covered_by": [
+        "PERSONA_WARDROBE_BINDING"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "Why are seam keyframes generated and QC'd as stills before any video credits are spent, and how are approved clips chained?",
+      "must_be_answerable_from": [
+        "KEYFRAME_STILLS_FIRST",
+        "START_FRAME_QC_GATE",
+        "CLIP_CHAINING_STITCH"
+      ],
+      "acceptance_condition": "KEYFRAME_STILLS_FIRST states stills are the cheap place to fail and lock identity/wardrobe/lighting at t=0; START_FRAME_QC_GATE applies the worst-artifact gate (any single glance-visible artifact means re-roll) at the still checkpoint; CLIP_CHAINING_STITCH states clip N's end frame feeds clip N+1's start via media value accepting a prior job_id",
+      "covered_by": [
+        "KEYFRAME_STILLS_FIRST",
+        "START_FRAME_QC_GATE",
+        "CLIP_CHAINING_STITCH"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "What conditions must hold before the shot list locks, and how is continuity held across clips?",
+      "must_be_answerable_from": [
+        "SHOT_LIST_LOCK_VERDICT",
+        "SCENE_CONTINUITY_LEDGER"
+      ],
+      "acceptance_condition": "SCENE_CONTINUITY_LEDGER states the per-scene record (wardrobe state, light direction, time of day, persona refs, grade family) that every card must match; SHOT_LIST_LOCK_VERDICT conditions the lock on every seam having a paired frame spec, every card complete, hard-shot scrub done, model/duration verified and costs preflighted",
+      "covered_by": [
+        "SHOT_LIST_LOCK_VERDICT",
+        "SCENE_CONTINUITY_LEDGER"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How does shot-size sequencing shape a 5-shot luxury reel?",
+      "must_be_answerable_from": [
+        "SHOT_SIZE_SEQUENCING"
+      ],
+      "acceptance_condition": "gives the size ladder (EWS to ECU), the wide/medium/close alternation rhythm, the 5-shot skeleton (detail hook, wide establish, medium in motion, second detail/reaction, wide or loop-back), Murch's emotion-first cut priority, and the eye-trace rule that the next shot's subject sits where the eye was left",
+      "covered_by": [
+        "SHOT_SIZE_SEQUENCING"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "How is the model pick per shot decided and A/B tested without burning the budget blind?",
+      "must_be_answerable_from": [
+        "MODEL_PICK_AB_POLICY",
+        "CREDIT_PREFLIGHT_BUDGET"
+      ],
+      "acceptance_condition": "MODEL_PICK_AB_POLICY states physics adherence varies hugely across models so shot-types are A/B'd with a per-model failure ledger, with seam clips restricted to both-frames models; CREDIT_PREFLIGHT_BUDGET states per-generation credit costs are [UNKNOWN] on the surface and must be preflighted per model-resolution-duration cell with get_cost:true before batches",
+      "covered_by": [
+        "MODEL_PICK_AB_POLICY",
+        "CREDIT_PREFLIGHT_BUDGET"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "shot card",
+      "definition": "The atomic planning record for one 3-6 s clip: intent (the one feeling/beat it delivers), shot size, one camera move with speed modifier, lighting recipe, model pick, aspect ratio, duration, transition-in and transition-out frame constraints, and persona/wardrobe refs. A card with any empty field is not generation-ready."
+    },
+    {
+      "term": "transition-first planning",
+      "definition": "The pipeline inversion for AI stitched reels: because match cuts and invisible cuts must exploit what is already in the shots, the transition is chosen per seam FIRST and dictates the last-frame spec of clip N and the first-frame spec of clip N+1 — both promptable directly via start/end-frame conditioning [craft law FACT via StudioBinder excerpts; the inversion is the research file's high-confidence design consequence]."
+    },
+    {
+      "term": "seam frame pair",
+      "definition": "The two designed stills that bracket one cut: clip N's END keyframe and clip N+1's START keyframe, authored as a matched pair per the chosen transition (same shape/position for a match cut, same-direction blur for a whip, full occlusion for a masked wipe) and QC'd before any video generation."
+    },
+    {
+      "term": "known-hard shot list",
+      "definition": "The eight shot categories current video models demonstrably fail: eating/drinking to the mouth, dexterous hand-object manipulation, athletic full-body action, feet-prominent walking, legible text/badges, mirrors showing the subject, crowds/extras, hero liquid pours [FACT/ESTIMATE tags per entry in realism_antiai.md]. Directors design around them: imply, crop, blur, or restage."
+    },
+    {
+      "term": "start/end-frame conditioning",
+      "definition": "Video generation constrained by an uploaded start image and end image; the model synthesizes the motion path between them. On the live Higgsfield surface eleven models accept both roles; submitting the same image as both ends yields a loop [FACT — MCP surface + Kling excerpt]."
+    },
+    {
+      "term": "Soul vs Element",
+      "definition": "Higgsfield's two identity mechanisms: a Soul is a trained character model (5-20 reference images, ~10 min, usable only with soul_2/soul_cinematic, ONE soul_id per generation) for solo hero fidelity; a Reference Element is an instant reusable character/environment/prop embedded as <<<element_id>>> placeholders, multiple per prompt — the designated path for two-persona shots [FACT — live tool schemas]."
+    },
+    {
+      "term": "one main move per shot",
+      "definition": "The craft rule for AI generation that each clip carries a single named camera move with a speed modifier (e.g. 'slow dolly in'); multi-move prompts degrade coherence in current video models [FACT-1src — Kling prompting guidance, corroborated by Runway structure advice]."
+    },
+    {
+      "term": "9:16 safe zones",
+      "definition": "UI-covered regions of the 1080x1920 reel canvas — roughly the bottom ~20% (caption/actions), right ~10% (button stack), top ~15% (branding); critical content lives in the centered core with eyes in the upper third and ~8-12% headroom. Practitioner ranges, not an official Meta pixel spec [held one notch down]."
+    },
+    {
+      "term": "worst-artifact gate",
+      "definition": "The QC doctrine that a single glance-visible artifact (garbled logo, six fingers, sliding feet) flips perceived authenticity permanently for a repeat audience, so gating is per-shot and worst-artifact-driven, not average-quality-driven: any single rubric score of 2 forces a re-roll."
+    },
+    {
+      "term": "continuity ledger",
+      "definition": "The per-scene record the director maintains across clips: wardrobe state per persona, light direction and time of day, location, persona/wardrobe ref ids, and grade family — every new shot card is written against it so stitched clips read as one photographed scene."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "BRIEF_CONCEPT_INTAKE",
+      "topic": "brief_to_concept_intake_and_register",
+      "definition": "Turn the owner's brief into a working concept the whole pipeline reasons against: the genre register (classic-luxurious restraint, not new-money loud), the two personas and their world, the location palette, the format contract (9:16 stitched reels of 3-6 s clips), and the ranked #1 requirement that output must not look AI — which at intake becomes a standing constraint on every downstream choice (motivated lighting only, one living micro-detail per shot, hard-shot categories flagged before they reach a beat sheet). Intake also fixes what the concept must NOT ask for: no legible brand badges, no real-person likeness evocation (closed lane), no shots the platform surface cannot deliver.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "scope_boundary": {
+        "included": [
+          "genre register and persona/world fixing",
+          "the format contract (9:16, 3-6 s clips)",
+          "the not-look-AI floor as a standing intake constraint"
+        ],
+        "excluded": [
+          "beat-by-beat structure (BEAT_SHEET_PACING)",
+          "platform capability detail (END_FRAME_MODEL_ELIGIBILITY)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A fixed register and format contract at intake prevents every later stage from re-litigating what the reel is",
+          "example": "rejecting a neon-party beat at intake because the classic-luxurious register was fixed, instead of discovering the mismatch after generation",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Over-tight intake can freeze a concept before the platform's actual strengths (presets, genre modes) are known",
+          "example": "locking a concept around a continuous crowd scene before learning crowds sit on the known-hard list",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "accepting a brief whose hero moments are all on the known-hard shot list",
+        "letting the not-look-AI requirement live as a vague wish instead of named constraints"
+      ],
+      "acceptance_tests": [
+        "the concept note states register, personas, locations, the 9:16/3-6 s format contract, and the not-look-AI constraints as named rules"
+      ],
+      "revisit_triggers": [
+        "the owner changes register, personas or format",
+        "the platform surface re-enumeration changes what is deliverable"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.8,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.15,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "an owner brief change or a platform capability change moves the intake constraints"
+      }
+    },
+    {
+      "id": "BEAT_SHEET_PACING",
+      "topic": "beat_sheet_and_stitched_reel_pacing_math",
+      "definition": "Author the beat sheet with the pacing arithmetic of the format: 3-6 s clips mean a 15 s reel carries 3-5 shots and a 30 s reel 6-9 [FACT — arithmetic on the stated clip lengths]. Retention economics front-load the sheet: up to ~50% of viewers drop off within the first 3 seconds and watch-time is the dominant ranking signal [FACT/excerpt — creator-analytics guides], so the single strongest image goes FIRST with no logo/intro frame. Modulate shot length rather than cutting at a metronome: hold the hero reveal longest (4-6 s), use 2-3 s connective shots, accelerate clip lengths toward a drop [ESTIMATE — standard editorial craft, high confidence]. Each beat names its intent (one feeling), its scene, and whether it is a hero or connective clip — that intent later becomes the first field of the shot card.",
+      "group": "foundations",
+      "dependencies": [
+        "BRIEF_CONCEPT_INTAKE"
+      ],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "scope_boundary": {
+        "included": [
+          "shot-count arithmetic per reel length",
+          "front-loading and clip-length modulation",
+          "beat intent naming"
+        ],
+        "excluded": [
+          "transition choice per seam (TRANSITION_FIRST_PLANNING)",
+          "shot-size rhythm detail (SHOT_SIZE_SEQUENCING)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Doing the shot-count math up front sizes the whole generation budget before a single card is written",
+          "example": "a 30 s reel resolving to 8 beats means 8 clips, 9 keyframe pairs including the loop seam, and a bounded credit plan",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A beat sheet tuned purely to retention math can flatten the luxury register into generic hook-bait",
+          "example": "opening on a loud pattern interrupt that clashes with the quiet-luxury restraint the register demands",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "writing beats whose count does not divide into the reel length at 3-6 s per clip",
+        "burying the strongest image mid-reel"
+      ],
+      "acceptance_tests": [
+        "the beat sheet's clip count times its durations sums to the reel length, the strongest image is beat 1, and every beat names one intent"
+      ],
+      "revisit_triggers": [
+        "retention data shows a weak 3-second hold",
+        "the reel target length changes"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.16,
+          0.38
+        ],
+        "update_signal": "retention analytics or a format change alters the pacing math"
+      }
+    },
+    {
+      "id": "TRANSITION_FIRST_PLANNING",
+      "topic": "transition_chosen_first_dictates_boundary_frames",
+      "definition": "Apply the central inversion of AI stitched-reel direction: because match cuts and invisible cuts must exploit what is already present in the shots [FACT — StudioBinder match-cut/transition excerpts], and because start/end-frame conditioning makes both boundary frames directly promptable [FACT — eleven both-frames models on the live MCP surface], the transition at each seam is chosen FIRST and it dictates the END-frame spec of clip N and the START-frame spec of clip N+1 before any generation happens. A stitched reel's shot list is therefore really a transition list: N clips imply N-1 seams (N if the reel loops), and each seam's paired frame constraints are written INTO the keyframe still prompts. Nothing is generated for a clip whose two boundary frames are not yet specified.",
+      "group": "foundations",
+      "dependencies": [
+        "BEAT_SHEET_PACING"
+      ],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the choose-transition-first rule",
+          "seam count arithmetic",
+          "the no-generation-before-boundary-spec gate"
+        ],
+        "excluded": [
+          "the per-transition frame constraint table (SEAM_FRAME_CONSTRAINTS)",
+          "timeline execution of the cut (editor specialist)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Fixing both boundary frames before generation converts editing problems into cheap still-image problems",
+          "example": "a whip seam specified as matching blur-out/blur-in stills, so the editor inherits a cut that already works instead of hunting for one",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Transition-first rigidity can waste a serendipitously strong take whose boundary frames serve no planned seam",
+          "example": "discarding a beautiful clip because its end frame cannot pair with the next clip's locked start frame",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "generating clips first and hoping cuts can be found later",
+        "planning seams without counting the loop seam of a looping reel"
+      ],
+      "acceptance_tests": [
+        "every seam in the plan names its transition type and both boundary frame specs before any video generation is scheduled"
+      ],
+      "revisit_triggers": [
+        "a seam type proves consistently ungeneratable and the seam inventory needs rebalancing",
+        "a new both-frames model changes what seams are feasible"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.86,
+        "user_value": 0.82,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.86,
+        "irreversibility": 0.6,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.16,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "generation runs showing seam success/failure rates per transition type recalibrate the rule's application"
+      }
+    },
+    {
+      "id": "SHOT_CARD_SCHEMA",
+      "topic": "shot_card_fields_and_generation_readiness",
+      "definition": "Define the shot card, the atomic contract between direction and generation. Fields: intent (the ONE feeling/beat, per Murch's emotion-first priority), shot size (from the standard ladder), camera move (exactly one main move + a speed modifier), lighting recipe (motivated, from the lighting grammar), model pick (id from the live catalog), aspect ratio (from that model's declared set), duration (inside that model's band), transition-in frame constraint, transition-out frame constraint, and persona/wardrobe refs (soul_id or <<<element_id>>> list). A card with any empty field is not generation-ready; a card whose model/aspect/duration triple contradicts the surface catalog is invalid by construction. The card is the unit everything downstream QCs against.",
+      "group": "foundations",
+      "dependencies": [
+        "TRANSITION_FIRST_PLANNING"
+      ],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the ten card fields",
+          "generation-readiness and validity rules",
+          "the card as the QC reference"
+        ],
+        "excluded": [
+          "how each field's value is chosen (their own nodes)",
+          "prompt-text phrasing (prompting specialist)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A complete card schema makes every generation reproducible and every QC failure attributable to a field",
+          "example": "tracing a wardrobe mismatch to a card that omitted the wardrobe Element ref rather than to model randomness",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Ten mandatory fields add authoring overhead that tempts shortcuts on connective shots",
+          "example": "leaving transition constraints blank on a 2-3 s connective clip and paying for it at the stitch",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "cards that name a model but an aspect ratio the model does not declare",
+        "cards carrying two camera moves",
+        "cards with empty transition constraints treated as generation-ready"
+      ],
+      "acceptance_tests": [
+        "every card lists all ten fields non-empty and the model/aspect/duration triple matches the live-surface catalog row for that model"
+      ],
+      "revisit_triggers": [
+        "the surface catalog changes a model's parameters or ratios",
+        "a recurring QC failure class suggests a missing card field"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.84,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.5,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "a catalog change or a new recurring failure class changes the schema"
+      }
+    },
+    {
+      "id": "SEAM_FRAME_CONSTRAINTS",
+      "topic": "per_transition_end_start_frame_pair_specs",
+      "definition": "Specify the paired frame constraints per transition type [definitions FACT via StudioBinder/craft excerpts; the AI-pipeline operationalization is the research file's high-confidence mapping]. Match cut: subject A's dominant shape at position X in N's end frame; subject B of the same shape/size/position in N+1's start frame (watch face to sun, pool to champagne glass rim). Match-on-action: a motion clearly mid-arc at N's end; the SAME motion continuing from the matching pose at N+1's start. Whip pan: last ~0.3 s of N is a fast same-direction pan into full blur; N+1 opens decelerating out of matching blur — the most forgiving seam because blur hides mismatch. Masked wipe: something large sweeps across and fully fills N's final frame; N+1 starts fully blocked by a similar surface that clears. Invisible cut: near-identical low-detail boundary frames (black, blur, flat texture). Flash cut: boundary near-white or near-black [ESTIMATE — convention-grade, on-genre via paparazzi flash]. Jump cut: identical framing, changed pose/outfit. All pairs share the same lighting recipe, lens language and grade target, with boundary luminance/hue in a tight window.",
+      "group": "core",
+      "dependencies": [
+        "TRANSITION_FIRST_PLANNING"
+      ],
+      "competency_question_refs": [
+        "CQ_04"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the per-type END/START constraint table",
+          "the forgiveness ordering (whip/wipe most tolerant, graphic match strictest)",
+          "shared lighting/lens/grade requirements on the pair"
+        ],
+        "excluded": [
+          "editor-side blur faking and mask keyframing (editor specialist)",
+          "which model generates the pair (KEYFRAME_STILLS_FIRST)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Written per-type constraints turn 'make it cut well' into checkable still-image specs",
+          "example": "a match-cut seam QC'd by overlaying the two keyframes and checking the round shape's screen position matches",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Exact graphic matches are the hardest pairs for stochastic generation to hit, inviting expensive retry loops",
+          "example": "ten re-rolls chasing a watch-face-to-sun alignment a whip seam would have delivered in one",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "specifying whip directions that do not match across the seam",
+        "graphic-match pairs authored with different lens or lighting so the match reads as a mistake"
+      ],
+      "acceptance_tests": [
+        "each seam's spec names the transition type and states both frame constraints in checkable geometric/motion terms (shape, position, vector, occlusion, luminance)"
+      ],
+      "revisit_triggers": [
+        "seam QC shows a transition type failing repeatedly",
+        "a model's boundary-frame adherence changes the forgiveness ordering"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.5,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "observed per-type seam success rates recalibrate the constraint table"
+      }
+    },
+    {
+      "id": "HARD_SHOT_DESIGN_AROUND",
+      "topic": "known_hard_shot_list_and_imply_not_show",
+      "definition": "Scrub every beat against the known-hard shot list before cards are written, honesty tags intact: (1) eating/drinking to the mouth [FACT — documented failure]; (2) dexterous hand-object manipulation — pouring, typing, clasping jewelry [FACT — open research problem]; (3) athletic/gymnastic full-body action [FACT]; (4) walking/running with feet prominent in frame — foot-slide exposure [FACT — contact-point tell]; (5) legible text, signage, badges, watch-face close-ups [FACT — text tell]; (6) mirrors/large reflective surfaces showing the subject [FACT — reflection forensics]; (7) crowds and background extras [ESTIMATE — from taxonomy categories, high confidence]; (8) hero fluid shots held long [FACT — fluid classes fail; best model physics adherence 39.6% on VideoPhy, 22% on VideoPhy-2 hard subset]. Workarounds are design moves, not fixes: imply rather than show — glass already full and lifted toward lips off-frame, feet out of frame, wheels in motion blur, reflections defocused via shallow DOF, logo-free styling [ESTIMATE — direct design consequence, high confidence].",
+      "group": "core",
+      "dependencies": [
+        "BEAT_SHEET_PACING"
+      ],
+      "competency_question_refs": [
+        "CQ_05"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the eight-entry list with tags",
+          "the imply-not-show workaround per entry",
+          "the beat-level scrub timing (before cards)"
+        ],
+        "excluded": [
+          "the artifact taxonomy and detection numbers behind the list (QC specialist)",
+          "post-hoc crop/blur rescue (editor)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Scrubbing at the beat level costs a rewrite of words instead of a rewrite of generated clips",
+          "example": "changing 'she sips champagne' to 'she lifts the full glass, cut on the smile' before any credits are spent",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Designing around every hard category can drain the physical humanity that sells the luxury fantasy",
+          "example": "a reel where no one ever touches, pours or eats anything reading as sterile",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "treating the list as a prompt-engineering problem instead of a shot-design problem",
+        "letting a hero beat require a mirror reveal of the persona"
+      ],
+      "acceptance_tests": [
+        "every beat is annotated pass/redesigned against all eight entries, and each redesigned beat names its imply-not-show move"
+      ],
+      "revisit_triggers": [
+        "a benchmark or run-phase evidence shows a category improving enough to reopen",
+        "a new hard category emerges from the failure ledger"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.84,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.15,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "physics-benchmark or run-ledger evidence that a hard category improved or a new one appeared"
+      }
+    },
+    {
+      "id": "END_FRAME_MODEL_ELIGIBILITY",
+      "topic": "both_frames_model_set_from_live_surface",
+      "definition": "Constrain the card's model-pick field by end-frame support, read only from the live MCP surface [all FACT, declared medias[].roles, 2026-07-03]. BOTH start_image AND end_image: cinematic_studio_3_0 (4-15 s, up to 4K, genre control), cinematic_studio_video_v2 (3-12 s, speedramp/multi-shot/cfg_scale), cinematic_studio_video (5/10 s), seedance_2_0 (4-15 s, the only model with start/end/image/video/audio reference roles), seedance_2_0_mini (4-15 s, <=720p), seedance1_5 (4/8/12 s), kling3_0 (3-15 s, std/pro/4k), minimax_hailuo (6/10 s; resolution 512 incompatible with end_image), veo3_1_lite (4/6/8 s, audio off by default), wan2_7 (2-15 s, audio_references), marketing_studio_video (12-15 s). Start-only: kling2_6, kling3_0_turbo, veo3, veo3_1, grok_video, grok_video_v15. Neither (reference-driven): gemini_omni, wan2_6. Consequence: every seam-bracketing clip MUST use a both-frames model; start-only models (including ultra-real veo3_1) are eligible only where the outgoing boundary is free.",
+      "group": "platform",
+      "dependencies": [
+        "SHOT_CARD_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the three eligibility sets verbatim from the surface",
+          "the seam-clips-need-both-frames rule",
+          "the hailuo 512/end_image incompatibility"
+        ],
+        "excluded": [
+          "duration-band detail (CLIP_DURATION_BANDS)",
+          "aesthetic ranking of models (MODEL_PICK_AB_POLICY)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Eligibility read from declared media roles makes the model-pick field mechanically checkable",
+          "example": "rejecting a card that assigns veo3_1 to a clip whose end frame brackets a match-cut seam",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Restricting seams to both-frames models excludes some of the strongest single-frame models from most slots",
+          "example": "veo3_1's ultra-real quality unusable on any clip that must land on a specified end frame",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "assigning a start-only model to a seam-bracketing clip",
+        "quoting a model's roles from marketing memory instead of the enumerated surface"
+      ],
+      "acceptance_tests": [
+        "the analysis reproduces the both-frames/start-only/neither sets exactly as enumerated and applies the seam rule to at least one card"
+      ],
+      "revisit_triggers": [
+        "a surface re-enumeration changes any model's media roles",
+        "a new model appears in the catalog"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.4,
+        "confidence": 0.86,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.86,
+        "failure_rate": 0.1,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.1,
+          0.3
+        ],
+        "update_signal": "any change in declared media roles on the re-enumerated surface"
+      }
+    },
+    {
+      "id": "CLIP_DURATION_BANDS",
+      "topic": "per_model_duration_bands_vs_3_to_6s_format",
+      "definition": "Check every card's duration against its model's declared band [FACT — live surface duration fields]: within the both-frames set, every model covers the 3-6 s stitched-reel band EXCEPT seedance1_5 (choices 4/8/12, min 4), minimax_hailuo (6 or 10, min 6) and marketing_studio_video (min 12). wan2_7 (2-15 s) is the only model natively reaching 2-3 s. cinematic_studio_video v1 offers only 5 or 10 s; cinematic_studio_video_v2 spans 3-12 s; cinematic_studio_3_0, seedance_2_0 and seedance_2_0_mini span 4-15 s; kling3_0 spans 3-15 s. The generate envelope clamps unsupported durations to the nearest allowed value [FACT — generate_video schema], so an unchecked 3 s card on seedance1_5 silently becomes 4 s and breaks the beat math. Short clips are also protective: temporal artifacts accumulate with duration [FACT — duration-dependence per Sora's stated limitation], so the 3-6 s format is itself a realism mitigation.",
+      "group": "platform",
+      "dependencies": [
+        "END_FRAME_MODEL_ELIGIBILITY"
+      ],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "scope_boundary": {
+        "included": [
+          "per-model duration bands verbatim",
+          "the clamping behavior and its beat-math consequence",
+          "short-clip protectiveness"
+        ],
+        "excluded": [
+          "editor-side trimming (editor specialist)",
+          "fps/frame-interpolation detail (held [UNKNOWN] on this surface)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Band-checking at card time prevents silent clamping from desynchronizing the reel's timing",
+          "example": "catching that a 3 s connective beat assigned to minimax_hailuo would render at 6 s and double the beat",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Strict band fit narrows model choice exactly on the shortest, most numerous connective clips",
+          "example": "2-3 s connective shots forcing wan2_7 regardless of its aesthetic fit",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "planning 3 s clips on min-4 or min-6 models",
+        "assuming trim-in-post is free when the clip's motion arc was generated for the clamped length"
+      ],
+      "acceptance_tests": [
+        "every card's duration is an allowed value of its model's band, and the 3-6 s exceptions (seedance1_5, minimax_hailuo, marketing_studio_video) are stated"
+      ],
+      "revisit_triggers": [
+        "a surface re-enumeration changes any duration field",
+        "run-phase evidence quantifies trim-in-post cost"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.76,
+        "user_value": 0.74,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.35,
+        "confidence": 0.86,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.86,
+        "failure_rate": 0.1,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.1,
+          0.3
+        ],
+        "update_signal": "a duration-field change on the re-enumerated surface"
+      }
+    },
+    {
+      "id": "VERTICAL_FRAMING_SAFE_ZONES",
+      "topic": "9_16_composition_safe_zones_and_reframe_fallback",
+      "definition": "Compose every card for the 9:16 1080x1920 canvas [FACT/excerpt — consistent across spec guides]. Safe zones: UI overlays cover roughly the bottom ~20% (caption/action stack), right ~10% (buttons) and top ~15% (branding), leaving a usable centered core — practitioner ranges that disagree in exact pixels, NOT an official Meta spec [held one notch down; [UNKNOWN]: Meta's own current pixel numbers]. Craft consequences: centered composition beats horizontal rule-of-thirds; eyes sit in the upper third (~30-35% from top) with ~8-12% headroom; verticals favor CU/MCU and full-body singles; true wides need strong vertical anchors; two-shots stage the personas in depth rather than side-by-side; push/pull, orbit and crane do more work per pixel than lateral moves. Aspect ratio must be in the chosen model's declared set (e.g. kling3_0 offers 16:9/9:16/1:1; veo3_1 16:9/9:16) [FACT — surface]; the reframe tool exists as a generate-wide-then-reframe fallback, but native 9:16 avoids re-composition risk [FACT tool exists; preference ESTIMATE].",
+      "group": "core",
+      "dependencies": [
+        "SHOT_CARD_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_08"
+      ],
+      "scope_boundary": {
+        "included": [
+          "safe-zone geometry and its held-down sourcing",
+          "vertical composition rules (center, eyes, headroom, depth staging)",
+          "native-9:16 vs reframe fallback"
+        ],
+        "excluded": [
+          "cover/poster crop safety (editor specialist)",
+          "export bitrate/compression settings (editor)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Framing for safe zones at the still stage prevents UI from beheading the composition in-feed",
+          "example": "keeping the persona's face in the middle 50% vertically so neither the caption stack nor feed crop covers it",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The centered vertical grammar constrains classic horizontal luxury compositions (car profiles, coastlines)",
+          "example": "a car's side profile that wants 21:9 forced into a 9:16 crop that amputates the body line",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "composing on horizontal thirds so the subject sits under the button stack",
+        "assigning an aspect ratio the model does not declare"
+      ],
+      "acceptance_tests": [
+        "every card's composition note places critical content in the centered core with eyes upper-third, and its aspect ratio exists in the model's declared set"
+      ],
+      "revisit_triggers": [
+        "platform UI overlay changes shift the safe zones",
+        "run-phase reframe results quantify the fallback's quality cost"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.76,
+        "user_value": 0.8,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.66,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.35,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.15,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "a platform UI change or an official safe-zone spec becoming available"
+      }
+    },
+    {
+      "id": "CAMERA_MOVE_ASSIGNMENT",
+      "topic": "one_move_per_shot_and_carriage_paths",
+      "definition": "Assign each card exactly ONE main camera move with a speed modifier — multi-move prompts degrade coherence in current video models [FACT-1src — Kling guidance, corroborated by Runway structure advice; Runway's own guidance mandates a speed modifier on every move]. Choose the move for its emotional read: push-in for intimacy, pull-out for reveal/closure, orbit for hero appraisal, crane for grandeur, tracking for companionship, static for quiet-luxury confidence, whip/snap-zoom for energy and seams [FACT — movement-grammar excerpts]. Carriage paths on this surface [FACT — absence and presence read across all 28 video schemas]: NO model exposes a camera-move enum, so the move is carried by (a) prompt text in industry terms, (b) the 49 presets (packaged camera+scenario moves like 2000'S PAPARAZZI, RED CARPET, ORBITAL PRESENCE), (c) cinematic_studio genre/speedramp parameters, or (d) motion_control, which transfers the motion AND camera movement of a reference video onto a character image — the strongest camera-trick replication lever. Seam-serving boundary motion (a whip-out) counts as the shot's one move.",
+      "group": "core",
+      "dependencies": [
+        "SHOT_CARD_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the one-move rule with speed modifier",
+          "move-to-emotion mapping",
+          "the four carriage paths on this surface"
+        ],
+        "excluded": [
+          "exact prompt phrasing per model (prompting specialist)",
+          "preset-id interop detail (MODEL_PICK_AB_POLICY edge case)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "One named move per card keeps generated motion coherent and makes seam vectors predictable",
+          "example": "'fast whip pan right' as the sole move guaranteeing the blur direction the next clip must match",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Single-move discipline forbids the compound choreography real cinematography sometimes wants",
+          "example": "an arrival beat wanting crane-down-then-push that must be split into two clips and one more seam",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "stacking two moves in one card and getting incoherent motion",
+        "naming a move without a speed modifier so the model picks the pace"
+      ],
+      "acceptance_tests": [
+        "every card names exactly one move with a speed modifier and its carriage path (prompt, preset, genre/speedramp, or motion_control)"
+      ],
+      "revisit_triggers": [
+        "a model adds a native camera-move parameter",
+        "run evidence shows a model tolerating compound moves"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.35,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.38
+        ],
+        "update_signal": "a camera-move parameter appearing on any model schema or compound-move tolerance evidence"
+      }
+    },
+    {
+      "id": "LIGHTING_RECIPE_ASSIGNMENT",
+      "topic": "motivated_lighting_recipes_per_card",
+      "definition": "Assign each card a lighting recipe from the sourced grammar, treating lighting as the highest-leverage prompt lever — Google's Veo prompting guidance calls lighting specification the single most impactful cinematic descriptor [FACT — via excerpts]. The recipes: three-point glamour (soft key, gentle fill, warm rim) [FACT]; motivated window key for quiet-luxury interiors [FACT on definition]; low-key + warm practicals for night luxury [ESTIMATE — synthesis]; golden-hour rim (warm halo, long parallel shadows) [FACT on the light's physics]; blue-hour nocturne [FACT]; large-soft-source specular for cars and glossy product (light the reflections, not the object) [ESTIMATE — medium-high, ASC primary source excerpt-only]. Every light must be motivated by a plausible in-world source — unmotivated glow is a recognized CG/AI tell [linkage ESTIMATE, high confidence] — and single-source scenes must state the source direction so all shadows can agree with it (multiple shadow directions are a documented forensic check [FACT]). One living micro-detail (steam, curtain, hair moving) per shot keeps the frame alive.",
+      "group": "core",
+      "dependencies": [
+        "SHOT_CARD_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the recipe menu with tags",
+          "the motivated-source rule and single-shadow-direction discipline",
+          "the living micro-detail rule"
+        ],
+        "excluded": [
+          "grading and grade matching (editor specialist)",
+          "shadow-geometry QC scoring (QC specialist)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A named motivated recipe per card constrains shadow geometry and buys realism where prompts have most leverage",
+          "example": "'low golden sun camera-left, long parallel shadows' pinning one light direction the QC can verify",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A short recipe menu risks visual monotony across a whole account grid",
+          "example": "every third reel opening on the same golden-hour rim look",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "prompting mixed light sources with no stated direction, inviting multi-direction shadows",
+        "unmotivated glamour glow that reads CG"
+      ],
+      "acceptance_tests": [
+        "every card names a recipe, its motivating in-world source, the key direction, and one living micro-detail"
+      ],
+      "revisit_triggers": [
+        "QC repeatedly flags shadow-direction errors under a recipe",
+        "a new lighting-relevant parameter appears on a model"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.52,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.14,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.15,
+          0.38
+        ],
+        "update_signal": "QC shadow-error rates per recipe or new lighting levers on the surface"
+      }
+    },
+    {
+      "id": "SHOT_SIZE_SEQUENCING",
+      "topic": "size_ladder_rhythm_and_eye_trace",
+      "definition": "Sequence the cards' shot sizes as the reel's rhythm. The ladder [FACT — StudioBinder/B&H corroborated]: EWS/ELS, WS/LS, establishing, MS, MCU, CU, ECU. Grammar: wide establishes geography, medium carries action, close-up delivers emotion; adjacent shots should differ meaningfully in size or angle to avoid accidental jump cuts [ESTIMATE — canonical craft]. A proven 5-shot luxury skeleton [ESTIMATE, medium-high]: (1) close/detail hook (watch clasp, steam, heel on marble), (2) wide establishing the place, (3) medium of persona in motion, (4) second detail or reaction close-up, (5) wide or loop-back landing the caption. Cut priority follows Murch's Rule of Six — Emotion 51%, Story 23%, Rhythm 10%, Eye-trace 7%, 2D plane 5%, 3D space 4%; sacrifice bottom-up, never emotion [FACT/excerpt — Murch]. Eye-trace applied to 3 s shots: place the next shot's subject where the previous shot left the viewer's eye, because there is no time to rescan [ESTIMATE — direct application, high confidence].",
+      "group": "core",
+      "dependencies": [
+        "BEAT_SHEET_PACING",
+        "SHOT_CARD_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_13"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the size ladder and alternation rhythm",
+          "the 5-shot skeleton",
+          "Murch priority and eye-trace at reel speed"
+        ],
+        "excluded": [
+          "the transition type at each seam (SEAM_FRAME_CONSTRAINTS)",
+          "beat count arithmetic (BEAT_SHEET_PACING)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Size alternation gives a stitched reel cinematic rhythm and prevents accidental jump-cut reads",
+          "example": "detail-wide-medium-detail-wide beating five consecutive mediums that read as one broken take",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A fixed skeleton can make an account's reels structurally predictable",
+          "example": "every reel opening detail-then-wide until followers feel the template",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "adjacent same-size same-angle cards reading as jump cuts",
+        "sacrificing the emotional hero frame to keep rhythm"
+      ],
+      "acceptance_tests": [
+        "the sequenced card list alternates sizes (no adjacent same-size-same-angle pair unless a deliberate jump cut) and marks where the eye is left at each cut"
+      ],
+      "revisit_triggers": [
+        "retention analytics per shot position",
+        "a genre shift changing the skeleton"
+      ],
+      "base": {
+        "criticality": 0.78,
+        "business_value": 0.74,
+        "user_value": 0.78,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.35,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "per-position retention data or a register change"
+      }
+    },
+    {
+      "id": "PERSONA_WARDROBE_BINDING",
+      "topic": "soul_vs_element_identity_refs_per_card",
+      "definition": "Bind persona and wardrobe refs onto each card using the surface's two identity mechanisms [FACT — live tool schemas 2026-07-03]. Souls: trained identity models (name + 5-20 reference images, ~10 min, non-blocking), usable ONLY with soul_2 and soul_cinematic, and ONE soul_id per generation — a two-persona shot cannot use two Souls in one image. Reference Elements: instant reusable character/environment/prop refs embedded as <<<element_id>>> placeholders in the prompt, multiple per prompt allowed — the surface-designated path for shots containing BOTH personas; named element-compatible image models include nano_banana_2, gpt_image_2, seedream_v4_5, seedream_v5_lite, cinematic_studio_2_5, and the video list names Cinema Studio Video 2/3.0, Seedance 2.0, Kling 3.0 but was truncated in transmission [UNKNOWN whether more video models are element-compatible]. Elements are NOT usable with Soul models. The working mapping [ESTIMATE — medium-high, from these constraints]: one Soul per persona for solo hero stills, PLUS one Element per persona and wardrobe/prop Elements so two-person shots and non-Soul models hold identity; soul_cast (text-only, 16:9, budget 10-500) generates persona sheets.",
+      "group": "core",
+      "dependencies": [
+        "SHOT_CARD_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_10"
+      ],
+      "scope_boundary": {
+        "included": [
+          "Soul constraints (5-20 imgs, ~10 min, soul_2/soul_cinematic only, one per generation)",
+          "Element mechanics (<<<element_id>>>, multiple per prompt, compatibility lists)",
+          "the one-Soul-per-persona-plus-Elements mapping"
+        ],
+        "excluded": [
+          "reference-image curation and persona-sheet art direction (character specialist)",
+          "identity-drift QC scoring (QC specialist)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Binding refs at the card level makes identity a planned input instead of a per-generation improvisation",
+          "example": "a two-persona terrace card carrying both persona Elements plus the evening-wardrobe Element as three placeholders",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The dual mechanism forces bookkeeping: Souls and Elements cover disjoint model sets and cannot be mixed",
+          "example": "a soul_cinematic hero still whose wardrobe Element cannot be attached because Elements are unusable with Soul models",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "planning a two-Soul single image the surface forbids",
+        "assuming an unverified video model accepts Elements",
+        "cards with no ref at all, leaving identity to chance"
+      ],
+      "acceptance_tests": [
+        "every card with a persona names either one soul_id (solo, soul_2/soul_cinematic only) or <<<element_id>>> refs, and two-persona cards use only the Element path on a named compatible model"
+      ],
+      "revisit_triggers": [
+        "the element-compatible video-model list is resolved or extended",
+        "run evidence quantifies the Soul-vs-Element fidelity gap [UNKNOWN today]",
+        "a new identity mechanism appears on the surface"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.82,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.16,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "a compatibility-list resolution or fidelity-gap measurement changes the binding mapping"
+      }
+    },
+    {
+      "id": "SCENE_CONTINUITY_LEDGER",
+      "topic": "cross_clip_wardrobe_light_time_ledger",
+      "definition": "Maintain the per-scene continuity ledger every card is written against, because stitched clips generated in separate calls have no shared memory: wardrobe state per persona (which Element/outfit, jacket on or off), light direction and recipe (the sun cannot move camera-left to camera-right between adjacent clips — multiple shadow directions in one scene is a documented forensic tell [FACT]), time of day (golden hour cannot neighbor noon within one scene; golden hour can be as short as ~15 minutes in the real world, so a 'same evening' scene must state one fixed sun height), location and prop state, persona ref ids, and the grade family the editor will match to a hero clip [FACT/excerpt — hero-clip shot-matching practice]. Identity drift is a named cross-shot failure [FACT], so the ledger also pins the persona's reference sheet per scene. The ledger is updated after every approved generation, not just at planning.",
+      "group": "core",
+      "dependencies": [
+        "LIGHTING_RECIPE_ASSIGNMENT",
+        "PERSONA_WARDROBE_BINDING"
+      ],
+      "competency_question_refs": [
+        "CQ_12"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the ledger fields (wardrobe, light direction, time of day, location/props, refs, grade family)",
+          "the update-after-every-approval discipline",
+          "single-sun-direction-per-scene rule"
+        ],
+        "excluded": [
+          "grade matching execution in the NLE (editor specialist)",
+          "identity-drift detection scoring (QC specialist)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A written ledger converts continuity from reviewer memory into a checkable diff per new card",
+          "example": "catching that clip 4's card says 'blazer on' while the approved clip 3 ended blazer-off",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Ledger discipline adds friction exactly when batches are flowing fastest",
+          "example": "three parallel generations approved in one sitting, none logged, and the next day's cards written against stale state",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "adjacent clips with opposite key-light directions in one scene",
+        "wardrobe changing mid-scene without a jump-cut intent",
+        "ledger updated at planning but never after approvals"
+      ],
+      "acceptance_tests": [
+        "every card cites the ledger row it was written against, and every scene's clips share one light direction, one time of day, and consistent wardrobe state"
+      ],
+      "revisit_triggers": [
+        "a stitched preview shows light-direction or wardrobe mismatch",
+        "a scene is re-timed to a different hour",
+        "persona refs are retrained or replaced"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.5,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.16,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "observed continuity breaks at the stitch recalibrate which ledger fields are load-bearing"
+      }
+    },
+    {
+      "id": "MODEL_PICK_AB_POLICY",
+      "topic": "per_shot_model_choice_and_failure_ledger",
+      "definition": "Choose the card's model by shot-type evidence, not loyalty: physics adherence varies hugely across models (VideoPhy/VideoPhy-2 spreads; best is not average) [FACT — abstracts], so A/B candidate models per shot-type and keep a per-model failure ledger from the first batches. Surface defaults to start from [FACT — generate_video guidance]: seedance_2_0 for identity, kling3_0 for multi-shot/audio/motion transfer, kling3_0_turbo for fast single-start-frame work. Cinematic parameters that carry direction: cinematic_studio_3_0/seedance genre (auto/action/horror/comedy/noir/drama/epic), cinematic_studio_video_v2 genre adds suspense/intimate/spectacle plus speedramp (auto/custom/linear/slowmo/speedup/impact), multi_shots, cfg_scale 0-1 (0.5) and a preset_id whose interoperability with the 49 presets_show ids is [UNKNOWN]. Eligibility comes first: seam clips only from the both-frames set; then duration band; then A/B within survivors. Hard-shot categories bias the pick toward models the ledger shows failing least on that category.",
+      "group": "platform",
+      "dependencies": [
+        "END_FRAME_MODEL_ELIGIBILITY",
+        "HARD_SHOT_DESIGN_AROUND"
+      ],
+      "competency_question_refs": [
+        "CQ_14"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the eligibility-then-band-then-A/B pick order",
+          "the per-model failure ledger",
+          "surface default picks and cinematic parameters"
+        ],
+        "excluded": [
+          "credit-cost figures (CREDIT_PREFLIGHT_BUDGET, [UNKNOWN])",
+          "prompt phrasing per model (prompting specialist)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A ledger-driven pick converts stochastic model quality into accumulated evidence",
+          "example": "routing all water-adjacent shots away from a model the ledger shows failing pours twice as often",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A/B breadth multiplies cost and QC load on every new shot-type",
+          "example": "four candidate models on every connective clip doubling the batch budget for marginal gains",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "picking on aesthetic memory instead of the ledger",
+        "A/B-ing models already ineligible by roles or band",
+        "treating one lucky generation as a model verdict"
+      ],
+      "acceptance_tests": [
+        "every card's model pick names its eligibility check, band check, and the ledger evidence or A/B slot justifying it"
+      ],
+      "revisit_triggers": [
+        "the failure ledger accumulates enough rows to rank models per shot-type",
+        "a catalog change adds or removes candidates",
+        "preset_id interoperability is resolved"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.76,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.35,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.52,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "ledger rankings, catalog changes, or preset-interop resolution move the pick policy"
+      }
+    },
+    {
+      "id": "KEYFRAME_STILLS_FIRST",
+      "topic": "generate_and_pair_seam_stills_before_video",
+      "definition": "Generate the seam keyframe stills BEFORE any video: for each seam, produce clip N's END still and clip N+1's START still as a designed pair carrying the seam's constraints, the card's lighting recipe, lens language, vertical framing and persona refs. Stills are the cheap place to fail — image-to-video from a QC-approved start frame locks anatomy, wardrobe and identity at t=0, converting image-QC wins into video wins and shrinking identity-drift exposure [ESTIMATE — mechanism reasoning, high confidence; category cost ordering stills-cheaper-than-video FACT with exact Higgsfield prices [UNKNOWN]]. Pairs failing QC on either frame are regenerated before video generation is scheduled. The pair must match on position, brightness, color and blur direction; end-frame conditioning controls the boundary, not the path — mid-clip motion can still wander, which is why clips stay 3-6 s and motion is prompted simply [FACT/excerpt — short-segment stability guidance].",
+      "group": "execution",
+      "dependencies": [
+        "SEAM_FRAME_CONSTRAINTS",
+        "VERTICAL_FRAMING_SAFE_ZONES",
+        "LIGHTING_RECIPE_ASSIGNMENT"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the stills-before-video ordering and its cost logic",
+          "pair-matching requirements",
+          "the boundary-not-path limitation"
+        ],
+        "excluded": [
+          "the QC rubric content (START_FRAME_QC_GATE places it)",
+          "video-call mechanics (CLIP_CHAINING_STITCH)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Failing at the still stage costs one image; failing at the video stage costs a clip plus its seam partner",
+          "example": "a six-finger hand caught on a start still versus discovered mid-clip after two chained generations",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Perfect boundary stills do not guarantee the interior of the clip, so stills-first can breed false confidence",
+          "example": "an approved pair whose clip morphs a hand mid-motion where no keyframe constrained it",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "skipping straight to video on schedule pressure",
+        "generating pairs with mismatched lens or luminance",
+        "treating an approved pair as approval of the whole clip"
+      ],
+      "acceptance_tests": [
+        "every seam has two approved stills generated before its clips are queued, and each pair passes the position/brightness/color/blur-direction match check"
+      ],
+      "revisit_triggers": [
+        "run evidence quantifies how often approved pairs still yield failed clips",
+        "a model's boundary adherence changes the pairing tolerance"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.84,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.45,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.16,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.15,
+          0.38
+        ],
+        "update_signal": "pair-approval-to-clip-success conversion rates from real runs"
+      }
+    },
+    {
+      "id": "START_FRAME_QC_GATE",
+      "topic": "worst_artifact_gate_at_still_checkpoint",
+      "definition": "Gate every keyframe still with the worst-artifact doctrine before it becomes a video input. Rationale carried from the human-detection evidence: one-shot human detection is barely above chance overall, but a repeat audience sees dozens of clips and one blatant tell flips the account's perceived authenticity permanently — so QC is per-shot and worst-artifact-driven, not average-quality-driven [ESTIMATE — operational reading of the meta-analysis numbers, high confidence]. At the still checkpoint the director checks the glance-visible classes: text/logos/badges (most damning, binary-checkable), identity lock against the persona sheet, object count, shadow/reflection geometry (one sun means parallel shadows [FACT — forensic check]), background coherence, and skin texture last (largely laundered by platform compression [FACT — compression removes low-level cues]). Gate: any single glance-visible artifact means re-roll — re-rolling is the cheapest fix because per-seed artifacts differ run to run [ESTIMATE — standard generative practice]. The full scored rubric belongs to the QC specialist; this node fixes WHERE it bites: no still enters chaining unQC'd.",
+      "group": "execution",
+      "dependencies": [
+        "KEYFRAME_STILLS_FIRST"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the worst-artifact gating doctrine and its audience rationale",
+          "the still-checkpoint check classes",
+          "the re-roll-first ordering"
+        ],
+        "excluded": [
+          "the numeric rubric and detection taxonomy (QC specialist)",
+          "raw-video and post-edit checkpoints (QC specialist owns their content)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Worst-artifact gating spends scarce attention where a single failure is fatal to the account",
+          "example": "rejecting an otherwise beautiful still for one garbled badge a follower would screenshot",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A zero-tolerance gate on stochastic output can stall a seam through many re-rolls",
+          "example": "five consecutive re-rolls each failing a different rubric class on the same demanding graphic-match pair",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "averaging quality across a batch instead of gating on the worst artifact",
+        "QC'ing at full resolution on a monitor instead of feed conditions",
+        "letting schedule pressure wave an almost-clean still through"
+      ],
+      "acceptance_tests": [
+        "every still entering video generation carries a passed gate record, and any glance-visible artifact triggered a re-roll rather than a post-fix promise"
+      ],
+      "revisit_triggers": [
+        "run evidence shows a check class never failing (retire it) or a new class recurring (add it)",
+        "the QC specialist's rubric weights change"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.15,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.15,
+          0.38
+        ],
+        "update_signal": "class-level failure rates from real batches re-weight the checkpoint"
+      }
+    },
+    {
+      "id": "CLIP_CHAINING_STITCH",
+      "topic": "chaining_end_frames_into_next_starts",
+      "definition": "Plan the reel as a chain: clip N's end frame becomes clip N+1's start frame. Structurally supported on the surface: generate_video media values accept a prior generation's job_id, not just uploaded media [FACT — generate_video schema], so an approved clip's end can seed the next call directly; alternatively both boundary frames come from the approved keyframe stills. Each chained call names its one camera move with speed modifier and its cinematic parameters per the card. Chaining discipline: only QC-approved frames enter the chain, because an undetected artifact in a chained frame propagates into every downstream clip; and the chain inherits the continuity ledger (same light direction, wardrobe state, refs) call by call. The generate envelope allows count 1-4 per call [FACT], enabling small candidate batches per link with the best take chosen before the next link generates.",
+      "group": "execution",
+      "dependencies": [
+        "CLIP_DURATION_BANDS",
+        "KEYFRAME_STILLS_FIRST",
+        "CAMERA_MOVE_ASSIGNMENT"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "scope_boundary": {
+        "included": [
+          "job_id chaining and stills-based bounding",
+          "the approved-frames-only chain rule",
+          "count 1-4 candidate batching per link"
+        ],
+        "excluded": [
+          "timeline assembly and trims (editor specialist)",
+          "loop closure (LOOP_CONSTRUCTION)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Chaining by job_id makes frame continuity mechanical instead of re-prompted",
+          "example": "clip 3 starting from exactly clip 2's final frame rather than a re-generated approximation of it",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A serial chain serializes the schedule — each link waits on the previous link's QC",
+          "example": "an eight-clip reel that cannot parallelize its middle clips because each start frame is upstream output",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "chaining an unQC'd frame and propagating its artifact reel-wide",
+        "breaking the chain by re-prompting a boundary instead of reusing the approved frame",
+        "batching without selecting before the next link"
+      ],
+      "acceptance_tests": [
+        "every chained call references an approved frame (job_id or approved still), and the chain order matches the seam plan including any loop seam"
+      ],
+      "revisit_triggers": [
+        "run evidence on how job_id-seeded frames differ from re-uploaded stills",
+        "a schema change to media value acceptance"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "chained-frame fidelity evidence or a media-value schema change"
+      }
+    },
+    {
+      "id": "LOOP_CONSTRUCTION",
+      "topic": "loop_seam_as_self_transition",
+      "definition": "Treat a looping reel's restart as one more seam — the reel's LAST clip's end frame pairs with its FIRST clip's start frame. The AI-native trick: submitting the SAME image as both start and end frame of one clip produces a natural loop [FACT/excerpt — Kling documentation; the both-frames models on this surface make it directly plannable]. Loops raise rewatches and total watch time, which ranking rewards [FACT/excerpt — loop-editing guides]. Loop the sentence, not just the pixels: end mid-motion rather than on a closed gesture so the restart reads as continuation [ESTIMATE — craft, medium-high]. Fallback when frames nearly-but-not-quite match: the editor's frame-matching trim or a short dissolve, but the director's job is to make that unnecessary by planning the loop seam with the same rigor as any interior seam — it is the seam most often forgotten in the seam count.",
+      "group": "execution",
+      "dependencies": [
+        "CLIP_CHAINING_STITCH"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the loop-as-seam framing and same-image-both-ends trick",
+          "mid-motion loop points",
+          "the forgotten-seam warning"
+        ],
+        "excluded": [
+          "editor-side loop trimming mechanics",
+          "algorithmic ranking detail (media-manager)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Planning the loop seam like any other seam buys rewatch time for one extra keyframe pair",
+          "example": "a reel whose final pull-out lands on the same terrace frame the opening push-in starts from",
+          "weight": 0.76
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Loop constraints bind the reel's two most valuable slots (open and close) to each other",
+          "example": "the strongest-image-first rule fighting a loop that needs the closer to match the opener",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "forgetting the loop seam in the seam count",
+        "looping on a closed gesture so the restart reads as a stutter"
+      ],
+      "acceptance_tests": [
+        "a looping reel's seam list includes the last-to-first seam with a paired frame spec, and the loop point is mid-motion"
+      ],
+      "revisit_triggers": [
+        "rewatch analytics per looping vs non-looping reel",
+        "a format change away from looping reels"
+      ],
+      "base": {
+        "criticality": 0.72,
+        "business_value": 0.74,
+        "user_value": 0.72,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.35,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "rewatch analytics or a format change"
+      }
+    },
+    {
+      "id": "CREDIT_PREFLIGHT_BUDGET",
+      "topic": "get_cost_preflight_against_unknown_prices",
+      "definition": "Budget the shot list against the surface's cost mechanism, holding the honesty line: per-generation credit cost per model is [UNKNOWN] — not exposed by models_explore, presets_show or balance [FACT — absence on the read surface]; the sanctioned zero-spend probe is get_cost:true on a generate call, which returns the credit cost WITHOUT submitting [FACT — generate envelope schema]. Rate limits and queue times are likewise [UNKNOWN] (only count<=4 per call is visible). Soul training cost is [UNKNOWN] beyond '5-20 images, ~10 min'. Discipline: before any batch, preflight each model-resolution-duration cell the plan uses; price the whole shot list (clips x candidates x re-roll allowance) against the known balance (1,010 credits, plus plan, as of 2026-07-03 [FACT]); and never let an invented per-clip price into the plan — a plan priced on guessed numbers is a plan that dies mid-reel.",
+      "group": "execution",
+      "dependencies": [
+        "MODEL_PICK_AB_POLICY"
+      ],
+      "competency_question_refs": [
+        "CQ_14"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the [UNKNOWN] cost/rate-limit blockers by name",
+          "the get_cost:true preflight discipline",
+          "pricing the full list including re-roll allowance"
+        ],
+        "excluded": [
+          "plan/subscription management (owner decision)",
+          "actual spend execution (run phase)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Cell-by-cell preflight converts an unknown price surface into a priced plan at zero spend",
+          "example": "learning cinematic_studio_3_0 at 1080p/5 s costs N credits before committing an eight-clip chain to it",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Preflight adds a call per cell and can lag price changes between preflight and batch",
+          "example": "a plan priced Monday meeting different costs in Thursday's batch run",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "planning against invented per-clip prices",
+        "pricing clips but forgetting candidate batches and re-roll allowance",
+        "ignoring that rate limits are unknown when scheduling a deadline"
+      ],
+      "acceptance_tests": [
+        "the budget names every model-resolution-duration cell with a preflighted cost or an explicit [UNKNOWN-until-preflight] marker, and totals include the re-roll allowance against the live balance"
+      ],
+      "revisit_triggers": [
+        "get_cost results arrive and replace the [UNKNOWN]s",
+        "the balance or plan changes",
+        "rate-limit behavior is observed in runs"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.82,
+        "user_value": 0.7,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.5,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "preflight results, balance changes, or observed rate limits"
+      }
+    },
+    {
+      "id": "SHOT_LIST_LOCK_VERDICT",
+      "topic": "lock_conditions_for_generation_ready_shot_list",
+      "definition": "Compose the lock verdict: the shot list is generation-ready only when (1) every seam — including the loop seam — has a named transition type and a paired END/START frame spec; (2) every card is complete on all ten fields with model/aspect/duration validated against the live catalog; (3) every beat passed the hard-shot scrub or names its imply-not-show redesign; (4) every persona-bearing card has a valid Soul-or-Element binding respecting the one-Soul limit; (5) every card cites its continuity-ledger row; (6) seam clips sit on both-frames models within their duration bands; (7) the budget is preflighted with re-roll allowance, no invented prices; and (8) keyframe stills for at least the first scene's seams are QC-approved so the chain can start. A lock with any condition waived is not a lock; the verdict names which condition blocks and routes it back to the owning node.",
+      "group": "verdict",
+      "dependencies": [
+        "START_FRAME_QC_GATE",
+        "SCENE_CONTINUITY_LEDGER",
+        "CREDIT_PREFLIGHT_BUDGET",
+        "CLIP_CHAINING_STITCH",
+        "HARD_SHOT_DESIGN_AROUND"
+      ],
+      "competency_question_refs": [
+        "CQ_12"
+      ],
+      "scope_boundary": {
+        "included": [
+          "the eight lock conditions",
+          "the route-back-to-owning-node discipline",
+          "the no-waiver rule"
+        ],
+        "excluded": [
+          "run-phase generation execution",
+          "post-lock editorial changes (editor specialist)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A conditioned lock prevents the classic failure of generating against a half-planned list",
+          "example": "withholding the lock because three connective cards still lack transition-out constraints, caught before credits burn",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Eight hard conditions can freeze momentum on a small reel where some conditions barely apply",
+          "example": "a three-clip teaser held for a full continuity ledger that is one row long",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "locking with a waived condition under deadline pressure",
+        "verdicts that fail the list without naming the blocking condition and owner"
+      ],
+      "acceptance_tests": [
+        "the verdict evaluates all eight conditions explicitly, names any blocker with its owning node, and no generation is scheduled off an unlocked list"
+      ],
+      "revisit_triggers": [
+        "run-phase evidence that a condition is too strict or too loose",
+        "a new pipeline stage adds a ninth condition"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.6,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.15,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "update_signal": "run-phase evidence recalibrating the lock conditions"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "BRIEF_CONCEPT_INTAKE",
+      "to": "BEAT_SHEET_PACING",
+      "edge_type": "dependency",
+      "why_related": "beats are authored inside the register, personas and format contract intake fixes",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "BEAT_SHEET_PACING",
+      "to": "TRANSITION_FIRST_PLANNING",
+      "edge_type": "dependency",
+      "why_related": "the seam count and seam positions fall directly out of the beat sheet's clip count",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "TRANSITION_FIRST_PLANNING",
+      "to": "SHOT_CARD_SCHEMA",
+      "edge_type": "dependency",
+      "why_related": "the card's transition-in/out fields exist because seams are planned before shots",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "TRANSITION_FIRST_PLANNING",
+      "to": "SEAM_FRAME_CONSTRAINTS",
+      "edge_type": "dependency",
+      "why_related": "choosing transitions first is what makes the per-type frame-constraint table actionable",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "BEAT_SHEET_PACING",
+      "to": "HARD_SHOT_DESIGN_AROUND",
+      "edge_type": "dependency",
+      "why_related": "the hard-shot scrub runs over the beats before any card is written",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "SHOT_CARD_SCHEMA",
+      "to": "END_FRAME_MODEL_ELIGIBILITY",
+      "edge_type": "dependency",
+      "why_related": "the card's model-pick field is what the eligibility sets constrain",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "END_FRAME_MODEL_ELIGIBILITY",
+      "to": "CLIP_DURATION_BANDS",
+      "edge_type": "dependency",
+      "why_related": "duration bands are checked within the model set eligibility already narrowed",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "SHOT_CARD_SCHEMA",
+      "to": "VERTICAL_FRAMING_SAFE_ZONES",
+      "edge_type": "dependency",
+      "why_related": "the card's aspect-ratio and composition fields are filled by the vertical framing rules",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "SHOT_CARD_SCHEMA",
+      "to": "CAMERA_MOVE_ASSIGNMENT",
+      "edge_type": "dependency",
+      "why_related": "the card's single camera-move field is what the assignment rules fill",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "SHOT_CARD_SCHEMA",
+      "to": "LIGHTING_RECIPE_ASSIGNMENT",
+      "edge_type": "dependency",
+      "why_related": "the card's lighting field is filled from the motivated recipe menu",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "BEAT_SHEET_PACING",
+      "to": "SHOT_SIZE_SEQUENCING",
+      "edge_type": "dependency",
+      "why_related": "size rhythm is sequenced over the beat order the sheet fixes",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "SHOT_CARD_SCHEMA",
+      "to": "SHOT_SIZE_SEQUENCING",
+      "edge_type": "dependency",
+      "why_related": "the sequencing assigns each card's shot-size field within the ladder",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "SHOT_CARD_SCHEMA",
+      "to": "PERSONA_WARDROBE_BINDING",
+      "edge_type": "dependency",
+      "why_related": "the card's persona/wardrobe ref field is what Soul/Element binding fills",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "LIGHTING_RECIPE_ASSIGNMENT",
+      "to": "SCENE_CONTINUITY_LEDGER",
+      "edge_type": "dependency",
+      "why_related": "the ledger's light-direction and time-of-day rows record the recipes cards committed to",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "PERSONA_WARDROBE_BINDING",
+      "to": "SCENE_CONTINUITY_LEDGER",
+      "edge_type": "dependency",
+      "why_related": "the ledger tracks which persona/wardrobe refs each scene's clips must keep using",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "END_FRAME_MODEL_ELIGIBILITY",
+      "to": "MODEL_PICK_AB_POLICY",
+      "edge_type": "dependency",
+      "why_related": "A/B candidates are drawn only from the role-eligible set",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "HARD_SHOT_DESIGN_AROUND",
+      "to": "MODEL_PICK_AB_POLICY",
+      "edge_type": "dependency",
+      "why_related": "hard-shot categories bias the pick toward models the failure ledger favors on that category",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "SEAM_FRAME_CONSTRAINTS",
+      "to": "KEYFRAME_STILLS_FIRST",
+      "edge_type": "dependency",
+      "why_related": "the keyframe stills are generated to the per-type constraints the seam table specifies",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "VERTICAL_FRAMING_SAFE_ZONES",
+      "to": "KEYFRAME_STILLS_FIRST",
+      "edge_type": "dependency",
+      "why_related": "keyframe stills must already sit in safe-zone-correct 9:16 composition",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "LIGHTING_RECIPE_ASSIGNMENT",
+      "to": "KEYFRAME_STILLS_FIRST",
+      "edge_type": "dependency",
+      "why_related": "both stills of a pair carry the same lighting recipe or the seam reads as a mistake",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "KEYFRAME_STILLS_FIRST",
+      "to": "START_FRAME_QC_GATE",
+      "edge_type": "dependency",
+      "why_related": "the gate exists to judge the stills the stills-first step produces",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CLIP_DURATION_BANDS",
+      "to": "CLIP_CHAINING_STITCH",
+      "edge_type": "dependency",
+      "why_related": "each chained call's duration must be an allowed value of its model's band",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "KEYFRAME_STILLS_FIRST",
+      "to": "CLIP_CHAINING_STITCH",
+      "edge_type": "dependency",
+      "why_related": "the chain's boundary frames are the approved keyframe stills or their job_id equivalents",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "CAMERA_MOVE_ASSIGNMENT",
+      "to": "CLIP_CHAINING_STITCH",
+      "edge_type": "dependency",
+      "why_related": "each chained generation names the card's single move with its speed modifier",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "CLIP_CHAINING_STITCH",
+      "to": "LOOP_CONSTRUCTION",
+      "edge_type": "dependency",
+      "why_related": "the loop closes the same chain by pairing the last clip's end with the first clip's start",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "MODEL_PICK_AB_POLICY",
+      "to": "CREDIT_PREFLIGHT_BUDGET",
+      "edge_type": "dependency",
+      "why_related": "the cells to preflight are exactly the model-resolution-duration combinations the pick policy selected",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "START_FRAME_QC_GATE",
+      "to": "SHOT_LIST_LOCK_VERDICT",
+      "edge_type": "dependency",
+      "why_related": "lock condition 8 requires the first scene's seam stills QC-approved",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "SCENE_CONTINUITY_LEDGER",
+      "to": "SHOT_LIST_LOCK_VERDICT",
+      "edge_type": "dependency",
+      "why_related": "lock condition 5 requires every card to cite its ledger row",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "CREDIT_PREFLIGHT_BUDGET",
+      "to": "SHOT_LIST_LOCK_VERDICT",
+      "edge_type": "dependency",
+      "why_related": "lock condition 7 requires a preflighted budget with no invented prices",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "CLIP_CHAINING_STITCH",
+      "to": "SHOT_LIST_LOCK_VERDICT",
+      "edge_type": "dependency",
+      "why_related": "the lock verifies the chain order matches the seam plan before generation starts",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "HARD_SHOT_DESIGN_AROUND",
+      "to": "SHOT_LIST_LOCK_VERDICT",
+      "edge_type": "dependency",
+      "why_related": "lock condition 3 requires every beat to have passed the hard-shot scrub",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "HARD_SHOT_DESIGN_AROUND",
+      "to": "BRIEF_CONCEPT_INTAKE",
+      "edge_type": "conflict",
+      "why_related": "brief ambitions (champagne pours, dining scenes, badge close-ups) collide with the categories models demonstrably fail",
+      "relation_strength": 0.72,
+      "resolution_rule": "the known-hard list wins: the beat is redesigned imply-not-show at the beat level; the brief's intent survives, its literal staging does not"
+    },
+    {
+      "from": "MODEL_PICK_AB_POLICY",
+      "to": "END_FRAME_MODEL_ELIGIBILITY",
+      "edge_type": "conflict",
+      "why_related": "the aesthetically strongest model for a look may be start-only (veo3_1) while the seam demands end-frame support",
+      "relation_strength": 0.7,
+      "resolution_rule": "eligibility wins at seams: seam-bracketing clips use both-frames models; start-only models are eligible only for clips whose outgoing boundary is free"
+    },
+    {
+      "from": "CLIP_DURATION_BANDS",
+      "to": "BEAT_SHEET_PACING",
+      "edge_type": "conflict",
+      "why_related": "a 2-3 s connective beat collides with models whose minimum is 4, 6 or 12 seconds and with silent clamping",
+      "relation_strength": 0.68,
+      "resolution_rule": "re-assign the clip to a band-covering model (wan2_7 for 2-3 s, cinematic_studio_video_v2 or kling3_0 for 3 s) or re-time the beat; never let clamping resolve it silently"
+    },
+    {
+      "from": "SEAM_FRAME_CONSTRAINTS",
+      "to": "CAMERA_MOVE_ASSIGNMENT",
+      "edge_type": "conflict",
+      "why_related": "a seam demanding boundary motion (whip-out) competes with the one-move rule when the beat wants a different interior move",
+      "relation_strength": 0.66,
+      "resolution_rule": "the seam-serving move counts as the shot's single move; if the beat's emotional move is incompatible, change the transition type at that seam rather than stacking moves"
+    },
+    {
+      "from": "CREDIT_PREFLIGHT_BUDGET",
+      "to": "MODEL_PICK_AB_POLICY",
+      "edge_type": "conflict",
+      "why_related": "A/B exploration breadth multiplies cost against a finite preflighted balance",
+      "relation_strength": 0.68,
+      "resolution_rule": "budget wins: A/B breadth is capped to hero shot-types and funded from the preflighted allowance; connective clips ride the ledger's current best model"
+    },
+    {
+      "from": "LOOP_CONSTRUCTION",
+      "to": "SEAM_FRAME_CONSTRAINTS",
+      "edge_type": "similarity",
+      "why_related": "the loop is a self-seam: the last-to-first restart obeys the same paired frame constraints as any interior transition",
+      "relation_strength": 0.66
+    },
+    {
+      "from": "START_FRAME_QC_GATE",
+      "to": "CLIP_CHAINING_STITCH",
+      "edge_type": "causal",
+      "why_related": "gating stills before they enter the chain causally prevents a single artifact from propagating through every downstream chained clip",
+      "relation_strength": 0.74,
+      "causal_confidence": 0.72
+    },
+    {
+      "from": "CLIP_CHAINING_STITCH",
+      "to": "SCENE_CONTINUITY_LEDGER",
+      "edge_type": "feedback",
+      "why_related": "drift observed at the stitch (wardrobe, light direction, identity) feeds back as ledger corrections for the next cards",
+      "relation_strength": 0.68
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "brief_ambition_vs_known_hard_list",
+      "description": "The luxury brief naturally wants exactly what models fail at — pours, dining, badges, mirrors, crowds — while the hard-shot list demands those beats be restaged.",
+      "poles": [
+        "stage the brief literally",
+        "design around the hard list"
+      ],
+      "resolution_hint": "redesign at the beat level with imply-not-show moves; the intent survives, the literal staging does not",
+      "affected_nodes": [
+        "BRIEF_CONCEPT_INTAKE",
+        "BEAT_SHEET_PACING",
+        "HARD_SHOT_DESIGN_AROUND"
+      ]
+    },
+    {
+      "name": "seam_precision_vs_generation_forgiveness",
+      "description": "Exact graphic matches read most premium but are hardest for stochastic generation to hit, while whip pans and masked wipes hide mismatch inside blur and occlusion.",
+      "poles": [
+        "exact graphic-match seams",
+        "blur/occlusion-forgiving seams"
+      ],
+      "resolution_hint": "prefer whip and masked-wipe seams early in production; reserve exact graphic matches for hero seams once keyframe control is proven",
+      "affected_nodes": [
+        "SEAM_FRAME_CONSTRAINTS",
+        "TRANSITION_FIRST_PLANNING",
+        "KEYFRAME_STILLS_FIRST"
+      ]
+    },
+    {
+      "name": "aesthetic_model_vs_end_frame_support",
+      "description": "The strongest-looking model for a shot may be start-only (veo3_1 ultra-real) while transition-first planning needs both boundary frames pinned.",
+      "poles": [
+        "pick the best-looking model",
+        "pick a both-frames model"
+      ],
+      "resolution_hint": "seam-bracketing clips must use the both-frames set; start-only models serve only free-boundary clips",
+      "affected_nodes": [
+        "END_FRAME_MODEL_ELIGIBILITY",
+        "MODEL_PICK_AB_POLICY"
+      ]
+    },
+    {
+      "name": "native_vertical_vs_wide_then_reframe",
+      "description": "Native 9:16 generation avoids re-composition risk but constrains composition; generating wide and reframing recovers horizontal grammar at re-crop cost.",
+      "poles": [
+        "generate native 9:16",
+        "generate wide then reframe"
+      ],
+      "resolution_hint": "default native 9:16; reach for reframe only when a composition genuinely needs the wide canvas and the crop is planned in advance",
+      "affected_nodes": [
+        "VERTICAL_FRAMING_SAFE_ZONES",
+        "SHOT_CARD_SCHEMA"
+      ]
+    },
+    {
+      "name": "beat_timing_vs_model_duration_bands",
+      "description": "The beat sheet's 2-3 s connective rhythm collides with models whose minimum duration is 4, 6 or 12 seconds and with silent clamping to allowed values.",
+      "poles": [
+        "keep the beat timing",
+        "keep the preferred model"
+      ],
+      "resolution_hint": "the timing wins: move the clip to a band-covering model or re-time the beat explicitly; never accept a silent clamp",
+      "affected_nodes": [
+        "CLIP_DURATION_BANDS",
+        "BEAT_SHEET_PACING",
+        "MODEL_PICK_AB_POLICY"
+      ]
+    },
+    {
+      "name": "exploration_breadth_vs_credit_budget",
+      "description": "Per-shot-type A/B across models builds the failure ledger fastest but multiplies generation cost against an unknown-priced, finite balance.",
+      "poles": [
+        "explore broadly per shot-type",
+        "conserve the preflighted budget"
+      ],
+      "resolution_hint": "preflight every cell with get_cost:true, cap A/B to hero shot-types, and let the ledger's current best carry connective clips",
+      "affected_nodes": [
+        "MODEL_PICK_AB_POLICY",
+        "CREDIT_PREFLIGHT_BUDGET"
+      ]
+    },
+    {
+      "name": "per_shot_beauty_vs_cross_clip_continuity",
+      "description": "The best individual take (light, pose, energy) may contradict the scene ledger's committed wardrobe state, light direction or time of day.",
+      "poles": [
+        "keep the most beautiful take",
+        "keep the continuity ledger"
+      ],
+      "resolution_hint": "continuity wins within a scene — a gorgeous mismatched clip reads as an error at the stitch; re-roll toward the ledger",
+      "affected_nodes": [
+        "SCENE_CONTINUITY_LEDGER",
+        "START_FRAME_QC_GATE",
+        "KEYFRAME_STILLS_FIRST"
+      ]
+    },
+    {
+      "name": "soul_fidelity_vs_element_flexibility",
+      "description": "Trained Souls promise identity fidelity but bind to two image models and one Soul per generation; Elements are instant and multi-ref but their fidelity gap is unmeasured.",
+      "poles": [
+        "Soul-first identity",
+        "Element-first flexibility"
+      ],
+      "resolution_hint": "Souls for solo hero stills on soul_2/soul_cinematic; Elements for two-persona shots and all non-Soul models; measure the fidelity gap in early runs (it is [UNKNOWN] today)",
+      "affected_nodes": [
+        "PERSONA_WARDROBE_BINDING",
+        "SCENE_CONTINUITY_LEDGER"
+      ]
+    },
+    {
+      "name": "single_move_coherence_vs_compound_choreography",
+      "description": "One move per shot keeps AI motion coherent, but cinematic beats sometimes want compound moves that must be split into extra clips and seams.",
+      "poles": [
+        "one move per shot",
+        "compound choreography"
+      ],
+      "resolution_hint": "keep the one-move rule; express compound intent as two chained clips joined by a planned seam rather than one overloaded prompt",
+      "affected_nodes": [
+        "CAMERA_MOVE_ASSIGNMENT",
+        "SEAM_FRAME_CONSTRAINTS",
+        "BEAT_SHEET_PACING"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "A two-persona shot needs both identities but the surface allows only ONE soul_id per generation",
+      "trigger": "a card binds two Souls to one image or clip",
+      "affected_nodes": [
+        "PERSONA_WARDROBE_BINDING"
+      ],
+      "mitigation": "route two-persona shots through Reference Elements (multiple <<<element_id>>> placeholders) on a named element-compatible model; Souls stay for solo hero stills",
+      "severity": "high"
+    },
+    {
+      "description": "A graphic-match seam's two keyframes refuse to align on shape/position after repeated re-rolls",
+      "trigger": "several consecutive pair generations fail the overlay match check",
+      "affected_nodes": [
+        "SEAM_FRAME_CONSTRAINTS",
+        "KEYFRAME_STILLS_FIRST"
+      ],
+      "mitigation": "downgrade the seam to a whip or masked wipe whose blur/occlusion tolerates mismatch, and reserve the graphic match for a seam where keyframe control is proven",
+      "severity": "medium"
+    },
+    {
+      "description": "A 3 s connective beat is assigned to seedance1_5 (min 4 s) or minimax_hailuo (min 6 s) and the envelope silently clamps the duration",
+      "trigger": "a card's duration is not an allowed value of its model's band",
+      "affected_nodes": [
+        "CLIP_DURATION_BANDS",
+        "BEAT_SHEET_PACING"
+      ],
+      "mitigation": "band-check every card at authoring; move 2-3 s clips to wan2_7 or 3 s clips to cinematic_studio_video_v2/kling3_0, or re-time the beat explicitly",
+      "severity": "medium"
+    },
+    {
+      "description": "minimax_hailuo is set to resolution 512, which is incompatible with end_image conditioning (and unsupported by its 2.3 variants)",
+      "trigger": "a hailuo seam clip is configured at 512",
+      "affected_nodes": [
+        "END_FRAME_MODEL_ELIGIBILITY",
+        "MODEL_PICK_AB_POLICY"
+      ],
+      "mitigation": "keep hailuo seam clips at 768/1080, or move the clip to another both-frames model",
+      "severity": "medium"
+    },
+    {
+      "description": "The brief demands a legible marque badge or watch-face close-up — hard-list entry 5, and genre experts scrutinize exactly those objects",
+      "trigger": "a beat requires readable text, logos or badges in frame",
+      "affected_nodes": [
+        "HARD_SHOT_DESIGN_AROUND",
+        "BRIEF_CONCEPT_INTAKE"
+      ],
+      "mitigation": "logo-free styling, angle/DOF choices that keep lettering sub-legible, or imply the brand through silhouette and context; never ship near-miss lettering",
+      "severity": "high"
+    },
+    {
+      "description": "A dressing-room or elevator beat stages the persona in front of a mirror, exposing reflection-geometry forensics",
+      "trigger": "a large reflective surface shows the subject",
+      "affected_nodes": [
+        "HARD_SHOT_DESIGN_AROUND",
+        "SEAM_FRAME_CONSTRAINTS"
+      ],
+      "mitigation": "defocus the reflection via shallow DOF, reframe it out, or restage the beat; mirrors stay on the avoid list",
+      "severity": "medium"
+    },
+    {
+      "description": "An undetected artifact in an approved-looking frame is chained via job_id and propagates into every downstream clip",
+      "trigger": "a boundary frame enters the chain without the QC gate",
+      "affected_nodes": [
+        "CLIP_CHAINING_STITCH",
+        "START_FRAME_QC_GATE"
+      ],
+      "mitigation": "no frame enters the chain unQC'd; on discovery, break the chain at the last clean frame and regenerate forward",
+      "severity": "high"
+    },
+    {
+      "description": "Per-generation credit costs are not exposed anywhere on the read surface, so the shot list cannot be priced from documentation",
+      "trigger": "budgeting is attempted before any get_cost preflight",
+      "affected_nodes": [
+        "CREDIT_PREFLIGHT_BUDGET"
+      ],
+      "mitigation": "carry the named [UNKNOWN] and preflight each model-resolution-duration cell with get_cost:true (returns cost without submitting) before any batch",
+      "severity": "medium"
+    },
+    {
+      "description": "The element-compatible VIDEO model list was truncated in transmission, so two-persona video plans may target an incompatible model",
+      "trigger": "a two-persona video card assumes Element support beyond the named Cinema Studio 2/3.0, Seedance 2.0, Kling 3.0",
+      "affected_nodes": [
+        "PERSONA_WARDROBE_BINDING",
+        "MODEL_PICK_AB_POLICY"
+      ],
+      "mitigation": "hold the [UNKNOWN], plan two-persona video only on the named-compatible models, and verify the full list on the next surface read",
+      "severity": "medium"
+    },
+    {
+      "description": "cinematic_studio_video_v2 exposes a preset_id and higgsfield_preset requires one, but whether all 49 presets_show ids are valid for both routes is unstated",
+      "trigger": "a card routes a preset through the v2 parameter assuming interoperability",
+      "affected_nodes": [
+        "MODEL_PICK_AB_POLICY",
+        "CAMERA_MOVE_ASSIGNMENT"
+      ],
+      "mitigation": "treat preset interop as [UNKNOWN]; use presets via higgsfield_preset as designed and test the v2 route with a single preflighted probe before relying on it",
+      "severity": "low"
+    },
+    {
+      "description": "A 'same evening' scene generated across batches drifts from golden hour toward noon light between adjacent clips",
+      "trigger": "time-of-day is described loosely and re-prompted per batch",
+      "affected_nodes": [
+        "SCENE_CONTINUITY_LEDGER",
+        "LIGHTING_RECIPE_ASSIGNMENT"
+      ],
+      "mitigation": "pin one sun height and key direction in the ledger row and copy it verbatim into every card of the scene; QC adjacent boundary frames for light agreement",
+      "severity": "high"
+    },
+    {
+      "description": "A looping reel is planned with N-1 seams, forgetting that the restart is itself a seam",
+      "trigger": "the seam list omits the last-to-first pair",
+      "affected_nodes": [
+        "LOOP_CONSTRUCTION",
+        "TRANSITION_FIRST_PLANNING"
+      ],
+      "mitigation": "count seams as N for a looping reel and give the loop seam a paired frame spec like any interior seam",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "Fix the concept: register, personas, format contract, not-look-AI constraints",
+      "node_ref": "BRIEF_CONCEPT_INTAKE",
+      "description": "Turn the brief into named constraints including the closed likeness lane and the 9:16/3-6 s contract",
+      "artifact": "concept note",
+      "gate": "register, personas, format and the standing constraints are stated as rules"
+    },
+    {
+      "action": "Author the beat sheet with pacing math and front-loaded strongest image",
+      "node_ref": "BEAT_SHEET_PACING",
+      "description": "Resolve reel length into 3-6 s beats, each with one intent, hero/connective role and modulated length",
+      "artifact": "beat sheet",
+      "gate": "durations sum to the reel length and beat 1 carries the strongest image"
+    },
+    {
+      "action": "Scrub every beat against the known-hard shot list",
+      "node_ref": "HARD_SHOT_DESIGN_AROUND",
+      "description": "Check all eight hard categories and redesign offending beats imply-not-show",
+      "artifact": "scrubbed beat sheet with redesign notes",
+      "gate": "every beat is annotated pass or redesigned with its workaround named"
+    },
+    {
+      "action": "Choose the transition per seam and count the seams",
+      "node_ref": "TRANSITION_FIRST_PLANNING",
+      "description": "Assign each seam (including the loop seam) a transition type before any card or generation exists",
+      "artifact": "seam/transition list",
+      "gate": "every seam has a named type; looping reels count N seams"
+    },
+    {
+      "action": "Write the paired END/START frame constraints per seam",
+      "node_ref": "SEAM_FRAME_CONSTRAINTS",
+      "description": "Spec both boundary frames per the per-type table in checkable geometric/motion terms",
+      "artifact": "seam frame-pair specs",
+      "gate": "each spec states shape/position/vector/occlusion/luminance constraints for both frames"
+    },
+    {
+      "action": "Author complete shot cards",
+      "node_ref": "SHOT_CARD_SCHEMA",
+      "description": "Fill all ten fields per clip: intent, size, one move + speed, lighting recipe, model, aspect, duration, both transition constraints, refs",
+      "artifact": "shot card deck",
+      "gate": "no card has an empty field or a catalog-contradicting model/aspect/duration triple"
+    },
+    {
+      "action": "Validate model eligibility and duration bands per card",
+      "node_ref": "END_FRAME_MODEL_ELIGIBILITY",
+      "description": "Confirm seam clips sit on both-frames models and every duration is an allowed band value",
+      "artifact": "validated card deck",
+      "gate": "no seam clip on a start-only model; no duration outside its band"
+    },
+    {
+      "action": "Bind persona and wardrobe refs and open the continuity ledger",
+      "node_ref": "PERSONA_WARDROBE_BINDING",
+      "description": "Assign soul_id or <<<element_id>>> refs respecting the one-Soul limit; record wardrobe, light direction and time of day per scene",
+      "artifact": "ref bindings + continuity ledger",
+      "gate": "every persona card has a valid binding and cites a ledger row"
+    },
+    {
+      "action": "Generate and QC the seam keyframe stills",
+      "node_ref": "KEYFRAME_STILLS_FIRST",
+      "description": "Produce each seam's still pair, run the worst-artifact gate, re-roll failures before any video",
+      "artifact": "approved keyframe pairs",
+      "gate": "every pair passes the match check and the QC gate; no unQC'd still proceeds"
+    },
+    {
+      "action": "Plan the chain and the loop",
+      "node_ref": "CLIP_CHAINING_STITCH",
+      "description": "Order the chained generations (job_id or approved stills as boundaries), batch count<=4 candidates per link, close the loop seam",
+      "artifact": "chain plan",
+      "gate": "chain order matches the seam plan and only approved frames enter it"
+    },
+    {
+      "action": "Preflight the budget and issue the lock verdict",
+      "node_ref": "SHOT_LIST_LOCK_VERDICT",
+      "description": "Price every model-resolution-duration cell via get_cost:true with re-roll allowance, then evaluate all eight lock conditions",
+      "artifact": "priced, locked shot list",
+      "gate": "all eight conditions pass with no waiver, or the verdict names the blocker and its owning node"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "The known-hard shot list dominates brief ambition",
+      "rationale": "eating/drinking, hand-object work, feet, text, mirrors, crowds and hero pours are documented model failures; staging them literally ships tells",
+      "trigger": "a beat requires a hard-list category",
+      "action": "redesign the beat imply-not-show at the beat level before any card is written"
+    },
+    {
+      "rule": "Seam frame constraints dominate interior shot preference",
+      "rationale": "the stitched reel lives or dies at its cuts; a beautiful clip that cannot cut is a failed clip",
+      "trigger": "a shot's preferred framing or move contradicts its seam's boundary spec",
+      "action": "conform the shot to the seam spec or change the transition type; never generate against an unmet boundary"
+    },
+    {
+      "rule": "Both-frames eligibility dominates aesthetic model preference at seams",
+      "rationale": "a start-only model cannot land on a specified end frame, so the seam physically cannot be honored",
+      "trigger": "a seam-bracketing card names a start-only model",
+      "action": "reassign to the both-frames set (cinematic studio, seedance, kling3_0, hailuo>=768, veo3_1_lite, wan2_7)"
+    },
+    {
+      "rule": "Still-QC-before-video dominates schedule pressure",
+      "rationale": "stills are the cheap place to fail; an artifact caught after video generation costs the clip and its seam partner",
+      "trigger": "a deadline tempts skipping the keyframe stage",
+      "action": "hold the ordering: no video call until both boundary stills pass the gate"
+    },
+    {
+      "rule": "The live MCP surface dominates memory and marketing claims",
+      "rationale": "model ids, roles, durations and ratios were enumerated with has_more:false; web pages name models (Sora, Cinema Studio 3.5) absent from this account's catalog",
+      "trigger": "any model name, parameter or duration is about to be quoted",
+      "action": "quote only the enumerated surface and treat catalog-absent names as unavailable"
+    },
+    {
+      "rule": "The continuity ledger dominates per-shot beauty within a scene",
+      "rationale": "a gorgeous take with the wrong light direction or wardrobe state reads as an error at the stitch and as an AI tell",
+      "trigger": "a candidate take contradicts the scene's ledger row",
+      "action": "re-roll toward the ledger; only the owner can re-time a scene"
+    },
+    {
+      "rule": "The worst-artifact gate dominates average quality",
+      "rationale": "a repeat audience forgives mediocrity but not one garbled badge or six-fingered hand; single tells flip perceived authenticity permanently",
+      "trigger": "a batch is judged by overall impression",
+      "action": "gate per shot on the single worst artifact; any glance-visible tell means re-roll"
+    },
+    {
+      "rule": "A named [UNKNOWN] dominates an invented number",
+      "rationale": "credit costs, rate limits, Soul training cost, the Element video list and preset interop are unexposed; plans built on guessed values fail mid-reel",
+      "trigger": "a plan needs a value the surface did not expose",
+      "action": "carry the [UNKNOWN] by name and resolve it with the sanctioned probe (get_cost:true, surface re-read), never by invention"
+    },
+    {
+      "rule": "Native 9:16 dominates generate-wide-then-reframe when the model declares 9:16",
+      "rationale": "reframe re-composition risks the safe-zone and eye-line work already done at the still stage",
+      "trigger": "a card considers the wide-then-reframe path",
+      "action": "generate native 9:16 unless the composition genuinely needs the wide canvas and the crop is planned in advance"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Pair and approve both seam frames before any video generation on either side of the cut",
+      "prevents": "regenerating whole clips because their boundaries cannot cut together"
+    },
+    {
+      "rule": "Scrub beats against the hard-shot list before writing shot cards",
+      "prevents": "carding, generating and QC-failing shots that were undeliverable by category from the start"
+    },
+    {
+      "rule": "Verify a model's media roles and duration band on the live surface before writing it onto a card",
+      "prevents": "cards invalidated later by start-only roles or silent duration clamping"
+    },
+    {
+      "rule": "Run the worst-artifact gate on keyframe stills before spending video credits",
+      "prevents": "video-stage discovery of text/hand/shadow tells that were visible in the still"
+    },
+    {
+      "rule": "Create persona Souls/Elements and wardrobe Elements before the first persona shot generates",
+      "prevents": "identity-inconsistent early clips that force reshooting the scene once refs exist"
+    },
+    {
+      "rule": "Pin light direction and time of day in the continuity ledger before generating a scene's second clip",
+      "prevents": "adjacent clips with contradictory sun directions that no grade can reconcile"
+    },
+    {
+      "rule": "Preflight get_cost:true per model-resolution-duration cell before batch generation",
+      "prevents": "running out of credits mid-chain and stranding a half-generated reel"
+    },
+    {
+      "rule": "Count the loop seam and spec its frame pair at planning time for looping reels",
+      "prevents": "discovering at the edit that the reel's open and close cannot loop and regenerating one of them"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "a seam fails at the stitch — boundary frames mismatch or the transition reads as a jump",
+      "action": "regenerate the keyframe pair to spec, or downgrade the seam to a whip/masked wipe and update the seam list",
+      "nodes": [
+        "SEAM_FRAME_CONSTRAINTS",
+        "KEYFRAME_STILLS_FIRST",
+        "TRANSITION_FIRST_PLANNING"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "identity or wardrobe drift is observed across a scene's clips",
+      "action": "re-bind the persona/wardrobe refs, correct the ledger row, and re-roll the drifted clips from approved frames",
+      "nodes": [
+        "PERSONA_WARDROBE_BINDING",
+        "SCENE_CONTINUITY_LEDGER",
+        "CLIP_CHAINING_STITCH"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "a surface re-enumeration changes model roles, durations, ratios or the catalog itself",
+      "action": "refresh the eligibility sets, duration bands and pick policy, and re-validate every unlocked card",
+      "nodes": [
+        "END_FRAME_MODEL_ELIGIBILITY",
+        "CLIP_DURATION_BANDS",
+        "MODEL_PICK_AB_POLICY"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "a glance-visible artifact passes a checkpoint and is caught downstream",
+      "action": "break the chain at the last clean frame, re-roll forward, and add the missed class to the still-checkpoint list",
+      "nodes": [
+        "START_FRAME_QC_GATE",
+        "CLIP_CHAINING_STITCH"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "get_cost preflight prices a planned cell far above the allowance",
+      "action": "re-plan the pick (cheaper model, lower resolution, fewer candidates) or cut shot count, then re-price the list",
+      "nodes": [
+        "CREDIT_PREFLIGHT_BUDGET",
+        "MODEL_PICK_AB_POLICY",
+        "BEAT_SHEET_PACING"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "the element-compatible video-model list or preset_id interoperability is resolved on a later surface read",
+      "action": "replace the named [UNKNOWN]s, widen or narrow the two-persona video plan and preset routing accordingly",
+      "nodes": [
+        "PERSONA_WARDROBE_BINDING",
+        "MODEL_PICK_AB_POLICY"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "retention analytics show a weak 3-second hold on published reels",
+      "action": "re-order beats to front-load the strongest image and tighten clip 1's pattern interrupt within the register",
+      "nodes": [
+        "BEAT_SHEET_PACING",
+        "SHOT_SIZE_SEQUENCING"
+      ],
+      "priority": 3
+    }
+  ],
+  "priority_rationale": "Intake, beat sheet, transition-first planning and the shot-card schema come first because every downstream field is authored inside the contract they fix; the seam constraint table and hard-shot scrub follow because they reshape beats before cards harden; the platform nodes (end-frame eligibility, duration bands) then bind cards to what the enumerated surface can actually deliver; the craft-assignment nodes (framing, camera, lighting, size, refs, ledger) fill the cards; and the execution chain (stills-first, QC gate, chaining, loop, budget preflight) plus the lock verdict come last because they convert the plan into spendable, gated generation order.",
+  "eval_objective": "verify_core_properties_of_director_shot_pipeline_kb"
+}
