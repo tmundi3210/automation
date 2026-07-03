@@ -131,7 +131,7 @@ Every generated still is gated **before** it seeds a (more expensive) video clip
 
 ## 3. WARDROBE — quiet luxury that flatters yellow gold and frames the kada
 
-### 3.1 Palette & fabric — engineered to make warm 22k-look gold sing
+### 3.1 Palette & fabric — engineered to make the warm gold-plated tone sing
 Warm yellow gold reads richest against **warm neutrals and earth tones**; cold, icy or high-shine surfaces fight it. `[ESTIMATE — from quiet-luxury codes]`
 - **Colours (persona palette for this ad):** camel · oatmeal/ivory · warm charcoal · deep espresso brown · tobacco · soft olive. Deep **navy** is permitted **only as an anchor jacket paired with a warm shirt** (per master-plan §6), never head-to-toe cool.
 - **Avoid:** stark cool white, icy blue-grey, cold jet-black, and anything **high-shine/synthetic** — a specular fabric competes with the gold's diamond-cut flare (the whole hook).

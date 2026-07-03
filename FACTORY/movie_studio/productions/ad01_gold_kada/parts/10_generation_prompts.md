@@ -105,7 +105,7 @@ Two persistence mechanisms exist on the surface; **never mix them in one call** 
 - **PRESENTER block** (persona shots only): *"a man in his late 40s, warm mid-brown-to-tan skin with natural skin texture — visible pores, subtle fine lines, realistic uneven tone, slight natural shine — neat salt-and-pepper hair, close groomed stubble, calm quietly-authoritative expression; unbranded well-cut deep-navy jacket over a fine open-collar cream shirt, no logos, no monograms."*
 - **PRODUCT block** (scaffold only — EXACT geometry comes from the reference photo, never text): *"a men's high-polish warm yellow-gold kada (open cuff bangle), ~8–10 mm band, fine engraved cross-hatch wheat-grain texture, two bright polished rails top and bottom, openwork temple / Greek-key motif panel near the open terminals — exact form carried by the uploaded reference photo."*
 - **PERSONA palette (shots 2, 5):** warm amber, cream, deep navy, slate-blue, gold.
-- **PRODUCT palette (shots 1, 3, 4, 6):** warm 22k gold, honeyed amber, espresso-brown shadow, soft cream highlight, near-black negative space.
+- **PRODUCT palette (shots 1, 3, 4, 6):** warm gold-plated tone, honeyed amber, espresso-brown shadow, soft cream highlight, near-black negative space.
 - **Anti-plastic constants (every prompt):** real optics + directional side light (NOT flat ring light) + visible metal micro-reflections + subtle film grain + gold color accuracy. **Banned words:** flawless, perfect, smooth, airbrushed, beauty, ring light, ethereal glow, max saturation, hyperdetailed, 8K, masterpiece. `[FACT-guide]`
 
 **Grammar notes:** IMAGE prompts use the Imagen/Seedream-class **"A photo of…"** photographic trigger, front-loaded (subject → action → critical style → context → detail), **30–80 words** `[FACT-guide]`. VIDEO prompts follow the **image-to-video motion-only rule** — the start frame already supplies subject/scene, so the clip prompt describes **almost only motion: one camera move + one beat-counted action**; re-describing the still reduces motion `[FACT-guide]`. No Veo timestamps / MiniMax brackets are used (those families aren't routed here). A `Negative:` line is included only for the Kling alternate (Kling supports a dedicated negative field ≤2,500 chars); Seedance/Wan get positive-only phrasing.
@@ -124,7 +124,7 @@ A photo of a man's forearm turned toward the lens in warm low-key light, a high-
 ```
 Slow forearm rotation toward the lens over a 4-count; the gold band turns and a diamond-cut specular flare travels across it; lens static, then a fast whip-pan blur begins on the final beat. No hands manipulating, fingers stay soft-out of frame. Keep the warm-key / cool-edge lighting and gold accuracy constant.
 ```
-> HARD-SHOT: hands → keep fingers out; on-screen "Real gold. Real craft." is a **composited overlay in edit**, not generated.
+> HARD-SHOT: hands → keep fingers out; on-screen "24K Gold Plating. Real Craft." is a **composited overlay in edit**, not generated.
 
 ---
 

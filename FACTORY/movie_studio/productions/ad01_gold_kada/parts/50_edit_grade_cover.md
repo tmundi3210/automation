@@ -53,7 +53,7 @@ Mobile editor for beat-marking and the rough assembly only; **hand off to a desk
 
 ### 2.1 The two anchors for this product: skin AND gold
 
-Standard house discipline protects **skin** as the non-negotiable realism anchor. This ad adds a **second protected element — the product gold** — because the whole sell is the gold looking *real 22k warm*, not *orange plastic*. Both are qualified out of the creative-look push and held to saved targets. Everything else (wardrobe, backgrounds, surfaces) takes the look.
+Standard house discipline protects **skin** as the non-negotiable realism anchor. This ad adds a **second protected element — the product gold** — because the whole sell is the gold looking *real warm gold (24k-plated)*, not *orange plastic*. Both are qualified out of the creative-look push and held to saved targets. Everything else (wardrobe, backgrounds, surfaces) takes the look.
 
 ### 2.2 Chain order (fixed, never reordered) `[FACT/excerpt]`
 
@@ -83,7 +83,7 @@ Procedure:
 - **Warm ≠ orange.** The house look is warm (~2700–3000 K practical) `[ESTIMATE]`, but push warmth on the *scene*, not into the gold's own hue. The gold's yellow vector is **held by qualifier**, so global warming doesn't slide it into orange.
 - **Protect the specular, don't clip it.** The product hero *is* the diamond-cut sparkle — the specular roll across the cross-hatch. The house rule is **highlights rolled off, never clipped** (muted, non-clipping highlights are the single strongest "expensive film" cue) `[ESTIMATE]`. But a hard-clipped gold specular reads as blown white plastic. So: **roll the specular highlights to a bright warm-gold shoulder that retains hue and micro-detail** — the sparkle stays a *gold* sparkle, not a white hole. This is the most important single grade move for this product.
 - **"Plastic" is a texture failure, not just a color one.** If the band macro reads plastic after grading, that is a **starred physics/realism-axis problem** and belongs to stills-stage regeneration + the realism reviewer, **not** a grade patch. Do not try to grade plastic out.
-- **Keep the teal-shadow separation a whisper.** The warm-skin-vs-cooler-field mechanism is used at a whisper, never a wall `[FACT/excerpt mechanism; ESTIMATE dose]`. Cool shadows must **never touch the gold or the skin** — a cool cast on gold instantly kills the 22k warmth.
+- **Keep the teal-shadow separation a whisper.** The warm-skin-vs-cooler-field mechanism is used at a whisper, never a wall `[FACT/excerpt mechanism; ESTIMATE dose]`. Cool shadows must **never touch the gold or the skin** — a cool cast on gold instantly kills the gold's warmth.
 - **Global chroma ~10–20% below default, gentle S-curve, lifted-but-not-milky blacks** `[ESTIMATE]` — quiet-luxury restraint, matching the plan's register. Gold and skin are re-saturated back to target *after* the global desat so they stay rich while the world stays muted.
 
 ### 2.6 One house LUT, baked last
@@ -111,7 +111,7 @@ All text is **composited in the editor over the graded footage — never model-g
 
 | Beat | Text | Placement | Hold |
 |---|---|---|---|
-| Clip 1 hook | *"Real gold. Real craft."* | **upper-safe center band** (clear of top UI) | full 4 s, fades with the whip-out |
+| Clip 1 hook | *"24K Gold Plating. Real Craft."* | **upper-safe center band** (clear of top UI) | full 4 s, fades with the whip-out |
 | Clip 5 authenticity | `[OWNER-SLOT]` fact(s) as a clean **lower-third** — only TRUE owner values; if no hallmark, no hallmark text | center-lower-third, above the ~320 px bottom band | ~4 s |
 | Clip 6 CTA | **"Link on screen · in bio to buy"** + `[OWNER-SLOT: @handle]` (+ `[OWNER-SLOT: purchase link URL]` if one exists) | **center / center-lower-third**, generous negative space, clear of bottom + top-right | enters ~19.0 s, **holds the full 3 s** for an unhurried read |
 
@@ -136,7 +136,7 @@ This is photoreal AI media in a commercial ad: publish with the **AI-info label 
 
 Default to a **selected real frame from the reel** (keeps the grid feed-native and honest — the cover must never promise footage the reel lacks) `[FACT/excerpt]`. **Never accept the autoframe default.** Two viable sources, in order:
 
-1. **The hook flare frame (clip 1)** — the forearm/kada throwing the diamond-cut sparkle in warm low light. This is the strongest thumbnail: it *is* the product, it poses the luxury **curiosity/access question** ("real gold — whose? from where?"), and it is unmistakably a jewelry frame at a glance.
+1. **The hook flare frame (clip 1)** — the forearm/kada throwing the diamond-cut sparkle in warm low light. This is the strongest thumbnail: it *is* the product, it poses the luxury **curiosity/access question** ("this gold — whose? from where?"), and it is unmistakably a jewelry frame at a glance.
 2. **The band macro (clip 3)** — pure craftsmanship, cross-hatch + rails filling frame. Strongest for a **grid that leans product-detail**; weaker on face-driven click but very strong on "this account is about *this* gold."
 
 For a **face-forward variant** (faces out-click faceless covers, close-up eye contact best `[FACT/excerpt]`), the presenter-with-kada reveal frame is the option — but the expression stays **poised intrigue, not open-mouthed shock** (shock reads clickbait and breaks the classic-luxury register). The `~25%` expressive-vs-neutral CTR figure is an aggregator `[ESTIMATE]`, never quoted as a platform stat.

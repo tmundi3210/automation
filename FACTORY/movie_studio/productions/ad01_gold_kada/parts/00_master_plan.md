@@ -5,9 +5,25 @@
 **Register:** quiet luxury — texture, cut, craft, and controlled light over loud branding. Gold/brass reads as the *product*, not as flash. Restraint is the signal.
 **Media class:** AI-generated photoreal video for a **real commercial product**. Binding honesty + Meta AI-disclosure discipline applies to every claim (see §Compliance and §Owner-Slots).
 
-> **Ground-truth product (OBSERVED from owner's photo, not invented):** men's yellow-gold **KADA** (open cuff bangle), high-polish warm 22k-look gold, band ~8–10 mm wide. Main band carries a fine engraved **cross-hatch / wheat-grain texture** throwing a diamond-cut sparkle, framed by **two polished rails** top and bottom. Near the **terminals** (open ends) sits a decorative **openwork / engraved geometric motif panel** (temple / Greek-key style). Solid, masculine, classic.
+> **Ground-truth product (OBSERVED from owner's photo, not invented):** men's yellow-gold **KADA** (open cuff bangle), high-polish warm **24-karat gold-PLATED** finish (24k gold PLATING per owner — **not** solid gold), band ~8–10 mm wide. Main band carries a fine engraved **cross-hatch / wheat-grain texture** throwing a diamond-cut sparkle, framed by **two polished rails** top and bottom. Near the **terminals** (open ends) sits a decorative **openwork / engraved geometric motif panel** (temple / Greek-key style). Substantial, masculine, classic.
 > **The exact bracelet is carried by IMAGE REFERENCE (the owner's photo), never by text description alone.** Remote generation requires the owner to upload that photo through the **Higgsfield media-upload widget at run time** — the connector cannot read a chat attachment.
-> **Chain:** the brief references a matching gold chain but supplied **no chain photo**. Any chain shot is an **OWNER-SLOT** (needs a reference image first). Do **not** invent a specific chain design. This plan keeps the chain out of the shot list until a reference exists.
+> **Chain:** a men's Cuban-curb **gold-plated** chain was **generated** 2026-07-03 (`nano_banana_2`, 4K, 9:16; jobs `295bf33f…` / `b4def44c…`). It is now an available product reference and IS included — see REVISION v2 below.
+
+---
+
+## REVISION v2 — owner update (2026-07-03)
+
+**Confirmed facts (now baked into every claim):**
+- **Brand:** rhodiumgold · **Handle:** @rhodiumgold (filled into the VO, CTA card, caption).
+- **Material truth:** **24-karat gold PLATING — gold-PLATED, NOT solid gold.** This is a *plating*, so the ad **never** implies solid gold and carries **no BIS gold-purity hallmark**. The old "Real gold" / "solid" / "22k" language has been corrected throughout to "24k gold plating / gold-plated". (See §Compliance 6b and the caption.)
+- **Honesty consequence:** on a plated piece a solid-gold purity claim or a hallmark claim would be **false advertising** — so all such language is removed, not slotted.
+
+**Chain integration (per owner "use it also"):**
+- The reel becomes a **kada + chain SET**, ~**25 s / 7 beats** (was 22 s / 6). The presenter **wears both** in the reveal (clip 2) and authenticity (clip 6) beats, and a **dedicated chain hero macro** is inserted.
+- **New CLIP 5 — CHAIN HERO MACRO (3 s):** extreme macro travelling along the generated Cuban-curb chain, links catching one specular roll on the clean gradient; no hands, no clasp fumbling. Transition-in: match-cut on gold from clip 4; transition-out: rack/whip into the authenticity beat.
+- **Re-numbering:** old clip 5 (Authenticity) → **clip 6**; old clip 6 (CTA) → **clip 7**. New total ~25 s. Department timings (sound/edit cut points) scale to the added 3 s — flagged for the assembly pass; structure and honesty rules are unchanged.
+- **Chain generation:** start-frame = the chosen generated chain still (image-reference / `<<<chain>>>` element); video model = the same both-frame product-macro pick as the kada macros (see part 10 routing). Chain reads **gold-plated**, same realism QC as the kada (color accuracy, believable specular, link physics).
+- **Guard:** the chain appears **only** in clip 2 (worn), clip 5 (hero macro), clip 6 (worn), clip 7 (at rest optional). It must **not** be hallucinated into the kada-only macros (clips 3–4). The "no invented chain" gate becomes "chain only from its reference, only in its shots".
 
 ---
 
@@ -50,7 +66,7 @@
 
 | # | Beat | Seconds | On screen (muted-legible) | VO carries |
 |---|---|---|---|---|
-| **1** | **Hook** | 0.0–4.0 | Aspiration snapshot: presenter's forearm rotates to camera in warm low light; the kada throws a **diamond-cut flare** across the band. Motion in frame one. On-screen text hook (small, serif): *"Real gold. Real craft."* | Opening promise line |
+| **1** | **Hook** | 0.0–4.0 | Aspiration snapshot: presenter's forearm rotates to camera in warm low light; the kada throws a **diamond-cut flare** across the band. Motion in frame one. On-screen text hook (small, serif): *"24K Gold Plating. Real Craft."* | Opening promise line |
 | **2** | **Product reveal** | 4.0–8.0 | Cutaway to the classic-luxurious male, calm, looking down at the kada on his wrist / lifting it slightly to the light. Establishes the persona's world. | Names the piece: a men's gold kada |
 | **3** | **Quality praise — band** | 8.0–12.0 | Extreme macro traveling along the main band: **cross-hatch wheat-grain texture**, **diamond-cut sparkle**, the **two polished rails**. No hands. | Praise of the cut/finish/craftsmanship |
 | **4** | **Quality praise — terminals** | 12.0–15.0 | Rack-focus/continuation macro to the **terminal openwork temple/Greek-key motif panel**. The detail that says *classic, made-to-last*. | The signature motif, solidity |
@@ -75,7 +91,7 @@ Duration-band note: 3 s clips (4, 6) route to **`wan2_7`** (the only native 2–
 - **seconds:** 4.0
 - **transition_in:** cold open on the flare frame (no build)
 - **transition_out:** **whip-pan out** (forgiving seam)
-- **on screen:** warm low-key light; tailored unbranded dark sleeve; kada rotates and throws a diamond-cut sparkle; on-screen serif text "Real gold. Real craft." in upper-safe zone
+- **on screen:** warm low-key light; tailored unbranded dark sleeve; kada rotates and throws a diamond-cut sparkle; on-screen serif text "24K Gold Plating. Real Craft." in upper-safe zone
 - **HARD-SHOT flags:** ⚠ *hands.* **Mitigation:** relaxed hand at frame edge, no finger dexterity/manipulation — just a slow forearm turn; keep fingers loosely out of frame. ⚠ *legible on-screen text.* **Mitigation:** text is a **composited overlay added in edit**, never generated in-clip.
 
 **SHOT 2 — PRODUCT REVEAL / PERSONA**
@@ -130,7 +146,7 @@ Duration-band note: 3 s clips (4, 6) route to **`wan2_7`** (the only native 2–
 - **seconds:** 3.0
 - **transition_in:** **clean cut** from clip 5
 - **transition_out:** end (soft open loop — ends on the offer)
-- **on screen:** the kada at rest (on wrist relaxed or on stand); **CTA card: "Link on screen · in bio to buy"** + **[OWNER-SLOT: @handle]**; text held in Reels-safe zone
+- **on screen:** the kada at rest (on wrist relaxed or on stand); **CTA card: "Link on screen · in bio to buy"** + **@rhodiumgold**; text held in Reels-safe zone
 - **HARD-SHOT flags:** ⚠ *legible text is the whole shot.* **Mitigation:** CTA text and handle are **composited graphics in the editor**, never model-generated. Keep out of the bottom UI band and top-right safe zones.
 
 ---
@@ -139,12 +155,12 @@ Duration-band note: 3 s clips (4, 6) route to **`wan2_7`** (the only native 2–
 
 Tight, premium, unhurried. **Every factual/authenticity claim is an `[OWNER-SLOT]` the seller fills with a TRUE value.** If a slot is empty, the line is cut — never guessed.
 
-- **Clip 1 (Hook):** "This is what real gold looks like."
-- **Clip 2 (Reveal):** "A men's gold kada — solid, classic, made to be worn every day."
+- **Clip 1 (Hook):** "This is what twenty-four-karat gold plating looks like."
+- **Clip 2 (Reveal):** "A men's gold-PLATED kada — classic, made to be worn every day."
 - **Clip 3 (Band):** "Look at the work. Hand-finished cross-hatch, diamond-cut to catch the light, framed in polished gold."
 - **Clip 4 (Terminals):** "And the temple motif at the ends — the detail that tells you it was built to last."
-- **Clip 5 (Authenticity):** "`[OWNER-SLOT: purity claim — e.g. 22k / stated karat]`, `[OWNER-SLOT: hallmark/certification — e.g. BIS-hallmarked — ONLY if true]`, authenticity verified by `[OWNER-SLOT: seller/brand name]`."
-- **Clip 6 (CTA):** "Yours from `[OWNER-SLOT: seller/brand name]`. Link on screen, or in our bio, to buy."
+- **Clip 5 (Authenticity):** "Twenty-four-karat gold plating, crafted by rhodiumgold."  _(plated product → **no** solid-gold purity hallmark; do not imply BIS/assay certification)_
+- **Clip 6 (CTA):** "Yours from rhodiumgold. Link on screen, or in our bio, to buy."
 
 > **Script honesty rule:** karat/purity, hallmark/BIS, weight, price, brand/city, and any guarantee are **not spoken unless the owner supplies the true value**. The presenter is framed as a **brand presenter showing craftsmanship (aspirational)** — never as "a verified happy customer" or a real testimonial.
 
@@ -159,7 +175,7 @@ A **fictional AI brand presenter**: a classic-luxurious man, **early-40s to 50s*
 ## 7. CTA Plan
 
 - **Where:** on-screen **CTA card in clip 6** (composited graphic) **+ "in bio"** as the durable second path (link stickers/website field in the profile).
-- **Copy:** *"Link on screen · in bio to buy"* + **[OWNER-SLOT: @handle]**. If a swipe-up/link sticker or profile link URL exists, that is **[OWNER-SLOT: purchase link URL]**.
+- **Copy:** *"Link on screen · in bio to buy"* + **@rhodiumgold**. If a swipe-up/link sticker or profile link URL exists, that is **[OWNER-SLOT: purchase link URL]**.
 - **Timing:** CTA card enters at **~19.0 s** and holds to **22.0 s** (full 3 s, unhurried read). A subtle text echo ("in bio") may ride the last 1 s of clip 5 to pre-load it.
 - **Safe zones (Reels):** keep all CTA text out of the **bottom ~250 px** (caption / like / share UI) and the **top-right** (menu). Center-lower-third placement, generous negative space, serif or clean sans, ≤2 tones — quiet-luxury typography, no gradient/ornament.
 - **Muted operability:** the CTA is fully legible with sound off (it is on-screen text, not a spoken-only line).
@@ -171,16 +187,16 @@ A **fictional AI brand presenter**: a classic-luxurious man, **early-40s to 50s*
 ## 8. Owner-Slots — facts/assets the owner MUST supply before generation
 
 **Authenticity / commercial facts (spoken + on-screen only if TRUE):**
-- [ ] **Purity / karat** (e.g. 22k) — exact stated value
-- [ ] **Hallmark / certification** (e.g. BIS hallmark) — *only if the piece actually carries one; if none, the ad omits it entirely*
+- [x] **Gold finish — CONFIRMED:** 24-karat gold **PLATING** (plated, **not** solid gold). All claims say "24k gold plating / gold-plated"; nothing implies solid gold.
+- [x] **Hallmark / certification — N/A (plated):** a gold-plated piece carries **no gold-purity (BIS) hallmark**; the ad omits all hallmark / assay / "certified pure" language entirely.
 - [ ] **Weight** (grams) — if it will be stated
 - [ ] **Price** — if it will be stated
-- [ ] **Seller / brand name**
+- [x] **Seller / brand name — CONFIRMED:** rhodiumgold
 - [ ] **City / location** — if stated
 - [ ] **Guarantee / return / buy-back policy** — exact terms, if stated
 
 **Distribution:**
-- [ ] **Instagram handle (@)** for the CTA card and "in bio"
+- [x] **Instagram handle — CONFIRMED:** @rhodiumgold
 - [ ] **Purchase link URL** (bio link / product page), if a link path exists
 
 **Reference images (blocking for faithful generation):**

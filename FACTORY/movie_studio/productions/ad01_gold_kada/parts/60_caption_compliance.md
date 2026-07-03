@@ -14,23 +14,23 @@
 
 ### 1a. Primary caption (use this as default)
 
-> A men's gold **kada**, built the classic way — solid, hand-finished, made to be worn every day.
+> A men's **gold-plated kada** by **rhodiumgold**, built the classic way — hand-finished, made to be worn every day.
 >
 > Look closely: cross-hatch cut across the band to catch the light, polished rails top and bottom, and a temple-pattern motif at the ends. Craftsmanship you can see.
 >
-> [OWNER-SLOT: purity — e.g. "22k gold"] · [OWNER-SLOT: hallmark/certification — e.g. "BIS-hallmarked" — INCLUDE ONLY IF TRUE] · from [OWNER-SLOT: seller/brand name][OWNER-SLOT: ", City" — only if stated].
+> **24k gold plating** · gold-plated (no solid-gold hallmark implied) · from **rhodiumgold**[OWNER-SLOT: ", City" — only if stated].
 >
 > [OWNER-SLOT: price — only if stated] · [OWNER-SLOT: guarantee/return/buy-back terms — only if stated]
 >
-> Link in bio to buy · DM [OWNER-SLOT: @handle] to order.
+> Link in bio to buy · DM **@rhodiumgold** to order.
 >
 > —
 > *AI-generated video. Presenter is a fictional brand model, not a real customer.*
 
 ### 1b. Short caption (fallback for a tighter read)
 
-> A men's gold kada — solid, classic, hand-finished. Cross-hatch cut, polished rails, temple-motif ends.
-> [OWNER-SLOT: purity] · from [OWNER-SLOT: seller/brand name]. Link in bio to buy.
+> A men's **gold-plated** kada by **rhodiumgold** — classic, hand-finished. Cross-hatch cut, polished rails, temple-motif ends.
+> 24k gold plating · from **rhodiumgold**. Link in bio to buy.
 > *AI-generated. Fictional brand model.*
 
 ### Caption honesty rules (binding)
@@ -48,9 +48,9 @@
 
 **Recommended set (pick 4–5, keep them true to the piece):**
 
-`#goldkada` `#menskada` `#22kgold`※ `#goldjewellery` `#handcraftedgold`
+`#goldkada` `#menskada` `#24kgoldplated`※ `#goldplated` `#mensjewellery`
 
-> ※ **`#22kgold` is itself an [OWNER-SLOT-GATED] tag** — use it ONLY if 22k is the owner-verified purity. If the purity differs or is unstated, swap for the true value (`#18kgold`, etc.) or drop it. A purity hashtag is a purity claim.
+> ※ This is a **gold-PLATED** product, so the true category tag is **`#24kgoldplated` / `#goldplated`**. **Do NOT** use a solid-gold purity tag (`#22kgold`, `#24kgold`, `#solidgold`) — on a plated piece that is a **false purity claim**.
 
 **Optional swap-ins (still true-to-piece):** `#mensjewellery` `#goldbangle` `#templejewellery` (only if the temple/Greek-key motif read is accurate to the piece).
 
@@ -118,7 +118,8 @@ Attraction is delivered via **styling, silhouette, status context, expression, a
 - **UNKNOWN:** the exact **penalty ladder** for non-disclosure is unpublished — we do **not** assert a specific consequence figure. The resolution is simply: **always disclose**, so the ladder never applies.
 
 ### 6b. Honest-advertising boundary on authenticity / karat / hallmark claims
-- **No invented authenticity facts.** Karat/purity, hallmark/BIS or any certification, weight, price, brand name, city, and guarantees are **[OWNER-SLOTS]** — spoken, on-screen, and in-caption **only when the owner supplies the TRUE value**.
+- **CONFIRMED TRUTH (owner, 2026-07-03): the product is 24-KARAT GOLD PLATING — gold-PLATED, NOT solid gold. Brand: rhodiumgold (@rhodiumgold).** Every spoken / on-screen / caption claim must say "24k gold plating / gold-plated"; nothing may imply solid gold. As a plated piece it carries **no BIS gold-purity hallmark** — all hallmark / assay / "certified pure" language is removed.
+- **No invented authenticity facts.** Weight, price, city, and any guarantee remain **[OWNER-SLOTS]** — spoken, on-screen, and in-caption **only when the owner supplies the TRUE value**.
 - **Only owner-verified truths.** If a value isn't confirmed, the corresponding line/graphic/caption fragment is **cut**, not approximated.
 - **No fabricated certification.** If the piece **has no hallmark**, the ad and caption **must not imply one** — no assay/BIS/lab-cert language, no "certified"/"guaranteed pure" stand-ins, and **no generated hallmark, karat stamp, or maker's mark in the macro shots** (the clip-3 macro stays on the plain textured band per master-plan §4). Authenticity marks appear **only** if the owner supplies a real reference.
 - The caption's authenticity fragment (§1) and the clip-5 on-screen lower-third must state **the same owner-verified facts** — one truth across video and caption.
@@ -145,7 +146,7 @@ The presenter and the whole ad are run through the **six-item identifiability st
 
 ### 6e. Reference-image + chain honesty (carried from the master plan)
 - **The exact bracelet is carried by the owner's uploaded reference photo** via the **Higgsfield media-upload widget at run time** — the connector cannot read a chat attachment. Blocking for faithful generation of clips 1–6.
-- **The chain is an [OWNER-SLOT]:** the brief references a matching gold chain but supplied **no chain photo**. **Do not invent a chain design**, and **do not caption or claim a chain** until a reference image exists. No chain appears in this ad's shots or copy until then.
+- **The chain reference now EXISTS (generated 2026-07-03):** two product stills of a men's Cuban-curb **gold-plated** chain were generated with `nano_banana_2` (4K, 9:16) — job ids `295bf33f-237b-46c9-8783-1578d64b2a62` and `b4def44c-fbe8-4309-ac90-db98c79de33b`. The owner picks the stronger; it becomes the chain product reference (promote to a `<<<chain>>>` Reference Element). The chain reads as **gold-plated** (same honesty rule as the kada — no solid-gold implication) and appears only in its designated shot(s); it must not be hallucinated into non-chain shots.
 
 ---
 
@@ -159,4 +160,4 @@ The presenter and the whole ad are run through the **six-item identifiability st
 - [ ] At publish: **AI-info label ON**, watermark-clean export, caption + on-screen facts matched.
 
 ### Compliance summary (one line)
-No invented authenticity facts (all owner-slotted, hallmark only if real, no fabricated marks) · fictional AI presenter, not a testimonial · Meta AI-info label ON + honest caption · likeness stop-check items 1–2 = NO · exact product by owner's reference photo · no invented chain.
+Product = 24k gold-PLATING (not solid gold), brand rhodiumgold / @rhodiumgold · no solid-gold implication, no BIS/hallmark language (plated) · fictional AI presenter, not a testimonial · Meta AI-info label ON + honest caption · likeness stop-check items 1–2 = NO · kada by owner's reference photo · chain reference generated (2 stills).

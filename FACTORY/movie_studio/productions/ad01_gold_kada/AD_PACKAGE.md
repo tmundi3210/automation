@@ -1,30 +1,31 @@
-# AD PACKAGE — `ad01_gold_kada`
-## Instagram Reel Ad · Men's Yellow-Gold Kada · Classic-Luxurious
+# AD PACKAGE — `ad01_gold_kada`  ·  v2
+## Instagram Reel Ad · rhodiumgold · Men's 24K Gold-PLATED Kada + Chain
 
-**Status:** BLUEPRINT COMPLETE — built by the movie_studio specialists (director + 7 departments), grounded in their gated KBs.
-**Render status:** NOT YET GENERATED. Two hard prerequisites before a single frame is produced:
-  1. **Higgsfield connector must be reconnected** (it disconnected mid-request; rendering spends credits).
-  2. **Owner-slot facts must be supplied** (below) — authenticity/karat/hallmark/brand/link are never invented.
+**Status:** BLUEPRINT COMPLETE + honesty-corrected to the confirmed product truth.
+**Render status:** chain product stills GENERATED (2 options). Video not yet rendered.
 
-**Length:** 22 s · 6 clips (3–6 s each). **Speech:** voiceover-driven (not talking-head). **Format:** 9:16, muted-legible.
-**Media class:** AI-generated video for a REAL commercial product → carries Meta AI-content disclosure; authenticity claims limited to owner-verified truths; presenter is a fictional brand model, not a customer testimonial.
+**CONFIRMED (owner, 2026-07-03):**
+- **Brand:** rhodiumgold · **Handle:** @rhodiumgold
+- **Product truth:** **24-karat gold PLATING — gold-PLATED, NOT solid gold.** Every claim says "24k gold plating / gold-plated"; nothing implies solid gold; **no BIS/hallmark language** (a plated piece carries no gold-purity hallmark).
+- **Chain:** generated as 2 product stills (`nano_banana_2`, 4K 9:16 — jobs `295bf33f…`, `b4def44c…`); now included in the cut.
+
+**Cut:** ~25 s · 7 beats (kada + chain set). **Speech:** voiceover-driven (locked). **Format:** 9:16, muted-legible.
+**Media class:** AI-generated video for a REAL commercial product → Meta AI-content disclosure ON; fictional brand presenter (not a testimonial).
+
+---
+
+## REMAINING OWNER-SLOTS (optional — the ad runs without them; each fills only if TRUE)
+- Price · weight · city · guarantee/return/buy-back terms (each spoken/shown ONLY if supplied; empty = line cut)
+- Purchase **link URL** for bio (CTA also works via DM @rhodiumgold)
+- Pick the stronger of the 2 generated **chain stills**
+- Upload the **KADA reference photo** via the Higgsfield media-upload widget at generation time (connector can't read a chat attachment)
+
+## RENDER BUDGET NOTE
+Balance at last check: **~112 credits (Plus)**. The chain stills cost 4. A full ~25 s multi-shot video render (7 clips + retries + upscales) will likely need a **top-up** — video is far pricier per second than stills. I will preflight `get_cost` on every video call before spending.
 
 ---
 
-## OWNER-SLOTS — facts the owner must supply before generation
-_(These appear as `[OWNER-SLOT: …]` in the script. Nothing here is invented.)_
 
-- Purity / karat (e.g. 22K) — **only if true**
-- Hallmark / certification (e.g. BIS) — **only if genuinely present**
-- Weight (grams), price
-- Seller / brand name, city/location
-- Guarantee / return / buy-back policy
-- Instagram **@handle** and the **purchase link URL** (bio / product page) for the on-screen CTA
-- **KADA reference photo** uploaded via the Higgsfield media-upload widget at run time (connector can't read a chat attachment)
-- **Gold-chain reference photo** — BLOCKING for any chain shot (no chain image was supplied; no chain design will be invented)
-- Confirmation the presenter is framed as a brand model, not a customer testimonial
-
----
 
 
 
@@ -36,9 +37,25 @@ _(These appear as `[OWNER-SLOT: …]` in the script. Nothing here is invented.)_
 **Register:** quiet luxury — texture, cut, craft, and controlled light over loud branding. Gold/brass reads as the *product*, not as flash. Restraint is the signal.
 **Media class:** AI-generated photoreal video for a **real commercial product**. Binding honesty + Meta AI-disclosure discipline applies to every claim (see §Compliance and §Owner-Slots).
 
-> **Ground-truth product (OBSERVED from owner's photo, not invented):** men's yellow-gold **KADA** (open cuff bangle), high-polish warm 22k-look gold, band ~8–10 mm wide. Main band carries a fine engraved **cross-hatch / wheat-grain texture** throwing a diamond-cut sparkle, framed by **two polished rails** top and bottom. Near the **terminals** (open ends) sits a decorative **openwork / engraved geometric motif panel** (temple / Greek-key style). Solid, masculine, classic.
+> **Ground-truth product (OBSERVED from owner's photo, not invented):** men's yellow-gold **KADA** (open cuff bangle), high-polish warm **24-karat gold-PLATED** finish (24k gold PLATING per owner — **not** solid gold), band ~8–10 mm wide. Main band carries a fine engraved **cross-hatch / wheat-grain texture** throwing a diamond-cut sparkle, framed by **two polished rails** top and bottom. Near the **terminals** (open ends) sits a decorative **openwork / engraved geometric motif panel** (temple / Greek-key style). Substantial, masculine, classic.
 > **The exact bracelet is carried by IMAGE REFERENCE (the owner's photo), never by text description alone.** Remote generation requires the owner to upload that photo through the **Higgsfield media-upload widget at run time** — the connector cannot read a chat attachment.
-> **Chain:** the brief references a matching gold chain but supplied **no chain photo**. Any chain shot is an **OWNER-SLOT** (needs a reference image first). Do **not** invent a specific chain design. This plan keeps the chain out of the shot list until a reference exists.
+> **Chain:** a men's Cuban-curb **gold-plated** chain was **generated** 2026-07-03 (`nano_banana_2`, 4K, 9:16; jobs `295bf33f…` / `b4def44c…`). It is now an available product reference and IS included — see REVISION v2 below.
+
+---
+
+## REVISION v2 — owner update (2026-07-03)
+
+**Confirmed facts (now baked into every claim):**
+- **Brand:** rhodiumgold · **Handle:** @rhodiumgold (filled into the VO, CTA card, caption).
+- **Material truth:** **24-karat gold PLATING — gold-PLATED, NOT solid gold.** This is a *plating*, so the ad **never** implies solid gold and carries **no BIS gold-purity hallmark**. The old "Real gold" / "solid" / "22k" language has been corrected throughout to "24k gold plating / gold-plated". (See §Compliance 6b and the caption.)
+- **Honesty consequence:** on a plated piece a solid-gold purity claim or a hallmark claim would be **false advertising** — so all such language is removed, not slotted.
+
+**Chain integration (per owner "use it also"):**
+- The reel becomes a **kada + chain SET**, ~**25 s / 7 beats** (was 22 s / 6). The presenter **wears both** in the reveal (clip 2) and authenticity (clip 6) beats, and a **dedicated chain hero macro** is inserted.
+- **New CLIP 5 — CHAIN HERO MACRO (3 s):** extreme macro travelling along the generated Cuban-curb chain, links catching one specular roll on the clean gradient; no hands, no clasp fumbling. Transition-in: match-cut on gold from clip 4; transition-out: rack/whip into the authenticity beat.
+- **Re-numbering:** old clip 5 (Authenticity) → **clip 6**; old clip 6 (CTA) → **clip 7**. New total ~25 s. Department timings (sound/edit cut points) scale to the added 3 s — flagged for the assembly pass; structure and honesty rules are unchanged.
+- **Chain generation:** start-frame = the chosen generated chain still (image-reference / `<<<chain>>>` element); video model = the same both-frame product-macro pick as the kada macros (see part 10 routing). Chain reads **gold-plated**, same realism QC as the kada (color accuracy, believable specular, link physics).
+- **Guard:** the chain appears **only** in clip 2 (worn), clip 5 (hero macro), clip 6 (worn), clip 7 (at rest optional). It must **not** be hallucinated into the kada-only macros (clips 3–4). The "no invented chain" gate becomes "chain only from its reference, only in its shots".
 
 ---
 
@@ -81,7 +98,7 @@ _(These appear as `[OWNER-SLOT: …]` in the script. Nothing here is invented.)_
 
 | # | Beat | Seconds | On screen (muted-legible) | VO carries |
 |---|---|---|---|---|
-| **1** | **Hook** | 0.0–4.0 | Aspiration snapshot: presenter's forearm rotates to camera in warm low light; the kada throws a **diamond-cut flare** across the band. Motion in frame one. On-screen text hook (small, serif): *"Real gold. Real craft."* | Opening promise line |
+| **1** | **Hook** | 0.0–4.0 | Aspiration snapshot: presenter's forearm rotates to camera in warm low light; the kada throws a **diamond-cut flare** across the band. Motion in frame one. On-screen text hook (small, serif): *"24K Gold Plating. Real Craft."* | Opening promise line |
 | **2** | **Product reveal** | 4.0–8.0 | Cutaway to the classic-luxurious male, calm, looking down at the kada on his wrist / lifting it slightly to the light. Establishes the persona's world. | Names the piece: a men's gold kada |
 | **3** | **Quality praise — band** | 8.0–12.0 | Extreme macro traveling along the main band: **cross-hatch wheat-grain texture**, **diamond-cut sparkle**, the **two polished rails**. No hands. | Praise of the cut/finish/craftsmanship |
 | **4** | **Quality praise — terminals** | 12.0–15.0 | Rack-focus/continuation macro to the **terminal openwork temple/Greek-key motif panel**. The detail that says *classic, made-to-last*. | The signature motif, solidity |
@@ -106,7 +123,7 @@ Duration-band note: 3 s clips (4, 6) route to **`wan2_7`** (the only native 2–
 - **seconds:** 4.0
 - **transition_in:** cold open on the flare frame (no build)
 - **transition_out:** **whip-pan out** (forgiving seam)
-- **on screen:** warm low-key light; tailored unbranded dark sleeve; kada rotates and throws a diamond-cut sparkle; on-screen serif text "Real gold. Real craft." in upper-safe zone
+- **on screen:** warm low-key light; tailored unbranded dark sleeve; kada rotates and throws a diamond-cut sparkle; on-screen serif text "24K Gold Plating. Real Craft." in upper-safe zone
 - **HARD-SHOT flags:** ⚠ *hands.* **Mitigation:** relaxed hand at frame edge, no finger dexterity/manipulation — just a slow forearm turn; keep fingers loosely out of frame. ⚠ *legible on-screen text.* **Mitigation:** text is a **composited overlay added in edit**, never generated in-clip.
 
 **SHOT 2 — PRODUCT REVEAL / PERSONA**
@@ -161,7 +178,7 @@ Duration-band note: 3 s clips (4, 6) route to **`wan2_7`** (the only native 2–
 - **seconds:** 3.0
 - **transition_in:** **clean cut** from clip 5
 - **transition_out:** end (soft open loop — ends on the offer)
-- **on screen:** the kada at rest (on wrist relaxed or on stand); **CTA card: "Link on screen · in bio to buy"** + **[OWNER-SLOT: @handle]**; text held in Reels-safe zone
+- **on screen:** the kada at rest (on wrist relaxed or on stand); **CTA card: "Link on screen · in bio to buy"** + **@rhodiumgold**; text held in Reels-safe zone
 - **HARD-SHOT flags:** ⚠ *legible text is the whole shot.* **Mitigation:** CTA text and handle are **composited graphics in the editor**, never model-generated. Keep out of the bottom UI band and top-right safe zones.
 
 ---
@@ -170,12 +187,12 @@ Duration-band note: 3 s clips (4, 6) route to **`wan2_7`** (the only native 2–
 
 Tight, premium, unhurried. **Every factual/authenticity claim is an `[OWNER-SLOT]` the seller fills with a TRUE value.** If a slot is empty, the line is cut — never guessed.
 
-- **Clip 1 (Hook):** "This is what real gold looks like."
-- **Clip 2 (Reveal):** "A men's gold kada — solid, classic, made to be worn every day."
+- **Clip 1 (Hook):** "This is what twenty-four-karat gold plating looks like."
+- **Clip 2 (Reveal):** "A men's gold-PLATED kada — classic, made to be worn every day."
 - **Clip 3 (Band):** "Look at the work. Hand-finished cross-hatch, diamond-cut to catch the light, framed in polished gold."
 - **Clip 4 (Terminals):** "And the temple motif at the ends — the detail that tells you it was built to last."
-- **Clip 5 (Authenticity):** "`[OWNER-SLOT: purity claim — e.g. 22k / stated karat]`, `[OWNER-SLOT: hallmark/certification — e.g. BIS-hallmarked — ONLY if true]`, authenticity verified by `[OWNER-SLOT: seller/brand name]`."
-- **Clip 6 (CTA):** "Yours from `[OWNER-SLOT: seller/brand name]`. Link on screen, or in our bio, to buy."
+- **Clip 5 (Authenticity):** "Twenty-four-karat gold plating, crafted by rhodiumgold."  _(plated product → **no** solid-gold purity hallmark; do not imply BIS/assay certification)_
+- **Clip 6 (CTA):** "Yours from rhodiumgold. Link on screen, or in our bio, to buy."
 
 > **Script honesty rule:** karat/purity, hallmark/BIS, weight, price, brand/city, and any guarantee are **not spoken unless the owner supplies the true value**. The presenter is framed as a **brand presenter showing craftsmanship (aspirational)** — never as "a verified happy customer" or a real testimonial.
 
@@ -190,7 +207,7 @@ A **fictional AI brand presenter**: a classic-luxurious man, **early-40s to 50s*
 ## 7. CTA Plan
 
 - **Where:** on-screen **CTA card in clip 6** (composited graphic) **+ "in bio"** as the durable second path (link stickers/website field in the profile).
-- **Copy:** *"Link on screen · in bio to buy"* + **[OWNER-SLOT: @handle]**. If a swipe-up/link sticker or profile link URL exists, that is **[OWNER-SLOT: purchase link URL]**.
+- **Copy:** *"Link on screen · in bio to buy"* + **@rhodiumgold**. If a swipe-up/link sticker or profile link URL exists, that is **[OWNER-SLOT: purchase link URL]**.
 - **Timing:** CTA card enters at **~19.0 s** and holds to **22.0 s** (full 3 s, unhurried read). A subtle text echo ("in bio") may ride the last 1 s of clip 5 to pre-load it.
 - **Safe zones (Reels):** keep all CTA text out of the **bottom ~250 px** (caption / like / share UI) and the **top-right** (menu). Center-lower-third placement, generous negative space, serif or clean sans, ≤2 tones — quiet-luxury typography, no gradient/ornament.
 - **Muted operability:** the CTA is fully legible with sound off (it is on-screen text, not a spoken-only line).
@@ -202,16 +219,16 @@ A **fictional AI brand presenter**: a classic-luxurious man, **early-40s to 50s*
 ## 8. Owner-Slots — facts/assets the owner MUST supply before generation
 
 **Authenticity / commercial facts (spoken + on-screen only if TRUE):**
-- [ ] **Purity / karat** (e.g. 22k) — exact stated value
-- [ ] **Hallmark / certification** (e.g. BIS hallmark) — *only if the piece actually carries one; if none, the ad omits it entirely*
+- [x] **Gold finish — CONFIRMED:** 24-karat gold **PLATING** (plated, **not** solid gold). All claims say "24k gold plating / gold-plated"; nothing implies solid gold.
+- [x] **Hallmark / certification — N/A (plated):** a gold-plated piece carries **no gold-purity (BIS) hallmark**; the ad omits all hallmark / assay / "certified pure" language entirely.
 - [ ] **Weight** (grams) — if it will be stated
 - [ ] **Price** — if it will be stated
-- [ ] **Seller / brand name**
+- [x] **Seller / brand name — CONFIRMED:** rhodiumgold
 - [ ] **City / location** — if stated
 - [ ] **Guarantee / return / buy-back policy** — exact terms, if stated
 
 **Distribution:**
-- [ ] **Instagram handle (@)** for the CTA card and "in bio"
+- [x] **Instagram handle — CONFIRMED:** @rhodiumgold
 - [ ] **Purchase link URL** (bio link / product page), if a link path exists
 
 **Reference images (blocking for faithful generation):**
@@ -339,7 +356,7 @@ Two persistence mechanisms exist on the surface; **never mix them in one call** 
 - **PRESENTER block** (persona shots only): *"a man in his late 40s, warm mid-brown-to-tan skin with natural skin texture — visible pores, subtle fine lines, realistic uneven tone, slight natural shine — neat salt-and-pepper hair, close groomed stubble, calm quietly-authoritative expression; unbranded well-cut deep-navy jacket over a fine open-collar cream shirt, no logos, no monograms."*
 - **PRODUCT block** (scaffold only — EXACT geometry comes from the reference photo, never text): *"a men's high-polish warm yellow-gold kada (open cuff bangle), ~8–10 mm band, fine engraved cross-hatch wheat-grain texture, two bright polished rails top and bottom, openwork temple / Greek-key motif panel near the open terminals — exact form carried by the uploaded reference photo."*
 - **PERSONA palette (shots 2, 5):** warm amber, cream, deep navy, slate-blue, gold.
-- **PRODUCT palette (shots 1, 3, 4, 6):** warm 22k gold, honeyed amber, espresso-brown shadow, soft cream highlight, near-black negative space.
+- **PRODUCT palette (shots 1, 3, 4, 6):** warm gold-plated tone, honeyed amber, espresso-brown shadow, soft cream highlight, near-black negative space.
 - **Anti-plastic constants (every prompt):** real optics + directional side light (NOT flat ring light) + visible metal micro-reflections + subtle film grain + gold color accuracy. **Banned words:** flawless, perfect, smooth, airbrushed, beauty, ring light, ethereal glow, max saturation, hyperdetailed, 8K, masterpiece. `[FACT-guide]`
 
 **Grammar notes:** IMAGE prompts use the Imagen/Seedream-class **"A photo of…"** photographic trigger, front-loaded (subject → action → critical style → context → detail), **30–80 words** `[FACT-guide]`. VIDEO prompts follow the **image-to-video motion-only rule** — the start frame already supplies subject/scene, so the clip prompt describes **almost only motion: one camera move + one beat-counted action**; re-describing the still reduces motion `[FACT-guide]`. No Veo timestamps / MiniMax brackets are used (those families aren't routed here). A `Negative:` line is included only for the Kling alternate (Kling supports a dedicated negative field ≤2,500 chars); Seedance/Wan get positive-only phrasing.
@@ -358,7 +375,7 @@ A photo of a man's forearm turned toward the lens in warm low-key light, a high-
 ```
 Slow forearm rotation toward the lens over a 4-count; the gold band turns and a diamond-cut specular flare travels across it; lens static, then a fast whip-pan blur begins on the final beat. No hands manipulating, fingers stay soft-out of frame. Keep the warm-key / cool-edge lighting and gold accuracy constant.
 ```
-> HARD-SHOT: hands → keep fingers out; on-screen "Real gold. Real craft." is a **composited overlay in edit**, not generated.
+> HARD-SHOT: hands → keep fingers out; on-screen "24K Gold Plating. Real Craft." is a **composited overlay in edit**, not generated.
 
 ---
 
@@ -618,7 +635,7 @@ Every generated still is gated **before** it seeds a (more expensive) video clip
 
 ## 3. WARDROBE — quiet luxury that flatters yellow gold and frames the kada
 
-### 3.1 Palette & fabric — engineered to make warm 22k-look gold sing
+### 3.1 Palette & fabric — engineered to make the warm gold-plated tone sing
 Warm yellow gold reads richest against **warm neutrals and earth tones**; cold, icy or high-shine surfaces fight it. `[ESTIMATE — from quiet-luxury codes]`
 - **Colours (persona palette for this ad):** camel · oatmeal/ivory · warm charcoal · deep espresso brown · tobacco · soft olive. Deep **navy** is permitted **only as an anchor jacket paired with a warm shirt** (per master-plan §6), never head-to-toe cool.
 - **Avoid:** stark cool white, icy blue-grey, cold jet-black, and anything **high-shine/synthetic** — a specular fabric competes with the gold's diamond-cut flare (the whole hook).
@@ -692,9 +709,9 @@ Module rendered faithfully (warm matte fabric, correct colour, cuff **clear of t
 
 **Motivated-lighting veto [FACT def / ESTIMATE anti-AI linkage].** Every visible light in every prompt must imitate a plausible in-world source (a window, a warm lamp/practical, a soft overhead panel) even when the fixture is off-screen. If a frame carries a glow no named source explains, it is regenerated — unmotivated glow is the AI tell.
 
-**Contrast register [FACT].** The whole reel defaults to **controlled contrast (moderate low-key)**, not flat high-key. Flat high-key sits next to the plastic-render look, which is fatal for a real gold product. Macros run darkest (clean gradient falling to near-black surround); presenter beats run soft-warm low-key with a lifted-but-sculpted face.
+**Contrast register [FACT].** The whole reel defaults to **controlled contrast (moderate low-key)**, not flat high-key. Flat high-key sits next to the plastic-render look, which is fatal for a premium gold-plated product. Macros run darkest (clean gradient falling to near-black surround); presenter beats run soft-warm low-key with a lifted-but-sculpted face.
 
-**The reflection principle is the spine of every gold frame [ESTIMATE].** For polished 22k-look yellow gold you **light the reflections, not the metal**: place one or two *very large soft warm sources* so the band reflects a clean bright gradient, and put **black negative fill** where the metal needs something dark to reflect. The gradient + the dark give the diamond-cut cross-hatch its contrast to sparkle against. Direct hard light on the gold blows it into a featureless plastic blob — the opposite of the sell.
+**The reflection principle is the spine of every gold frame [ESTIMATE].** For polished 24k-gold-plated yellow you **light the reflections, not the metal**: place one or two *very large soft warm sources* so the band reflects a clean bright gradient, and put **black negative fill** where the metal needs something dark to reflect. The gradient + the dark give the diamond-cut cross-hatch its contrast to sparkle against. Direct hard light on the gold blows it into a featureless plastic blob — the opposite of the sell.
 
 **Anti-AI floor, appended to every prompt [ESTIMATE — effectiveness untested until credit run].** Persona beats: `"natural motivated lighting, realistic skin texture, film grain, no artificial smoothness."` Gold macros (skin-texture clause swapped for metal): `"natural motivated lighting, realistic engraved metal micro-texture, fine diamond-cut facets, film grain, no artificial smoothness, no plastic CGI gold."` Plus **exactly one living micro-detail** per shot (named per shot below).
 
@@ -803,7 +820,7 @@ Seams are chosen **first**; both boundary frames are written as **two still keyf
 ### SEAM 2 · Clip 2 → Clip 3 · **MATCH CUT ON THE GOLD** (precision — HERO seam)
 - **END frame (clip 2):** the push-in has delivered the kada **dominating the frame at a locked position/scale** — the polished band centered, warm specular live, filling the lower-center core.
 - **START frame (clip 3):** the **same gold band at the identical position, scale and orientation**, same warm traveling specular, same clean warm-to-dark gradient background — graphic continuity so the two golds read as one continuous surface.
-- **Shared match vars:** band position + scale (locked coordinates in both prompts); warm 22k specular; gradient background; **byte-identical reflection-recipe string**.
+- **Shared match vars:** band position + scale (locked coordinates in both prompts); warm gold-plated specular; gradient background; **byte-identical reflection-recipe string**.
 - **Why / risk:** zero-tolerance trick — nothing hides a position/scale/brightness miss [FACT]. **Promote to this hero slot only after Seam 1 (and ideally Seam 3/4) have passed**, proving the routed model honors the end keyframe. If keyframe adherence is unproven, substitute a snap-zoom-assisted match (motion covers a small miss).
 - **Cut point:** on the matched frame.
 
@@ -846,7 +863,7 @@ Seams are chosen **first**; both boundary frames are written as **two still keyf
 
 Cine applies the anti-AI floor, the five-check lighting gate and the stills-match gate, then **escalates the disputed is-it-real-enough call to the realism specialist** (hard reviewer of record). The following are fed forward as gating checks on the **stills, before any hero video spend**:
 
-1. **Gold color accuracy.** Warm 22k-look yellow gold — reject brassy/greenish/pale-plastic or CGI-chrome renders. The reflection recipe is [ESTIMATE]; it must earn a passing validation still before hero video credits.
+1. **Gold color accuracy.** Warm 24k-gold-plated yellow — reject brassy/greenish/pale-plastic or CGI-chrome renders. The reflection recipe is [ESTIMATE]; it must earn a passing validation still before hero video credits.
 2. **Sparkle authenticity.** The diamond-cut shimmer must read as **engraved cross-hatch / wheat-grain facets catching light**, not applied glitter or noise. The traveling specular is the intended mechanism — QC that it reads as cut metal.
 3. **Rails + band structure.** The two polished rails must stay bright, clean and parallel; the cross-hatch texture must not smear into mush at macro scale.
 4. **Terminal motif non-garble (worst-artifact gate).** The temple / Greek-key openwork must be symmetric and legible — any garbled or asymmetric motif forces a **re-roll, not a ship**. Primary mitigation: the exact piece rides the **owner's reference photo**.
@@ -933,7 +950,7 @@ The script lives in `00_master_plan.md §5` (6 spoken lines; every authenticity 
 - **Pace:** slow and unhurried — roughly **conversational-minus**; leave the words room. This is 6 short lines across 22 s, so there is generous time; do not rush to fill it. Target the feel of a man showing you something he values, not reading copy.
 - **Warmth / tone:** warm, close, chest-resonant; a faint smile in the voice on the reveal and CTA; zero brightness/sibilance push. De-essed and gently compressed so it sits *in* the room the score builds, not on top of it.
 - **Pauses (the load-bearing craft):** a **beat of silence before the sparkle payoff** ("Look at the work…" — let the eye catch the flare first), and a **held pause before the authenticity line** so the owner-verified fact lands deliberately, not glibly. On the CTA, a small settle before "Link on screen" — inviting, not urgent.
-- **Question-answer grammar:** where a line poses ("This is what real gold looks like."), let the **score answer** it (the piano/cello resolves into the next phrase) — the spoken line poses, the music resolves. [ESTIMATE — cross-media application of Zimmer's question-answer theme grammar]
+- **Question-answer grammar:** where a line poses ("This is what twenty-four-karat gold plating looks like."), let the **score answer** it (the piano/cello resolves into the next phrase) — the spoken line poses, the music resolves. [ESTIMATE — cross-media application of Zimmer's question-answer theme grammar]
 - **Line-level:**
   - Clip 1 hook — quiet confidence, slight downward resolve on "looks like."
   - Clip 2 reveal — informative warmth; land "kada" clearly (it is the product name).
@@ -958,7 +975,7 @@ The script lives in `00_master_plan.md §5` (6 spoken lines; every authenticity 
 |---|---|---|---|---|
 | **SFX-1** | Clip 1, ~1.0–2.0 s | kada rotates, throws the **diamond-cut flare** | **soft high chime / shimmer** — a single gentle bell-like glint, short, NOT sparkly-cartoon; tuned to the score's key so it reads as musical | peak of the chime lands **on the brightest flare frame**, not before |
 | **SFX-2** | Clip 1 → 2 seam @ 4.0 s | whip-pan out/in | **whoosh** riding the whip-pan blur | whoosh crest **on the 4.0 s cut frame** |
-| **SFX-3** | Clip 2 → 3 seam @ 8.0 s | match cut on the gold | subtle **metal "clink"** — a soft, single high-density metallic tink (the sound of solid gold set down / a fingernail-light contact), warm and damped, not clangy | transient **on the 8.0 s cut**, doubling as the match-cut audio bridge |
+| **SFX-3** | Clip 2 → 3 seam @ 8.0 s | match cut on the gold | subtle **metal "clink"** — a soft, single high-density metallic tink (the sound of a solid, substantial piece set down / a fingernail-light contact), warm and damped, not clangy | transient **on the 8.0 s cut**, doubling as the match-cut audio bridge |
 | **SFX-4** | Clip 3, across 8–12 s | sparkle travels the band | very low **shimmer sweep** under the cello — a faint filtered-air movement following the specular roll (NOT a second chime; one chime per reel keeps it precious) | rides the specular highlight left-to-right; stays under the music |
 | **SFX-5** | Clip 3 → 4 @ 12.0 s | invisible cut / rack focus | no hard SFX — a **soft filter-open** on the room tone only (invisible seam) | imperceptible; the score carries the seam |
 | **SFX-6** | Clip 4 → 5 seam @ 15.0 s | whip-pan back to presenter | **whoosh** (matched pair to SFX-2, slightly softer) | crest **on 15.0 s cut** |
@@ -1094,7 +1111,7 @@ Mobile editor for beat-marking and the rough assembly only; **hand off to a desk
 
 ### 2.1 The two anchors for this product: skin AND gold
 
-Standard house discipline protects **skin** as the non-negotiable realism anchor. This ad adds a **second protected element — the product gold** — because the whole sell is the gold looking *real 22k warm*, not *orange plastic*. Both are qualified out of the creative-look push and held to saved targets. Everything else (wardrobe, backgrounds, surfaces) takes the look.
+Standard house discipline protects **skin** as the non-negotiable realism anchor. This ad adds a **second protected element — the product gold** — because the whole sell is the gold looking *real warm gold (24k-plated)*, not *orange plastic*. Both are qualified out of the creative-look push and held to saved targets. Everything else (wardrobe, backgrounds, surfaces) takes the look.
 
 ### 2.2 Chain order (fixed, never reordered) `[FACT/excerpt]`
 
@@ -1124,7 +1141,7 @@ Procedure:
 - **Warm ≠ orange.** The house look is warm (~2700–3000 K practical) `[ESTIMATE]`, but push warmth on the *scene*, not into the gold's own hue. The gold's yellow vector is **held by qualifier**, so global warming doesn't slide it into orange.
 - **Protect the specular, don't clip it.** The product hero *is* the diamond-cut sparkle — the specular roll across the cross-hatch. The house rule is **highlights rolled off, never clipped** (muted, non-clipping highlights are the single strongest "expensive film" cue) `[ESTIMATE]`. But a hard-clipped gold specular reads as blown white plastic. So: **roll the specular highlights to a bright warm-gold shoulder that retains hue and micro-detail** — the sparkle stays a *gold* sparkle, not a white hole. This is the most important single grade move for this product.
 - **"Plastic" is a texture failure, not just a color one.** If the band macro reads plastic after grading, that is a **starred physics/realism-axis problem** and belongs to stills-stage regeneration + the realism reviewer, **not** a grade patch. Do not try to grade plastic out.
-- **Keep the teal-shadow separation a whisper.** The warm-skin-vs-cooler-field mechanism is used at a whisper, never a wall `[FACT/excerpt mechanism; ESTIMATE dose]`. Cool shadows must **never touch the gold or the skin** — a cool cast on gold instantly kills the 22k warmth.
+- **Keep the teal-shadow separation a whisper.** The warm-skin-vs-cooler-field mechanism is used at a whisper, never a wall `[FACT/excerpt mechanism; ESTIMATE dose]`. Cool shadows must **never touch the gold or the skin** — a cool cast on gold instantly kills the gold's warmth.
 - **Global chroma ~10–20% below default, gentle S-curve, lifted-but-not-milky blacks** `[ESTIMATE]` — quiet-luxury restraint, matching the plan's register. Gold and skin are re-saturated back to target *after* the global desat so they stay rich while the world stays muted.
 
 ### 2.6 One house LUT, baked last
@@ -1152,7 +1169,7 @@ All text is **composited in the editor over the graded footage — never model-g
 
 | Beat | Text | Placement | Hold |
 |---|---|---|---|
-| Clip 1 hook | *"Real gold. Real craft."* | **upper-safe center band** (clear of top UI) | full 4 s, fades with the whip-out |
+| Clip 1 hook | *"24K Gold Plating. Real Craft."* | **upper-safe center band** (clear of top UI) | full 4 s, fades with the whip-out |
 | Clip 5 authenticity | `[OWNER-SLOT]` fact(s) as a clean **lower-third** — only TRUE owner values; if no hallmark, no hallmark text | center-lower-third, above the ~320 px bottom band | ~4 s |
 | Clip 6 CTA | **"Link on screen · in bio to buy"** + `[OWNER-SLOT: @handle]` (+ `[OWNER-SLOT: purchase link URL]` if one exists) | **center / center-lower-third**, generous negative space, clear of bottom + top-right | enters ~19.0 s, **holds the full 3 s** for an unhurried read |
 
@@ -1177,7 +1194,7 @@ This is photoreal AI media in a commercial ad: publish with the **AI-info label 
 
 Default to a **selected real frame from the reel** (keeps the grid feed-native and honest — the cover must never promise footage the reel lacks) `[FACT/excerpt]`. **Never accept the autoframe default.** Two viable sources, in order:
 
-1. **The hook flare frame (clip 1)** — the forearm/kada throwing the diamond-cut sparkle in warm low light. This is the strongest thumbnail: it *is* the product, it poses the luxury **curiosity/access question** ("real gold — whose? from where?"), and it is unmistakably a jewelry frame at a glance.
+1. **The hook flare frame (clip 1)** — the forearm/kada throwing the diamond-cut sparkle in warm low light. This is the strongest thumbnail: it *is* the product, it poses the luxury **curiosity/access question** ("this gold — whose? from where?"), and it is unmistakably a jewelry frame at a glance.
 2. **The band macro (clip 3)** — pure craftsmanship, cross-hatch + rails filling frame. Strongest for a **grid that leans product-detail**; weaker on face-driven click but very strong on "this account is about *this* gold."
 
 For a **face-forward variant** (faces out-click faceless covers, close-up eye contact best `[FACT/excerpt]`), the presenter-with-kada reveal frame is the option — but the expression stays **poised intrigue, not open-mouthed shock** (shock reads clickbait and breaks the classic-luxury register). The `~25%` expressive-vs-neutral CTR figure is an aggregator `[ESTIMATE]`, never quoted as a platform stat.
@@ -1235,23 +1252,23 @@ Instagram **Trial Reels test the whole reel to non-followers, not the cover alon
 
 ### 1a. Primary caption (use this as default)
 
-> A men's gold **kada**, built the classic way — solid, hand-finished, made to be worn every day.
+> A men's **gold-plated kada** by **rhodiumgold**, built the classic way — hand-finished, made to be worn every day.
 >
 > Look closely: cross-hatch cut across the band to catch the light, polished rails top and bottom, and a temple-pattern motif at the ends. Craftsmanship you can see.
 >
-> [OWNER-SLOT: purity — e.g. "22k gold"] · [OWNER-SLOT: hallmark/certification — e.g. "BIS-hallmarked" — INCLUDE ONLY IF TRUE] · from [OWNER-SLOT: seller/brand name][OWNER-SLOT: ", City" — only if stated].
+> **24k gold plating** · gold-plated (no solid-gold hallmark implied) · from **rhodiumgold**[OWNER-SLOT: ", City" — only if stated].
 >
 > [OWNER-SLOT: price — only if stated] · [OWNER-SLOT: guarantee/return/buy-back terms — only if stated]
 >
-> Link in bio to buy · DM [OWNER-SLOT: @handle] to order.
+> Link in bio to buy · DM **@rhodiumgold** to order.
 >
 > —
 > *AI-generated video. Presenter is a fictional brand model, not a real customer.*
 
 ### 1b. Short caption (fallback for a tighter read)
 
-> A men's gold kada — solid, classic, hand-finished. Cross-hatch cut, polished rails, temple-motif ends.
-> [OWNER-SLOT: purity] · from [OWNER-SLOT: seller/brand name]. Link in bio to buy.
+> A men's **gold-plated** kada by **rhodiumgold** — classic, hand-finished. Cross-hatch cut, polished rails, temple-motif ends.
+> 24k gold plating · from **rhodiumgold**. Link in bio to buy.
 > *AI-generated. Fictional brand model.*
 
 ### Caption honesty rules (binding)
@@ -1269,9 +1286,9 @@ Instagram **Trial Reels test the whole reel to non-followers, not the cover alon
 
 **Recommended set (pick 4–5, keep them true to the piece):**
 
-`#goldkada` `#menskada` `#22kgold`※ `#goldjewellery` `#handcraftedgold`
+`#goldkada` `#menskada` `#24kgoldplated`※ `#goldplated` `#mensjewellery`
 
-> ※ **`#22kgold` is itself an [OWNER-SLOT-GATED] tag** — use it ONLY if 22k is the owner-verified purity. If the purity differs or is unstated, swap for the true value (`#18kgold`, etc.) or drop it. A purity hashtag is a purity claim.
+> ※ This is a **gold-PLATED** product, so the true category tag is **`#24kgoldplated` / `#goldplated`**. **Do NOT** use a solid-gold purity tag (`#22kgold`, `#24kgold`, `#solidgold`) — on a plated piece that is a **false purity claim**.
 
 **Optional swap-ins (still true-to-piece):** `#mensjewellery` `#goldbangle` `#templejewellery` (only if the temple/Greek-key motif read is accurate to the piece).
 
@@ -1339,7 +1356,8 @@ Attraction is delivered via **styling, silhouette, status context, expression, a
 - **UNKNOWN:** the exact **penalty ladder** for non-disclosure is unpublished — we do **not** assert a specific consequence figure. The resolution is simply: **always disclose**, so the ladder never applies.
 
 ### 6b. Honest-advertising boundary on authenticity / karat / hallmark claims
-- **No invented authenticity facts.** Karat/purity, hallmark/BIS or any certification, weight, price, brand name, city, and guarantees are **[OWNER-SLOTS]** — spoken, on-screen, and in-caption **only when the owner supplies the TRUE value**.
+- **CONFIRMED TRUTH (owner, 2026-07-03): the product is 24-KARAT GOLD PLATING — gold-PLATED, NOT solid gold. Brand: rhodiumgold (@rhodiumgold).** Every spoken / on-screen / caption claim must say "24k gold plating / gold-plated"; nothing may imply solid gold. As a plated piece it carries **no BIS gold-purity hallmark** — all hallmark / assay / "certified pure" language is removed.
+- **No invented authenticity facts.** Weight, price, city, and any guarantee remain **[OWNER-SLOTS]** — spoken, on-screen, and in-caption **only when the owner supplies the TRUE value**.
 - **Only owner-verified truths.** If a value isn't confirmed, the corresponding line/graphic/caption fragment is **cut**, not approximated.
 - **No fabricated certification.** If the piece **has no hallmark**, the ad and caption **must not imply one** — no assay/BIS/lab-cert language, no "certified"/"guaranteed pure" stand-ins, and **no generated hallmark, karat stamp, or maker's mark in the macro shots** (the clip-3 macro stays on the plain textured band per master-plan §4). Authenticity marks appear **only** if the owner supplies a real reference.
 - The caption's authenticity fragment (§1) and the clip-5 on-screen lower-third must state **the same owner-verified facts** — one truth across video and caption.
@@ -1366,7 +1384,7 @@ The presenter and the whole ad are run through the **six-item identifiability st
 
 ### 6e. Reference-image + chain honesty (carried from the master plan)
 - **The exact bracelet is carried by the owner's uploaded reference photo** via the **Higgsfield media-upload widget at run time** — the connector cannot read a chat attachment. Blocking for faithful generation of clips 1–6.
-- **The chain is an [OWNER-SLOT]:** the brief references a matching gold chain but supplied **no chain photo**. **Do not invent a chain design**, and **do not caption or claim a chain** until a reference image exists. No chain appears in this ad's shots or copy until then.
+- **The chain reference now EXISTS (generated 2026-07-03):** two product stills of a men's Cuban-curb **gold-plated** chain were generated with `nano_banana_2` (4K, 9:16) — job ids `295bf33f-237b-46c9-8783-1578d64b2a62` and `b4def44c-fbe8-4309-ac90-db98c79de33b`. The owner picks the stronger; it becomes the chain product reference (promote to a `<<<chain>>>` Reference Element). The chain reads as **gold-plated** (same honesty rule as the kada — no solid-gold implication) and appears only in its designated shot(s); it must not be hallucinated into non-chain shots.
 
 ---
 
@@ -1380,7 +1398,7 @@ The presenter and the whole ad are run through the **six-item identifiability st
 - [ ] At publish: **AI-info label ON**, watermark-clean export, caption + on-screen facts matched.
 
 ### Compliance summary (one line)
-No invented authenticity facts (all owner-slotted, hallmark only if real, no fabricated marks) · fictional AI presenter, not a testimonial · Meta AI-info label ON + honest caption · likeness stop-check items 1–2 = NO · exact product by owner's reference photo · no invented chain.
+Product = 24k gold-PLATING (not solid gold), brand rhodiumgold / @rhodiumgold · no solid-gold implication, no BIS/hallmark language (plated) · fictional AI presenter, not a testimonial · Meta AI-info label ON + honest caption · likeness stop-check items 1–2 = NO · kada by owner's reference photo · chain reference generated (2 stills).
 
 
 <!-- ===== parts/70_realism_qc.md ===== -->
@@ -1442,7 +1460,7 @@ Garbled/near-English lettering is historically the single most reliable AI tell,
 ### B. GOLD COLOR + METAL MICRO-REFLECTION + DIAMOND-CUT SPARKLE — the product *is* the sell
 This is the hero of clips 1, 3, 4, and it draws **genre-expert scrutiny**: jewelry buyers know exactly how light plays on polished gold and on a diamond-cut face, so their effective detection rate sits above the general ~55% baseline [ESTIMATE — audience reasoning, moderate-high confidence]. Three sub-checks, in order:
 
-1. **Gold COLOR accuracy.** Warm 22k-look yellow gold must read as *metal*, not as brass, mustard paint, or an orange-plastic HDR glow. Check: the band shows a **warm-to-cool tonal gradient across its curvature** (the polished rails catch a near-white hot specular; the recessed cross-hatch stays deeper amber). A flat, single-hue "gold sticker" look = item 8 (texture stability) or item 6 (reflection geometry) fail. The owner's reference photo is the ground-truth color target — grade the final toward it, not toward a generic "luxury gold."
+1. **Gold COLOR accuracy.** Warm 24k-gold-plated yellow gold must read as *metal*, not as brass, mustard paint, or an orange-plastic HDR glow. Check: the band shows a **warm-to-cool tonal gradient across its curvature** (the polished rails catch a near-white hot specular; the recessed cross-hatch stays deeper amber). A flat, single-hue "gold sticker" look = item 8 (texture stability) or item 6 (reflection geometry) fail. The owner's reference photo is the ground-truth color target — grade the final toward it, not toward a generic "luxury gold."
 2. **Metal micro-reflection believability.** Polished gold is a mirror at grazing angles: it must **reflect the environment** (the warm key, the cool fill, dark surroundings) and those reflections must **track continuously** as the wrist rotates (Shot 1) or the camera travels (Shot 3). Failure modes to flag: reflections that sit *painted-on* and don't move with the surface; a specular hotspot inconsistent with the scene's **single key light** (see §C golden-hour/single-light rule); "boiling" shimmer on the metal between frames (item 8). Optics is a named PhyGenBench failure domain [FACT]; the metal-reflection instantiation applies it with the single-light forensic check [ESTIMATE — high confidence].
 3. **Diamond-cut SPARKLE as real specular, not painted-on.** The cross-hatch wheat-grain must throw **specular glints that MOVE as light/camera/wrist move** — sparkle is a view-dependent event, not a texture. **Common AI failure: static, painted-on sparkle that stays put frame-to-frame, or glints that fire inconsistently with the key light** [FACT — jewelry sparkle physics node]. Check on the *raw video*, not the still: scrub frame-by-frame and confirm individual glints **appear, travel across the facets, and extinguish** as the specular roll passes (Shot 3's "one specular roll to animate the sparkle" is exactly this test). If the sparkle is frozen or twinkles randomly without tracking the light, that is item 6 = 2 → re-roll.
 
@@ -1475,7 +1493,7 @@ Each shot lists its **priority items** (the ones that actually carry risk for th
 **Priority items:** 1 (composited text) · 2 (hand) · 6 (sparkle/reflection geometry) · 8 (metal texture stability).
 - **Gold/sparkle:** this is the flare frame — the whole hook rests on the diamond-cut sparkle reading as **moving specular** during the forearm rotation (§B.3). Scrub for a glint that travels and extinguishes; a frozen/painted flare kills the hook.
 - **Hand:** slow forearm turn only, fingers loose/out of frame, **no manipulation** (§C). Watch the wrist-edge for finger morphing across the rotation.
-- **Text:** "Real gold. Real craft." is a **post overlay** in the upper-safe zone — never generated.
+- **Text:** "24K Gold Plating. Real Craft." is a **post overlay** in the upper-safe zone — never generated.
 - **Reflection geometry:** the moving gold must reflect the warm low-key environment consistently with one key light.
 - **PASS:** clean specular roll + no finger morph + no generated glyphs. **Fix:** static sparkle or reflection-not-tracking → **re-roll**; single-frame edge-finger glitch → **post** speed-ramp/crop if excisable; any in-hand manipulation creeping in → **redesign** to pure forearm turn.
 

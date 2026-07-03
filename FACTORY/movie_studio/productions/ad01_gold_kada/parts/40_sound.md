@@ -65,7 +65,7 @@ The script lives in `00_master_plan.md §5` (6 spoken lines; every authenticity 
 - **Pace:** slow and unhurried — roughly **conversational-minus**; leave the words room. This is 6 short lines across 22 s, so there is generous time; do not rush to fill it. Target the feel of a man showing you something he values, not reading copy.
 - **Warmth / tone:** warm, close, chest-resonant; a faint smile in the voice on the reveal and CTA; zero brightness/sibilance push. De-essed and gently compressed so it sits *in* the room the score builds, not on top of it.
 - **Pauses (the load-bearing craft):** a **beat of silence before the sparkle payoff** ("Look at the work…" — let the eye catch the flare first), and a **held pause before the authenticity line** so the owner-verified fact lands deliberately, not glibly. On the CTA, a small settle before "Link on screen" — inviting, not urgent.
-- **Question-answer grammar:** where a line poses ("This is what real gold looks like."), let the **score answer** it (the piano/cello resolves into the next phrase) — the spoken line poses, the music resolves. [ESTIMATE — cross-media application of Zimmer's question-answer theme grammar]
+- **Question-answer grammar:** where a line poses ("This is what twenty-four-karat gold plating looks like."), let the **score answer** it (the piano/cello resolves into the next phrase) — the spoken line poses, the music resolves. [ESTIMATE — cross-media application of Zimmer's question-answer theme grammar]
 - **Line-level:**
   - Clip 1 hook — quiet confidence, slight downward resolve on "looks like."
   - Clip 2 reveal — informative warmth; land "kada" clearly (it is the product name).
@@ -90,7 +90,7 @@ The script lives in `00_master_plan.md §5` (6 spoken lines; every authenticity 
 |---|---|---|---|---|
 | **SFX-1** | Clip 1, ~1.0–2.0 s | kada rotates, throws the **diamond-cut flare** | **soft high chime / shimmer** — a single gentle bell-like glint, short, NOT sparkly-cartoon; tuned to the score's key so it reads as musical | peak of the chime lands **on the brightest flare frame**, not before |
 | **SFX-2** | Clip 1 → 2 seam @ 4.0 s | whip-pan out/in | **whoosh** riding the whip-pan blur | whoosh crest **on the 4.0 s cut frame** |
-| **SFX-3** | Clip 2 → 3 seam @ 8.0 s | match cut on the gold | subtle **metal "clink"** — a soft, single high-density metallic tink (the sound of solid gold set down / a fingernail-light contact), warm and damped, not clangy | transient **on the 8.0 s cut**, doubling as the match-cut audio bridge |
+| **SFX-3** | Clip 2 → 3 seam @ 8.0 s | match cut on the gold | subtle **metal "clink"** — a soft, single high-density metallic tink (the sound of a solid, substantial piece set down / a fingernail-light contact), warm and damped, not clangy | transient **on the 8.0 s cut**, doubling as the match-cut audio bridge |
 | **SFX-4** | Clip 3, across 8–12 s | sparkle travels the band | very low **shimmer sweep** under the cello — a faint filtered-air movement following the specular roll (NOT a second chime; one chime per reel keeps it precious) | rides the specular highlight left-to-right; stays under the music |
 | **SFX-5** | Clip 3 → 4 @ 12.0 s | invisible cut / rack focus | no hard SFX — a **soft filter-open** on the room tone only (invisible seam) | imperceptible; the score carries the seam |
 | **SFX-6** | Clip 4 → 5 seam @ 15.0 s | whip-pan back to presenter | **whoosh** (matched pair to SFX-2, slightly softer) | crest **on 15.0 s cut** |

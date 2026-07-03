@@ -14,9 +14,9 @@
 
 **Motivated-lighting veto [FACT def / ESTIMATE anti-AI linkage].** Every visible light in every prompt must imitate a plausible in-world source (a window, a warm lamp/practical, a soft overhead panel) even when the fixture is off-screen. If a frame carries a glow no named source explains, it is regenerated — unmotivated glow is the AI tell.
 
-**Contrast register [FACT].** The whole reel defaults to **controlled contrast (moderate low-key)**, not flat high-key. Flat high-key sits next to the plastic-render look, which is fatal for a real gold product. Macros run darkest (clean gradient falling to near-black surround); presenter beats run soft-warm low-key with a lifted-but-sculpted face.
+**Contrast register [FACT].** The whole reel defaults to **controlled contrast (moderate low-key)**, not flat high-key. Flat high-key sits next to the plastic-render look, which is fatal for a premium gold-plated product. Macros run darkest (clean gradient falling to near-black surround); presenter beats run soft-warm low-key with a lifted-but-sculpted face.
 
-**The reflection principle is the spine of every gold frame [ESTIMATE].** For polished 22k-look yellow gold you **light the reflections, not the metal**: place one or two *very large soft warm sources* so the band reflects a clean bright gradient, and put **black negative fill** where the metal needs something dark to reflect. The gradient + the dark give the diamond-cut cross-hatch its contrast to sparkle against. Direct hard light on the gold blows it into a featureless plastic blob — the opposite of the sell.
+**The reflection principle is the spine of every gold frame [ESTIMATE].** For polished 24k-gold-plated yellow you **light the reflections, not the metal**: place one or two *very large soft warm sources* so the band reflects a clean bright gradient, and put **black negative fill** where the metal needs something dark to reflect. The gradient + the dark give the diamond-cut cross-hatch its contrast to sparkle against. Direct hard light on the gold blows it into a featureless plastic blob — the opposite of the sell.
 
 **Anti-AI floor, appended to every prompt [ESTIMATE — effectiveness untested until credit run].** Persona beats: `"natural motivated lighting, realistic skin texture, film grain, no artificial smoothness."` Gold macros (skin-texture clause swapped for metal): `"natural motivated lighting, realistic engraved metal micro-texture, fine diamond-cut facets, film grain, no artificial smoothness, no plastic CGI gold."` Plus **exactly one living micro-detail** per shot (named per shot below).
 
@@ -125,7 +125,7 @@ Seams are chosen **first**; both boundary frames are written as **two still keyf
 ### SEAM 2 · Clip 2 → Clip 3 · **MATCH CUT ON THE GOLD** (precision — HERO seam)
 - **END frame (clip 2):** the push-in has delivered the kada **dominating the frame at a locked position/scale** — the polished band centered, warm specular live, filling the lower-center core.
 - **START frame (clip 3):** the **same gold band at the identical position, scale and orientation**, same warm traveling specular, same clean warm-to-dark gradient background — graphic continuity so the two golds read as one continuous surface.
-- **Shared match vars:** band position + scale (locked coordinates in both prompts); warm 22k specular; gradient background; **byte-identical reflection-recipe string**.
+- **Shared match vars:** band position + scale (locked coordinates in both prompts); warm gold-plated specular; gradient background; **byte-identical reflection-recipe string**.
 - **Why / risk:** zero-tolerance trick — nothing hides a position/scale/brightness miss [FACT]. **Promote to this hero slot only after Seam 1 (and ideally Seam 3/4) have passed**, proving the routed model honors the end keyframe. If keyframe adherence is unproven, substitute a snap-zoom-assisted match (motion covers a small miss).
 - **Cut point:** on the matched frame.
 
@@ -168,7 +168,7 @@ Seams are chosen **first**; both boundary frames are written as **two still keyf
 
 Cine applies the anti-AI floor, the five-check lighting gate and the stills-match gate, then **escalates the disputed is-it-real-enough call to the realism specialist** (hard reviewer of record). The following are fed forward as gating checks on the **stills, before any hero video spend**:
 
-1. **Gold color accuracy.** Warm 22k-look yellow gold — reject brassy/greenish/pale-plastic or CGI-chrome renders. The reflection recipe is [ESTIMATE]; it must earn a passing validation still before hero video credits.
+1. **Gold color accuracy.** Warm 24k-gold-plated yellow — reject brassy/greenish/pale-plastic or CGI-chrome renders. The reflection recipe is [ESTIMATE]; it must earn a passing validation still before hero video credits.
 2. **Sparkle authenticity.** The diamond-cut shimmer must read as **engraved cross-hatch / wheat-grain facets catching light**, not applied glitter or noise. The traveling specular is the intended mechanism — QC that it reads as cut metal.
 3. **Rails + band structure.** The two polished rails must stay bright, clean and parallel; the cross-hatch texture must not smear into mush at macro scale.
 4. **Terminal motif non-garble (worst-artifact gate).** The temple / Greek-key openwork must be symmetric and legible — any garbled or asymmetric motif forces a **re-roll, not a ship**. Primary mitigation: the exact piece rides the **owner's reference photo**.
