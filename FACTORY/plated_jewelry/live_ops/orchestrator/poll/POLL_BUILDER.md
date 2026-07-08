@@ -40,9 +40,8 @@ standing FACTORY rule the whole vertical was built under and is identical to the
 
 All paths are **pack-relative** to the unzipped `plated_jewelry_market_pack` root. The on-disk state layer is the
 `work/` tree defined by `live_ops/orchestrator/FILESYSTEM.md` — **that file is the authority; use these paths.**
-(An older sketch in `AGENTS.md` / `ORCHESTRATOR.md §2` names `state/analysis/ANALYSIS_RECORD.json` and
-`poll/POLL_SPEC.json`; the `FILESYSTEM.md §7` name-map supersedes it — the real files are the lowercase `work/`
-paths below.)
+(Earlier drafts used SCREAMING_CASE record names — `ANALYSIS_RECORD.json`, `POLL_SPEC.json` — under a `state`-rooted
+tree; the `FILESYSTEM.md §7` name-map supersedes them — the real files are the lowercase `work/` paths below.)
 
 ### READS (only these — by path, into *this* agent's context, never the orchestrator's)
 | Pack-relative path | Why you read it |
@@ -218,6 +217,20 @@ generated **from `poll_spec.json`**, plus the one config slot:
 | `{{PRICE}}` | The Gabor-Granger battery (§4): one radio group per price point ($19/$29/$39/$49), each Very/Somewhat/Not likely. |
 | `{{INCENTIVE}}` | The verbatim incentive copy line (§4), rendered as **plain text** (never as HTML that could carry markup). |
 | `{{CAPTURE_URL}}` | The **named config slot** only — leave the value as `config.json.api_slots.response_capture` (currently `null`). Do **not** fabricate a URL. It sits inside a **commented-out** `fetch()` the owner enables later. |
+| `{{RULES_URL}}` | The published **Official Rules** page URL (sponsor, eligibility, dates, free AMOE, odds, prize + ARV, winner selection — §4). Leave it as the placeholder default `#` **until the owner has a published Official Rules page**; while it is `#` the rendered poll shows a **"DRAFT — Official Rules URL required before hosting"** banner. Do **not** fabricate a URL. |
+
+**HTML-ESCAPE + RE-SCAN every injected value (binding — build-time injection defense).** Every label/value you
+substitute into `{{ITEMS}}` — and into `{{FINISH}}`, `{{PRICE}}`, `{{INCENTIVE}}` — **MUST be HTML-entity-escaped**
+(`&`→`&amp;`, `<`→`&lt;`, `>`→`&gt;`, `"`→`&quot;`, `'`→`&#39;`) **and re-injection-scanned** before it is written
+into `poll.html`. Item labels trace to **fetched listing content** (`SAFETY.md` T1/T2), so an unescaped label is a
+build-time injection vector — a label such as `<img src=x onerror=…>` or `"><script>…` must land as **inert text**,
+never as live markup. This render-time escaping is the backstop to the POLL SPEC re-scan (the FINAL SAFETY_REVIEW
+pass over `poll_spec.json`, `AGENTS.md` Role 6 / `ORCHESTRATOR.md §5`).
+
+**HOSTING GATE (binding).** **Do NOT host the poll until `{{RULES_URL}}` is filled with a published Official Rules
+page.** While `{{RULES_URL}}` is the default `#`, `poll.html` self-displays a "DRAFT — Official Rules URL required
+before hosting" banner; clearing that banner is a precondition for the §7 hosting options and the owner's
+`host_public` approval.
 
 **The emitted `poll.html` MUST be:**
 - **Self-contained & dependency-free** — inline CSS + JS, **no external CDN, no web fonts, no remote images by

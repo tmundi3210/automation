@@ -133,7 +133,12 @@ unrelated sources; off = balanced/advisory only.
   `[SIGNAL]`, never sales. A number with no source is quarantined.
 - **Human-in-loop for consequential actions.** Four actions can never fire automatically — **spend** (paid
   reach), **send_poll** (distribute the link), **host_public** (publish the poll), **add_api_key** (wire a
-  new key). Each opens an `ApprovalRequest`; the owner approves in the Approvals queue before it runs.
+  new key). Each opens an `ApprovalRequest`; the owner approves in the Approvals queue before it runs. Two
+  more owner-gates ride the same queue: a **legal-envelope breach** (a giveaway that trips the
+  FTC/sweepstakes/privacy envelope — ARV over the NY/FL $5,000 or RI $500 triggers, under-18 reach, or
+  protected-class targeting) opens **legal_review**; a **secret-leak or coordinated-injection** quarantine
+  opens **security_alert** as an immediate alert (`SAFETY.md §7`). Both are `ApprovalRequest.action` values in
+  `BASE44_APP_SPEC.json`.
 - **Secrets by name.** The Base44 app API key and any search/host keys live in the Mac runner's gitignored
   env, referenced by name — never inline in a prompt file or a web-request body. Grok CLI is already logged
   in, so no Grok key is stored in the app.

@@ -79,13 +79,13 @@ local pack files — so the only untrusted-web exposure is the live lane, which 
 The runner defines these slots, all initially `null` in `BASE44_APP_SPEC.json` — the owner fills them when
 ready, and adding any key routes through the `add_api_key` human-in-loop approval:
 
-- **`grok_cli_bridge`** — how Base44 and the runner exchange jobs/records (the app API base + key in the
-  runner env). Required for automation; until wired, run ticks manually.
+- **`grok_cli_bridge`** (env-var name `GROK_CLI_BRIDGE`) — how Base44 and the runner exchange jobs/records
+  (the app API base + key in the runner env). Required for automation; until wired, run ticks manually.
 - **`search`** — an optional dedicated search API if the owner wants a source beyond Grok's built-in net
   search.
 - **`llm`** — an optional separate model slot; not needed while Grok CLI is the backend.
 - **`poll_host`** — where an approved poll is hosted (owner's storefront/route).
-- **`response_capture`** — an endpoint that writes each poll response into `records/` so the outer loop can
-  re-fuse returns; a named `[METHOD]` hook, not a fabricated stream.
+- **`response_capture`** — an endpoint that writes each poll response back through the SAFETY_REVIEW gate as a
+  pending Signal so the outer loop can re-fuse returns; a named `[METHOD]` hook, not a fabricated stream.
 
 Grok CLI itself needs **no** key here — it is already logged in on the Mac.

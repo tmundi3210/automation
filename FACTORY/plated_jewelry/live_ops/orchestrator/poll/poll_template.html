@@ -9,17 +9,26 @@
   ============================================================================
   SELF-CONTAINED STARTER POLL  ·  no external dependencies  ·  works offline
   ----------------------------------------------------------------------------
-  POLL_BUILDER injects four content placeholders + one config slot (see
+  POLL_BUILDER injects five content placeholders + one config slot (see
   live_ops/orchestrator/poll/POLL_BUILDER.md §6). Every placeholder is a literal
-  {{TOKEN}}; replace the whole token with markup generated FROM poll_spec.json:
+  {{TOKEN}}; replace the whole token with markup generated FROM poll_spec.json.
+
+  BUILD-TIME INJECTION DEFENSE (binding): every label/value injected into
+  {{ITEMS}}, {{FINISH}}, {{PRICE}}, {{INCENTIVE}} MUST be HTML-ENTITY-ESCAPED
+  (& < > " ') and re-injection-scanned before it is written here — item labels
+  trace to FETCHED listing content, so an unescaped label is a build-time XSS
+  vector. Inject inert text, never live markup.
 
     {{ITEMS}}      ranked <label><input type="radio" name="choice" ...>…</label>
                    blocks (rank order) + a final "None of these" opt-out.
                    Images are OPTIONAL — include <img> only if you have a URL;
-                   the poll MUST work with no images.
+                   the poll MUST work with no images. HTML-escape every label.
     {{FINISH}}     the finish paired choice (two radios name="finish").
     {{PRICE}}      the Gabor-Granger battery — one radio group per price point.
     {{INCENTIVE}}  the VERBATIM incentive line from POLL_KIT.md §3 (plain text).
+    {{RULES_URL}}  the PUBLISHED Official Rules page URL. Default is "#"; while it
+                   is "#" the page shows a "DRAFT — Official Rules URL required
+                   before hosting" banner. DO NOT host until it is filled.
     {{CAPTURE_URL}} the named response-capture slot ONLY (config.json
                    api_slots.response_capture — currently null). Leave it inside
                    the COMMENTED-OUT fetch() below; do not fabricate a URL.
@@ -85,6 +94,10 @@
     border:1px solid var(--line); border-radius:.7rem; padding:.85rem 1rem;
     margin:0 0 .8rem; font-size:.94rem;
   }
+  .draft-banner{
+    background:#b91c1c; color:#fff; border-radius:.6rem; padding:.7rem 1rem;
+    margin:0 0 1rem; font-weight:650; font-size:.92rem; text-align:center;
+  }
   .privacy{color:var(--muted); font-size:.82rem; margin:1rem 0 1.4rem}
   .privacy a{color:inherit}
   .actions{display:flex; flex-wrap:wrap; gap:.6rem; align-items:center}
@@ -109,6 +122,8 @@
 </head>
 <body>
 <main>
+  <!-- Shown only while the Official Rules link is unfilled ({{RULES_URL}} still "#"); see script below. -->
+  <div id="draftBanner" class="draft-banner" role="alert" hidden>DRAFT — Official Rules URL required before hosting</div>
   <h1>Quick jewelry poll</h1>
   <p class="sub">Two taps. Anonymous. Helps us pick what to make next.</p>
 
@@ -121,7 +136,9 @@
            <label class="opt"><input type="radio" name="choice" value="Gold-plated huggie hoops">
              <img src="…" alt="Gold-plated huggie hoops" loading="lazy">   ← optional; omit if no image
              <span>Gold-plated huggie hoops</span></label>
-           …one per item in rank order, then the "None of these" opt-out below stays. -->
+           …one per item in rank order, then the "None of these" opt-out below stays.
+           HTML-ESCAPE every injected label + value (& < > " ') and re-scan for injection —
+           labels trace to FETCHED listing content, so an unescaped label is a build-time XSS vector. -->
       {{ITEMS}}
       <label class="opt"><input type="radio" name="choice" value="__none__"><span>None of these</span></label>
     </fieldset>
@@ -166,7 +183,7 @@
       We collect only your answers (anonymous) and, if you choose to enter, one email for the prize draw —
       nothing else. Answers are used in aggregate to help us pick what to make; they are a preference signal,
       not a purchase. No purchase necessary; your answer doesn't affect your odds. US, 18+.
-      <a href="#" id="rulesLink">See Official Rules</a>. To opt out or request deletion, reply to any email or
+      <a href="{{RULES_URL}}" id="rulesLink">See Official Rules</a>. To opt out or request deletion, reply to any email or
       contact us.
     </p>
 
@@ -297,9 +314,24 @@
     download(load());
   });
 
-  document.getElementById("rulesLink").addEventListener("click", function (e) {
-    e.preventDefault();
-    setStatus("Official Rules link goes here — the owner adds the URL before launch.", "");
+  // --- Official Rules gate: DRAFT banner until {{RULES_URL}} is filled --------
+  // Self-contained, no external deps. The banner stays visible while the rules
+  // link is unfilled, so the page cannot be hosted as if the Official Rules exist.
+  var rulesLink   = document.getElementById("rulesLink");
+  var draftBanner = document.getElementById("draftBanner");
+  function rulesUrlMissing() {
+    var href = rulesLink ? rulesLink.getAttribute("href") : null;
+    // unfilled = default "#", empty, or an un-substituted {{TOKEN}}
+    return !href || href === "#" || href.indexOf("{{") === 0;
+  }
+  if (rulesUrlMissing() && draftBanner) { draftBanner.hidden = false; }
+
+  rulesLink && rulesLink.addEventListener("click", function (e) {
+    if (rulesUrlMissing()) {
+      e.preventDefault();
+      setStatus("DRAFT — Official Rules URL required before hosting; the owner fills {{RULES_URL}} with a published page.", "err");
+    }
+    // when filled, let the link navigate normally to the published Official Rules page
   });
 })();
 </script>

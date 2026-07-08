@@ -4,7 +4,7 @@
 >
 > **Four canonical record types:** **SIGNAL RECORD** (one per observation), **ANALYSIS RECORD** (the ranked rollup), **STATE** (`state.json`, the single source of truth), **POLL SPEC** (the deployable poll). Plus one wrapper — the **QUARANTINE RECORD** — for anything the SAFETY_REVIEW gate rejects.
 >
-> **Four invariants that hold under ANY schema (including a custom one pasted in §6):** every load-bearing claim carries an `honesty_tag`; every **live** record carries a boolean `security_flag`; agents **return a path, never the data as prose**; and **no field ever holds an unsourced number** — an un-sourceable figure is a `[METHOD]` or `[UNKNOWN]`, never a fabricated value.
+> **Four invariants that hold under ANY schema (including a custom one pasted in §6):** every load-bearing claim carries an `honesty_tag`; **every record — regardless of lane (live and history alike) — carries a boolean `security_flag`**; agents **return a path, never the data as prose**; and **no field ever holds an unsourced number** — an un-sourceable figure is a `[METHOD]` or `[UNKNOWN]`, never a fabricated value.
 
 ---
 
@@ -30,7 +30,7 @@ Files: `work/signals/YYYY-MM-DD--<lane>--<n>.json`, a JSON **array** of these ob
 | `honesty_tag` | enum | ✅ | `[FACT-source]` \| `[ESTIMATE]` \| `[SIGNAL]` \| `[UNKNOWN]` |
 | `confidence` | number | ✅ | `0.0`–`1.0` (reliability × recency × corroboration) |
 | `corroborated_by` | string[] | ✅ (may be `[]`) | `id`s of other SIGNAL RECORDS from **unrelated** sources that corroborate this bucket |
-| `security_flag` | boolean | ✅ (on live records) | `true` only if SAFETY_REVIEW found an injection artifact; then the record is quarantined, not written here |
+| `security_flag` | boolean | ✅ (every lane) | `true` only if SAFETY_REVIEW found an injection artifact; then the record is quarantined, not written here |
 
 ### Filled example
 
@@ -58,7 +58,7 @@ Files: `work/signals/YYYY-MM-DD--<lane>--<n>.json`, a JSON **array** of these ob
   - a **social** metric (views/likes/hashtags/followers) may be **at most `[SIGNAL]`** — never `[FACT-source]` as demand.
   - if `url` is `null`, `honesty_tag` **must** be `[UNKNOWN]` (blocked/unfetchable → no back-filled value).
 - `corroborated_by` may only list `id`s from **genuinely unrelated** sources (different signal family or unrelated platform; a blog quoting Amazon is not a second source).
-- **`security_flag` is required on every live-lane record** and must be boolean. A record with `security_flag:true` never lands in `signals/` — it is moved to `quarantine/` (§5).
+- **`security_flag` is required on every record regardless of lane** (live and history alike) and must be boolean. A record with `security_flag:true` never lands in `signals/` — it is moved to `quarantine/` (§5).
 - **No fabricated numbers:** no market size, unit count, %, plated-vs-solid share, demographic/ethnicity/gender rate, competitor metric, CPM, CAC, or realized price stated as measured. Un-sourceable → `[METHOD]`/`[UNKNOWN]`.
 
 ---
@@ -238,7 +238,7 @@ Files: `work/quarantine/YYYY-MM-DD--<id>.json`. Wraps a rejected SIGNAL RECORD s
 
 The pack owner may replace the default compact schemas above with their **own** compact record format. If the block below is filled in, **agents adopt it verbatim in place of the default** for the affected record type(s); if it is empty, the defaults in §1–§5 stand.
 
-**Precedence & guardrails (non-negotiable even under a custom format):** whatever schema is pasted, the four binding invariants still apply — every load-bearing claim carries an **`honesty_tag`** (or the custom equivalent), every **live** record carries a boolean **`security_flag`** (or the custom equivalent that the SAFETY_REVIEW gate can read), agents **return a path + short summary, never the data as prose**, and **no field may hold an unsourced number**. A custom format that drops any of these is rejected and the default is used instead.
+**Precedence & guardrails (non-negotiable even under a custom format):** whatever schema is pasted, the four binding invariants still apply — every load-bearing claim carries an **`honesty_tag`** (or the custom equivalent), **every record — any lane — carries a boolean `security_flag`** (or the custom equivalent that the SAFETY_REVIEW gate can read), agents **return a path + short summary, never the data as prose**, and **no field may hold an unsourced number**. A custom format that drops any of these is rejected and the default is used instead.
 
 ```
 ### Custom format slot — paste yours here
