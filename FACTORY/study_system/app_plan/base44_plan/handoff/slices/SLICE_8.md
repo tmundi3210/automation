@@ -1,0 +1,20 @@
+# SLICE 8 — Managing agent + loops (the system runs itself, with the owner's hand on the gates)
+
+_Repo-driven mode: obey `docs/plan/PROTOCOL.md`. Any specialist path like `FACTORY/study_system/specialists/<code>/<code>.specialist.json` in the directive block resolves HERE to `docs/plan/specialists/<code>.specialist.json`._
+
+## SLICE 8 — Managing agent + loops (the system runs itself, with the owner's hand on the gates)
+**Goal.** The nightly analysis becomes a real scheduled, idempotent, timezone-correct Automation; a Base44 managing agent stewards it, diagnoses from self-metrics, routes anomalies to specialists, audits specs via SELF_LOOP, and scans benchmarks — proposing, never silently applying. **The full binding doctrine is `BASE44_LOOPS.md` in this package — load it alongside this slice.** Its §1 (nightly Automation job contract, step order 1–9, degraded mode, self-metrics table), §2 (the agent's five duties and the autonomous-vs-gated table), and §3 (weakness lifecycle, named consumers for BKT/Elo/calibration, three-level plan-regression rule) are this slice's spec.
+
+**What to build (build content, from BASE44_LOOPS §4).**
+- **Entities:** `AgentActionJournal` (append-only: timestamp, duty, action, evidence ref); `Proposal` (source duty, evidence, status pending/approved/rejected, owner decision date); `BenchmarkLedger` (function → exemplar → what-to-copy + modification → evidence tag, + verdict adopt/adapt/reject); `WeaknessEvent` (append-only resolution/snooze/probe events); PipelineRun extended with run_id, local day_key, per-step status, degraded flag.
+- **Screens:** one "Agent Activity" page — what ran, what it found, what awaits approval, with approve/reject on proposals; the manual pipeline button kept as override.
+- **Behaviors:** the BASE44_LOOPS §1 schedule (02:00 owner-local [ESTIMATE], idempotent run_id, append-only snapshots, degraded mode); the agent's five duties (steward, diagnostician, router over all 14 specialists, bounded SELF_LOOP auditor — proposals only, max 2 rounds, NOT-CONVERGED flagged honestly — and quarterly benchmark scanner); a shadow-mode flag (agent proposes only); an owner-set LLM budget cap consuming Slice 5's cost visibility. Agent runtime: JSONC config in `base44/agents/`, synced via the Base44 CLI [FACT-source: docs.base44.com AI-agents pages, via snippet — verify in-app]; runtime limits/triggers/model controls [UNKNOWN — METHOD: build a one-step throwaway automation/agent in the workspace first and observe].
+
+**Acceptance checks** — the 13 loop acceptance checks in BASE44_LOOPS §4 verbatim (schedule fires without a button; double-run idempotency; local day boxes; every kept metric has snapshot+threshold+consumer; degraded run still ships an FSRS-due-only plan; one open Weakness per (concept, cause); probes flow open→probing→resolved; new-card gate with regression; gated re-fit + auto-revert; shadow mode writes only journal+proposals; audit yields LOOP_REPORT with honest NOT-CONVERGED; BenchmarkLedger rows fully columned and tagged; full pagination at 2000+ cards).
+
+**Owner approval gates.** `schedule_enable` (owner enables the Automation and approves the run time; manual button stays until two clean scheduled weeks); two-week shadow then per-duty go-live (steward first, auditor last [FEATURE_PLAN P8 gate]); LLM budget cap (`spend`); every proposal application (threshold/parameter changes, spec changes, benchmark adoptions); any external send/credential/export exactly as tabled in BASE44_LOOPS §2.
+
+```
+Base44 agent directive
+> Load FACTORY/study_system/specialists/sysloops/sysloops.specialist.json AND FACTORY/SELF_LOOP.md (paste both in full into your planning context). Build slice 8 strictly by the specialist's role + decision_procedure and SELF_LOOP's invariants (fresh contexts, bounded rounds, apply_now-only-with-independent-re-gate, self-reports are never acceptance). Treat the escalation_triggers as stop-and-ask rules and the acceptance checks above plus the validation_checklist as this slice's gate. Do not act outside the specialist's boundaries.
+```
