@@ -25,7 +25,10 @@ Honesty tags: [FACT] verified in a named file/source · [ESTIMATE] inference wit
 1. **SELF_LOOP.md** [FACT — canonical at `FACTORY/sweater_vertical/specialists/BRAIN/SELF_LOOP.md`, parameterized per vertical by `FACTORY/SELF_LOOP.md`] — the artifact-audit loop: per specialist, four fresh-context roles (adversarial questioner → answerer → judge → synthesizer), bounded rounds with an honest NOT-CONVERGED exit, only mechanical gate-green fixes self-apply, independent re-gate before commit. Reused to audit both the existing 9 and any future specialists — and it is the role-injection pattern the future "managing agent" orchestrator must follow.
 2. **sysloops loop structure** [FACT — sysloops spec] — the nightly-pipeline step order, idempotency/append-only rule, snapshot+threshold+named-consumer metric governance, degraded mode, and the competitor-ledger process. Reused as the governing blueprint for making the app's existing `runPipeline` a real scheduled loop (see SPECIALIST_MAP.md §2).
 
-## C. PROPOSED NEW SPECIALISTS — names + scope only (NOTHING built here)
+## C. NEW SPECIALISTS — BUILT & GATED (2026-07-08)
+
+> **Status update:** these five were subsequently **built** via the house pipeline (3 dense KBs each, forged + `kb_validator --mode dense`, distilled + `specialist_validator`, `build.sh` ALL GREEN) and live at `FACTORY/study_system/specialists/{kgraph,viz,extint,media,uxguide}/`. Adversarially audited for fabricated vendor facts / invented citations / scope drift — clean (one viz boundary carve-out to `engage` added). The scope + grounding-field notes below are what they were built to.
+
 
 Proposal rule applied: propose only where **no** existing specialist covers the domain [FACT — each gap grep/read-verified in recon], merge aggressively for the smallest honest set, and keep each boundary domain-coherent like the existing roster. Each entry: name → 1-line scope → the academic field(s) whose fields→topics→subtopics enumeration would ground its dense KBs (the house KB-building method) → which of your asks it serves.
 
@@ -66,4 +69,4 @@ Five proposed specialists is the honest minimum: each merges the recon's twelve 
 
 ---
 
-**None of these are created yet — creation is a separate, owner-gated step.**
+**Built and gated as of 2026-07-08** — all five pass every deterministic gate (`build.sh` ALL GREEN) and are ready to consult in the phased plan (`FEATURE_PLAN.md`). Gates check structure + math only; prose truth was checked by a separate adversarial honesty/fidelity audit.
