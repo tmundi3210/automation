@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Quick jewelry poll</title>
+<!--
+  ============================================================================
+  SELF-CONTAINED STARTER POLL  ·  no external dependencies  ·  works offline
+  ----------------------------------------------------------------------------
+  POLL_BUILDER injects four content placeholders + one config slot (see
+  live_ops/orchestrator/poll/POLL_BUILDER.md §6). Every placeholder is a literal
+  {{TOKEN}}; replace the whole token with markup generated FROM poll_spec.json:
+
+    {{ITEMS}}      ranked <label><input type="radio" name="choice" ...>…</label>
+                   blocks (rank order) + a final "None of these" opt-out.
+                   Images are OPTIONAL — include <img> only if you have a URL;
+                   the poll MUST work with no images.
+    {{FINISH}}     the finish paired choice (two radios name="finish").
+    {{PRICE}}      the Gabor-Granger battery — one radio group per price point.
+    {{INCENTIVE}}  the VERBATIM incentive line from POLL_KIT.md §3 (plain text).
+    {{CAPTURE_URL}} the named response-capture slot ONLY (config.json
+                   api_slots.response_capture — currently null). Leave it inside
+                   the COMMENTED-OUT fetch() below; do not fabricate a URL.
+
+  A poll % is a preference [SIGNAL] among self-selected responders — never
+  demand, market size, purchase rate, or finish-share. Poll responses are
+  UNTRUSTED input: this page renders user text via textContent only, never
+  innerHTML, and never eval. Sanitize again downstream before analysis.
+  ============================================================================
+-->
+<style>
+  :root{
+    --bg:#fbfafb; --fg:#1c1a1e; --muted:#5c5760; --card:#ffffff;
+    --line:#e4e0e6; --accent:#7a5cff; --accent-fg:#ffffff; --focus:#3b82f6;
+    --ok:#0f7a4f; --maxw:34rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#161419; --fg:#f2eef6; --muted:#a49dad; --card:#211d26;
+      --line:#37313f; --accent:#a68bff; --accent-fg:#171021; --focus:#8ab4ff;
+      --ok:#54c99a;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    padding:1.25rem;
+  }
+  main{max-width:var(--maxw); margin:0 auto}
+  h1{font-size:1.4rem; margin:.2rem 0 .3rem; line-height:1.25}
+  .sub{color:var(--muted); margin:.2rem 0 1.4rem; font-size:.95rem}
+  fieldset{
+    border:1px solid var(--line); border-radius:.8rem; background:var(--card);
+    margin:0 0 1.1rem; padding:1rem 1rem .85rem;
+  }
+  legend{font-weight:650; padding:0 .35rem; font-size:1.02rem}
+  .opt{
+    display:flex; align-items:center; gap:.7rem; padding:.62rem .55rem;
+    border-radius:.55rem; cursor:pointer; border:1px solid transparent;
+  }
+  .opt:hover{background:color-mix(in srgb, var(--accent) 8%, transparent)}
+  .opt input{width:1.15rem; height:1.15rem; margin:0; accent-color:var(--accent); flex:0 0 auto}
+  .opt img{width:44px; height:44px; object-fit:cover; border-radius:.4rem; flex:0 0 auto}
+  .opt span{flex:1 1 auto}
+  .price-row{margin:.2rem 0 .9rem}
+  .price-row .q{font-weight:600; margin:0 0 .35rem; font-size:.96rem}
+  .scale{display:flex; flex-wrap:wrap; gap:.4rem}
+  .scale label{
+    display:inline-flex; align-items:center; gap:.4rem; padding:.4rem .6rem;
+    border:1px solid var(--line); border-radius:.5rem; cursor:pointer; font-size:.9rem;
+  }
+  .scale input{accent-color:var(--accent)}
+  .entry{margin:.4rem 0 0}
+  .entry label{display:block; font-size:.9rem; color:var(--muted); margin:0 0 .3rem}
+  .entry input[type=email]{
+    width:100%; padding:.6rem .7rem; border:1px solid var(--line);
+    border-radius:.55rem; background:var(--bg); color:var(--fg); font:inherit;
+  }
+  .incentive{
+    background:color-mix(in srgb, var(--accent) 10%, transparent);
+    border:1px solid var(--line); border-radius:.7rem; padding:.85rem 1rem;
+    margin:0 0 .8rem; font-size:.94rem;
+  }
+  .privacy{color:var(--muted); font-size:.82rem; margin:1rem 0 1.4rem}
+  .privacy a{color:inherit}
+  .actions{display:flex; flex-wrap:wrap; gap:.6rem; align-items:center}
+  button{
+    font:inherit; font-weight:650; border-radius:.6rem; cursor:pointer;
+    padding:.7rem 1.1rem; border:1px solid var(--line); background:var(--card); color:var(--fg);
+  }
+  button.primary{background:var(--accent); color:var(--accent-fg); border-color:transparent}
+  button:disabled{opacity:.5; cursor:not-allowed}
+  :focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+  .status{min-height:1.2rem; margin:.7rem 0 0; font-size:.9rem}
+  .status.err{color:#c0392b}
+  .status.ok{color:var(--ok)}
+  .done{
+    text-align:center; padding:2rem 1rem; background:var(--card);
+    border:1px solid var(--line); border-radius:.9rem;
+  }
+  .done h2{margin:.2rem 0 .5rem}
+  .count{color:var(--muted); font-size:.82rem; margin-top:.8rem}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Quick jewelry poll</h1>
+  <p class="sub">Two taps. Anonymous. Helps us pick what to make next.</p>
+
+  <form id="poll" novalidate>
+
+    <!-- Q1 · category / item choice (single-choice SCREEN — screens, does not rank) -->
+    <fieldset>
+      <legend>1 · Which piece would you reach for most?</legend>
+      <!-- POLL_BUILDER: replace {{ITEMS}} with one .opt label per ranked item, e.g.:
+           <label class="opt"><input type="radio" name="choice" value="Gold-plated huggie hoops">
+             <img src="…" alt="Gold-plated huggie hoops" loading="lazy">   ← optional; omit if no image
+             <span>Gold-plated huggie hoops</span></label>
+           …one per item in rank order, then the "None of these" opt-out below stays. -->
+      {{ITEMS}}
+      <label class="opt"><input type="radio" name="choice" value="__none__"><span>None of these</span></label>
+    </fieldset>
+
+    <!-- Q2 · finish paired choice (POLL_KIT.md §2 — verbatim, FTC-defined) -->
+    <fieldset>
+      <legend>2 · Which finish?</legend>
+      <!-- POLL_BUILDER: replace {{FINISH}} with the two finish radios, e.g.:
+           <label class="opt"><input type="radio" name="finish" value="silver_rhodium">
+             <span>Bright silver-tone (rhodium-plated)</span></label>
+           <label class="opt"><input type="radio" name="finish" value="gold_plated">
+             <span>Warm gold-tone (gold-plated)</span></label> -->
+      {{FINISH}}
+    </fieldset>
+
+    <!-- Q3 · price / willingness-to-pay (Gabor-Granger, POLL_KIT.md §2) -->
+    <fieldset>
+      <legend>3 · How likely would you be to buy at each price?</legend>
+      <!-- POLL_BUILDER: replace {{PRICE}} with one .price-row per price point ($19/$29/$39/$49), e.g.:
+           <div class="price-row"><p class="q" id="p19">At $19, how likely are you to buy this?</p>
+             <div class="scale" role="radiogroup" aria-labelledby="p19">
+               <label><input type="radio" name="price_19" value="very">Very likely</label>
+               <label><input type="radio" name="price_19" value="somewhat">Somewhat likely</label>
+               <label><input type="radio" name="price_19" value="not">Not likely</label>
+             </div></div>
+           …repeat for price_29, price_39, price_49. Each response is a [SIGNAL], never a measured price. -->
+      {{PRICE}}
+    </fieldset>
+
+    <!-- Incentive + giveaway entry (offered AFTER the answer; POLL_KIT.md §3 lever 4) -->
+    <p class="incentive" id="incentiveLine">{{INCENTIVE}}</p>
+    <fieldset>
+      <legend>Giveaway entry (optional)</legend>
+      <div class="entry">
+        <label for="email">Email — only for the prize draw. Leave blank to answer without entering.</label>
+        <input type="email" id="email" name="entry_email" autocomplete="email"
+               inputmode="email" placeholder="you@example.com">
+      </div>
+    </fieldset>
+
+    <p class="privacy">
+      We collect only your answers (anonymous) and, if you choose to enter, one email for the prize draw —
+      nothing else. Answers are used in aggregate to help us pick what to make; they are a preference signal,
+      not a purchase. No purchase necessary; your answer doesn't affect your odds. US, 18+.
+      <a href="#" id="rulesLink">See Official Rules</a>. To opt out or request deletion, reply to any email or
+      contact us.
+    </p>
+
+    <div class="actions">
+      <button type="submit" class="primary" id="submitBtn">Submit</button>
+      <button type="button" id="downloadBtn">Download responses (CSV)</button>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </form>
+
+  <!-- confirmation (shown after submit; user text set via textContent only) -->
+  <section class="done" id="done" hidden aria-live="polite">
+    <h2>Thanks!</h2>
+    <p id="doneMsg"></p>
+    <p class="count" id="doneCount"></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // --- config -------------------------------------------------------------
+  // Response-capture endpoint. POLL_BUILDER leaves this as the NAMED slot only
+  // (config.json api_slots.response_capture — currently null). Until the owner
+  // wires a backend, responses are stored locally + exported as CSV (Option A).
+  var CAPTURE_URL = "{{CAPTURE_URL}}";
+  var STORE_KEY   = "poll_responses_v1";
+
+  var form      = document.getElementById("poll");
+  var statusEl  = document.getElementById("status");
+  var doneEl    = document.getElementById("done");
+  var doneMsg   = document.getElementById("doneMsg");
+  var doneCount = document.getElementById("doneCount");
+
+  // --- storage helpers (fail-safe if localStorage is unavailable) ----------
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); }
+    catch (e) { return []; }
+  }
+  function save(list) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); return true; }
+    catch (e) { return false; }
+  }
+
+  function setStatus(msg, kind) {
+    statusEl.textContent = msg;               // textContent — never innerHTML
+    statusEl.className = "status" + (kind ? " " + kind : "");
+  }
+
+  // --- collect one response as a flat, string-valued record ---------------
+  function collect() {
+    var fd = new FormData(form);
+    var rec = { ts: new Date().toISOString() };
+    // Fixed, known keys only — we never trust field NAMES from the DOM blindly,
+    // and we coerce every value to a plain string.
+    ["choice", "finish", "price_19", "price_29", "price_39", "price_49", "entry_email"]
+      .forEach(function (k) { rec[k] = String(fd.get(k) == null ? "" : fd.get(k)); });
+    return rec;
+  }
+
+  // --- CSV export (RFC-4180-safe escaping) --------------------------------
+  function csvEscape(v) {
+    v = String(v == null ? "" : v);
+    return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }
+  function toCSV(list) {
+    var cols = ["ts", "choice", "finish", "price_19", "price_29", "price_39", "price_49", "entry_email"];
+    var lines = [cols.join(",")];
+    list.forEach(function (r) {
+      lines.push(cols.map(function (c) { return csvEscape(r[c]); }).join(","));
+    });
+    return lines.join("\r\n");
+  }
+  function download(list) {
+    if (!list.length) { setStatus("No saved responses yet.", "err"); return; }
+    var blob = new Blob([toCSV(list)], { type: "text/csv;charset=utf-8" });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement("a");
+    a.href = url;
+    a.download = "poll_responses.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatus("Downloaded " + list.length + " response(s).", "ok");
+  }
+
+  // --- OPTIONAL backend POST (Option B) — enable when a backend exists -----
+  // Uncomment and set CAPTURE_URL (above) to the owner's endpoint, resolved
+  // from the api_slots.response_capture slot BY NAME — never paste a secret here.
+  /*
+  function postRemote(rec) {
+    if (!CAPTURE_URL || CAPTURE_URL.indexOf("{{") === 0) return Promise.resolve(false);
+    return fetch(CAPTURE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rec)
+    }).then(function (r) { return r.ok; }).catch(function () { return false; });
+  }
+  */
+
+  // --- submit -------------------------------------------------------------
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var rec = collect();
+
+    if (!rec.choice) { setStatus("Please pick one piece in question 1.", "err"); return; }
+    if (!rec.finish) { setStatus("Please pick a finish in question 2.", "err"); return; }
+
+    var list = load();
+    list.push(rec);
+    var saved = save(list);
+
+    // Option B (later): postRemote(rec);  // fire-and-forget; keep local copy regardless.
+
+    // Confirmation — no user-supplied text is echoed into markup.
+    form.hidden = true;
+    doneMsg.textContent = "Your answer was recorded. It helps us decide what to make next.";
+    doneCount.textContent = saved
+      ? (list.length + " response(s) saved on this device — export them with the CSV button.")
+      : "Saved for this session (local storage unavailable).";
+    doneEl.hidden = false;
+    doneEl.focus && doneEl.focus();
+  });
+
+  document.getElementById("downloadBtn").addEventListener("click", function () {
+    download(load());
+  });
+
+  document.getElementById("rulesLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    setStatus("Official Rules link goes here — the owner adds the URL before launch.", "");
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+{
+  "_note": "Machine config for the LIVE plated-jewelry orchestrator. Paths are PACK-RELATIVE to the unzipped plated_jewelry_market_pack root. Loaded read-only by the orchestrator at first boot (ORCHESTRATOR.md). Never edited by an agent. Specialist registry mirrors orchestration/SPECIALIST_INDEX.md; source families mirror orchestration/REALTIME_DATA_COLLECTION.md; record schemas live in live_ops/orchestrator/OUTPUT_FORMAT.md; the working tree in live_ops/orchestrator/FILESYSTEM.md.",
+  "pack": "plated_jewelry_market_pack",
+  "specialists": [
+    {
+      "id": "jewel_market",
+      "spec": "specialists/market/jewel_market.specialist.json",
+      "kbs": [
+        "specialists/market/kb1_category_and_finish_demand.kb.json",
+        "specialists/market/kb2_consumer_segmentation_method.kb.json",
+        "specialists/market/kb3_trend_and_competitor_mapping.kb.json"
+      ],
+      "role": "demand"
+    },
+    {
+      "id": "jewel_materials",
+      "spec": "specialists/materials/jewel_materials.specialist.json",
+      "kbs": [
+        "specialists/materials/kb1_substrates_base_metals.kb.json",
+        "specialists/materials/kb2_finishes_rhodium_gold.kb.json",
+        "specialists/materials/kb3_quality_cost_value_engineering.kb.json"
+      ],
+      "role": "materials"
+    },
+    {
+      "id": "jewel_form",
+      "spec": "specialists/form/jewel_form.specialist.json",
+      "kbs": [
+        "specialists/form/kb1_category_construction_taxonomy.kb.json",
+        "specialists/form/kb2_shape_motif_style_systems.kb.json",
+        "specialists/form/kb3_sizing_fit_returns.kb.json"
+      ],
+      "role": "form"
+    },
+    {
+      "id": "jewel_poll",
+      "spec": "specialists/poll/jewel_poll.specialist.json",
+      "kbs": [
+        "specialists/poll/kb1_instrument_design.kb.json",
+        "specialists/poll/kb2_incentive_sampling_bias.kb.json",
+        "specialists/poll/kb3_paid_reach_and_signal.kb.json"
+      ],
+      "role": "poll"
+    },
+    {
+      "id": "jewel_assortment",
+      "spec": "specialists/assortment/jewel_assortment.specialist.json",
+      "kbs": [
+        "specialists/assortment/kb1_signal_synthesis_ranking.kb.json",
+        "specialists/assortment/kb2_launch_set_of_six.kb.json",
+        "specialists/assortment/kb3_test_iterate_protocol.kb.json"
+      ],
+      "role": "synthesis"
+    },
+    {
+      "id": "jewel_economics",
+      "spec": "specialists/economics/jewel_economics.specialist.json",
+      "kbs": [
+        "specialists/economics/kb1_cogs_and_landed.kb.json",
+        "specialists/economics/kb2_pricing_and_margin.kb.json",
+        "specialists/economics/kb3_viability_cac_ltv.kb.json"
+      ],
+      "role": "economics"
+    }
+  ],
+  "lanes": {
+    "live": { "primary": true, "cadence_minutes": 60 },
+    "history": { "primary": false, "confidence_penalty": 0.4 }
+  },
+  "sources": [
+    {
+      "family": "sales_proxy",
+      "signal_type": "revealed_sales_proxy",
+      "reliability": "highest (revealed behavior)",
+      "examples": [
+        "Amazon Best Sellers (Jewelry > Earrings/Necklaces/Rings/Bracelets/Anklets)",
+        "Amazon Movers & Shakers (24h rank gainers)",
+        "Etsy Bestseller badge + Popular-now shelves",
+        "Frequently-bought-together / customers-also-bought adjacency",
+        "TikTok Shop / Instagram Shop trending + 'X sold' counters",
+        "Google Shopping popular products",
+        "Sold-out / restock / 'only N left' states"
+      ],
+      "honesty": "rank & review-count = [FACT-source]; inferred units = [ESTIMATE via named method] or [UNKNOWN]"
+    },
+    {
+      "family": "search_interest",
+      "signal_type": "search_interest",
+      "reliability": "intent proxy (relative, never absolute)",
+      "examples": [
+        "Google Trends (relative 0-100 index; rising/breakout queries)",
+        "Pinterest Trends / Pinterest Predicts",
+        "Autocomplete / related queries / people-also-search",
+        "Keyword-volume tools (banded)"
+      ],
+      "honesty": "index/band = [FACT-source]; exact volume = [ESTIMATE]; intent leads purchase, not equal to it"
+    },
+    {
+      "family": "social_engagement",
+      "signal_type": "social_engagement",
+      "reliability": "earliest + most fad-inflated; never actioned alone",
+      "examples": [
+        "TikTok / Instagram hashtag view+post counts & growth",
+        "TikTok / Instagram sounds & formats",
+        "Reddit (r/jewelry, r/femalefashionadvice, r/TikTokFashion) threads/upvotes/asks",
+        "Comment sentiment & recurring asks",
+        "Creator / UGC velocity"
+      ],
+      "honesty": "views/likes/hashtags/followers = [SIGNAL] (reach), never purchase; vanity-metric caveat binding"
+    },
+    {
+      "family": "review_velocity",
+      "signal_type": "review_velocity",
+      "reliability": "observable lower-bound on units",
+      "examples": [
+        "Review COUNT on a listing (Amazon/Etsy/marketplace/DTC)",
+        "Review VELOCITY = delta-reviews / delta-days between two dated fetches"
+      ],
+      "honesty": "count = [FACT-source] (censored lower-bound); velocity = [ESTIMATE via two-date-delta method]; never units = reviews x invented-k"
+    },
+    {
+      "family": "editorial_trend",
+      "signal_type": "editorial_trend",
+      "reliability": "lagging narrative / forecast (context only)",
+      "examples": [
+        "Trade press (WWD, Vogue Business, Business of Fashion, trend forecasters)",
+        "Retailer / brand press releases & earnings color",
+        "Season 'jewelry trends' roundups"
+      ],
+      "honesty": "claim-was-made = [FACT-source]; the trend call = [FACT-source, opinion/forecast]; self-reported sell-outs = [UNKNOWN]"
+    }
+  ],
+  "poll": {
+    "min_items": 6,
+    "rank_by": "demand_score",
+    "gate": "top buckets corroborated by >=2 live sources"
+  },
+  "api_slots": {
+    "search": null,
+    "llm": null,
+    "poll_host": null,
+    "response_capture": null
+  },
+  "safety": {
+    "untrusted_content": true,
+    "quarantine_on_flag": true
+  }
+}

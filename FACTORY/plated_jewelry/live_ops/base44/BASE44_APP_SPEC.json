@@ -1,0 +1,180 @@
+{
+  "_note": "Machine spec for the Base44 plated-jewelry live-ops app. Entities mirror the canonical compact records in live_ops/orchestrator/OUTPUT_FORMAT.md one-to-one. All pack paths are PACK-RELATIVE to the unzipped plated_jewelry_market_pack root; the Grok-CLI runner on the Mac resolves them from that cwd. Base44's build agent consumes this alongside BASE44_BUILD_PLAN.md + BASE44_SLICES.md.",
+  "app": "plated_jewelry_demand_radar",
+  "entities": [
+    {
+      "name": "Signal",
+      "is": "SIGNAL RECORD (one per observation)",
+      "fields": [
+        {"name": "sig_id", "type": "string", "unique": true, "note": "sig_<short>, join key"},
+        {"name": "ts", "type": "datetime"},
+        {"name": "lane", "type": "enum", "options": ["live", "history"]},
+        {"name": "source", "type": "string"},
+        {"name": "url", "type": "string", "nullable": true, "note": "null => honesty_tag must be [UNKNOWN]"},
+        {"name": "observation", "type": "text", "max": 200},
+        {"name": "signal_type", "type": "enum", "options": ["revealed_sales_proxy", "search_interest", "social_engagement", "review_velocity", "editorial_trend"]},
+        {"name": "category", "type": "enum", "options": ["earrings", "necklaces", "rings", "bracelets", "anklets", "sets", "other"]},
+        {"name": "shape", "type": "string", "nullable": true},
+        {"name": "finish", "type": "enum", "options": ["gold_plated", "rhodium_white", "vermeil", "gold_filled", "other", "null"]},
+        {"name": "honesty_tag", "type": "enum", "options": ["[FACT-source]", "[ESTIMATE]", "[SIGNAL]", "[UNKNOWN]"]},
+        {"name": "confidence", "type": "number", "min": 0.0, "max": 1.0},
+        {"name": "corroborated_by", "type": "array", "of": "sig_id"},
+        {"name": "security_flag", "type": "boolean", "default": false},
+        {"name": "status", "type": "enum", "options": ["pending", "cleared", "quarantined"], "default": "pending"}
+      ]
+    },
+    {
+      "name": "AnalysisRollup",
+      "is": "ANALYSIS RECORD (dated ranked snapshot; only SYNTHESIZER writes it)",
+      "fields": [
+        {"name": "as_of", "type": "datetime"},
+        {"name": "ranking", "type": "json", "shape": "[{bucket, demand_score, evidence_ids[], tag, note<=160, verdict}]", "verdict_options": ["strong", "weak", "watch", "not_converged"]},
+        {"name": "open_questions", "type": "array"},
+        {"name": "dropped_coverage", "type": "array"},
+        {"name": "is_current", "type": "boolean", "note": "true on newest snapshot only; prior snapshots retained"}
+      ]
+    },
+    {
+      "name": "RunState",
+      "is": "STATE (single source of truth; singleton)",
+      "fields": [
+        {"name": "run_id", "type": "string"},
+        {"name": "last_live_pull_ts", "type": "datetime"},
+        {"name": "cadence_minutes", "type": "number", "default": 60},
+        {"name": "active_lanes", "type": "array", "default": ["live", "history"]},
+        {"name": "active_specialists", "type": "array", "default": ["jewel_market", "jewel_materials", "jewel_form", "jewel_poll", "jewel_assortment", "jewel_economics"]},
+        {"name": "poll_ready", "type": "boolean", "default": false},
+        {"name": "not_converged", "type": "array"},
+        {"name": "notes", "type": "text", "max": 200},
+        {"name": "monitor_duration_minutes", "type": "number", "default": 1440, "note": "0 = continuous"},
+        {"name": "monitor_until", "type": "datetime", "note": "computed = boot + monitor_duration_minutes; null when continuous"},
+        {"name": "live_leads", "type": "boolean", "default": true},
+        {"name": "auto_poll", "type": "boolean", "default": true}
+      ]
+    },
+    {
+      "name": "PollSpec",
+      "is": "POLL SPEC (draft until approved; POLL_BUILDER writes it)",
+      "fields": [
+        {"name": "generated_at", "type": "datetime"},
+        {"name": "items", "type": "json", "shape": "[{label, category, finish, rank, demand_score, evidence_ids[]}]", "min_items": 6},
+        {"name": "finish_question", "type": "json"},
+        {"name": "price_question", "type": "json"},
+        {"name": "incentive", "type": "text"},
+        {"name": "legal_flags", "type": "array", "example": ["ARV<=~$500 — under NY/FL $5,000 bond & RI $500 retail triggers"]},
+        {"name": "status", "type": "enum", "options": ["draft", "approved", "hosted"], "default": "draft"}
+      ]
+    },
+    {
+      "name": "Source",
+      "is": "live-lane source registry (from orchestration/REALTIME_DATA_COLLECTION.md)",
+      "fields": [
+        {"name": "family", "type": "enum", "options": ["sales_proxy", "search_interest", "social_engagement", "review_velocity", "editorial_trend"]},
+        {"name": "signal_type", "type": "string"},
+        {"name": "name", "type": "string"},
+        {"name": "reliability", "type": "string"},
+        {"name": "honesty_rule", "type": "text", "note": "e.g. rank/review-count=[FACT-source]; inferred units=[ESTIMATE]; social=[SIGNAL]"},
+        {"name": "enabled", "type": "boolean", "default": true}
+      ]
+    },
+    {
+      "name": "Specialist",
+      "is": "the 6-specialist registry (from orchestration/SPECIALIST_INDEX.md)",
+      "fields": [
+        {"name": "specialist_id", "type": "enum", "options": ["jewel_market", "jewel_materials", "jewel_form", "jewel_poll", "jewel_assortment", "jewel_economics"]},
+        {"name": "spec_path", "type": "string", "note": "pack-relative *.specialist.json"},
+        {"name": "kb_paths", "type": "array", "note": "the 3 grounded *.kb.json, pack-relative"},
+        {"name": "role", "type": "enum", "options": ["demand", "materials", "form", "poll", "synthesis", "economics"]},
+        {"name": "enabled", "type": "boolean", "default": true}
+      ]
+    },
+    {
+      "name": "RunLogEntry",
+      "is": "supporting — one row per tick (resumability + audit)",
+      "fields": [
+        {"name": "tick_ts", "type": "datetime"},
+        {"name": "tick_no", "type": "number"},
+        {"name": "signals_added", "type": "number"},
+        {"name": "quarantined", "type": "number"},
+        {"name": "poll_ready", "type": "boolean"},
+        {"name": "summary", "type": "text", "max": 200}
+      ]
+    },
+    {
+      "name": "ApprovalRequest",
+      "is": "supporting — human-in-loop gate queue",
+      "fields": [
+        {"name": "action", "type": "enum", "options": ["spend", "send_poll", "host_public", "add_api_key"]},
+        {"name": "payload", "type": "json"},
+        {"name": "requested_at", "type": "datetime"},
+        {"name": "status", "type": "enum", "options": ["pending", "approved", "denied"], "default": "pending"},
+        {"name": "resolved_by", "type": "string", "nullable": true}
+      ]
+    }
+  ],
+  "screens": [
+    {"name": "Dashboard", "reads": ["AnalysisRollup(is_current)", "RunState"], "shows": "ranked buckets w/ demand_score+verdict+tag+evidence count+lane badge; poll_ready; monitor status; next-tick countdown"},
+    {"name": "Signals", "reads": ["Signal"], "shows": "raw feed, filterable by lane/category/finish/signal_type/honesty_tag/status; quarantined flagged + uncounted"},
+    {"name": "PollBuilder", "reads": ["PollSpec"], "shows": "current draft: 6+ ranked items, finish + price question, incentive, legal_flags; Host/Send buttons open ApprovalRequest"},
+    {"name": "Settings", "writes": ["RunState", "Specialist.enabled", "Source.enabled"], "shows": "the tweak panel (settings_controls below)"},
+    {"name": "RunLog", "reads": ["RunLogEntry"], "shows": "one row per tick; resume breadcrumb"},
+    {"name": "Approvals", "reads": ["ApprovalRequest"], "shows": "pending consequential actions; approve/deny before runner executes"}
+  ],
+  "settings_controls": [
+    {"key": "lane_live_enabled", "type": "checkbox", "label": "Live web lane (primary)", "default": true},
+    {"key": "lane_history_enabled", "type": "checkbox", "label": "History lane (down-weighted)", "default": true},
+    {"key": "spec_jewel_market", "type": "checkbox", "label": "Specialist: jewel_market (demand)", "default": true},
+    {"key": "spec_jewel_materials", "type": "checkbox", "label": "Specialist: jewel_materials", "default": true},
+    {"key": "spec_jewel_form", "type": "checkbox", "label": "Specialist: jewel_form", "default": true},
+    {"key": "spec_jewel_poll", "type": "checkbox", "label": "Specialist: jewel_poll", "default": true},
+    {"key": "spec_jewel_assortment", "type": "checkbox", "label": "Specialist: jewel_assortment", "default": true},
+    {"key": "spec_jewel_economics", "type": "checkbox", "label": "Specialist: jewel_economics", "default": true},
+    {"key": "monitor_duration_minutes", "type": "select", "label": "Monitor for (how long the backend keeps ticking)", "options": [60, 240, 1440, 10080, 0], "option_labels": ["1 hour", "4 hours", "1 day", "1 week", "Continuous"], "default": 1440},
+    {"key": "cadence_minutes", "type": "slider", "label": "Cadence — minutes between ticks", "min": 15, "max": 1440, "step": 15, "default": 60},
+    {"key": "live_leads", "type": "toggle", "label": "Live leads (history never outranks corroborated live)", "default": true},
+    {"key": "auto_poll", "type": "toggle", "label": "Generate poll when signal strong", "default": true}
+  ],
+  "backend_jobs": [
+    {
+      "name": "monitor_tick",
+      "trigger": "schedule",
+      "action": "Every cadence_minutes while now < monitor_until: enqueue a Grok-CLI job batch (LIVE_RESEARCH lane:live for each enabled Source, + HISTORY lane:history on refresh cadence) -> safety_review -> ANALYST -> SYNTHESIZER; then check triggers and append a RunLogEntry.",
+      "inputs": ["RunState", "AnalysisRollup(is_current)", "Source(enabled)", "Specialist(enabled)", "active_lanes"],
+      "outputs": ["Signal[] (pending)", "AnalysisRollup (new dated snapshot)", "RunState (updated)", "RunLogEntry"]
+    },
+    {
+      "name": "grok_cli_runner",
+      "trigger": "manual",
+      "action": "Local Mac bridge (see BASE44_BACKEND_GROK.md): pull pending job, write role prompt (from live_ops/orchestrator/AGENTS.md) + params + pack paths to a prompt file, invoke the ALREADY-LOGGED-IN Grok Code CLI as a subprocess (prompt-file in, JSON out), capture the compact records, POST cleared records back to the Base44 entities. Net search ON only for lane:live.",
+      "inputs": ["pending job {role, params, pack_paths}", "pack root on Mac"],
+      "outputs": ["SIGNAL/ANALYSIS/POLL SPEC records posted to Base44 API"]
+    },
+    {
+      "name": "safety_review",
+      "trigger": "manual",
+      "action": "Fresh SAFETY_REVIEW pass (Grok CLI, NO net) over pending Signals/records: schema + injection + secret + fabricated-number scan -> set status cleared or quarantined. Fails closed. Only cleared records feed ANALYST.",
+      "inputs": ["Signal[] status=pending", "live_ops/orchestrator/OUTPUT_FORMAT.md"],
+      "outputs": ["Signal.status", "quarantine log (security_flag:true)"]
+    },
+    {
+      "name": "build_poll",
+      "trigger": "manual",
+      "action": "When RunState.poll_ready && auto_poll (or owner clicks Build): invoke Grok CLI as POLL_BUILDER against AnalysisRollup(is_current) + orchestration/POLL_KIT.md + specialists/poll/* -> write PollSpec status:draft (6+ items ranked by demand_score, finish + Gabor-Granger price question, legal-envelope incentive). Host/Send stay human-in-loop.",
+      "inputs": ["AnalysisRollup(is_current)", "orchestration/POLL_KIT.md", "specialists/poll/jewel_poll.specialist.json + 3 KBs"],
+      "outputs": ["PollSpec (status:draft)"]
+    }
+  ],
+  "safety": {
+    "untrusted_web_content": true,
+    "gate_before_state": "safety_review",
+    "quarantine_on_flag": true,
+    "human_in_loop_actions": ["spend", "send_poll", "host_public", "add_api_key"]
+  },
+  "api_slots": {
+    "grok_cli_bridge": null,
+    "search": null,
+    "llm": null,
+    "poll_host": null,
+    "response_capture": null
+  }
+}
