@@ -71,6 +71,17 @@ All below [FACT-source: docs.base44.com pages (via search snippets; domain egres
 - Web viewer: [FACT-source: github.com/google/model-viewer (packages/modelviewer.dev data: "glTF/GLB models are supported")] Google's `<model-viewer>` web component renders glTF/GLB in-browser (three.js-based loader, DRACO/KTX2 supported) — so Tripo GLB output can be displayed in a web app with one HTML tag; three.js GLTFLoader is the general-purpose alternative [FACT].
 - Pricing/credits: [UNKNOWN exact costs] — [METHOD] https://platform.tripo3d.ai/docs/billing or dashboard.
 
+## 7b. MESHY API — image → 3D [ADOPTED 2026-07-10 — replaces Tripo per owner decision; §7 kept for reference]
+
+- Official docs: https://docs.meshy.ai (verified 2026-07-10 via search-indexed doc pages).
+- Auth: API key format `msy-...`, sent as `Authorization: Bearer <key>`; Bearer prefix mandatory [FACT-source: docs.meshy.ai/en/api/authentication].
+- Async task flow: create task → response returns a task id → poll the task GET endpoint until `status == "SUCCEEDED"` [FACT-source: docs.meshy.ai/en/api/quick-start].
+- Single image: `POST https://api.meshy.ai/openapi/v1/image-to-3d` — one image (JPG/JPEG/PNG) as public URL or base64; returns textured model; output formats GLB, FBX, OBJ, USDZ, STL, 3MF; requesting only needed formats reduces completion time [FACT-source: docs.meshy.ai/en/api/image-to-3d].
+- Multi-image: `POST https://api.meshy.ai/openapi/v1/multi-image-to-3d` — 1–4 images; **only supported when `ai_model` is `meshy-6` or `latest`** [FACT-source: docs.meshy.ai/en/api/multi-image-to-3d]. Whether a designated "front" view exists in the API is [UNKNOWN — METHOD: read the endpoint's image-order semantics at build time]; our front+left+right convention stays a design rule regardless.
+- Balance: `GET https://api.meshy.ai/openapi/v1/balance` returns the current credit balance — the `get_balance()` equivalent for the spend gate [FACT-source: docs.meshy.ai/en/api/balance].
+- Per-task cost: every task response carries a `consumed_credits` field (present in PENDING/IN_PROGRESS/SUCCEEDED) [FACT-source: docs.meshy.ai/en/api/changelog] — the observed-cost method gets exact numbers per task; exact pricing per model/feature remains [UNKNOWN] until observed.
+- Web viewer: unchanged — GLB renders in Google `<model-viewer>` exactly as §7 documents [FACT].
+
 ## 8. COMPETITOR + GAMIFICATION SCAN (public feature pages)
 
 - **Anki / FSRS** [FACT-source: https://docs.ankiweb.net/deck-options.html via ankitects/anki-manual]: (1) FSRS scheduler with per-preset **desired retention** (default 90%; workload rises sharply >90%) + one-click parameter Optimize from your review history; (2) "Compute minimum recommended retention" — algorithmic workload/retention trade-off advice; (3) daily New/Review limits per deck preset; review order "ascending retrievability". Lesson: expose a single retention dial + optimizer, not raw SRS knobs.
