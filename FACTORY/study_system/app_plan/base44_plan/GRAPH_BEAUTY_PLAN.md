@@ -25,11 +25,7 @@ Beauty must not lie. The existing honest encoding is **kept**: color still means
 ## 2. Competitor teardown (Codex-driven — the owner logs in, Codex extracts)
 Goal: mine the best tools for every feature worth stealing, sourced from hands-on use **and** their official manuals/support — no invented features.
 
-**Candidate shortlist (owner picks 2–3 they can log into; final choice theirs):**
-- _Beautiful knowledge/concept graphs:_ Heptabase, Obsidian (graph view + the Juggl plugin), RemNote (graph + SRS — closest to our domain).
-- _Polished mind-map interaction craft:_ XMind, MindNode, Scapple.
-- _Network aesthetics / big-graph navigation:_ Kumu, Infranodus, Gephi.
-- **Suggested pick:** one study-oriented (Heptabase or RemNote) + one mind-map-craft (XMind or MindNode) + optionally one network-aesthetics (Kumu). Spread the sample across the three flavors.
+**Tool selection — DISCOVERED, not assumed [AMENDED per owner direction]:** Codex first RESEARCHES which tools are currently the best (recent reviews, app-store ratings, PKM-community discussions), builds a ~8–10 candidate list, ranks a top 5 for our purpose (interactive knowledge graph for LEARNING: polish, navigation depth, learnability-from), and STOPS with a recommendation. The owner logs into the chosen 2–3, then Phase 2 (the deep analysis) proceeds. My prior shortlist (Heptabase/RemNote/Obsidian; XMind/MindNode; Kumu/Infranodus) stands only as a seed the research may confirm or beat.
 
 **What to extract, per tool (the feature-inventory taxonomy):**
 1. Layout — available layouts, defaults, auto-arrange behavior, spacing/whitespace feel.
@@ -42,7 +38,7 @@ Goal: mine the best tools for every feature worth stealing, sourced from hands-o
 8. Delight & polish — the small touches that make it feel premium; keyboard shortcuts; theming/dark mode.
 9. Export / share (note only; likely out of scope for us).
 
-**Method (for each chosen tool):** run its full workflow hands-on end-to-end, THEN read its official manual / help center / keyboard-shortcut reference to catch features not obvious in the UI. Record each feature with a one-line description + where it was found (UI vs which doc page). Do not guess a feature exists — verify it.
+**Method (for each chosen tool) [AMENDED — analysis, not inventory]:** (a) hands-on end-to-end on a small real map, THEN the official manual / help center / shortcut reference for non-obvious features; (b) for EACH feature: what it does, HOW it behaves mechanically (timings, hop-depths, exit gestures — marked [observed] vs [doc]), and when a learner would use it; (c) UI-FLOW walkthroughs of the core journeys (first-open orientation; create-connect-arrange; find-a-node; read-deeply-and-return; overview↔detail zoom) counting clicks/keys and noting friction vs delight; (d) why-it-feels-good observations (zoom-to-cursor, inertia, easing, dense-map handling at 100+ nodes, keyboard/undo/dark-mode/reduced-motion). Concrete observations, never invented features; ends in a cross-tool synthesis: shared table-stakes patterns, unique standouts, and the ~10 patterns most worth adopting with mechanics + app-mapping sketch.
 
 **Output:** one structured markdown inventory per tool (the taxonomy above), plus a short "what makes this one feel premium" note. These become the raw material `graphux` (once built) distills, and the transfer backlog below.
 
