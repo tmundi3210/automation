@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "name": "BASE44_BUILD_PLAN",
+    "version": "1.0",
+    "generated": "2026-07-10",
+    "purpose": "Machine-readable execution state + remaining runway for the whole build. BASE44_APP_SPEC.json is the static design index (entities/screens/jobs); THIS file is the live plan: what is done (with evidence grade), what runs next, in what order, behind which gates. The Base44 agent reads this WITH PROTOCOL.md; PROGRESS.md remains the append-only ledger and wins on any conflict about what actually happened.",
+    "how_to_use": "Owner says 'continue the plan'. Agent: (1) read this file + PROTOCOL.md; (2) take the lowest-order work_queue item whose actor is 'base44' and whose blocking list is clear; (3) run it exactly per PROTOCOL steps 2-7 (load the slice file + its named specialists, 3-line confirm, build, gate-stop, acceptance PASS/FAIL/BLOCKED, ledger append); (4) never start an item whose blocking entry is open; (5) items with actor 'owner' or 'codex' are NOT yours - skip them silently.",
+    "honesty_contract": "Tags [FACT]/[FACT-source]/[ESTIMATE]/[METHOD]/[UNKNOWN]/[SIGNAL] are load-bearing. evidence_grade in slice_status distinguishes owner-reported (stated in chat, not independently re-checked) from audit-verified (independent Codex/repo audit). Never upgrade a grade without the audit.",
+    "credit_discipline": "PROTOCOL.md credit section binds: one item = one build pass; batch fixes; stop after 2 failed attempts; prefer owner API keys over built-in services; state Automation runs/month at schedule_enable."
+  },
+  "sources_of_truth": {
+    "protocol": "docs/plan/PROTOCOL.md",
+    "ledger": "docs/plan/PROGRESS.md",
+    "design_index": "docs/plan/BASE44_APP_SPEC.json",
+    "slices": "docs/plan/slices/SLICE_0.md ... SLICE_8.md, SLICE_6_5.md",
+    "specialists": "docs/plan/specialists/<code>.specialist.json (14 + proposed graphux name-only)",
+    "loops_doctrine": "docs/plan/BASE44_LOOPS.md (binding for Slice 8 and any pipeline change)",
+    "kg_contract": "KG_EXCHANGE_CONTRACT.md (semantic edges never gate; folder handshake)",
+    "teardowns": "docs/plan/teardowns/graph/{thebrain,heptabase,kumu,synthesis}.md"
+  },
+  "slice_status": [
+    {"slice": "0", "name": "Infra: outbox, timezone day-key, pipeline guards", "status": "DONE", "evidence_grade": "owner-reported + Codex-audited", "open_items": []},
+    {"slice": "1", "name": "Explainability: rung captions, why-surfaces, Guide", "status": "DONE", "evidence_grade": "owner-reported + Codex-audited", "open_items": []},
+    {"slice": "2", "name": "Planner/gating: day plan, weakness lifecycle, prereq gate", "status": "DONE", "evidence_grade": "owner-reported + Codex-audited", "open_items": ["three threshold gates remain provisional until the local test program closes them [background_tracks.local_thresholds]"]},
+    {"slice": "3", "name": "Study-frequency control + AnkiConnect push + Calendar reminders", "status": "DONE", "evidence_grade": "owner-reported", "open_items": ["Anki push live connection test = owner action", "Google OAuth consent = owner action"]},
+    {"slice": "4", "name": "Export + staged ingest", "status": "PARTIAL", "evidence_grade": "ingest gate owner-verified (first-20-cards gate works); remainder unconfirmed", "open_items": ["export round-trip inspection unconfirmed", "WhatsApp-off status unconfirmed - one Base44 report closes both [work_queue wq-3]"]},
+    {"slice": "5", "name": "Model picker (Ollama Cloud, 2 active models) + MCP bridge", "status": "DONE", "evidence_grade": "owner-reported (Ollama live; MCP shipped inert)", "open_items": ["MCP inert until MCP_BRIDGE_TOKEN [owner gate]"]},
+    {"slice": "6", "name": "Knowledge graph: schema, writeEdge, import, render, TermLink", "status": "DONE incl. defect pass", "evidence_grade": "audit-verified (G0 fresh-clone audit 2026-07-10: 9 PASS; D-1 writeEdge bypass + D-3 TermLink both FIXED and live-verified same day; ledger records them as audit-found defects)", "open_items": ["D-2: kg_export evidence folder not yet in repo [work_queue wq-4]", "owner review of first-50-links precision report [work_queue wq-2]", "G3 ~50-real-concept owner eyeball of color legend/roles/importance: pending confirmation"]},
+    {"slice": "T", "name": "Simulation harness: sim namespace, virtual clock, profiles, DoE", "status": "DONE", "evidence_grade": "owner-reported + Codex-audited; bkt_evidence_v1 live with tamper-evidence self-check", "open_items": ["synthetic-learner realism fix (no ability gain from wrong answers; spacing sensitivity) before any future DoE batch"]},
+    {"slice": "6.5", "name": "Graph beauty pass (teardown backlog, 13 items)", "status": "PARKED - never blocks mainline", "evidence_grade": "backlog adversarially verified; G0 cleared-with-findings (D-1/D-3 since fixed)", "open_items": ["DECISION D1 (luminance datum) blocks encoding items 4/7/11 only", "PROVISIONAL-[doc] items await Heptabase/Kumu closure decision", "owner schedules the slice when convenient"]},
+    {"slice": "7", "name": "Media/3D flashcards: image gen via MCP bridge, Tripo GLB path, clinical gate", "status": "NEXT MAINLINE", "evidence_grade": "-", "open_items": []},
+    {"slice": "8", "name": "Managing agent + loops: nightly pipeline, duties, proposals, journal", "status": "PENDING after 7", "evidence_grade": "-", "open_items": ["BASE44_LOOPS.md is binding", "schedule_enable gate must state expected Automation runs/month (~30/mo for nightly = ~30 integration credits/mo [FACT-source: docs.base44.com - 1 credit per Automation run])"]}
+  ],
+  "work_queue": [
+    {"order": 1, "id": "wq-1", "actor": "base44", "kind": "slice_build", "title": "Build Slice 7 (media/3D flashcards)", "directive": "docs/plan/slices/SLICE_7.md incl. its Base44-agent-directive block (media specialist = design authority; extint consulted for the bridge)", "gates": ["credential_add + spend for TRIPO_API_KEY (ship inert until owner flips)", "MCP_BRIDGE_TOKEN still absent - image-gen path ships gated/off", "human clinical-accuracy check before any generated media reaches a card (gate_pending is a real blocking state)"], "blocking": [], "acceptance": "per SLICE_7.md; report PASS/FAIL/BLOCKED-BY-GATE"},
+    {"order": 2, "id": "wq-2", "actor": "owner", "kind": "review", "title": "Review the first-50-links precision report (linkTerms, from D-3 fix)", "directive": "Approve/adjust the 0.7 abstention threshold based on observed precision/abstain-rate; result recorded in PROGRESS.md", "gates": [], "blocking": [], "acceptance": "owner verdict recorded"},
+    {"order": 3, "id": "wq-3", "actor": "base44", "kind": "confirmation_report", "title": "Close Slice 4: one report, no build", "directive": "Report: (a) export round-trip - export a deck, re-ingest it, diff counts/fields; (b) WhatsApp integration status = off/not-built, confirming nothing sends. 3-line format; ledger update. Do NOT rebuild anything.", "gates": [], "blocking": [], "acceptance": "both items PASS or honestly FAIL with the diff"},
+    {"order": 4, "id": "wq-4", "actor": "codex", "kind": "evidence_capture", "title": "Close D-2: commit kg_export evidence into planit", "directive": "Copy usmle-kg's kg_export/<book>_<date>/ (manifest.json + nodes.jsonl + edges.jsonl) into planit docs/plan/kg_exports/, push, confirm counts match manifest. Until then 190/162 stays [FACT - owner-verified in-app, not repo-verifiable].", "gates": [], "blocking": [], "acceptance": "files on origin/main; counts match"},
+    {"order": 5, "id": "wq-5", "actor": "base44", "kind": "slice_build", "title": "Build Slice 8 (managing agent + loops)", "directive": "docs/plan/slices/SLICE_8.md + BASE44_LOOPS.md (binding). At schedule_enable, state expected runs/month = integration credits/month.", "gates": ["schedule_enable (nightly Automations are currently paused - owner decision with stated cost)", "LLM budget cap per Settings"], "blocking": ["wq-1"], "acceptance": "per SLICE_8.md"},
+    {"order": 6, "id": "wq-6", "actor": "owner+base44", "kind": "slice_build", "title": "Slice 6.5 graph beauty pass (when owner schedules it)", "directive": "docs/plan/slices/SLICE_6_5.md - 13 prioritized items; visual-editor-eligible cosmetic items done FREE in the editor, AI prompts only for logic/encoding", "gates": ["DECISION D1 before encoding items 4/7/11", "G3 legend re-approval by owner"], "blocking": ["decisions_pending.D1 for items 4/7/11 only"], "acceptance": "per-item accept lines + before/after owner eyeball"}
+  ],
+  "owner_gates_outstanding": [
+    {"gate": "schedule_enable", "for": "nightly pipeline Automations (Slice 8)", "cost_note": "~30 runs/month = ~30 integration credits/month [FACT-source: docs.base44.com]"},
+    {"gate": "credential_add + spend", "for": "TRIPO_API_KEY (Slice 7 3D path)"},
+    {"gate": "credential_add", "for": "MCP_BRIDGE_TOKEN (Slice 5/7 bridge, currently inert)"},
+    {"gate": "external_send", "for": "Google Calendar OAuth consent (Slice 3)"},
+    {"gate": "connection_test", "for": "AnkiConnect live push test (Slice 3)"},
+    {"gate": "review", "for": "linkTerms first-50 precision report (wq-2)"},
+    {"gate": "review", "for": "Slice 6 G3 ~50-concept graph audit (legend, roles, importance on real data) - pending confirmation it happened"}
+  ],
+  "decisions_pending": [
+    {"id": "D1", "decision": "Luminance datum + legend wording (high_yield tier vs importance_norm)", "owner_of_decision": "kgraph (datum) + viz (encoding) + uxguide (wording), owner signs off at G3 legend re-approval", "recommended_default": "luminance = importance_norm labeled 'structural importance (estimate - not verified exam yield)'; high_yield renders as a badge only when owner-tagged > 0", "blocks": "Slice 6.5 encoding items 4/7/11 only"},
+    {"id": "D2-graphux", "decision": "Build the proposed graphux specialist (standalone vs 4th KB in viz vs not at all)", "owner_of_decision": "owner", "blocks": "nothing in wave 1; only the 6.5 polish tails (items 6/9/11/12/13 motion+feel)"},
+    {"id": "D3-teardown-closure", "decision": "Heptabase/Kumu hands-on closure: bounded Phase 2b (Kumu login recommended, free; Heptabase trial skip recommended) vs permanent doc-only", "owner_of_decision": "owner", "blocks": "nothing; re-grades PROVISIONAL-[doc] tags; contradicting hands-on amends affected 6.5 items before build"}
+  ],
+  "background_tracks": [
+    {"id": "teardowns", "what": "Competitive teardowns per COMPETITIVE_TEARDOWN_METHOD.md seed map (review UX and S1 explainability suggested next; graph DONE). Codex-driven, free, owner-paced. Output = Slice N.5 backlogs.", "never_blocks": true},
+    {"id": "local_thresholds", "what": "Local test program to close Slice 2's three provisional threshold gates. STALLED: bulk-endpoint to per-row fix in local parity was directed but never confirmed - confirm before resuming.", "never_blocks": true},
+    {"id": "content_eval", "what": "usmle-kg known-input content eval (TESTING_PLAN Track 2 / content_eval method): gold checklist -> run -> coverage/fabrication scoring. Runs against usmle-kg on the Mac, NOT the app.", "never_blocks": true},
+    {"id": "doe_rebaseline", "what": "Optional: re-run DoE batches on bkt_evidence_v1 AFTER the synthetic-learner realism fix; objective function per TESTING_PLAN Track 3.", "never_blocks": true}
+  ],
+  "post_slice_horizon": [
+    {"item": "Gloss/definition authoring pipeline (owner-approved, fills hover clouds; first export had definitions_present:false)", "route": "kgraph+media handshake; KG contract open item"},
+    {"item": "Prerequisite-edge derivation (chapter/TOC order or hand-authored chains) - semantic import never gates", "route": "KG contract open item; kgraph"},
+    {"item": "FK/CC blueprint mapping (CUI -> INBDE area)", "route": "[UNKNOWN] until a mapping exists; never guessed"},
+    {"item": "TOEFL graph source (pipeline is INBDE/medical-only today)", "route": "KG contract; new source required"},
+    {"item": "USMLE exam_code extension or owner-approved mapping (msi ingestion)", "route": "SLICE_6 1.4 open conflict"},
+    {"item": "Gamification/day-box polish (engage) + review-UX teardown Slice N.5", "route": "teardown seed map"},
+    {"item": "Voice-note polish; 3D library growth after Slice 7 ships", "route": "media"}
+  ],
+  "invariants": [
+    "Honesty tags survive into code, UI, ledger; UNKNOWN resolved only by its METHOD or the owner.",
+    "writeEdge is the sole edge-write path, imports included (re-verified after D-1).",
+    "relation_class=semantic edges never enter prereq gating; negated edges never render positive.",
+    "Sim rows stay in the sim namespace (sim_run_id); never leak into real dashboards.",
+    "Three-layer verification: builder ledger -> independent audit -> runtime self-check; a 'done' without audit is owner-reported, not verified.",
+    "Gates are owner-only; anything gated ships disabled until flipped.",
+    "Background tracks never block mainline slices.",
+    "Credit discipline per PROTOCOL.md: batch, don't loop; owner keys over built-in services; free visual editor for cosmetics."
+  ]
+}
