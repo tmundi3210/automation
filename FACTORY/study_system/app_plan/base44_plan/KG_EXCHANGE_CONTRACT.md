@@ -91,9 +91,10 @@ One folder per export run. Dated so re-runs don't overwrite. The app imports the
   "confidence": 0.95,
   "evidence_count": 1,
   "negated": false,
-  "sources": ["llm_primary"]
+  "sources": [{"source": "llm_primary", "book_id": "first_aid", "chapter_id": "smoke_0312_0342", "chunk_id": "chk_...", "pages": [316, 317], "extractor_model": "kimi-k2.6", "evidence_span": {"start": 96, "end": 122, "text": "…ST elevation (STEMI"}}]
 }
 ```
+- `sources` is a list of **rich provenance objects** [AMENDED 2026-07-09 from the first real export — the exporter emits objects, not bare strings]. Each carries at least `source` (e.g. `"llm_primary"`); the rest (`book_id`, `chapter_id`, `chunk_id`, `pages`, `extractor_model`, `evidence_span`) enable click-to-source traceability. The app import reads `sources[].source` for the origin label and may store the object for provenance; it must NOT assume `sources` is a list of strings.
 - `relation` = the biolink predicate with the `biolink:` prefix stripped [FACT — Codex report §3].
 - `relation_class` is **always `"semantic"`** from this pipeline. The app must keep this field so its `ConceptEdge` can distinguish imported semantic edges from any native `prereq` edges. Semantic edges do not drive gating (§1).
 - `negated: true` edges (e.g. "X does NOT cause Y") must render differently or be filtered — never shown as a plain positive link.
