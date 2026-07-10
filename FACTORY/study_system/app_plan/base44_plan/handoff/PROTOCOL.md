@@ -35,7 +35,7 @@ docs/plan/
 
 ## Credit discipline (added 2026-07-10 — binds both sides)
 
-_Base44 charges **message credits** per AI prompt — no fixed price; cost scales with how much of the app a prompt touches [FACT-source: docs.base44.com/Account-and-billing/Credits]. **Integration credits** burn only when the app calls Base44's BUILT-IN services (email, image gen, built-in LLM); calls through the owner's OWN API keys or backend functions cost zero integration credits [FACT-source: same]. Each Automation run = 1 integration credit [FACT-source: same]. Credits do not roll over [FACT-source: same]._
+_Base44 charges **message credits** per AI prompt — no fixed price; cost scales with how much of the app a prompt touches [FACT-source: docs.base44.com Credits doc, retrieved 2026-07-10; the docs site restructured and old paths 404 — enter via docs.base44.com and search "credits"]. **Manual visual edits (drag, layout, text in the editor) cost zero credits** [FACT-source: same]. Per-prompt cost is visible under More Actions → "Credits Used" [FACT-source: same]. **Integration credits** burn only when the app calls Base44's BUILT-IN services (email, image gen, built-in LLM); calls through the owner's OWN API keys or backend functions cost zero integration credits [FACT-source: same]. Each Automation run = 1 integration credit [FACT-source: same]. Credits do not roll over [FACT-source: same]._
 
 **Agent side (Base44):**
 - One slice/directive = one build pass. Never rebuild broadly to fix narrowly — fix the named thing only. If a fix needs multiple attempts, STOP after the second failed attempt and report honestly instead of looping (a re-prompt loop is the known credit sink).
