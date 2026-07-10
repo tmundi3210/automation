@@ -33,6 +33,23 @@ docs/plan/
 - **No slice-skipping, no scope-merging.** One slice per session beat. If mid-slice work reveals something belonging to a later slice, note it in PROGRESS.md and leave it.
 - **When a specialist's escalation trigger fires, stop and ask** — that is the trigger doing its job, not an obstacle.
 
+## Credit discipline (added 2026-07-10 — binds both sides)
+
+_Base44 charges **message credits** per AI prompt — no fixed price; cost scales with how much of the app a prompt touches [FACT-source: docs.base44.com/Account-and-billing/Credits]. **Integration credits** burn only when the app calls Base44's BUILT-IN services (email, image gen, built-in LLM); calls through the owner's OWN API keys or backend functions cost zero integration credits [FACT-source: same]. Each Automation run = 1 integration credit [FACT-source: same]. Credits do not roll over [FACT-source: same]._
+
+**Agent side (Base44):**
+- One slice/directive = one build pass. Never rebuild broadly to fix narrowly — fix the named thing only. If a fix needs multiple attempts, STOP after the second failed attempt and report honestly instead of looping (a re-prompt loop is the known credit sink).
+- Batch all defects/refinements given in one directive into ONE pass (the directive is already written for that).
+- Keep confirmations to the 3-line format; no long narrations — the repo ledger (PROGRESS.md) is the record, not chat.
+- **Prefer the owner's own keys over built-in services**: LLM calls route through the owner's configured providers (e.g. Ollama Cloud, Slice 5) wherever the slice permits — built-in LLM calls burn integration credits, owner-key calls don't [FACT-source: docs.base44.com]. Flag any new built-in-service dependency as a `spend` gate question.
+- When Slice 8 schedules Automations, state the expected runs/month (= integration credits/month) at the `schedule_enable` gate so the owner approves a known cost.
+
+**Owner side:**
+- All planning stays OUTSIDE Base44 (this repo) — that is already this protocol; it is also the top official credit-saving advice.
+- Paste directives whole (one strong prompt beats five clarifications). Use Discuss/Plan mode for anything exploratory; use the free visual editor for cosmetic tweaks (text, colors, spacing) instead of AI prompts.
+- Prefer version-history Revert over a re-prompt for a bad visual change — BUT after ANY revert, re-run the behavioral self-checks (a revert is exactly how the BKT fix was silently lost once); a revert that touches model/logic code must be followed by the affected slice's acceptance checks.
+- Reading the built code costs nothing: audits go through GitHub/Codex, never "describe what you built" prompts.
+
 ## Owner's cheat-sheet (human side)
 
 - Say **"continue with next slice"** — the agent does steps 1–7.
