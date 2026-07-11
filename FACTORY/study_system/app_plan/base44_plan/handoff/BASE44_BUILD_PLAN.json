@@ -186,12 +186,32 @@
       "id": "q4",
       "actor": "base44",
       "title": "Slice 6.5 Pass 4 - interaction & navigation",
-      "directive": "Items 6 (1-hop focus/dim + 'Showing 1 hop - N hidden' chip; Escape restores; dim never deletes), 9 (search-to-fly + exact view restore on Back), 11 (Showcase vs Filter - PROVISIONAL-[doc]: prototype in-app first, no doc numbers in acceptance; filter chips with counts + clear-all), 12 (selection->study-list; destructive edge ops confirm through writeEdge; undo), 13 (fit-all/fit-selection, keyboard parity, no compliance claims untested). NO motion/easing polish - that is the graphux tail, not approved. OWNER COMPLAINT (2026-07-10, post-import): zoom lands on the wrong spot and navigation feels bad - item 13 explicitly includes zoom-anchored-at-cursor/pinch-point and a sensible initial fit-to-view on page load (viewport-control table stakes, not motion polish). OWNER SCREENSHOT (2026-07-11): the L0 grouped map renders as a tiny speck in a large empty canvas - item 13's fit-to-view MUST re-frame the drawn content to fill the viewport on ENTERING EACH LOD LEVEL (L0/L1/L2) and on reload, not only on first page load; a zoomed-out level that leaves content as a speck is a fail.",
+      "directive": "Items 6 (1-hop focus/dim + 'Showing 1 hop - N hidden' chip; Escape restores; dim never deletes), 9 (search-to-fly + exact view restore on Back), 11 (Showcase vs Filter - PROVISIONAL-[doc]: prototype in-app first, no doc numbers in acceptance; filter chips with counts + clear-all), 12 (selection->study-list; destructive edge ops confirm through writeEdge; undo), 13 (fit-all/fit-selection, keyboard parity, no compliance claims untested). NO motion/easing polish - that is the graphux tail, not approved. OWNER COMPLAINT (2026-07-10, post-import): zoom lands on the wrong spot and navigation feels bad - item 13 explicitly includes zoom-anchored-at-cursor/pinch-point and a sensible initial fit-to-view on page load (viewport-control table stakes, not motion polish). OWNER SCREENSHOT (2026-07-11): the L0 grouped map renders as a tiny speck in a large empty canvas - item 13's fit-to-view MUST re-frame the drawn content to fill the viewport on ENTERING EACH LOD LEVEL (L0/L1/L2) and on reload, not only on first page load; a zoomed-out level that leaves content as a speck is a fail. SPECIALIST-GROUNDED NAV SPEC (see RELATION_QUALITY_FINDINGS.md viz+uxguide section): fit-to-view AC-FIT-1..7 (frame the level's DRAWN set - L0 = the 46 meta-nodes, NOT the L2 coordinate space [R6 root-cause of the speck]; padding ~8% [ESTIMATE]; never-a-speck: binding axis fills 0.80-0.92, hard-fail <0.50; camera-only, node coords byte-identical = Pass-3 regression guard; deterministic on reload). Zoom AC-ZOOM-1..4 (point under cursor/pinch stays put <=4px; min-zoom=fit-all; manual zoom crossing an LOD threshold swaps representation IN PLACE, no auto-fit). Keyboard/tap parity AC-KBD (never wheel-only; Escape dismisses cloud->panel->selection but NOT the camera; honest 'Fit all/selection' labels; WCAG/reduced-motion [UNKNOWN until tested]). DECISION R1 ADOPTED: auto-fit only on programmatic entry (load/reload/drill-in/level-control/search-land), not on manual pan/zoom. OPEN R4: whether the far-parked Unassigned group gets its own framing vs inflates fit-all - surface at the owner eyeball.",
       "blocking": [
         "q3"
       ],
       "acceptance": "items 6/9/11/12/13 accept lines; screenshots; ledger; slice 6.5 declared DONE",
-      "specialists": "viz (showcase/filter grammar, fit/keyboard), uxguide (chip + filter labels), kgraph (writeEdge semantics for destructive ops)"
+      "specialists": "viz (fit/zoom/LOD camera model - wins beauty-vs-meaning; showcase/filter grammar), uxguide (chip/filter/keyboard labels, honest nulls), kgraph (writeEdge semantics for destructive ops; group membership honesty)"
+    },
+    {
+      "order": 4.6,
+      "id": "qG",
+      "actor": "base44",
+      "title": "Graph-integrity structural guards (clinical-judgment-free) + writeEdge/KG-contract amendment",
+      "directive": "From RELATION_QUALITY_FINDINGS.md (kgraph ruling). FIRST acceptance = re-verify D-1: kgImport routes ALL edges through writeEdge (guards are dead code otherwise); re-import is idempotent (dupes rejected, counts unchanged), dangling-drop preserved, semantic edges never gate. THEN add writeEdge structural invariants, each rejecting/flagging with a typed reason + repair offer, NEVER silently dropping: INV-1 irreflexivity (no self-loop any type); INV-2 antisymmetry (reject A part_of B when B part_of A exists); INV-3 part_of acyclicity (reject edges closing a part_of cycle); INV-4 over-generic/class target (reject part_of into a taxonomy_role=abstract/class node e.g. 'Organ'; add that closed-enum value per amendment A3 - vocabulary addition, not a new field); INV-5 co-occurrence fan-in FLAG (same import batch converging heterogeneous part_of children on one target -> status=quarantined, route to kgverify; threshold owner-tunable [ESTIMATE]). Amend SLICE_6 1.3 + KG-contract (A1 extend acyclicity from prereq-only to part_of; A2 name irreflexivity; A3 taxonomy_role class value; A4 record INV-5 flag policy; A5 no schema change for negation). Assert NO anatomy - these are structural only; truth verdicts belong to kgverify (Feature A). This item AMENDS the writeEdge contract - record the amendment in PROGRESS.md.",
+      "blocking": "none (independent of the truth-repair pipeline). If D-1 re-verify FAILS, fix that first as this item's step 1.",
+      "acceptance": "D-1 re-verified (imports through writeEdge, idempotent); INV-1..5 live with typed reject/flag reasons; 'hypothalamus part_of Organ' now rejected/flagged on re-import; a synthetic self-loop and a synthetic 2-cycle rejected; no correct edge (FSH/TSH expressed_in, posterior pituitary part_of) affected; SLICE_6/KG-contract amendment + kgraph KB1 E2 fix recorded; ledger + push",
+      "specialists": "kgraph (primary - structural invariants, writeEdge, amendments A1-A5, E2 KB self-fix), kgverify (consult - the structure/truth boundary; do NOT build its truth pipeline here)"
+    },
+    {
+      "order": 4.7,
+      "id": "qH",
+      "actor": "base44",
+      "title": "Interim edge-honesty label - default every relationship 'Unverified'",
+      "directive": "From RELATION_QUALITY_FINDINGS.md (kgverify 4 + viz channel). The node-panel RELATIONSHIPS list currently shows edges with no verification marker - in a study app that reads as endorsement of propositions shown to be systematically false. Default EVERY edge to an explicit 'Unverified - not yet checked' state (all 162 are pre-kgverify). Show NO green/verified marker on ANY edge (even FSH/TSH/posterior-pituitary are only candidate-TRUE, never human-confirmed FACT). Provide three semantic states kgverify will drive later: Unverified (default) -> Machine-checked, review pending (ESTIMATE) -> Owner-confirmed (FACT). The interim marker asserts ONLY 'not yet verified' - it makes no clinical claim. CHANNEL CONSTRAINT: status uses a SEPARATE mark (badge/border/icon), NOT luminance (luminance is committed to importance / D1) - viz picks the encoding, uxguide picks the copy. Ship as a stopgap BEFORE/WITH the full kgverify pass, not after.",
+      "blocking": "none",
+      "acceptance": "every relationship row shows 'Unverified - not yet checked' by default; no edge shows a verified/green state; status mark is not luminance; copy makes no clinical claim; screenshots; ledger + push",
+      "specialists": "kgverify (semantic states + honest wording), viz (status channel - not luminance), uxguide (label copy)"
     },
     {
       "order": 5,
@@ -333,9 +353,9 @@
     },
     {
       "id": "interim_relation_honesty",
-      "decision": "Node-panel RELATIONSHIPS currently list machine-extracted edges with no verification marker, so wrong edges (e.g. 'hypothalamus part_of pituitary') read as confident fact. OPTION A (recommended, cheap - viz/uxguide copy): label the relationships list 'machine-extracted from source text - not clinically verified' and surface each edge's confidence, until kgverify (Feature A) ships. OPTION B: wait for kgverify to propose real corrections. Not a G3 blocker either way (G3 = encoding honesty).",
+      "decision": "RESOLVED 2026-07-11 -> queue item qH. kgverify (live dry run) recommends Option A strongly: default every edge 'Unverified - not yet checked', no green marker, status on a separate badge (not luminance). See RELATION_QUALITY_FINDINGS.md.",
       "owner_of_decision": "owner",
-      "when": "now or fold into Feature A"
+      "when": "RESOLVED -> qH"
     },
     {
       "id": "kgverify_citation_check",
