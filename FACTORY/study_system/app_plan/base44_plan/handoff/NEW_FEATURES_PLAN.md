@@ -118,3 +118,20 @@ The existing 14 are dense, KB-grounded, no-fabrication documents. New ones must 
 ## 7. What does NOT block on any of this
 
 The mainline Slice 6.5 passes 2–4 — semantic zoom, hover thinking-clouds, click-through, **zoom-anchored-at-cursor + fit-to-view navigation** (the fix for "looks basic / bad navigation"), semantic LOD, measured density — proceed via **"RUN THE PLAN"** independently. These new features are additive scope on top, not a precondition. Feature B (category encoding) is the one that *touches* the same viz surface, so it should land after nodes carry a `category` attribute rather than racing Pass 3's D1 encoding.
+
+---
+
+## 8. Authoring result (2026-07-11) — four specialists built, gated, and citation-corrected
+
+Owner selected **Opus 4.8** to author; ran the ground→author(Opus 4.8)→verify(Fable) pipeline (12 agents, 0 errors). All four written to `FACTORY/study_system/specialists/<code>/` (3 KB files + distilled `.specialist.json` each), and each **PASSED** the Fable cross-check: valid JSON, exact 16-key schema parity with its template, zero boundary collisions, honesty tags load-bearing.
+
+| New specialist | Template mirrored | Owns | Verdict |
+|---|---|---|---|
+| `kgverify` | kgraph | proposition TRUTH — validate/repair relations, propose-never-rewrite, owner-gated | PASS (citations corrected, below) |
+| `curric` | dental | curriculum hierarchy + exam blueprints + catalog model | PASS |
+| `planner` | sysloops | build/plan orchestration + verification loops + gate design | PASS |
+| `handoff` | extint | discuss→edit delivery, credit discipline, RUN THE PLAN, sync discipline | PASS |
+
+**Honesty correction applied to `kgverify`.** The build environment's network policy blocks arxiv.org and academic publishers (403 at the proxy), so the author agent's external-literature citations could not be — and were not — fetch-verified; several were recent-dated arXiv IDs a model cannot reliably know. **63 unverifiable paper/blog citations were relabeled `[FACT-source] → [UNVERIFIED-SOURCE]`** across kgverify's four files, and a `citation_provenance` field was added naming the highest-risk IDs (2510.14271, 2601.02574, 2601.16555, 2604.04190, 2606.15246) and the required Mac-side spot-check. Stable settled-concept references kept as `[FACT-source]`: **W3C (OWL), SEP, LibreTexts**. The validation *methods* are standard-practice priors independent of any single citation. `curric` cites real institutional domains (jcnde.ada.org, usmle.org, ets.org) with all exact weights already held `[ESTIMATE]`; `planner` cites the repo's own incident history; `handoff` mirrors PROTOCOL's already-caveated Base44 facts — no fabricatable IDs in those three.
+
+**Next (owner):** switch back to Fable 5 and run Features A/B/C through the full **18-specialist** set to produce the concrete build plan. Open owner decisions that gate that run: `catalog_multiuser` (single-user importable vs multi-user) and, before relying on kgverify's grounding, the Mac-side citation spot-check.
