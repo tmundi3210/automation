@@ -59,9 +59,14 @@ _Observed twice now: the workspace↔GitHub two-way sync can silently clobber bu
 3. **Owner/Codex push documentation to planit only BETWEEN passes**, never while a Base44 build is in flight — a mid-build sync is the clobber window.
 4. **Runtime self-checks stay mandatory** on model/logic code (version marker + behavioral check that refuses a reverted model), because rules 1–3 reduce the window but do not close it.
 
+## Continuous mode (added 2026-07-10 — supersedes one-item-at-a-time when invoked)
+
+When the owner says **"RUN THE PLAN"**: execute every clear `actor: base44` item in BASE44_BUILD_PLAN.json's work_queue in order, continuously — no per-item approval. Each item still gets the full PROTOCOL treatment (its named specialists loaded IN FULL, gates stopped at, acceptance evidence + ledger + GitHub push at item end). Halt a branch only at an owner gate, an owner/codex blocker, a specialist escalation trigger, or after two failed fix attempts — and say plainly what is blocked on whom. Other clear items proceed. "Continue with next slice" (one item per go) remains available when the owner prefers it.
+
 ## Owner's cheat-sheet (human side)
 
 - Say **"continue with next slice"** — the agent does steps 1–7.
+- Say **"RUN THE PLAN"** — continuous mode: everything clear in the queue, stopping only at your gates.
 - Say **"do slice 5 now"** any time after Slice 2 — allowed by the plan.
 - Gates arrive as short questions or paused switches; nothing external happens until you say yes.
 - To audit at any time: **"run the acceptance checks for slice N again and report PASS/FAIL."**
