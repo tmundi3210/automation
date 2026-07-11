@@ -50,6 +50,15 @@ _Base44 charges **message credits** per AI prompt — no fixed price; cost scale
 - Prefer version-history Revert over a re-prompt for a bad visual change — BUT after ANY revert, re-run the behavioral self-checks (a revert is exactly how the BKT fix was silently lost once); a revert that touches model/logic code must be followed by the affected slice's acceptance checks.
 - Reading the built code costs nothing: audits go through GitHub/Codex, never "describe what you built" prompts.
 
+## Sync discipline (added 2026-07-10 — after a GitHub sync reverted a completed pass)
+
+_Observed twice now: the workspace↔GitHub two-way sync can silently clobber built work (the bkt_evidence fix once; Slice 6.5 Pass 1 on 2026-07-10 — a doc-sync pulled 4 commits and removed the pass's components + ledger entry). These rules are binding:_
+
+1. **A pass is not done until it is synced to GitHub.** Base44 commits/pushes its changes at the end of every pass, BEFORE reporting done. Unsynced work is unfinished work.
+2. **After ANY "Synced N commits from GitHub" event, verify before advancing:** diff the last ledgered pass against the actual code. If the code is gone, RESTORE it first and say so explicitly — never advance the queue over a hole. (This exact check caught the Pass 1 revert.)
+3. **Owner/Codex push documentation to planit only BETWEEN passes**, never while a Base44 build is in flight — a mid-build sync is the clobber window.
+4. **Runtime self-checks stay mandatory** on model/logic code (version marker + behavioral check that refuses a reverted model), because rules 1–3 reduce the window but do not close it.
+
 ## Owner's cheat-sheet (human side)
 
 - Say **"continue with next slice"** — the agent does steps 1–7.
