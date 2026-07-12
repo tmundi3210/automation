@@ -158,3 +158,27 @@ A specialist refutation pass + APP_RECON/BASE44_APP_SPEC field grep found the bu
 - Hard-gate items 5-6 on the learner light-up threshold + maturation tiers (a learner decision); replace "dynamic cutoff" with a set value.
 
 **Buildable-now after fixes:** item 1 (with guard), item 2 (with the rest-day fix), items 4/5 (real fields, same source). Item 3 needs sched. Item 6 needs disambiguation. Items 5/6 gated on the learner threshold. Items 7/8 need the authoring path + graphux prototype.
+
+### 8d. Threshold spec (learner+sched, 2026-07-11) — the two cutoffs + build refinements
+Fields verified in the live entity schemas: `LearnerState.bkt_p_mastery` (default 0.3) and `CardState.stability` (no default; undefined until first review) both EXIST [FACT].
+
+**① CONCEPT LIGHT-UP (item 5, `bkt_p_mastery`) — headline ≥ 0.95, tiered:**
+- **dark** `< 0.5` (the app's own weakness line) · **dim glow** `0.5–0.95` (the 0.6 prereq-unblock line sits here as a "ready to build on" sub-tick) · **full light-up = "mastered", counts for collection** `≥ 0.95` (Corbett & Anderson BKT convention [FACT]; ≈ 3 clean corrects with the app's frozen caps — NOT "dark forever").
+- Sits ABOVE the 0.6 readiness line by design (mastery is a stronger claim than readiness). Owner-tunable within [0.90, 0.95]; NEVER down to 0.6.
+- "Mastered" claims ~95% P(latent skill known); does NOT claim current recall, calibration, or free-recall (MCQ-guess-inflatable — document the caveat).
+
+**② CONCEPT MATURATION (item 6, `CardState.stability`) — min over review-state cards:**
+- Aggregate = **min(stability) over the concept's cards in `review` state** (weakest established card; a concept isn't mature if its weakest card is fragile). Missing S / any non-review card ⇒ **seedling**, and the concept **cannot be "mature."**
+- Tiers (days): **seedling `<7` · growing `7–21` · mature `≥21`** (optional evergreen `≥100`). `21` = Anki mature convention via `I(0.9,S)=S` [FACT]; cutoffs [ESTIMATE], owner-tunable. Key on **S (not the displayed interval)** so tiers are independent of the desired_retention slider.
+
+**Light-up ≠ Maturation (not double-counting):** "**Lit = you've learned it; Mature = it will stick.**" BKT is no-forgetting/monotonic; FSRS stability decays on lapse. A concept can be LIT but SEEDLING (the E4 retrieval-decay signature the app already diagnoses).
+
+**BUILD REFINEMENTS this forces (add to Base44):**
+- **R1 (honesty) — monotonic light-up lies over time.** Because BKT never decays, a lit concept stays "mastered" forever even after its cards lapse. Make **maturation the dominant/truthful visual**; a lit concept whose `min stability` later collapses must be **visually demoted** (light-up label = "learned/seen," not a permanent trophy).
+- **Vocabulary reconcile:** MasteryBars already turn green at `≥0.60` — call that "on track"; reserve "mastered" for the map light-up `≥0.95`. Never two "mastered" signals.
+- **Live reads:** light-up/maturation read `LearnerState`/`CardState` LIVE, never the stale manual-pipeline `MasteryHistory` snapshot.
+- **Scale:** page past the 500-row query cap per concept and batch the Card→CardState join (N+1) — else concepts mis-light at 2000+ cards.
+
+**Plus 3 earlier refinements:** item 1 rest-day should render a distinct "nothing due / rest" state, NOT a full 20/20 green fill (a full bar reads as "did a full day's work"); item 2 must keep the "days-active-in-last-30" secondary metric in its acceptance; item 7 fence must explicitly bar EXCEPT/NOT stems + gate TOEFL current-2026-vs-legacy.
+
+**STATUS: with these in, the plan is APPROVE-READY.**
