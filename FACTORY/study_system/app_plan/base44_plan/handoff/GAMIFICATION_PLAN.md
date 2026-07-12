@@ -46,7 +46,21 @@ The water-drop drill is a **conditional GO — but narrowly fenced**: an opt-in,
 
 **SHIP LAST (experimental):** the water-drop drill (#1 above) — highest appeal, highest learning-risk, and the piece that needs the new specialist.
 
-**REJECT (engage + learner/sched, dark-pattern or signal-corrupting):** points/XP economy, badges-for-prizes/currency, leaderboard (also single-user out of scope), illusionary head-start progress, variable/random reward schedules.
+**REJECT (engage + learner/sched, dark-pattern or signal-corrupting):** points/XP economy, badges-for-prizes/currency, leaderboard (also single-user out of scope), illusionary head-start progress, variable/random reward schedules, **hearts/lives/lose-on-error resources** (punish errors + suppress the error signal FSRS needs — e.g. Duolingo hearts), **avatars & pets** (vanity/identity mechanics with no single-user audience and no learning denominator), **speed-scored competitive quiz** (Kahoot/Quizizz — rewards speed+volume; even Kahoot dropped its streak-bonus), **cooperative/team play** (no second user).
+
+### 2b. Broader survey — kids + adults apps (engage, 12 apps grounded 2026-07-11)
+**The transfer rule [ESTIMATE]:** a "kid" mechanic transfers to this serious single-user adult exam-prepper **iff it can be re-anchored to a real learning denominator (mastery / completion / prerequisite structure) and stripped of any audience-facing or fictional layer.** Collection and level-maps re-anchor cleanly; avatars, pets, co-op, and narrative cannot (their pull *is* the fiction or the audience → REJECT above).
+
+**ADDS to the positive menu (priority order), all rendered honestly over existing data, no new specialist needed:**
+1. **KG mastery-map / honest progressive-unlock** (transform of skill-trees/level-maps; Brilliant/Duolingo/Prodigy precedent) — *highest value.* Render the concept knowledge-graph colored by REAL BKT mastery; a concept "opens" as its prerequisites are genuinely mastered. **Unlock is cosmetic/navigational ONLY — it must never gate a review the scheduler wants to surface** (non-punitive contract). Sequencing owned by kgraph+learner+sched. Keep the graph, drop any fantasy skin.
+2. **Concept maturation gradient** (Anki young→mature, Memrise seed→flower — minus the point-coupling) — each concept ripens seedling→mature keyed to FSRS stability / BKT tier, in a mastery palette distinct from day-box green; reads the model one-way. Tier cutoffs = a learner decision.
+3. **Adjustable daily-target line on the day-box** (Lumosity/Peak "workout of the day", Duolingo daily goal) — a user-set commitment measured against the **scheduler's due+planned denominator** (never a self-invented XP target), non-punitive on 0-due rest days.
+4. **Beat-your-own-time "Match"-style companion drill** (Quizlet Match, self-vs-self) — an optional second ephemeral, quarantined `game_timed` fluency minigame on the `skill_drill` surface, same guardrails as the water-drop; **ships LAST, only if the water-drop validates.**
+5. **Neutral milestone framing** (thin residue of "quests" — "Clear the Endodontics unit") — named sub-goals as labels on the KG map, no story/fantasy. Lowest priority.
+
+**Prior-art that validates the design (adopt the principle, not the mechanic):** Khan Academy independently separates *energy points* (effort) from *mastery points* (mastery) as disjoint never-merged numbers — the same effort-vs-mastery split already in this plan.
+
+**Out of THIS pass (scope reassignment):** visual mnemonics / memory palace (Sketchy/Osmosis) is high-value for INBDE content but is a **content-authoring** technique (media/kgraph/qcraft), not a gamification mechanic — routed away so it isn't misfiled into engage/graphux.
 
 ---
 
@@ -71,6 +85,8 @@ The water-drop drill is a **conditional GO — but narrowly fenced**: an opt-in,
 
 So "the specialist for this purpose" = **author `graphux` (new) + add `kb_session_drill_mechanics` to `engage`.** Not a from-scratch gamification specialist.
 
+**Broader-survey confirmation (2026-07-11):** the wider concept set in §2b needs **nothing beyond `graphux` + engage's three KBs.** The KG mastery-map and maturation gradient are engage *renders* over kgraph + learner/sched data (all built); the Match drill is covered by `kb_session_drill_mechanics`; celebration/juice is `graphux`. The only tempting "new specialist" is the KG-map, but it is a render over existing data, not a new domain. (Both new specialists — `graphux` + the engage KB — are now AUTHORED and verified 2/2 PASS.)
+
 ---
 
 ## 5. Open decisions / UNKNOWNs (owner or downstream)
@@ -79,6 +95,10 @@ So "the specialist for this purpose" = **author `graphux` (new) + add `kb_sessio
 - Timeout scoring → sched/learner call (recommended: writes nothing to the model).
 - Fall-time budget → per-card ESTIMATE, empirically calibrated to ESL reading rate before it ships as a real timer.
 - graphux motion-library build-vs-adopt → UNKNOWN until prototyped/measured (present as a measured verdict, not asserted).
+- **KG mastery-map unlock (§2b #1) → must be cosmetic/navigational ONLY** — never withholds a scheduled review (learner+sched+kgraph confirm; non-punitive contract).
+- **Concept-maturation tier cutoffs (§2b #2)** → which FSRS-stability / BKT values map seedling→mature = a learner decision; UNKNOWN until set.
+- **Second (Match) drill (§2b #4)** → owner decides whether a second `game_timed` variant is worth the surface; same fence as the water-drop; ships last.
+- **Scope size** → recommended sequence: safe menu first, then §2b #1 (KG-map) + #2 (maturation) as the two highest-value adds, holding #3/#4/#5 until those land.
 - TOEFL drill eligibility → current-2026 gate; wrong-answer penalty UNKNOWN (no-penalty only by analogy to the INBDE FACT).
 
 ---
