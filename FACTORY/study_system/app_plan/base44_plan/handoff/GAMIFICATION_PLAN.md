@@ -232,3 +232,11 @@ Slice synced to planit (docs/plan/slices/, commit 4741871); Codex ran code-vs-sl
 **Polish (mostly FREE visual edits, not AI prompts):** demotion copy "Learned · maturing" vs slice "Learned/seen" (intent matches — accept or free-edit); streak "not mastery" caption; forecast staleness disclosure ("shifts as you review"); freeze-token-remaining indicator; Item-4 per-area labeling ("On track" @0.60 + "(n of N in area)" on MasteryBars vs the new global meter); optional evergreen ≥100d; AC1.3 rest-day edge (planned=0 coerced to 1 if a review lands — make rest-state win over a stray review).
 
 **DECISION G2-b RESOLVED 2026-07-11 (non-punitive, INV-4):** rest-vs-miss is determined by the ACTUAL scheduled due-count (`CardState.due` on that day), NOT by DailyPlan-row presence. `due==0` that day ⇒ rest-active, NO token spent (even with no DailyPlan row); `due>0` and work not done ⇒ miss (spend a token). Matches item 3 already reading `CardState.due`; a missing plan row can never punish a genuine rest day.
+
+### 8i. Fix pass shipped (5de3fda, 2026-07-11) — all three defects → PASS
+Base44 shipped the batched fix (files named + self-check cases):
+- **A6.4 → PASS** — `maturationStage(minS, hasNonReview)` forces seedling when any card is non-review/missing-S; `conceptBadge` demotes "Learned" (never revokes). Check: review S=30 + a learning card ⇒ seedling; pure review S=30 ⇒ mature.
+- **AC3.5 → PASS** — future days always use the amber-dashed forecast channel; renders "{n} due" with n = forecast ?? 0 (honest 0-due); no tick/green on future days.
+- **G2-b/AC2.1 → PASS** — `dueCountByDay` from live `CardState.due`; `dayRest = dueCount===0` (no DailyPlan required); miss only when due>0 and not done ⇒ token spent. Check: 3 no-plan rest days, due=0 ⇒ streak=3, tokens untouched.
+
+**STATUS: Gamification Phases 1-2 = COMPLETE.** Evidence grade = **Base44-reported with file+logic+check-case detail** on top of the prior full Codex audit; one Codex re-confirm of these 3 patches upgrades to fully audit-verified (recommended, cheap — optional). Phase 3 (water-drop drill) remains correctly held behind its 4 [UNKNOWN] gates (graphux motion prototype, TOEFL penalty, ESL fall-floor, decay value). Remaining polish (§8h) is free visual-editor edits.
