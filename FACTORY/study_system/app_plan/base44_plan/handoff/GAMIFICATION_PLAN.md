@@ -134,3 +134,27 @@ Base44's build-level plan applied all 4 corrections + both decisions correctly. 
 - **Drill content fence (item 7):** the skill_drill pool is restricted to remember/understand terminology gates + TOEFL small-answer; reasoning/vignette/case/EXCEPT items are NOT eligible and cannot be authored as skill_drill.
 - **Drill logic (item 8):** selection is on STATIC option buttons only (moving drop never a target); prefers-reduced-motion → static numeral/ring + step meter preserving all timer info; colorblind → height + numeral, not water color; meter rises ONLY on genuine correctness; timeout shows "Correct — but the drop fell first" + offer to re-see untimed, no shame loop; zero writes to Revlog/BKT/Elo/FSRS/CalibrationBin (grep-verifiable).
 - **Field-existence (items 4-6, phantom-build guard):** confirm learner.current_mastery / concept_mastery / memory_strength / MasteryHistory actually exist and are read-only before building; render an honest empty state ("not yet studied") when mastery data is absent — never fabricate. Items 5-6 depend on the pending learner threshold.
+
+### 8c. Adversarial double-check (2026-07-11) — NOT approve-ready; 3 BLOCKERs
+A specialist refutation pass + APP_RECON/BASE44_APP_SPEC field grep found the build submission would ship phantom fields and a forecast over empty data. Doctrine is sound; the failures are data-layer reality.
+
+**REAL FIELD MAPPING (the submission named fields that DO NOT EXIST):**
+- `learner.current_mastery` (item 4) → does NOT exist → use **`LearnerState.bkt_p_mastery`** (per concept).
+- `learner.concept_mastery` (item 5) → does NOT exist; `Concept` has no mastery field → **join `LearnerState.bkt_p_mastery` → Concept**.
+- `learner.memory_strength` (item 6) → does NOT exist, and is the WRONG owner: "memory strength" = **FSRS stability on `CardState` (sched-owned)**; BKT is no-forgetting so keying maturation to BKT just double-counts item 5.
+- `MasteryHistory` exists but is an **aggregate, pipeline-written (manual), stale** snapshot (FK-area/CC-section, ≥2 run dates) — not per-concept, not "current."
+
+**BLOCKERS (must fix before RUN):**
+- **B1 (V1) — Streak punishes a rest day.** Shipped streak math scores a 0-due day as a miss (0/0 fails the 0.8 threshold → spends a token). Violates INV-4; §8b "rest day = win" cannot pass on current code. FIX: guard `planned==0`/no-due → day counts active, no token spent. This is a build task, not reuse.
+- **B2 (G1) — Item 3 forecast has no data.** `DailyPlan` only holds today + tomorrow (pipeline/manual); no days +2..+7. FIX: re-source to a **scheduler due-forecast counting `CardState.due` per future day (sched-owned)** — a build, not a read; NOT Phase-1-trivial. Never shows tick/green; labeled a forecast.
+- **B3 (P1) — Item 6 maturation is incoherent.** `memory_strength` is a phantom + wrong owner. FIX: either DROP item 6 as redundant with mastery, or define it as an aggregate of per-card FSRS stability (a **sched** deliverable) with tier cutoffs set by learner. Do not name it a learner field.
+
+**SHOULD-FIX before RUN:**
+- Re-bind items 4/5 to `LearnerState.bkt_p_mastery`; item 4 and item 5 must read the SAME source (or label staleness) so they can't visibly disagree (aggregate MasteryHistory vs live LearnerState).
+- Add §8b acceptance lines for items 1 & 3 (item 1: `planned==0` divide-by-zero guard on `floor(done/planned*20)` + effort-not-mastery; item 3: source, never-tick/green, labeled forecast).
+- Define the `skill_drill` authoring path + a MECHANICAL content-fence (Bloom=remember/understand + option-homogeneity validation) — `Card.kind="skill_drill"` is today an unused schema promise with NO authoring path; the fence must PREVENT authoring an ineligible item, not just say so.
+- Drill surface calls NO backend function (not `submitReview`/`gradeTextAnswer`) — structural fence, not only a grep.
+- §6 `game_timed` writer + replay-filter is explicitly DEFERRED (per the ephemeral decision) — not part of this ship.
+- Hard-gate items 5-6 on the learner light-up threshold + maturation tiers (a learner decision); replace "dynamic cutoff" with a set value.
+
+**Buildable-now after fixes:** item 1 (with guard), item 2 (with the rest-day fix), items 4/5 (real fields, same source). Item 3 needs sched. Item 6 needs disambiguation. Items 5/6 gated on the learner threshold. Items 7/8 need the authoring path + graphux prototype.
