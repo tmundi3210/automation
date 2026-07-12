@@ -200,3 +200,18 @@ Data-layer fixes (§8c B1/B2/B3, §8d thresholds) ALL landed correctly. Blockers
 9. Item 5: add the non-punitive line (light-up coloring cosmetic/navigational only; never withholds a scheduled review).
 
 **Still-open [UNKNOWN] gates on Phase 3:** graphux motion build-vs-adopt (measured verdict), TOEFL wrong-answer penalty, the empirical ESL fall-floor constant, the water decay_per_sec value.
+
+### 8f. Systematic build spec authored → slices/SLICE_GAMIFICATION.md (2026-07-11)
+Per-phase specialist agents authored a full build-spec slice (758 lines, per-item (a)GOAL/(b)WHAT/(c)FIELDS/(d)DATA-CONTRACT/(e)GIVEN-WHEN-THEN ACCEPTANCE/(f)UI-STATES/(g)SPECIALIST+INVARIANT/(h)GATES); adversarial verify = **APPROVE_READY** (every §8-8e requirement traces to a testable line; zero invented fields; item-7 BAR-IF; all 8 drill guardrails; item-5 demote-not-revoke; 4 Phase-3 UNKNOWNs gated). This slice is the loadable source of truth Base44 reads per item (replaces the compressible chat table).
+
+**Grounded findings from the deep pass (fix during build):**
+- Streak bug B1 CONFIRMED live at `Dashboard.jsx:53/55` (a rest day drains a freeze token); streak is client-recomputed with NO token-ledger entity (persistence is an open choice — G2-a).
+- `submitReview`'s `floor(done/planned*20)` WRITER lacks the divide-by-zero guard the Dashboard reader has — fix the writer too (Item 1).
+- Item 3 must PAGE `CardState.due` past the hard 500-row cap (the one non-trivial Phase-1 build).
+- Item 6 is a **sched deliverable** (min FSRS `CardState.stability`), needs the sched read path; Item 5's demotion is cross-source-dependent on it.
+
+**New design gates the detail surfaced (were hidden by the compressed table):**
+- **LOAD-BEARING [UNKNOWN-4a] — Mastery Meter denominator.** Area-mean over ALL concepts (untested ones sit at the 0.3 BKT prior → meter pinned ~30% forever, a new "all-zeros") vs over ONLY-ASSESSED concepts. **RECOMMEND: only-assessed, and show "X of N concepts assessed"** so the number is honest and not prior-dominated. Owner/learner confirm.
+- Low-stakes defaults (Base44 may pick, or owner sets): G1-a rest-day encoding = derived flag (no schema change); G2-a streak-token persistence (client-recompute vs minimal token-state); G2-b/G3-a missing-row + forecast inclusion (exclude new-state cards with no due date); G3-b forecast horizon N (default 7 days); G3-c day-bucketing = match the app's existing UTC/local convention.
+
+**STATUS: APPROVE-READY.** Owner: confirm 4a (only-assessed recommended); the rest are safe defaults. Then Base44 loads the slice and runs safe-menu → mastery/maturation → drill last (Phase 3 held behind its 4 [UNKNOWN] gates).
