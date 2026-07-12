@@ -127,3 +127,10 @@ Base44 returned a discussion-mode plan (Phase 1 safe menu, Phase 2 water-drop). 
 - `game_answer_logging` → RECOMMENDED: strictly ephemeral for first ship (write nothing). Logging as `game_timed` is a gated FOLLOW-UP (needs the `evidence_class` schema addition + bkt_evidence re-verification before any writer ships).
 
 **Detail bar before execution:** the plan must reach build-level — per-item testable acceptance lines, exact entity/field changes, screens touched, and a per-item credit estimate (not just "low-to-moderate").
+
+### 8b. Build-level plan review (2026-07-11) — near-approve, guardrails must become acceptance checks
+Base44's build-level plan applied all 4 corrections + both decisions correctly. Blocking gap: the load-bearing invariants are absent from the testable acceptance columns (in this project, un-asserted = unverified). Require these as explicit PASS/FAIL acceptance lines before "RUN":
+- **Streak (item 2):** a scheduler-mandated 0-due day counts as active (rest day = win); a miss spends a freeze token, never a bare reset; the 30-day "days active" secondary metric is always visible.
+- **Drill content fence (item 7):** the skill_drill pool is restricted to remember/understand terminology gates + TOEFL small-answer; reasoning/vignette/case/EXCEPT items are NOT eligible and cannot be authored as skill_drill.
+- **Drill logic (item 8):** selection is on STATIC option buttons only (moving drop never a target); prefers-reduced-motion → static numeral/ring + step meter preserving all timer info; colorblind → height + numeral, not water color; meter rises ONLY on genuine correctness; timeout shows "Correct — but the drop fell first" + offer to re-see untimed, no shame loop; zero writes to Revlog/BKT/Elo/FSRS/CalibrationBin (grep-verifiable).
+- **Field-existence (items 4-6, phantom-build guard):** confirm learner.current_mastery / concept_mastery / memory_strength / MasteryHistory actually exist and are read-only before building; render an honest empty state ("not yet studied") when mastery data is absent — never fabricate. Items 5-6 depend on the pending learner threshold.
