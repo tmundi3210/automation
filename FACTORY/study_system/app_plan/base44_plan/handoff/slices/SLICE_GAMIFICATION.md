@@ -307,7 +307,7 @@ Pagination: loop `.filter(..., {limit:500, offset:n*500})` until a short page; a
 A4.1 engage COURSE_LEVEL_PROGRESS + learner BKT · A4.2 GAMIFICATION_PLAN §8d + engage EFFORT_VS_MASTERY_SEPARATION · A4.3 engage EFFORT_VS_MASTERY_SEPARATION + INV-5 · A4.4 GAMIFICATION_PLAN §8d live-reads · A4.5 viz honest-abstraction + §8e#6 · A4.6 APP_RECON §6.3 + engage validation · A4.7 INV-9.
 
 ### (h) OWNER GATES / [UNKNOWN]
-- **[UNKNOWN-4a] Denominator definition** — does the area-mean run over (i) only concepts that have a `LearnerState` row, or (ii) ALL concepts in the area, counting never-touched ones at the 0.3 prior/`bkt_pL0` default? Load-bearing: (ii) drags every mean toward 0.3 and reads more honestly as "coverage," (i) reports only assessed concepts and can look inflated. **GATE before build.** Recommended [ESTIMATE, medium]: option (i) with an explicit "(n of N assessed)" coverage suffix so the un-assessed remainder is never hidden.
+- **[RESOLVED-4a — owner-locked 2026-07-11: option (i) ONLY-ASSESSED concepts (those with a LearnerState row), with an explicit "(n of N assessed)" coverage suffix so the un-assessed remainder is never hidden] Denominator definition** — does the area-mean run over (i) only concepts that have a `LearnerState` row, or (ii) ALL concepts in the area, counting never-touched ones at the 0.3 prior/`bkt_pL0` default? Load-bearing: (ii) drags every mean toward 0.3 and reads more honestly as "coverage," (i) reports only assessed concepts and can look inflated. **GATE before build.** Recommended [ESTIMATE, medium]: option (i) with an explicit "(n of N assessed)" coverage suffix so the un-assessed remainder is never hidden.
 - **OWNER GATE-4b** confirm the "On track" line stays at **0.60** (matches shipped MasteryBars) and is never relabelled "mastered."
 
 ---
@@ -727,7 +727,7 @@ _These must be resolved (owner call or measurement) before the corresponding ite
 - **G3-d [distinct encoding token]** — exact cool/neutral hue + mark are a **viz** deliverable (CVD-safe, WCAG dark-theme); Phase 1 fixes only the semantic (not-green, not-tick, labeled), not the hex. [UNKNOWN — viz styling, non-blocking to data contract].
 
 **Phase 2**
-- **[UNKNOWN-4a] Denominator definition** — area-mean over (i) only concepts with a LearnerState row vs (ii) ALL concepts (never-touched at 0.3 prior). **GATE before build.** Recommended (i) with "(n of N assessed)" coverage suffix. [UNKNOWN — owner].
+- **[RESOLVED-4a — owner-locked 2026-07-11: option (i) ONLY-ASSESSED concepts (those with a LearnerState row), with an explicit "(n of N assessed)" coverage suffix so the un-assessed remainder is never hidden] Denominator definition** — area-mean over (i) only concepts with a LearnerState row vs (ii) ALL concepts (never-touched at 0.3 prior). **GATE before build.** Recommended (i) with "(n of N assessed)" coverage suffix. [UNKNOWN — owner].
 - **OWNER GATE-4b** — confirm "On track" line stays at **0.60**, never relabelled "mastered."
 - **OWNER GATE-5a** — light-up threshold SET at **0.95**, owner-tunable only within [0.90, 0.95], NEVER down to 0.60. Confirm on relay.
 - **Item 5 cross-source dependency (declare):** the R1 demotion label needs Item 6's `min(stability over review-state cards) < 21d`. Item 6 must ship (or its aggregate be available); if unavailable, default to the conservative "Learned/seen" label, never a permanent "Learned" trophy.
