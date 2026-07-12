@@ -112,3 +112,18 @@ So "the specialist for this purpose" = **author `graphux` (new) + add `kb_sessio
 
 ## 7. Next step
 Per the established process: **owner picks the model to author `graphux` + `kb_session_drill_mechanics`** (recommended: Opus 4.8 authors, Fable runs — the author-with-X / audit-with-Y cross-check). Then Fable runs the gamification design through the full specialist set to produce the build plan, then it goes to Base44 (safe menu first, drill last).
+
+---
+
+## 8. Base44 discussion-plan review + corrections (2026-07-11)
+Base44 returned a discussion-mode plan (Phase 1 safe menu, Phase 2 water-drop). Directionally faithful (quarantine, timeout≠wrong, opt-in skill_drill, off-mastery hue, reduced-motion). **Four corrections before build-level detail:**
+1. **Day-box is EFFORT, not mastery.** Base44's acceptance said the fill "reflects mastery-based daily units" — conflation. Fill = tasks done ÷ planned (EFFORT); explicitly NOT a mastery metric; mastery is the separate meter. The planner being mastery-aware never makes the bar a mastery number.
+2. **The 0.6 concept-light-up threshold is invented.** Per §5 / engage E2, mastery cutoffs are a `learner` decision, `[UNKNOWN]` until set — must come from the learner model's actual mastery definition, never hardcoded (classic BKT "mastered" ≈ 0.95; 0.6 looks low).
+3. **Answer window is NOT hardcoded 5s.** qcraft §1.5: a fixed short timer tests ESL reading speed, not knowledge. DECISION (recommended): dynamic per-card window (option count + reading floor). Meter DECAY = session-only (multi-day rejected: pulls early review).
+4. **Two survey adds missing.** (a) KG mastery-map must carry the explicit non-punitive invariant — coloring is cosmetic/navigational ONLY, never withholds a scheduled review. (b) Concept-maturation gradient (§2b #2) omitted — add it to the sequence.
+
+**Owner-gate decisions (recommended; owner confirms on relay):**
+- `water_decay_timescale` → RECOMMENDED: dynamic per-card answer window + session-only meter decay.
+- `game_answer_logging` → RECOMMENDED: strictly ephemeral for first ship (write nothing). Logging as `game_timed` is a gated FOLLOW-UP (needs the `evidence_class` schema addition + bkt_evidence re-verification before any writer ships).
+
+**Detail bar before execution:** the plan must reach build-level — per-item testable acceptance lines, exact entity/field changes, screens touched, and a per-item credit estimate (not just "low-to-moderate").
