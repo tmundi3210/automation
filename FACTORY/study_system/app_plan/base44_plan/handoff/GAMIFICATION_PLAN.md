@@ -182,3 +182,21 @@ Fields verified in the live entity schemas: `LearnerState.bkt_p_mastery` (defaul
 **Plus 3 earlier refinements:** item 1 rest-day should render a distinct "nothing due / rest" state, NOT a full 20/20 green fill (a full bar reads as "did a full day's work"); item 2 must keep the "days-active-in-last-30" secondary metric in its acceptance; item 7 fence must explicitly bar EXCEPT/NOT stems + gate TOEFL current-2026-vs-legacy.
 
 **STATUS: with these in, the plan is APPROVE-READY.**
+
+### 8e. Final specialist verification (2026-07-11) — NOT approve-ready: 1 bug + dropped acceptance lines
+Data-layer fixes (§8c B1/B2/B3, §8d thresholds) ALL landed correctly. Blockers are a logic bug + guardrail acceptance lines that regressed when the drill items were compressed.
+
+**MUST-FIX before RUN:**
+1. **Item 7 boolean INVERTED** (currently "prevent authoring UNLESS ... + NOT/EXCEPT stems + TOEFL 2026+" → this REQUIRES except/not stems AND excludes all INBDE). Rewrite as BAR-IF: bar authoring if EXCEPT/NOT stem OR Bloom∉{remember,understand} OR non-homogeneous options OR not a single-best-answer MCQ OR INBDE itemset/vignette/case OR legacy(non-2026) TOEFL. ALLOW only: remember/understand + homogeneous + POSITIVE stem + single-best MCQ + (INBDE terminology gate OR current-2026 TOEFL small task).
+2. **Restore item-8 guardrail acceptance lines** (dropped): static-option-button selection (never a moving drop); prefers-reduced-motion → static numeral/ring + step meter preserving 100% timer info; colorblind → height+numeral; rise ONLY on genuine correctness + "speed, not mastery" label; timeout≠wrong copy ("Correct — but the drop fell first") + untimed re-see + no shame loop. (INV-5/INV-8.)
+3. **Add session-only meter-decay** acceptance to item 8 (multi-day decay rejected).
+4. **Item 5 R1 wording:** "DEMOTE the light-up to 'Learned/seen' (never REVOKE the learned state); maturation is the dominant visual" — and item 5 must READ min(CardState.stability) for the demotion trigger (cross-source dependency to declare).
+
+**SHOULD-FIX (cheap, verification-safety):**
+5. Items 5/6: add the N+1 Card→CardState BATCH-JOIN acceptance (only pagination is asserted; batch-join is the 2000+-card mis-light guard).
+6. Items 4/5/6: add honest empty-state ("not yet studied") acceptance.
+7. Item 2: a 0-due day is a FREE active day (NO token spent); a freeze token is spent only on a MISSED due-work day (else rest days drain the 2-token budget = B1 in disguise).
+8. Item 6: "reviewed cards" → "cards in `review` state" (learning/relearning cards excluded).
+9. Item 5: add the non-punitive line (light-up coloring cosmetic/navigational only; never withholds a scheduled review).
+
+**Still-open [UNKNOWN] gates on Phase 3:** graphux motion build-vs-adopt (measured verdict), TOEFL wrong-answer penalty, the empirical ESL fall-floor constant, the water decay_per_sec value.
