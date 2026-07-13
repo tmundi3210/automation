@@ -1,0 +1,40 @@
+# ASSUMPTIONS_AND_RISKS — deliverable 17 (living document)
+
+Status: DRAFT — finalized after TASK-015 (Grok self-verification) and
+TASK-016 (Codex self-verification + gate audit) integrate.
+
+## Unresolved assumptions (blocking full confidence, not blocking review)
+
+| # | Assumption | Why unresolved | Resolution path |
+|---|---|---|---|
+| A1 | Grok CLI has native X-search | Never demonstrated in a task; xAI product makes it likely | TASK-015 harmless test |
+| A2 | Codex CLI web-search capability | Never exercised here | TASK-016 harmless test |
+| A3 | Grok and Codex gate state may COLLIDE in `~/.exchange-gate/` (shared `last_seen_tip` would starve one builder's wakes) | Both ACKs name the same dir; only Grok's contents were inspected | TASK-016 audit + de-conflict; observe two natural wakes after |
+| A4 | "Hermes Agent" and "OpenClaw" exact official projects | Multiple same-named projects exist; operator naming ambiguous | TASK-015 resolution with cited URLs; UNRESOLVED until then |
+| A5 | Plan/rate limits for all three subscriptions | Not visible from configs inspected so far | Self-verification tasks; else operator-supplied |
+| A6 | Only ONE authorized repo (`tmundi3210/automation`) | Hub's GitHub scope is this repo; repo-list tool unavailable in this session; other local projects on the operator's Mac are invisible to the hub | Operator confirms project list; builders can inventory local paths in a later read-only task if authorized |
+| A7 | X API ingestion for the source registry | No component currently has verified X API access; Grok CLI may provide interactive X search only (no feed polling) | TASK-015; if interactive-only, cadence for X sources becomes scout-tick-driven, not feed-driven |
+| A8 | Podcast/audio ingestion needs a transcript source | No component has been verified to transcribe audio | Prefer show-notes/transcript feeds (Tier C is discovery-only anyway) |
+
+## Accepted residual risks (recorded, operator-acknowledged)
+
+| # | Risk | Acceptance basis |
+|---|---|---|
+| R1 | Both builders push as the OWNER GitHub account (distinct git identities + trailers only) | OPERATOR WAIVER-001 — explicit operator decision; compensating controls: author pin, ancestry check, message-commit purity, scope gate |
+| R2 | Builders run on a personal Mac with real credentials present | Least-privilege flags (`acceptEdits` + deny rules, `workspace-write` sandbox) + standing orders in root-owned 444 files; not equivalent to isolated CI |
+| R3 | Hub sessions are ephemeral; anything unpushed is lost on container reclaim | Mitigated by push-early discipline; accepted for planning work |
+| R4 | MCP servers can disconnect mid-session (observed) | Degradation ladder: fall back to WebSearch/repo data; retry next session |
+| R5 | LLM compliance decays on long prohibition lists (arXiv:2605.28639) | Policies written affirmative-first; hard denials enforced OUTSIDE the model (gates, sandboxes, scopes) |
+
+## Known gaps deferred to implementation phases
+
+- No vector index exists yet (memory layer 3) — Phase C decision.
+- No dead-letter queue — currently a failed task just re-runs on wake;
+  Phase B formalizes.
+- Framework-analysis library (SPEC Phase 6) has ZERO entries at planning
+  time — first two arrive with TASK-015 case studies.
+- The affirmative-first rewrite of both builders' local standing-orders
+  files is SCHEDULED but not yet executed (pre-existing backlog item).
+- Social-media generation/scheduling (a SPEC topic) has no verified
+  execution surface in any component — planning covers ingestion/research
+  side only until a posting tool is authorized.
