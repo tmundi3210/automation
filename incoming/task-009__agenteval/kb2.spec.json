@@ -1,0 +1,2437 @@
+{
+  "domain": "eval_agent_reliability",
+  "domain_label": "Agent Reliability and Trust Scoring",
+  "purpose": "Compute per-lane agent trust from history with an explicit weighted formula, small-sample intervals, drift and breakers, and Goodhart-resistant anti-terms.",
+  "assumptions": [
+    "Integrator writes verified outcomes",
+    "History rows exist per delivery",
+    "Task types are labeled"
+  ],
+  "exclusions": [
+    "HR performance management",
+    "Consumer credit scoring products",
+    "Physical manufacturing QA as primary"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What history fields and lane keys does trust require?",
+      "must_be_answerable_from": [
+        "AGENT_HISTORY_SCHEMA",
+        "TASK_TYPE_LANES",
+        "LEDGER_INTEGRITY"
+      ],
+      "acceptance_condition": "lists required fields and agent task_type keying",
+      "covered_by": [
+        "AGENT_HISTORY_SCHEMA",
+        "TASK_TYPE_LANES",
+        "LEDGER_INTEGRITY",
+        "TRUST_SCORE_FORMULA"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How are accept_rate_fp and mean_Q_norm computed with windows?",
+      "must_be_answerable_from": [
+        "ACCEPT_RATE_FP",
+        "MEAN_ARTIFACT_Q",
+        "WINDOWING"
+      ],
+      "acceptance_condition": "gives formulas and default window",
+      "covered_by": [
+        "ACCEPT_RATE_FP",
+        "MEAN_ARTIFACT_Q",
+        "WINDOWING"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How do lanes and competence vectors prevent invalid generalization?",
+      "must_be_answerable_from": [
+        "TASK_TYPE_LANES",
+        "PRIOR_BLEND",
+        "COMPETENCE_VECTOR"
+      ],
+      "acceptance_condition": "per-lane trust object and prior blend until n>=3",
+      "covered_by": [
+        "TASK_TYPE_LANES",
+        "PRIOR_BLEND",
+        "COMPETENCE_VECTOR",
+        "XVERIFY_CATCH"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How does small-sample inference use Wilson or Beta?",
+      "must_be_answerable_from": [
+        "WILSON_BETA",
+        "ACCEPT_RATE_FP",
+        "SELF_REPORT_GAP"
+      ],
+      "acceptance_condition": "Wilson 95 or Beta interval; width flag",
+      "covered_by": [
+        "WILSON_BETA",
+        "ACCEPT_RATE_FP",
+        "SELF_REPORT_GAP"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "What is the trust formula with weights?",
+      "must_be_answerable_from": [
+        "TRUST_SCORE_FORMULA",
+        "MEAN_ARTIFACT_Q",
+        "XVERIFY_CATCH"
+      ],
+      "acceptance_condition": "states 0.50/0.25/0.15/-0.10 composition",
+      "covered_by": [
+        "TRUST_SCORE_FORMULA",
+        "MEAN_ARTIFACT_Q",
+        "XVERIFY_CATCH",
+        "SELF_REPORT_GAP",
+        "TRUST_TELEMETRY"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How are drift, severity, and timeouts used?",
+      "must_be_answerable_from": [
+        "DRIFT_DETECT",
+        "SEVERITY_CLASS",
+        "TIMEOUT_ACCOUNTING"
+      ],
+      "acceptance_condition": "0.15 drop or miss streak; major plus severity; timeouts count",
+      "covered_by": [
+        "DRIFT_DETECT",
+        "SEVERITY_CLASS",
+        "TIMEOUT_ACCOUNTING",
+        "CIRCUIT_BREAKER"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How does self_report_gap implement Goodhart resistance?",
+      "must_be_answerable_from": [
+        "SELF_REPORT_GAP",
+        "GOODHART_RESIST",
+        "LEDGER_INTEGRITY"
+      ],
+      "acceptance_condition": "gap definition and multi-term anti-gaming rationale",
+      "covered_by": [
+        "SELF_REPORT_GAP",
+        "GOODHART_RESIST",
+        "LEDGER_INTEGRITY",
+        "TRUST_SCORE_FORMULA"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "When do intervals and windows force caution?",
+      "must_be_answerable_from": [
+        "WILSON_BETA",
+        "WINDOWING",
+        "PRIOR_BLEND"
+      ],
+      "acceptance_condition": "width>0.25 flag; rolling window; blend while small n",
+      "covered_by": [
+        "WILSON_BETA",
+        "WINDOWING",
+        "PRIOR_BLEND",
+        "MULTI_RUN_STABILITY"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "What opens a circuit breaker and how does recovery work?",
+      "must_be_answerable_from": [
+        "CIRCUIT_BREAKER",
+        "TIMEOUT_ACCOUNTING",
+        "CANARY_TRUST"
+      ],
+      "acceptance_condition": "2 timeouts or 3 fail streak or trust floor; canary half-open",
+      "covered_by": [
+        "CIRCUIT_BREAKER",
+        "TIMEOUT_ACCOUNTING",
+        "CANARY_TRUST",
+        "DRIFT_DETECT"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How are telemetry, stability, and baselines exported for routing?",
+      "must_be_answerable_from": [
+        "TRUST_TELEMETRY",
+        "MULTI_RUN_STABILITY",
+        "BASELINE_COMPARE"
+      ],
+      "acceptance_condition": "components and n exported; variance and baseline rules noted",
+      "covered_by": [
+        "TRUST_TELEMETRY",
+        "MULTI_RUN_STABILITY",
+        "BASELINE_COMPARE",
+        "COMPETENCE_VECTOR"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "accept_rate_fp",
+      "definition": "Share of deliveries accepted with revise_count<=1 in a lane window"
+    },
+    {
+      "term": "mean_Q_norm",
+      "definition": "Mean artifact_Q/10 over accepts in the rolling window"
+    },
+    {
+      "term": "self_report_gap",
+      "definition": "Mean over-claim rate claimed_pass minus verified_pass in unit interval"
+    },
+    {
+      "term": "xverify_catch_rate",
+      "definition": "Major plus defects found in others over found plus later missed"
+    },
+    {
+      "term": "wilson_interval",
+      "definition": "95 percent Wilson score interval for binomial proportions"
+    },
+    {
+      "term": "trust_score",
+      "definition": "clamp01 of 0.50 accept_fp plus 0.25 mean_Q_norm plus 0.15 catch minus 0.10 gap"
+    },
+    {
+      "term": "circuit_breaker",
+      "definition": "Pause lane assignments after timeout fail or trust floor triggers"
+    },
+    {
+      "term": "task_type_lane",
+      "definition": "Competence dimension such as content-author or verify"
+    },
+    {
+      "term": "prior_blend",
+      "definition": "Mix published lane prior with observed trust until n>=3"
+    },
+    {
+      "term": "competence_vector",
+      "definition": "Per-agent map of lane trusts with n ci_width and breaker_state"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "AGENT_HISTORY_SCHEMA",
+      "topic": "agent_history_schema",
+      "definition": "Define per-agent history records: agent_id, task_id, task_type, gates_pass, revise_count, artifact_Q, self_claimed_pass, integrator_verified_pass, xverify_defects_found, xverify_defects_missed, timeout, timestamp. Schema is the substrate for reliability metrics; without it trust is vibes.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "base": {
+        "criticality": 0.94,
+        "business_value": 0.92,
+        "user_value": 0.88,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.93,
+        "evidence_confidence": 0.82,
+        "failure_rate": 0.12,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.12,
+          0.32
+        ],
+        "update_signal": "scores updated from chat memory without structured history rows"
+      },
+      "scope_boundary": {
+        "included": [
+          "required fields",
+          "append-only rows",
+          "task_type dimension"
+        ],
+        "excluded": [
+          "CRM contact schemas"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.93,
+          "claim": "Schema makes trust computable",
+          "example": "each accept writes one history row"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Over-wide schema slows logging compliance",
+          "example": "forty optional fields ignored"
+        }
+      ],
+      "failure_modes": [
+        "free-text only history",
+        "missing claimed vs verified fields"
+      ],
+      "acceptance_tests": [
+        "history schema documented with required fields"
+      ],
+      "revisit_triggers": [
+        "missing fields in ledger"
+      ]
+    },
+    {
+      "id": "TASK_TYPE_LANES",
+      "topic": "task_type_competence_lanes",
+      "definition": "Track competence per task_type (content-author, code-build, verify, judge, integrate), not one global skill. Lane vectors prevent a strong verifier from being over-trusted as a content author without evidence. Minimum n per cell before observed trust dominates priors.",
+      "group": "foundations",
+      "dependencies": [
+        "AGENT_HISTORY_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "base": {
+        "criticality": 0.91,
+        "business_value": 0.9,
+        "user_value": 0.88,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "global trust assigns content build after only verify successes"
+      },
+      "scope_boundary": {
+        "included": [
+          "lane taxonomy",
+          "per-cell stats",
+          "prior vs observed switch"
+        ],
+        "excluded": [
+          "job family models"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Lane vectors stop invalid generalization",
+          "example": "verify-strong not auto content-lead"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Sparse cells slow warm-start",
+          "example": "new lane has n=0"
+        }
+      ],
+      "failure_modes": [
+        "one global score for all work",
+        "ignore task_type"
+      ],
+      "acceptance_tests": [
+        "task_type enum fixed; trust keyed by agent and task_type"
+      ],
+      "revisit_triggers": [
+        "cross-lane overgeneralization"
+      ]
+    },
+    {
+      "id": "ACCEPT_RATE_FP",
+      "topic": "first_pass_accept_rate",
+      "definition": "first_pass_accept_rate = count(accepted with revise_count<=1) / count(delivered) per agent lane. Use Wilson score interval at 95 percent when n<30 instead of raw proportion.",
+      "group": "metrics",
+      "dependencies": [
+        "AGENT_HISTORY_SCHEMA",
+        "TASK_TYPE_LANES"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.86,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.16,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.16,
+          0.38
+        ],
+        "update_signal": "raw 100 percent accept rate claimed after n=1"
+      },
+      "scope_boundary": {
+        "included": [
+          "revise_count<=1 definition",
+          "Wilson 95 for small n"
+        ],
+        "excluded": [
+          "conversion analytics"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Wilson prevents tiny-n hero scores",
+          "example": "1 of 1 is not certainty"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Wilson can look pessimistic early",
+          "example": "new agent shows wide interval"
+        }
+      ],
+      "failure_modes": [
+        "raw p without n",
+        "count undelivered as accept"
+      ],
+      "acceptance_tests": [
+        "formula and Wilson policy documented"
+      ],
+      "revisit_triggers": [
+        "tiny-n heroics"
+      ]
+    },
+    {
+      "id": "MEAN_ARTIFACT_Q",
+      "topic": "mean_artifact_quality_term",
+      "definition": "mean_Q_norm = mean(artifact_Q)/10 over accepts in lane window (default last 20 or 90d). Links artifact quality into agent trust. Exclude FAIL rows without Q.",
+      "group": "metrics",
+      "dependencies": [
+        "AGENT_HISTORY_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.85,
+        "user_value": 0.84,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.36,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "trust ignores Q and only counts accept binary"
+      },
+      "scope_boundary": {
+        "included": [
+          "windowed mean Q/10",
+          "exclude gate-fail nulls"
+        ],
+        "excluded": [
+          "rolling averages"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Links product quality to trust",
+          "example": "Q=9 builds raise trust"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Slow windows lag sudden quality drops",
+          "example": "last-20 includes old great work"
+        }
+      ],
+      "failure_modes": [
+        "lifetime mean only",
+        "include null Q as zero wrongly"
+      ],
+      "acceptance_tests": [
+        "window policy and mean_Q_norm definition"
+      ],
+      "revisit_triggers": [
+        "lagging quality drops"
+      ]
+    },
+    {
+      "id": "XVERIFY_CATCH",
+      "topic": "xverify_catch_rate",
+      "definition": "xverify_catch_rate = defects_found_in_others / (found_in_others + missed_later_on_same) for verify-lane work, using major+ severity. Rewards correct catches; canary-found misses lower it. No verify work imputes neutral 0.5 or excludes weight.",
+      "group": "metrics",
+      "dependencies": [
+        "AGENT_HISTORY_SCHEMA",
+        "TASK_TYPE_LANES"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.86,
+        "user_value": 0.85,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "verifier rubber-stamps peers yet gains trust"
+      },
+      "scope_boundary": {
+        "included": [
+          "catch vs miss",
+          "neutral impute",
+          "severity filter"
+        ],
+        "excluded": [
+          "QA escape rate"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Pays verifiers for real catches",
+          "example": "onboarding refusals can score verify lane"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.56,
+          "claim": "Bold catches later judged style nits need severity filter",
+          "example": "filter majors"
+        }
+      ],
+      "failure_modes": [
+        "all peer comments are catches",
+        "no miss tracking"
+      ],
+      "acceptance_tests": [
+        "catch and miss fields; severity filter"
+      ],
+      "revisit_triggers": [
+        "nit-as-catch gaming"
+      ]
+    },
+    {
+      "id": "SELF_REPORT_GAP",
+      "topic": "self_report_gap_penalty",
+      "definition": "self_report_gap = mean(1[self_claimed_pass] - 1[integrator_verified_pass]) over window, clipped to [0,1]. Over-claiming reduces trust (Goodhart guard). Under-claiming does not raise trust alone.",
+      "group": "metrics",
+      "dependencies": [
+        "AGENT_HISTORY_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.52,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.91,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "agent claims gates clean when content is template clone"
+      },
+      "scope_boundary": {
+        "included": [
+          "claimed vs verified bits",
+          "gap in unit interval",
+          "Goodhart intent"
+        ],
+        "excluded": [
+          "forecast honesty metrics"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.93,
+          "claim": "Gap term docks reward hacking",
+          "example": "over-claim lowers trust directly"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "claim": "Noisy early labels can create false gap",
+          "example": "integrator delay"
+        }
+      ],
+      "failure_modes": [
+        "trust self-report as truth",
+        "no claimed bit logged"
+      ],
+      "acceptance_tests": [
+        "history has claimed and verified; gap used in trust"
+      ],
+      "revisit_triggers": [
+        "false gaps from label lag"
+      ]
+    },
+    {
+      "id": "TRUST_SCORE_FORMULA",
+      "topic": "trust_score_composition",
+      "definition": "trust(agent,task_type)=clamp01(0.50*accept_rate_fp_wilson + 0.25*mean_Q_norm + 0.15*xverify_catch_rate - 0.10*self_report_gap). If n<3, blend 0.7*lane_prior + 0.3*observed. Implementable default; integrator owns weight changelogs.",
+      "group": "scoring",
+      "dependencies": [
+        "ACCEPT_RATE_FP",
+        "MEAN_ARTIFACT_Q",
+        "XVERIFY_CATCH",
+        "SELF_REPORT_GAP",
+        "TASK_TYPE_LANES"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.95,
+        "business_value": 0.94,
+        "user_value": 0.92,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.55,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.95,
+        "evidence_confidence": 0.82,
+        "failure_rate": 0.12,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.12,
+          0.34
+        ],
+        "update_signal": "trust is a gut ranking with no formula"
+      },
+      "scope_boundary": {
+        "included": [
+          "weights 0.50 0.25 0.15 0.10",
+          "prior blend n<3",
+          "clamp unit interval"
+        ],
+        "excluded": [
+          "credit models"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.95,
+          "claim": "Explicit formula is implementable",
+          "example": "recompute from history rows"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Fixed weights may need lane retuning",
+          "example": "verify lane may want higher catch weight"
+        }
+      ],
+      "failure_modes": [
+        "opaque trust",
+        "weights sum wrong"
+      ],
+      "acceptance_tests": [
+        "formula and prior-blend rule documented"
+      ],
+      "revisit_triggers": [
+        "irreproducible trust"
+      ]
+    },
+    {
+      "id": "WILSON_BETA",
+      "topic": "small_sample_intervals",
+      "definition": "For rates with n<30, report Wilson 95 percent interval or Beta-Binomial with Beta(1,1) prior. Routing may use point estimate but must widen exploration when interval width >0.25.",
+      "group": "metrics",
+      "dependencies": [
+        "ACCEPT_RATE_FP",
+        "TRUST_SCORE_FORMULA"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.87,
+        "business_value": 0.84,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "n=2 agent monopolizes lane from raw 100 percent"
+      },
+      "scope_boundary": {
+        "included": [
+          "Wilson 95",
+          "Beta(1,1) option",
+          "width>0.25 flag"
+        ],
+        "excluded": [
+          "A/B small sample"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Intervals stop tiny-n monopolies",
+          "example": "wide CI forces exploration"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Operators may misread intervals",
+          "example": "need clear UI"
+        }
+      ],
+      "failure_modes": [
+        "raw rates only",
+        "hide n"
+      ],
+      "acceptance_tests": [
+        "small-sample policy uses Wilson or Beta"
+      ],
+      "revisit_triggers": [
+        "tiny-n monopolies"
+      ]
+    },
+    {
+      "id": "DRIFT_DETECT",
+      "topic": "performance_drift_detection",
+      "definition": "Flag drift when rolling accept_rate or mean_Q drops by >=0.15 absolute vs prior window, or >=3 consecutive misses. Mark DEGRADED_WATCH and raise verification sampling.",
+      "group": "reliability",
+      "dependencies": [
+        "ACCEPT_RATE_FP",
+        "MEAN_ARTIFACT_Q",
+        "AGENT_HISTORY_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.86,
+        "user_value": 0.87,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.48,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "quality falls for two weeks with no flag"
+      },
+      "scope_boundary": {
+        "included": [
+          "0.15 drop threshold",
+          "consecutive miss rule",
+          "DEGRADED_WATCH"
+        ],
+        "excluded": [
+          "SRE burn rates"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "claim": "Drift flags enable early intervention",
+          "example": "watch before circuit break"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Noisy lanes false-alarm",
+          "example": "need min n in window"
+        }
+      ],
+      "failure_modes": [
+        "no drift checks",
+        "lifetime average hides fail streak"
+      ],
+      "acceptance_tests": [
+        "drift thresholds documented"
+      ],
+      "revisit_triggers": [
+        "missed drifts"
+      ]
+    },
+    {
+      "id": "CIRCUIT_BREAKER",
+      "topic": "circuit_breaker_thresholds",
+      "definition": "Open circuit if: 2 consecutive timeouts, OR 3 consecutive FAIL/REVISE with same blocking class, OR trust <0.35 with n>=5. Half-open after canary pass. Protects pipeline from repeated failure.",
+      "group": "reliability",
+      "dependencies": [
+        "DRIFT_DETECT",
+        "TRUST_SCORE_FORMULA",
+        "WILSON_BETA"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.91,
+        "business_value": 0.88,
+        "user_value": 0.86,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.6,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "agent keeps receiving tasks after two timeouts"
+      },
+      "scope_boundary": {
+        "included": [
+          "timeout rule",
+          "fail streak",
+          "trust floor 0.35 n>=5",
+          "canary half-open"
+        ],
+        "excluded": [
+          "breaker patterns"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Breakers bound blast radius",
+          "example": "two timeouts stop assignment"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "claim": "Too-tight breakers starve recovery",
+          "example": "one flaky network trips"
+        }
+      ],
+      "failure_modes": [
+        "no breaker",
+        "manual only forever"
+      ],
+      "acceptance_tests": [
+        "breaker thresholds and half-open rule written"
+      ],
+      "revisit_triggers": [
+        "repeated fails without break"
+      ]
+    },
+    {
+      "id": "GOODHART_RESIST",
+      "topic": "goodhart_resistance_design",
+      "definition": "Prefer multi-term trust, anti-terms (self_report_gap), integrator verification, and rotating canaries. Any single rate will be gamed if it alone gates rewards.",
+      "group": "reliability",
+      "dependencies": [
+        "TRUST_SCORE_FORMULA",
+        "SELF_REPORT_GAP",
+        "XVERIFY_CATCH"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.5,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "optimize only accept_rate by shipping shape-pass shells"
+      },
+      "scope_boundary": {
+        "included": [
+          "multi-term scores",
+          "anti-terms",
+          "canary rotation"
+        ],
+        "excluded": [
+          "metric gaming ops"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Multi-term plus gap resists single-metric gaming",
+          "example": "clone farming docks Q and gap"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Complex metrics harder to explain",
+          "example": "operators want one number"
+        }
+      ],
+      "failure_modes": [
+        "single rate reward",
+        "no anti-term"
+      ],
+      "acceptance_tests": [
+        "trust has multiple terms including gap"
+      ],
+      "revisit_triggers": [
+        "new gaming modes"
+      ]
+    },
+    {
+      "id": "PRIOR_BLEND",
+      "topic": "published_prior_vs_observed",
+      "definition": "Until n>=3 in a lane, trust_blend=0.7*lane_prior+0.3*observed; then observed weight >=0.8. Priors come from published routing table, not self-claims.",
+      "group": "scoring",
+      "dependencies": [
+        "TRUST_SCORE_FORMULA",
+        "TASK_TYPE_LANES",
+        "WILSON_BETA"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.85,
+        "business_value": 0.84,
+        "user_value": 0.82,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "prior alone assigns forever despite bad observed results"
+      },
+      "scope_boundary": {
+        "included": [
+          "n>=3 switch",
+          "0.7/0.3 blend",
+          "observed dominance after"
+        ],
+        "excluded": [
+          "Bayesian priors"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Blend warm-starts without ignoring evidence",
+          "example": "bad observed overrides prior"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "n=3 is still thin",
+          "example": "consider n>=5 for high risk lanes"
+        }
+      ],
+      "failure_modes": [
+        "prior forever",
+        "observed from n=1 full weight"
+      ],
+      "acceptance_tests": [
+        "blend schedule documented"
+      ],
+      "revisit_triggers": [
+        "prior stickiness"
+      ]
+    },
+    {
+      "id": "TIMEOUT_ACCOUNTING",
+      "topic": "timeout_and_sla_accounting",
+      "definition": "Record timeouts and deadline misses as first-class failures. Timeout rate enters drift and breaker logic. Distinguish infrastructure timeout vs agent hang when possible.",
+      "group": "reliability",
+      "dependencies": [
+        "AGENT_HISTORY_SCHEMA",
+        "CIRCUIT_BREAKER"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.5,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "timeouts omitted from history so trust stays high"
+      },
+      "scope_boundary": {
+        "included": [
+          "timeout field",
+          "SLA miss",
+          "infra vs agent class"
+        ],
+        "excluded": [
+          "SRE error budgets"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "claim": "Timeouts visible to breakers",
+          "example": "two consecutive open circuit"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Infra blips can unfairly dock agents",
+          "example": "need class field"
+        }
+      ],
+      "failure_modes": [
+        "drop timeout rows",
+        "count as success"
+      ],
+      "acceptance_tests": [
+        "timeout logged; breaker consumes it"
+      ],
+      "revisit_triggers": [
+        "hidden timeouts"
+      ]
+    },
+    {
+      "id": "WINDOWING",
+      "topic": "rolling_windows_and_decay",
+      "definition": "Compute rates on rolling windows (default last 20 tasks or 90 days) with optional exponential decay half-life 45d for mean_Q. Prevents ancient glory from masking recent failure.",
+      "group": "metrics",
+      "dependencies": [
+        "MEAN_ARTIFACT_Q",
+        "ACCEPT_RATE_FP",
+        "DRIFT_DETECT"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.83,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "lifetime accept rate hides last ten fails"
+      },
+      "scope_boundary": {
+        "included": [
+          "last-20 or 90d",
+          "optional decay"
+        ],
+        "excluded": [
+          "rolling volatility"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Windows keep trust timely",
+          "example": "recent fails move trust down"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "claim": "Short windows are noisy",
+          "example": "need minimum n in window"
+        }
+      ],
+      "failure_modes": [
+        "lifetime only",
+        "window shorter than 3 with no interval"
+      ],
+      "acceptance_tests": [
+        "window policy written"
+      ],
+      "revisit_triggers": [
+        "stale high trust"
+      ]
+    },
+    {
+      "id": "SEVERITY_CLASS",
+      "topic": "defect_severity_classes",
+      "definition": "Classify defects blocker/major/minor. Only major+ count in xverify_catch_rate and error docks by default. Prevents nit-farming from inflating verify scores.",
+      "group": "reliability",
+      "dependencies": [
+        "XVERIFY_CATCH",
+        "SELF_REPORT_GAP"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "fifty style nits count as fifty catches"
+      },
+      "scope_boundary": {
+        "included": [
+          "blocker major minor",
+          "catch filter"
+        ],
+        "excluded": [
+          "bug tracker severity"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "claim": "Severity filter keeps catch rate meaningful",
+          "example": "majors only default"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Borderline major minor disputes need examples",
+          "example": "publish examples table"
+        }
+      ],
+      "failure_modes": [
+        "all comments equal",
+        "no severity field"
+      ],
+      "acceptance_tests": [
+        "severity enum and examples; catch uses major plus"
+      ],
+      "revisit_triggers": [
+        "nit farming"
+      ]
+    },
+    {
+      "id": "TRUST_TELEMETRY",
+      "topic": "trust_telemetry_export",
+      "definition": "Export per-cell trust components and n for dashboards. Show formula inputs, not only final trust.",
+      "group": "scoring",
+      "dependencies": [
+        "TRUST_SCORE_FORMULA",
+        "AGENT_HISTORY_SCHEMA"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.84,
+        "user_value": 0.78,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.34,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.16,
+          0.38
+        ],
+        "update_signal": "dashboard shows single trust without components"
+      },
+      "scope_boundary": {
+        "included": [
+          "component export",
+          "n and CI width"
+        ],
+        "excluded": [
+          "BI dashboards"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "claim": "Component telemetry debugs trust",
+          "example": "see gap term spike"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Author sensitivity in exports",
+          "example": "aggregate when needed"
+        }
+      ],
+      "failure_modes": [
+        "final only",
+        "secret manual overrides"
+      ],
+      "acceptance_tests": [
+        "export includes components n CI"
+      ],
+      "revisit_triggers": [
+        "opaque trust UI"
+      ]
+    },
+    {
+      "id": "CANARY_TRUST",
+      "topic": "canary_tasks_for_recovery",
+      "definition": "When breaker open or DEGRADED_WATCH, assign small canary tasks; success moves half-open to closed and updates trust. Canaries are real gated tasks, not free trust resets.",
+      "group": "reliability",
+      "dependencies": [
+        "CIRCUIT_BREAKER",
+        "TRUST_SCORE_FORMULA",
+        "DRIFT_DETECT"
+      ],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.85,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "breaker clears on promise without canary deliverable"
+      },
+      "scope_boundary": {
+        "included": [
+          "canary assignment",
+          "half-open rules",
+          "real gates"
+        ],
+        "excluded": [
+          "feature flag canaries"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Canaries prove recovery with evidence",
+          "example": "pass updates trust honestly"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Canary scarcity delays recovery",
+          "example": "need reserved canary budget"
+        }
+      ],
+      "failure_modes": [
+        "manual trust reset",
+        "canary without gates"
+      ],
+      "acceptance_tests": [
+        "half-open requires canary deliverable"
+      ],
+      "revisit_triggers": [
+        "resets without evidence"
+      ]
+    },
+    {
+      "id": "MULTI_RUN_STABILITY",
+      "topic": "multi_run_stability_checks",
+      "definition": "For high-risk lanes, estimate stability; high variance lowers effective trust (example subtract 0.05 if rolling std of Q >1.5). Stability is part of reliability.",
+      "group": "reliability",
+      "dependencies": [
+        "MEAN_ARTIFACT_Q",
+        "WILSON_BETA"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.81,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.48
+        ],
+        "update_signal": "agent alternates Q=9 and Q=3 with same trust as stable Q=6"
+      },
+      "scope_boundary": {
+        "included": [
+          "variance penalty",
+          "rejudge stability"
+        ],
+        "excluded": [
+          "process capability"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "claim": "Variance penalty favors consistent agents",
+          "example": "stdQ>1.5 docks trust"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Hard tasks naturally vary",
+          "example": "apply only high-risk lanes"
+        }
+      ],
+      "failure_modes": [
+        "ignore variance",
+        "penalize all variance including hard MED"
+      ],
+      "acceptance_tests": [
+        "optional variance term documented for high-risk lanes"
+      ],
+      "revisit_triggers": [
+        "whiplash quality"
+      ]
+    },
+    {
+      "id": "LEDGER_INTEGRITY",
+      "topic": "score_ledger_integrity",
+      "definition": "History and scores are append-only for agents; only integrator may correct with audited entries. Builders cannot edit trust inputs. Integrity failures void dependent routing until repaired.",
+      "group": "foundations",
+      "dependencies": [
+        "AGENT_HISTORY_SCHEMA",
+        "TRUST_SCORE_FORMULA"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.93,
+        "business_value": 0.9,
+        "user_value": 0.86,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.94,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.7,
+        "confidence": 0.84,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.9,
+        "dependency_gate_pass_rate": 0.92,
+        "prior_importance": 0.93,
+        "evidence_confidence": 0.84,
+        "failure_rate": 0.1,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.1,
+          0.28
+        ],
+        "update_signal": "builder rewrites scores.json to raise trust"
+      },
+      "scope_boundary": {
+        "included": [
+          "append-only",
+          "integrator corrections audited"
+        ],
+        "excluded": [
+          "financial ledgers"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.94,
+          "claim": "Integrity keeps trust meaningful",
+          "example": "unauthorized edits blocked"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Slow corrections when integrator busy",
+          "example": "need clear SLA"
+        }
+      ],
+      "failure_modes": [
+        "shared write to scores",
+        "silent edits"
+      ],
+      "acceptance_tests": [
+        "integrator single writer; audit corrections"
+      ],
+      "revisit_triggers": [
+        "unauthorized writes"
+      ]
+    },
+    {
+      "id": "BASELINE_COMPARE",
+      "topic": "baseline_and_regression",
+      "definition": "Compare agent lane metrics to baseline (team median or prior self). Regression if mean_Q drops >=1.0 vs baseline with n>=5. Baselines make absolute rates interpretable.",
+      "group": "metrics",
+      "dependencies": [
+        "MEAN_ARTIFACT_Q",
+        "DRIFT_DETECT",
+        "WINDOWING"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.81,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "absolute rate looks fine while below all peers"
+      },
+      "scope_boundary": {
+        "included": [
+          "median baseline",
+          "regression delta 1.0 Q"
+        ],
+        "excluded": [
+          "league averages"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "claim": "Baselines contextualize performance",
+          "example": "below-median flag"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "claim": "Weak peer set makes median easy",
+          "example": "need quality floor too"
+        }
+      ],
+      "failure_modes": [
+        "no baseline",
+        "baseline cherry-picked"
+      ],
+      "acceptance_tests": [
+        "baseline definition and regression rule"
+      ],
+      "revisit_triggers": [
+        "relative-only blindness"
+      ]
+    },
+    {
+      "id": "COMPETENCE_VECTOR",
+      "topic": "competence_vector_export",
+      "definition": "Publish the vector of per-lane trusts for each agent as the routing input object: {agent_id, lanes: {task_type: {trust, n, ci_width, breaker_state}}}. Downstream routing must consume this object rather than free-text reputation.",
+      "group": "scoring",
+      "dependencies": [
+        "TRUST_SCORE_FORMULA",
+        "TASK_TYPE_LANES",
+        "CIRCUIT_BREAKER",
+        "TRUST_TELEMETRY"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.86,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "router reads narrative bios instead of competence vectors"
+      },
+      "scope_boundary": {
+        "included": [
+          "vector schema",
+          "breaker_state field",
+          "ci_width field"
+        ],
+        "excluded": [
+          "feature stores"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Machine-readable competence enables routing code",
+          "example": "router loads JSON vector"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Stale vectors if export lagging",
+          "example": "need freshness timestamp"
+        }
+      ],
+      "failure_modes": [
+        "prose reputation only",
+        "vector without n"
+      ],
+      "acceptance_tests": [
+        "competence vector schema with freshness"
+      ],
+      "revisit_triggers": [
+        "stale vectors"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "TASK_TYPE_LANES",
+      "edge_type": "dependency",
+      "why_related": "lanes need history keys",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "ACCEPT_RATE_FP",
+      "edge_type": "dependency",
+      "why_related": "rates from rows",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "MEAN_ARTIFACT_Q",
+      "edge_type": "dependency",
+      "why_related": "Q mean from rows",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "XVERIFY_CATCH",
+      "edge_type": "dependency",
+      "why_related": "catch from rows",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "SELF_REPORT_GAP",
+      "edge_type": "dependency",
+      "why_related": "gap from claimed verified",
+      "relation_strength": 0.92
+    },
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "TIMEOUT_ACCOUNTING",
+      "edge_type": "dependency",
+      "why_related": "timeouts in schema",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "LEDGER_INTEGRITY",
+      "edge_type": "dependency",
+      "why_related": "integrity on store",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "TASK_TYPE_LANES",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "dependency",
+      "why_related": "trust is per lane",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "TASK_TYPE_LANES",
+      "to": "PRIOR_BLEND",
+      "edge_type": "dependency",
+      "why_related": "priors per lane",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "TASK_TYPE_LANES",
+      "to": "COMPETENCE_VECTOR",
+      "edge_type": "dependency",
+      "why_related": "vector keyed by lanes",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "ACCEPT_RATE_FP",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "dependency",
+      "why_related": "0.50 term",
+      "relation_strength": 0.92
+    },
+    {
+      "from": "ACCEPT_RATE_FP",
+      "to": "WILSON_BETA",
+      "edge_type": "dependency",
+      "why_related": "Wilson on accept rate",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "MEAN_ARTIFACT_Q",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "dependency",
+      "why_related": "0.25 term",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "MEAN_ARTIFACT_Q",
+      "to": "WINDOWING",
+      "edge_type": "dependency",
+      "why_related": "windowed mean",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "XVERIFY_CATCH",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "dependency",
+      "why_related": "0.15 term",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "XVERIFY_CATCH",
+      "to": "SEVERITY_CLASS",
+      "edge_type": "dependency",
+      "why_related": "severity filters catches",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SELF_REPORT_GAP",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "dependency",
+      "why_related": "minus 0.10 term",
+      "relation_strength": 0.92
+    },
+    {
+      "from": "SELF_REPORT_GAP",
+      "to": "GOODHART_RESIST",
+      "edge_type": "dependency",
+      "why_related": "gap is anti-Goodhart",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "TRUST_SCORE_FORMULA",
+      "to": "CIRCUIT_BREAKER",
+      "edge_type": "dependency",
+      "why_related": "trust floor trips breaker",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "TRUST_SCORE_FORMULA",
+      "to": "TRUST_TELEMETRY",
+      "edge_type": "dependency",
+      "why_related": "export formula parts",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "TRUST_SCORE_FORMULA",
+      "to": "CANARY_TRUST",
+      "edge_type": "dependency",
+      "why_related": "canary updates trust",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "TRUST_SCORE_FORMULA",
+      "to": "COMPETENCE_VECTOR",
+      "edge_type": "dependency",
+      "why_related": "vector carries trust",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "DRIFT_DETECT",
+      "to": "CIRCUIT_BREAKER",
+      "edge_type": "dependency",
+      "why_related": "drift escalates",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "DRIFT_DETECT",
+      "to": "WINDOWING",
+      "edge_type": "dependency",
+      "why_related": "drift compares windows",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CIRCUIT_BREAKER",
+      "to": "CANARY_TRUST",
+      "edge_type": "dependency",
+      "why_related": "half-open canaries",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "CIRCUIT_BREAKER",
+      "to": "TIMEOUT_ACCOUNTING",
+      "edge_type": "dependency",
+      "why_related": "timeouts open breaker",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "WINDOWING",
+      "to": "BASELINE_COMPARE",
+      "edge_type": "dependency",
+      "why_related": "windows vs baseline",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "MEAN_ARTIFACT_Q",
+      "to": "MULTI_RUN_STABILITY",
+      "edge_type": "dependency",
+      "why_related": "variance of Q",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "LEDGER_INTEGRITY",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "constraint",
+      "why_related": "no trust from tampered ledger",
+      "relation_strength": 0.94
+    },
+    {
+      "from": "SEVERITY_CLASS",
+      "to": "XVERIFY_CATCH",
+      "edge_type": "constraint",
+      "why_related": "nits not major catches",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "AGENT_HISTORY_SCHEMA",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "sequence",
+      "why_related": "schema then score",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "DRIFT_DETECT",
+      "to": "CIRCUIT_BREAKER",
+      "edge_type": "sequence",
+      "why_related": "watch then break",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "CANARY_TRUST",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "feedback",
+      "why_related": "canary updates trust",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "TRUST_TELEMETRY",
+      "to": "GOODHART_RESIST",
+      "edge_type": "feedback",
+      "why_related": "telemetry reveals gaming",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "DRIFT_DETECT",
+      "to": "BASELINE_COMPARE",
+      "edge_type": "similarity",
+      "why_related": "relative quality shifts",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "ACCEPT_RATE_FP",
+      "to": "SELF_REPORT_GAP",
+      "edge_type": "conflict",
+      "why_related": "high claimed success vs verified honesty",
+      "resolution_rule": "verified outcomes only raise accept_rate; gap docks over-claim",
+      "relation_strength": 0.8,
+      "signed_tension": -0.45
+    },
+    {
+      "from": "CIRCUIT_BREAKER",
+      "to": "CANARY_TRUST",
+      "edge_type": "conflict",
+      "why_related": "pause assignments vs need recovery attempts",
+      "resolution_rule": "reserve canary slots while breaker open; no full traffic",
+      "relation_strength": 0.76,
+      "signed_tension": -0.45
+    },
+    {
+      "from": "PRIOR_BLEND",
+      "to": "TRUST_SCORE_FORMULA",
+      "edge_type": "conflict",
+      "why_related": "published prior vs observed evidence",
+      "resolution_rule": "blend until n>=3 then observed dominates",
+      "relation_strength": 0.78,
+      "signed_tension": -0.45
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "prior_vs_observed",
+      "description": "Published prior vs measured trust",
+      "poles": [
+        "prior forever",
+        "n=1 full observed"
+      ],
+      "resolution_hint": "blend until n>=3",
+      "affected_nodes": [
+        "PRIOR_BLEND",
+        "TRUST_SCORE_FORMULA",
+        "TASK_TYPE_LANES"
+      ]
+    },
+    {
+      "name": "breaker_vs_recovery",
+      "description": "Protect pipeline vs recover",
+      "poles": [
+        "hard stop",
+        "never pause"
+      ],
+      "resolution_hint": "breaker plus canary half-open",
+      "affected_nodes": [
+        "CIRCUIT_BREAKER",
+        "CANARY_TRUST",
+        "DRIFT_DETECT"
+      ]
+    },
+    {
+      "name": "simple_vs_multi_term",
+      "description": "One rate vs multi-term trust",
+      "poles": [
+        "single accept_rate",
+        "complex formula"
+      ],
+      "resolution_hint": "multi-term with gap required",
+      "affected_nodes": [
+        "TRUST_SCORE_FORMULA",
+        "GOODHART_RESIST",
+        "SELF_REPORT_GAP"
+      ]
+    },
+    {
+      "name": "short_vs_long_window",
+      "description": "React fast vs stable estimates",
+      "poles": [
+        "last-5",
+        "lifetime"
+      ],
+      "resolution_hint": "last-20 or 90d",
+      "affected_nodes": [
+        "WINDOWING",
+        "DRIFT_DETECT",
+        "MEAN_ARTIFACT_Q"
+      ]
+    },
+    {
+      "name": "catch_vs_nitfarm",
+      "description": "Reward catches vs nit spam",
+      "poles": [
+        "all comments",
+        "ignore verify"
+      ],
+      "resolution_hint": "major plus only",
+      "affected_nodes": [
+        "XVERIFY_CATCH",
+        "SEVERITY_CLASS",
+        "GOODHART_RESIST"
+      ]
+    },
+    {
+      "name": "tiny_n_vs_util",
+      "description": "Statistical caution vs assignment need",
+      "poles": [
+        "wait n=30",
+        "assign on n=1"
+      ],
+      "resolution_hint": "Wilson plus exploration",
+      "affected_nodes": [
+        "WILSON_BETA",
+        "PRIOR_BLEND",
+        "ACCEPT_RATE_FP"
+      ]
+    },
+    {
+      "name": "infra_vs_agent_timeout",
+      "description": "Blame agent vs infrastructure",
+      "poles": [
+        "all agent",
+        "ignore timeouts"
+      ],
+      "resolution_hint": "class field",
+      "affected_nodes": [
+        "TIMEOUT_ACCOUNTING",
+        "CIRCUIT_BREAKER"
+      ]
+    },
+    {
+      "name": "variance_vs_hard",
+      "description": "Penalize variance vs hard-task variance",
+      "poles": [
+        "always",
+        "never"
+      ],
+      "resolution_hint": "high-risk lanes optional",
+      "affected_nodes": [
+        "MULTI_RUN_STABILITY",
+        "MEAN_ARTIFACT_Q"
+      ]
+    },
+    {
+      "name": "ledger_openness",
+      "description": "Full telemetry vs privacy",
+      "poles": [
+        "public components",
+        "final only"
+      ],
+      "resolution_hint": "components to integrator dashboards",
+      "affected_nodes": [
+        "TRUST_TELEMETRY",
+        "LEDGER_INTEGRITY",
+        "COMPETENCE_VECTOR"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "n=1 raw 100 percent drives routing",
+      "trigger": "no Wilson",
+      "affected_nodes": [
+        "WILSON_BETA",
+        "PRIOR_BLEND",
+        "ACCEPT_RATE_FP"
+      ],
+      "mitigation": "Wilson and blend",
+      "severity": "high"
+    },
+    {
+      "description": "Over-claim clean gates on clone",
+      "trigger": "gap ignored",
+      "affected_nodes": [
+        "SELF_REPORT_GAP",
+        "GOODHART_RESIST",
+        "TRUST_SCORE_FORMULA"
+      ],
+      "mitigation": "apply gap term",
+      "severity": "high"
+    },
+    {
+      "description": "Two timeouts still assigned",
+      "trigger": "no breaker",
+      "affected_nodes": [
+        "CIRCUIT_BREAKER",
+        "TIMEOUT_ACCOUNTING"
+      ],
+      "mitigation": "open breaker",
+      "severity": "high"
+    },
+    {
+      "description": "Verifier rises from style nits",
+      "trigger": "no severity",
+      "affected_nodes": [
+        "SEVERITY_CLASS",
+        "XVERIFY_CATCH"
+      ],
+      "mitigation": "major plus only",
+      "severity": "medium"
+    },
+    {
+      "description": "Lifetime glory masks recent fails",
+      "trigger": "lifetime metrics",
+      "affected_nodes": [
+        "WINDOWING",
+        "DRIFT_DETECT"
+      ],
+      "mitigation": "rolling window",
+      "severity": "medium"
+    },
+    {
+      "description": "Builder edits scores.json",
+      "trigger": "shared write",
+      "affected_nodes": [
+        "LEDGER_INTEGRITY",
+        "TRUST_SCORE_FORMULA"
+      ],
+      "mitigation": "single writer",
+      "severity": "high"
+    },
+    {
+      "description": "Verifier auto-assigned content authoring",
+      "trigger": "global trust",
+      "affected_nodes": [
+        "TASK_TYPE_LANES",
+        "COMPETENCE_VECTOR"
+      ],
+      "mitigation": "per-lane vector",
+      "severity": "high"
+    },
+    {
+      "description": "Breaker never recovers",
+      "trigger": "no canary",
+      "affected_nodes": [
+        "CANARY_TRUST",
+        "CIRCUIT_BREAKER"
+      ],
+      "mitigation": "half-open canaries",
+      "severity": "medium"
+    },
+    {
+      "description": "Q swings with flat trust",
+      "trigger": "no variance term",
+      "affected_nodes": [
+        "MULTI_RUN_STABILITY",
+        "MEAN_ARTIFACT_Q"
+      ],
+      "mitigation": "optional variance dock",
+      "severity": "low"
+    },
+    {
+      "description": "Drift silent for weeks",
+      "trigger": "no drift job",
+      "affected_nodes": [
+        "DRIFT_DETECT",
+        "BASELINE_COMPARE"
+      ],
+      "mitigation": "scheduled drift",
+      "severity": "medium"
+    },
+    {
+      "description": "Dashboard without components",
+      "trigger": "telemetry incomplete",
+      "affected_nodes": [
+        "TRUST_TELEMETRY",
+        "GOODHART_RESIST"
+      ],
+      "mitigation": "export components",
+      "severity": "low"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "append_history",
+      "node_ref": "AGENT_HISTORY_SCHEMA",
+      "description": "Write history row",
+      "artifact": "row",
+      "gate": "required fields"
+    },
+    {
+      "action": "classify_lane",
+      "node_ref": "TASK_TYPE_LANES",
+      "description": "Set task_type",
+      "artifact": "lane key",
+      "gate": "enum valid"
+    },
+    {
+      "action": "compute_rates",
+      "node_ref": "ACCEPT_RATE_FP",
+      "description": "Accept_fp and Wilson",
+      "artifact": "rate CI",
+      "gate": "n recorded"
+    },
+    {
+      "action": "compute_mean_Q",
+      "node_ref": "MEAN_ARTIFACT_Q",
+      "description": "Windowed mean Q/10",
+      "artifact": "mean_Q_norm",
+      "gate": "window applied"
+    },
+    {
+      "action": "catch_and_gap",
+      "node_ref": "XVERIFY_CATCH",
+      "description": "Catch rate and gap",
+      "artifact": "catch gap",
+      "gate": "severity filtered"
+    },
+    {
+      "action": "compose_trust",
+      "node_ref": "TRUST_SCORE_FORMULA",
+      "description": "Weights and blend",
+      "artifact": "trust",
+      "gate": "unit interval"
+    },
+    {
+      "action": "drift_check",
+      "node_ref": "DRIFT_DETECT",
+      "description": "Compare windows",
+      "artifact": "watch flag",
+      "gate": "evaluated"
+    },
+    {
+      "action": "breaker_check",
+      "node_ref": "CIRCUIT_BREAKER",
+      "description": "Open half-open closed",
+      "artifact": "breaker state",
+      "gate": "rules applied"
+    },
+    {
+      "action": "export_vector",
+      "node_ref": "COMPETENCE_VECTOR",
+      "description": "Publish competence vector",
+      "artifact": "vector",
+      "gate": "schema valid"
+    },
+    {
+      "action": "canary_if_needed",
+      "node_ref": "CANARY_TRUST",
+      "description": "Schedule canary",
+      "artifact": "canary task",
+      "gate": "if half-open"
+    },
+    {
+      "action": "integrity_audit",
+      "node_ref": "LEDGER_INTEGRITY",
+      "description": "Unauthorized write check",
+      "artifact": "audit",
+      "gate": "clean"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "verified_over_claimed",
+      "rationale": "Goodhart",
+      "trigger": "claim vs verify differ",
+      "action": "verified wins; gap docks"
+    },
+    {
+      "rule": "per_lane_over_global",
+      "rationale": "specialized competence",
+      "trigger": "assignment",
+      "action": "use lane trust"
+    },
+    {
+      "rule": "multi_term_over_single_rate",
+      "rationale": "gaming",
+      "trigger": "metric design",
+      "action": "composite plus anti-term"
+    },
+    {
+      "rule": "breaker_over_hope",
+      "rationale": "blast radius",
+      "trigger": "2 timeouts or streak",
+      "action": "open breaker"
+    },
+    {
+      "rule": "wilson_over_raw_tiny_n",
+      "rationale": "misleading proportions",
+      "trigger": "n<30",
+      "action": "interval plus blend"
+    },
+    {
+      "rule": "major_over_nit_catches",
+      "rationale": "nitfarm",
+      "trigger": "catch accounting",
+      "action": "severity filter"
+    },
+    {
+      "rule": "window_over_lifetime_glory",
+      "rationale": "recency",
+      "trigger": "trust compute",
+      "action": "rolling window"
+    },
+    {
+      "rule": "integrator_ledger_control",
+      "rationale": "integrity",
+      "trigger": "score writes",
+      "action": "single writer"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "no_global_only_trust",
+      "prevents": "wrong-lane overtrust"
+    },
+    {
+      "rule": "no_raw_tiny_n_monopoly",
+      "prevents": "1 of 1 hero routing"
+    },
+    {
+      "rule": "no_self_claim_as_verified",
+      "prevents": "Goodhart over-claim"
+    },
+    {
+      "rule": "no_builder_write_scores",
+      "prevents": "ledger tampering"
+    },
+    {
+      "rule": "no_ignore_timeouts",
+      "prevents": "hidden unreliability"
+    },
+    {
+      "rule": "no_nitfarm_catch_credit",
+      "prevents": "false verify skill"
+    },
+    {
+      "rule": "no_single_rate_reward",
+      "prevents": "classic Goodhart"
+    },
+    {
+      "rule": "no_manual_trust_reset_without_canary",
+      "prevents": "fake recovery"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "self_report_gap spike",
+      "action": "audit claims; dock trust",
+      "nodes": [
+        "SELF_REPORT_GAP",
+        "GOODHART_RESIST"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "2 timeouts",
+      "action": "open breaker; canary",
+      "nodes": [
+        "TIMEOUT_ACCOUNTING",
+        "CIRCUIT_BREAKER",
+        "CANARY_TRUST"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "drift >=0.15 drop",
+      "action": "DEGRADED_WATCH",
+      "nodes": [
+        "DRIFT_DETECT",
+        "WINDOWING"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "trust<0.35 n>=5",
+      "action": "breaker open",
+      "nodes": [
+        "TRUST_SCORE_FORMULA",
+        "CIRCUIT_BREAKER"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "Wilson width>0.25",
+      "action": "force exploration blend",
+      "nodes": [
+        "WILSON_BETA",
+        "PRIOR_BLEND"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "nitfarm catch pattern",
+      "action": "enforce severity filter",
+      "nodes": [
+        "SEVERITY_CLASS",
+        "XVERIFY_CATCH"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "unauthorized score write",
+      "action": "void restore audit",
+      "nodes": [
+        "LEDGER_INTEGRITY",
+        "TRUST_TELEMETRY"
+      ],
+      "priority": 1
+    }
+  ],
+  "priority_rationale": "Verified multi-term trust dominates self-report; per-lane evidence dominates global reputation; breakers dominate hopeful reassignment.",
+  "eval_objective": "verify_history_schema_trust_formula_wilson_breakers_goodhart",
+  "created": "2026-07-13",
+  "source_description": "heuristic priors for agent reliability scoring aligned with EXCHANGE scoring scaffold",
+  "source_citation": "heuristic prior; operational scoring practice; no external dataset supplied"
+}
