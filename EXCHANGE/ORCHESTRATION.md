@@ -204,8 +204,18 @@ CLI supply chain; forged STAND DOWN.
 
 **Operator-side (enforced) controls:**
 - One machine account per agent — **WAIVED for the builders by OPERATOR
-  WAIVER-001 (protocol 3.2)**: grok and codex both push as `tmundi32` by the
-  operator's explicit decision. Residual risks accepted and on record: a
+  WAIVER-001 (protocol 3.2; account name corrected by operator statement,
+  msg-011)**: grok and codex both push as **`tmundi3210` — the OWNER
+  account** — by the operator's explicit decision. This enlarges the recorded
+  residual risk beyond the original waiver: an owner credential in unattended
+  loops can push `main` and `claude/*` and bypass any branch protection, so
+  the CLI-side deny rules (no push to main/claude/*, no force-push, no git
+  config/remote changes), the sandbox, and the HARD DENIALS in standing
+  orders are the operative fence, and the integrator's tip-pinning on `main`
+  and `claude/*` (S5) is the tripwire. Integrator commits remain
+  distinguishable (GitHub attributes them to the `claude` app login —
+  verified by grok's gh check on c010bca), so the task-authentication chain
+  is unchanged. Residual risks accepted and on record: a
   leaked builder PAT speaks as both builders indistinguishably; revocation
   halts both loops; builders could technically write each other's namespaces
   (convention + integrator review are the only barriers). Compensating
