@@ -1,4 +1,4 @@
-PROTOCOL-VERSION: 3.1
+PROTOCOL-VERSION: 3.2
 
 # ORCHESTRATION — N-agent operating model for this repository
 
@@ -203,8 +203,20 @@ history rewrite; cross-agent injection transitivity; secrets committed;
 CLI supply chain; forged STAND DOWN.
 
 **Operator-side (enforced) controls:**
-- One machine account per agent (grok = tmundi32; codex = its own account),
-  fine-grained PAT: single repo, Contents R/W only, 30–90 day expiry.
+- One machine account per agent — **WAIVED for the builders by OPERATOR
+  WAIVER-001 (protocol 3.2)**: grok and codex both push as `tmundi32` by the
+  operator's explicit decision. Residual risks accepted and on record: a
+  leaked builder PAT speaks as both builders indistinguishably; revocation
+  halts both loops; builders could technically write each other's namespaces
+  (convention + integrator review are the only barriers). Compensating
+  conventions, mandatory: each agent sets its own git identity in its clone
+  (`user.name grok-bot` / `user.name codex-bot` with distinct emails) so
+  `%an` separates accidents even though it cannot separate attackers; every
+  commit carries the `Agent:` trailer; branch namespace must match the
+  claimed agent; the integrator's pusher-identity check now distinguishes
+  INTEGRATOR vs BUILDERS only. The integrator-identity side of the
+  authenticity chain is unaffected. Fine-grained PAT rules still apply:
+  single repo, Contents R/W only, 30–90 day expiry.
 - Branch protection where the plan allows: `main` owner-only + PR-required;
   `claude/*` integrator-only; force-push and deletion blocked repo-wide.
   If unavailable, the §9 authenticity check + tip-pinning are the compensating
