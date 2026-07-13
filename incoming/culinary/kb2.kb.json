@@ -1,0 +1,5691 @@
+{
+  "domain": "culinary_formulation_math",
+  "domain_label": "Culinary Formulation Math",
+  "purpose": "Compute and close baker's percentages, hydration/fat/sugar/leavening budgets, pan geometry, scaling laws, and bake-time priors so formulas are quantitative and reproducible.",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "mass in grams is the native unit; volume inputs carry density assumptions",
+    "product-class bands are heuristic priors not laws of nature",
+    "no lab titration of acid or DSC of starch unless user supplies data"
+  ],
+  "exclusions": [
+    "industrial continuous-mix plant control",
+    "clinical dietetics calculations for medical conditions",
+    "full finite-element oven simulation",
+    "legal nutrition label compliance engineering"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "How is this formula expressed in baker's percentages and what is the flour base?",
+      "must_be_answerable_from": [
+        "BAKERS_PCT",
+        "FLOUR_BASE",
+        "VOL_TO_MASS"
+      ],
+      "acceptance_condition": "lists flour base membership and each ingredient as % flour in grams",
+      "covered_by": [
+        "BAKERS_PCT",
+        "FLOUR_BASE",
+        "VOL_TO_MASS",
+        "TOTAL_MASS"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What are the hydration, fat, sugar, and salt budgets as % flour?",
+      "must_be_answerable_from": [
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "SALT_BUDGET"
+      ],
+      "acceptance_condition": "reports each budget with sources itemized for water and fat especially",
+      "covered_by": [
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "SALT_BUDGET"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "Is total hydration closed including eggs, milk, and purees, and is it in band?",
+      "must_be_answerable_from": [
+        "HYDRATION_BAND",
+        "BUDGET_CLOSE"
+      ],
+      "acceptance_condition": "shows water fraction sum and product-class band comparison",
+      "covered_by": [
+        "HYDRATION_BAND",
+        "BUDGET_CLOSE",
+        "ENRICH_THRESH",
+        "LEAVEN_DOSE"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What is true fat % accounting for butter water and chocolate cocoa butter?",
+      "must_be_answerable_from": [
+        "FAT_BUDGET",
+        "INCLUSION_MASS"
+      ],
+      "acceptance_condition": "butter counted as ~80-82% fat; inclusions' fat noted if material",
+      "covered_by": [
+        "FAT_BUDGET",
+        "INCLUSION_MASS",
+        "ENRICH_THRESH"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "What is the sugar budget including liquid sweetener solids and assembled components?",
+      "must_be_answerable_from": [
+        "SUGAR_BUDGET",
+        "LAYER_RATIO"
+      ],
+      "acceptance_condition": "liquid sweeteners split solids/water; layer assembly averages if multi-component",
+      "covered_by": [
+        "SUGAR_BUDGET",
+        "LAYER_RATIO",
+        "INCLUSION_MASS"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How should chemical leavener or yeast be dosed for this flour base and schedule?",
+      "must_be_answerable_from": [
+        "LEAVEN_DOSE",
+        "YEAST_DOSE",
+        "TOLERANCE"
+      ],
+      "acceptance_condition": "gives % flour, format conversions if needed, and tight tolerance on minors",
+      "covered_by": [
+        "LEAVEN_DOSE",
+        "YEAST_DOSE",
+        "TOLERANCE"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do you scale this formula to a new yield without breaking pans or budgets?",
+      "must_be_answerable_from": [
+        "SCALE_LAWS",
+        "TOTAL_MASS",
+        "PAN_GEOM"
+      ],
+      "acceptance_condition": "uniform gram scale, pan revalidation, loss-aware portions",
+      "covered_by": [
+        "SCALE_LAWS",
+        "TOTAL_MASS",
+        "PAN_GEOM",
+        "PROCESS_LOSS",
+        "COST_BATCH",
+        "LAYER_RATIO"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "Given pan dimensions and batter mass, what depth and fill fraction result?",
+      "must_be_answerable_from": [
+        "PAN_GEOM",
+        "BATTER_DEPTH",
+        "TOTAL_MASS"
+      ],
+      "acceptance_condition": "computes volume, fill fraction, and depth estimate",
+      "covered_by": [
+        "PAN_GEOM",
+        "BATTER_DEPTH",
+        "TOTAL_MASS"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How should bake time priors change when depth or pan shape changes?",
+      "must_be_answerable_from": [
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH"
+      ],
+      "acceptance_condition": "adjusts time prior from depth/composition and requires doneness checks",
+      "covered_by": [
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH",
+        "PAN_GEOM"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "Does the formula pass full budget closure for its product class?",
+      "must_be_answerable_from": [
+        "BUDGET_CLOSE",
+        "SCALE_LAWS"
+      ],
+      "acceptance_condition": "checklist pass/waive per hydration fat sugar salt leaven mass pan",
+      "covered_by": [
+        "BUDGET_CLOSE",
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "Given dietary constraints, can the product class survive after budget reclosure?",
+      "must_be_answerable_from": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ],
+      "acceptance_condition": "feasibility verdict and redesign or class change if needed",
+      "covered_by": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE",
+        "COST_BATCH"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How are volumetric inputs converted and what uncertainty remains?",
+      "must_be_answerable_from": [
+        "VOL_TO_MASS",
+        "TOLERANCE"
+      ],
+      "acceptance_condition": "density assumptions stated; flour variance acknowledged",
+      "covered_by": [
+        "VOL_TO_MASS",
+        "TOLERANCE",
+        "BAKERS_PCT"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "bakers_percent",
+      "definition": "Ingredient mass divided by total flour mass \u00d7 100, with flour defined as 100%"
+    },
+    {
+      "term": "hydration",
+      "definition": "Total water mass from all sources as % of flour base"
+    },
+    {
+      "term": "flour_base",
+      "definition": "The declared set of flours/powders that constitute the 100% denominator"
+    },
+    {
+      "term": "enrichment",
+      "definition": "Material fat, sugar, and dairy load that shifts a dough/batter out of lean-bread behavior"
+    },
+    {
+      "term": "fill_fraction",
+      "definition": "Batter or dough volume as a fraction of pan volumetric capacity before bake"
+    },
+    {
+      "term": "batter_depth",
+      "definition": "Vertical thickness of raw mass in the pan; primary driver of center bake time"
+    },
+    {
+      "term": "budget_closure",
+      "definition": "State where hydration, fat, sugar, salt, leavener, mass, and pan feasibility are all checked"
+    },
+    {
+      "term": "process_loss",
+      "definition": "Mass not reaching saleable portions due to adhesion, evaporation, or trim"
+    },
+    {
+      "term": "scale_factor",
+      "definition": "Multiplier applied uniformly to all baker % gram quantities to change yield"
+    },
+    {
+      "term": "true_fat_percent",
+      "definition": "Fat mass after adjusting butter, cream, egg yolk, and cocoa butter contributions as % flour"
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model"
+    ],
+    "probabilistic_modeling": [
+      "nodes"
+    ],
+    "risk_analysis": [
+      "edge_cases"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for culinary_formulation_math work units in absence of supplied datasets",
+      "citation_or_locator": "heuristic prior; no external dataset supplied",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "BAKERS_PCT",
+      "topic": "bakers_percentage_system",
+      "definition": "Express every ingredient as percent of total flour mass (flour = 100%). Baker's percent makes formulas comparable across batch sizes and reveals hydration, fat, sugar, and salt bands independent of yield. Convert cups to grams before computing; volume is not a baker % input.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "flour as 100% baseline",
+          "mass-only inputs",
+          "cross-formula comparison"
+        ],
+        "excluded": [
+          "volume-only home recipes without conversion",
+          "restaurant plate costing"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.95,
+        "business_value": 0.9,
+        "user_value": 0.92,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.59,
+        "confidence_score": 0.63,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.74,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "uncertainty_range_width": 0.23,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.95,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.12,
+          0.35
+        ],
+        "posterior_importance": 0.76,
+        "update_signal": "ingredient density table revision or flour blend changes the 100% baseline definition",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Baker % normalizes formulas so a 70% hydration dough is meaningful at any batch size",
+          "example": "500 g flour + 350 g water is 70% hydration whether or not eggs are present"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-flour blends require a defined total flour basis; purees are not flour",
+          "example": "100 g AP + 50 g cocoa: decide if cocoa counts in flour base or as separate dry"
+        }
+      ],
+      "failure_modes": [
+        "computing % on total batter weight and calling it baker %",
+        "using cup measures as if they were mass"
+      ],
+      "acceptance_tests": [
+        "all ingredients listed in grams and as % of declared flour base"
+      ],
+      "revisit_triggers": [
+        "flour blend definition changes",
+        "user supplies only volumetric recipe"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FLOUR_BASE",
+      "topic": "flour_baseline_and_blend_definition",
+      "definition": "Declare what counts as the flour 100% base: wheat flour only, or flour+cocoa+nut meal policy. Consistency of the base is mandatory for hydration and enrichment math. Changing the base mid-project invalidates all percentages.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "single vs multi-component flour base policy",
+          "rebasing rules when dry substitutes enter"
+        ],
+        "excluded": [
+          "brand marketing claims"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.75,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.65,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.68,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.75,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.45
+        ],
+        "posterior_importance": 0.68,
+        "update_signal": "nut flour or cocoa added to dry base without rebasing percentages",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit flour-base policy prevents silent percent drift when cocoa or almond meal is added",
+          "example": "treat cocoa as separate dry at 10% of wheat flour, not as part of 100% base, for a devil's food"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "requires care at edges",
+          "example": "edge conditions need checks"
+        }
+      ],
+      "failure_modes": [
+        "skipping this unit degrades formula quality"
+      ],
+      "acceptance_tests": [
+        "flour base membership is explicitly listed",
+        "all baker % values use the same base definition"
+      ],
+      "revisit_triggers": [
+        "dry composition change",
+        "cross-team formula handoff with different base convention"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "HYDRATION_BAND",
+      "topic": "hydration_budget_bands",
+      "definition": "Set total water (including water fractions of eggs, milk, purees) as % of flour. Typical bands: stiff cookie doughs ~20-40% free liquid, cake batters ~60-100%+, lean bread 60-75%, high-hydration ciabatta 75-85%+. Band depends on flour protein and enrichment. Closing hydration means summing all water sources, not only the water line.",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "total water sum method",
+          "product-class hydration bands",
+          "hidden water in eggs/dairy/fruit"
+        ],
+        "excluded": [
+          "steam injection oven engineering"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "FLOUR_BASE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.93,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.5,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.66,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.67,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "wet ingredient substitution changes hidden water fraction",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Closed hydration predicts dough feel and starch set window better than the water line alone",
+          "example": "eggs at 50 g on 250 g flour add ~15% hydration-equivalent water"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "requires care at edges",
+          "example": "edge conditions need checks"
+        }
+      ],
+      "failure_modes": [
+        "skipping this unit degrades formula quality"
+      ],
+      "acceptance_tests": [
+        "hydration includes itemized water fractions",
+        "product-class band cited"
+      ],
+      "revisit_triggers": [
+        "wet substitution",
+        "chronic slack or stiff dough relative to target"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FAT_BUDGET",
+      "topic": "fat_budget_as_percent_flour",
+      "definition": "Track total fat (butter water-adjusted, oil, egg yolk fat, cream fat, chocolate cocoa butter) as baker % of flour. Bands: lean bread <5%, enriched dough 10-50%+, pound cake ~50%+, shortbread very high. Fat budget predicts tenderness, spread, and emulsion difficulty.",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "fat mass from multi-ingredient sources",
+          "product-class fat bands",
+          "butter is ~80-82% fat not 100%"
+        ],
+        "excluded": [
+          "dietary fat policy counseling"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "FLOUR_BASE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.63,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.69,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "butter vs oil swap or chocolate addition changes true fat %",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "True fat % explains why European butter formulas differ from oil muffins at equal butter mass",
+          "example": "100 g butter \u2248 81 g fat + 16 g water + solids on 250 g flour"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Label 'butter' vs 'baking sticks' fat fraction can differ slightly by brand",
+          "example": "cultured butter water content varies"
+        }
+      ],
+      "failure_modes": [
+        "counting butter mass as 100% fat in hydration and fat budgets",
+        "adding chocolate without cocoa-butter fat line"
+      ],
+      "acceptance_tests": [
+        "fat budget itemizes sources and reports total fat % flour"
+      ],
+      "revisit_triggers": [
+        "fat type swap",
+        "greasy or dry mouthfeel shift"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SUGAR_BUDGET",
+      "topic": "sugar_budget_as_percent_flour",
+      "definition": "Sum sucrose, brown sugar (as mass), honey/syrups (as solids + water split), and chocolate sugar into baker % sugar. Bands: bread 0-10%, enriched 10-25%, cookies 30-80%+, high-ratio cakes ~100% sugar on flour. Sugar budget couples to hydration (hygroscopy) and bake time (browning/set delay).",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "crystalline vs liquid sweetener accounting",
+          "high-ratio cake threshold",
+          "browning/set coupling"
+        ],
+        "excluded": [
+          "non-nutritive sweetener pharmacokinetics"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "FLOUR_BASE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.9,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.45,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.61,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.69,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "liquid sweetener swap changes solids vs water split",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Sugar % band is a product-class fingerprint useful for reverse-engineering recipes",
+          "example": "~50-70% sugar cookies vs ~100% sugar high-ratio layer cakes"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Polyols and rare sugars do not map 1:1 to sucrose bulk or browning",
+          "example": "erythritol cools and crystallizes differently"
+        }
+      ],
+      "failure_modes": [
+        "treating honey grams as pure sugar solids",
+        "sugar-free claim without bulk rebuild plan"
+      ],
+      "acceptance_tests": [
+        "sugar budget lists sources with solids fraction for liquids"
+      ],
+      "revisit_triggers": [
+        "sweetener type change",
+        "spread or browning shift"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SALT_BUDGET",
+      "topic": "salt_budget_bands",
+      "definition": "Salt as baker % of flour: bread ~1.8-2.2%, enriched sweet doughs often 1.2-1.8%, cookies variable. Convert crystal types by mass not volume. Salt budget is small but high leverage on gluten and fermentation rate.",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "mass-based salt %",
+          "product-class bands",
+          "crystal density trap"
+        ],
+        "excluded": [
+          "clinical sodium restriction meal plans"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.75,
+        "user_value": 0.8,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.35,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.3,
+        "risk_score": 0.51,
+        "confidence_score": 0.63,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.76,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "uncertainty_range_width": 0.23,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.12,
+          0.35
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "kosher vs table salt density confusion or low-sodium request",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Weighed salt keeps rheology stable across crystal brands",
+          "example": "2.0% salt on flour regardless of flake size"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Low-sodium reformulation needs flavor rebuild beyond % cut",
+          "example": "simply halving salt tastes flat without acid/umami compensation"
+        }
+      ],
+      "failure_modes": [
+        "tablespoon scaling when batch doubles",
+        "forgetting salt in preferment and final dough double-salting"
+      ],
+      "acceptance_tests": [
+        "salt % by mass in band for product class"
+      ],
+      "revisit_triggers": [
+        "salt crystal type change",
+        "low-sodium constraint"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LEAVEN_DOSE",
+      "topic": "chemical_leavening_dose_math",
+      "definition": "Dose baking powder/soda as baker % of flour and against acid load. Heuristic bands: baking powder ~1-5% of flour depending on product; soda paired to acid milliequivalents when known. Scale leavener with flour, not with eggs alone. At altitude, reduce dose.",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "powder vs soda dose bands",
+          "scaling with flour base",
+          "altitude adjustment"
+        ],
+        "excluded": [
+          "yeast cell biology"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "HYDRATION_BAND"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.5,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.68,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.65,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "posterior_importance": 0.63,
+        "update_signal": "altitude change or acid ingredient change invalidates prior dose",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Flour-relative dosing prevents runaway gas when batch size changes",
+          "example": "same 3% powder on flour at 200 g or 2 kg flour"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "requires care at edges",
+          "example": "edge conditions need checks"
+        }
+      ],
+      "failure_modes": [
+        "skipping this unit degrades formula quality"
+      ],
+      "acceptance_tests": [
+        "leavener % of flour recorded",
+        "altitude note if elevation material"
+      ],
+      "revisit_triggers": [
+        "leavening failure",
+        "acid system substitution"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "YEAST_DOSE",
+      "topic": "yeast_dose_and_time_temperature",
+      "definition": "Yeast mass as % flour interacts with dough temperature and ferment time. Instant yeast ~0.5-1.5% for direct doughs; preferments use less commercial yeast. Conversion: instant \u2248 active dry \u00d7 0.75; fresh \u2248 instant \u00d7 3. Time-temperature substitutes for mass within limits.",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "yeast format conversions",
+          "dose vs time-temperature tradeoff",
+          "enriched dough dose uplift"
+        ],
+        "excluded": [
+          "wild capture starter microbiology lab methods"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "HYDRATION_BAND"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.61,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.68,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "yeast format change or proof box temperature process change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Trading lower yeast for longer cool ferment improves flavor at controlled schedule",
+          "example": "0.2% yeast overnight cold bulk vs 1% same-day"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too little yeast with cold dough and short schedule underproofs",
+          "example": "fridge dough pulled early looks dense"
+        }
+      ],
+      "failure_modes": [
+        "applying bread yeast % to sweet dough without time increase",
+        "confusing instant and active dry 1:1"
+      ],
+      "acceptance_tests": [
+        "yeast type, % flour, target dough temp, and endpoint criterion listed"
+      ],
+      "revisit_triggers": [
+        "schedule compression request",
+        "chronic underproof"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "TOTAL_MASS",
+      "topic": "total_formula_mass_and_yield",
+      "definition": "Sum all ingredient grams to total formula mass; yield is total mass minus process loss (mixing bowl left-back, bake evaporation, trim). Predicted baked yield needs an evaporation factor by product class (cookies lower loss %, lean bread higher crust loss).",
+      "node_type": "work_unit",
+      "group": "scaling",
+      "scope_boundary": {
+        "included": [
+          "total mass sum",
+          "bowl loss",
+          "evaporation factor bands",
+          "saleable yield"
+        ],
+        "excluded": [
+          "packaging line checkweighers"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.57,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.28,
+        "lock_score": 0.72,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.25,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "posterior_importance": 0.69,
+        "update_signal": "evaporation factor revised from weigh-before/after bake data",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Mass balance catches missing ingredients and predicts pan fill",
+          "example": "sum to 1200 g batter; 10 pans \u00d7 100 g + 200 g reserve"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Evaporation factors are product- and oven-specific priors",
+          "example": "convection vs deck ovens differ"
+        }
+      ],
+      "failure_modes": [
+        "assuming baked weight equals raw weight",
+        "forgetting inclusions added after % calculation"
+      ],
+      "acceptance_tests": [
+        "total mass and expected baked yield with stated loss factor"
+      ],
+      "revisit_triggers": [
+        "new oven or pan changes loss",
+        "portion count mismatch"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PAN_GEOM",
+      "topic": "pan_geometry_volume_and_surface",
+      "definition": "Pan volume (L\u00d7W\u00d7H for rectangular; \u03c0r\u00b2h for round) and batter fill fraction determine depth. Surface-to-volume ratio drives browning and bake time. Bundt vs sheet pan at equal mass bake very differently. Always match formula mass to pan volume capacity (~50-67% fill typical for cakes to allow rise).",
+      "node_type": "work_unit",
+      "group": "geometry",
+      "scope_boundary": {
+        "included": [
+          "volume calculation",
+          "fill fraction",
+          "surface-to-volume effects"
+        ],
+        "excluded": [
+          "decorative pan aesthetics alone"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOTAL_MASS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.65,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.67,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.67,
+        "update_signal": "pan brand dimensions differ from nominal size labels",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Matching batter mass to pan volume prevents overflow and collapsed underfill",
+          "example": "8-inch round ~6 cup capacity; fill ~1/2 to 2/3 with layer-cake batter"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "requires care at edges",
+          "example": "edge conditions need checks"
+        }
+      ],
+      "failure_modes": [
+        "skipping this unit degrades formula quality"
+      ],
+      "acceptance_tests": [
+        "pan volume and fill fraction stated",
+        "batter mass matches capacity band"
+      ],
+      "revisit_triggers": [
+        "pan brand change",
+        "overflow or chronic underfill"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "BATTER_DEPTH",
+      "topic": "batter_depth_and_heat_path",
+      "definition": "Depth (cm) of batter or dough in the pan controls heat path to the center. Deeper masses need lower temperature and longer time; thin sheet cakes finish fast. Depth is the bridge from pan geometry and mass to bake-time models.",
+      "node_type": "work_unit",
+      "group": "geometry",
+      "scope_boundary": {
+        "included": [
+          "depth estimate from mass/area",
+          "center heat-path implications",
+          "thin vs deep product classes"
+        ],
+        "excluded": [
+          "microwave volumetric heating models"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "PAN_GEOM",
+        "TOTAL_MASS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.52,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.67,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.65,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "same mass loaded into different footprint pan changes depth",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Depth predicts why a cupcake and a 9x13 of the same batter need different times",
+          "example": "3 cm sheet vs 6 cm loaf center lag"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "requires care at edges",
+          "example": "edge conditions need checks"
+        }
+      ],
+      "failure_modes": [
+        "skipping this unit degrades formula quality"
+      ],
+      "acceptance_tests": [
+        "depth or fill height estimated before bake-time set"
+      ],
+      "revisit_triggers": [
+        "pan change",
+        "center lag failures"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SCALE_LAWS",
+      "topic": "batch_scaling_laws",
+      "definition": "Scale all ingredients by the same factor on flour base to change yield. Do not scale pan count without checking depth. Yeast and chemical leaveners generally scale with flour; spices and salt scale with flour but taste-check at extremes. Mixing time does not scale linearly with mass \u2014 dough development is energy and geometry dependent.",
+      "node_type": "work_unit",
+      "group": "scaling",
+      "scope_boundary": {
+        "included": [
+          "uniform mass scaling",
+          "what not to scale linearly (mix time, bake time)",
+          "equipment limits"
+        ],
+        "excluded": [
+          "factory CAPEX planning"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "TOTAL_MASS",
+        "PAN_GEOM"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.48,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.66,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.66,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "scale factor >3\u00d7 or equipment change (home mixer to spiral)",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Flour-base scaling keeps all budgets invariant when only yield changes",
+          "example": "2\u00d7 flour and 2\u00d7 every ingredient preserves 65% hydration"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "10\u00d7 home recipes can fail from mixer underpower and different heat transfer",
+          "example": "double batch in same pan is a depth change not a pure scale"
+        }
+      ],
+      "failure_modes": [
+        "scaling bake time by the same factor as mass",
+        "scaling eggs by count rounding error without gram correction"
+      ],
+      "acceptance_tests": [
+        "scaled formula remains in baker % identity with original",
+        "pan and bake plan revisited after scale"
+      ],
+      "revisit_triggers": [
+        "equipment change",
+        "quality drift post scale"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "BAKE_TIME_MODEL",
+      "topic": "bake_time_versus_depth_model",
+      "definition": "Heuristic: bake time rises faster than linear with depth; a common prior is time ratio roughly scales with depth^1.2\u20131.5 for similar batter and oven, then confirm with internal temperature. Higher sugar/fat delays set. Convection vs still air changes effective time. Never publish a time without a doneness signal hierarchy.",
+      "node_type": "work_unit",
+      "group": "scaling",
+      "scope_boundary": {
+        "included": [
+          "depth-based time priors",
+          "oven mode factors",
+          "composition delay factors",
+          "must pair with doneness checks"
+        ],
+        "excluded": [
+          "exact finite-element heat simulations"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BATTER_DEPTH",
+        "SUGAR_BUDGET",
+        "FAT_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.92,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.86,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.71,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.6,
+        "final_importance": 0.81
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.24,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.28,
+          0.6
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "oven type change or sugar/fat budget shift invalidates prior time curve",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Depth-aware time priors reduce raw centers when pans change",
+          "example": "moving from cupcakes to 8-inch layers multiplies time more than mass ratio alone suggests"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "requires care at edges",
+          "example": "edge conditions need checks"
+        }
+      ],
+      "failure_modes": [
+        "skipping this unit degrades formula quality"
+      ],
+      "acceptance_tests": [
+        "bake plan includes depth, time prior, and non-time doneness checks"
+      ],
+      "revisit_triggers": [
+        "raw center or overbake edge failures",
+        "new oven calibration"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "BUDGET_CLOSE",
+      "topic": "budget_closure_checklist",
+      "definition": "Close the formula: hydration, fat, sugar, salt, leavener within product-class bands; total mass equals sum of parts; pan fill and depth feasible; scale factor consistent. Open budgets (unknown water in a mystery puree) must be flagged before bake advice locks.",
+      "node_type": "work_unit",
+      "group": "closure",
+      "scope_boundary": {
+        "included": [
+          "multi-budget checklist",
+          "open-item flags",
+          "lock criteria before bake plan"
+        ],
+        "excluded": [
+          "marketing copy approval"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "SALT_BUDGET",
+        "LEAVEN_DOSE",
+        "TOTAL_MASS",
+        "PAN_GEOM"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.94,
+        "business_value": 0.9,
+        "user_value": 0.92,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.6,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.71,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.63,
+        "final_importance": 0.82
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.31,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.24,
+          0.55
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "any single budget line edited without re-running full closure",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Full closure catches incompatible targets (e.g., 40% hydration pound cake)",
+          "example": "checklist fails until water sources added for cake band"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Bands are priors; regional styles may sit outside house bands intentionally",
+          "example": "some focaccia hydrations exceed 85%"
+        }
+      ],
+      "failure_modes": [
+        "locking a bake schedule with an open hydration line",
+        "closing mass but not pan fill"
+      ],
+      "acceptance_tests": [
+        "closure checklist completed with pass/waive per budget line",
+        "pan mass and depth feasible"
+      ],
+      "revisit_triggers": [
+        "ingredient edit after lock",
+        "failed bake suggesting mis-closure"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "VOL_TO_MASS",
+      "topic": "volume_to_mass_conversion",
+      "definition": "Convert cups/spoons to grams with ingredient-specific densities (flour sifted vs spooned differs ~20%+). Prefer weighing. When only volume given, state density assumptions and uncertainty. Flour is the highest-variance common conversion.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "ingredient density table use",
+          "flour packing variance",
+          "uncertainty labeling"
+        ],
+        "excluded": [
+          "legal metrology certification"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.9,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.6,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.67,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.85,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "density table update or flour brand packing behavior change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stating conversion assumptions makes volumetric recipes debuggable",
+          "example": "AP flour 120 g/cup spooned vs 140 g/cup scooped \u2014 pick one and declare"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Internet density tables disagree; variance remains",
+          "example": "brown sugar packed vs loose"
+        }
+      ],
+      "failure_modes": [
+        "mixing density sources mid-formula",
+        "treating 1 cup all ingredients as 240 g"
+      ],
+      "acceptance_tests": [
+        "volume inputs converted with named density assumptions"
+      ],
+      "revisit_triggers": [
+        "high batch variance",
+        "flour brand change"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PREF_CONSTRAINT",
+      "topic": "preference_and_diet_constraints_as_math",
+      "definition": "Encode allergies, vegan, sugar-reduction, and gluten-free as hard constraints on allowed ingredients, then reclose budgets. Constraints are not flavor notes \u2014 they remove mass that must be replaced on functional axes. Multi-constraint sets may be infeasible at original product class.",
+      "node_type": "work_unit",
+      "group": "closure",
+      "scope_boundary": {
+        "included": [
+          "hard vs soft constraints",
+          "infeasibility detection",
+          "product-class change recommendation"
+        ],
+        "excluded": [
+          "medical nutrition therapy"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BUDGET_CLOSE",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.92,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.9,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58,
+        "risk_score": 0.72,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.39,
+        "lock_score": 0.59,
+        "final_importance": 0.81
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.26,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.3,
+          0.62
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "new hard constraint added after first closure",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Treating vegan+GF+sugar-free as simultaneous hard constraints surfaces infeasibility early",
+          "example": "angel food cannot keep identity under all three without becoming a different dessert"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Users may reject product-class change even when math requires it",
+          "example": "insisting on identical pound cake texture egg-free and fat-free"
+        }
+      ],
+      "failure_modes": [
+        "applying constraints only to shopping list not to structure math",
+        "silent drop of salt for 'healthy' without flavor plan"
+      ],
+      "acceptance_tests": [
+        "constraints listed as hard/soft",
+        "if infeasible, alternative product class proposed"
+      ],
+      "revisit_triggers": [
+        "constraint change",
+        "acceptance failure of redesign"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "LAYER_RATIO",
+      "topic": "component_and_layer_ratios",
+      "definition": "For multi-component products (cake + filling + frosting, laminated dough layers), budget each component separately then assemble mass ratios (e.g., frosting : cake crumb 0.3\u20130.6). Assembled product hydration and sweetness are weighted averages of components.",
+      "node_type": "work_unit",
+      "group": "scaling",
+      "scope_boundary": {
+        "included": [
+          "per-component baker %",
+          "assembly mass ratios",
+          "weighted average composition"
+        ],
+        "excluded": [
+          "wedding cake structural engineering beyond mass ratios"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOTAL_MASS",
+        "SUGAR_BUDGET",
+        "FAT_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.86,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.62,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.67,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.57,
+        "update_signal": "filling type change alters assembled sugar/fat averages",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Separate component budgets prevent frosting sugar from polluting cake flour % math",
+          "example": "cake at 100% sugar on flour; frosting budgeted per gram of cake"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "User-facing slices care about assembled sweetness not component baker %",
+          "example": "a low-sugar cake with heavy ganache still tastes sweet"
+        }
+      ],
+      "failure_modes": [
+        "mixing frosting sugar into cake flour base percentages",
+        "ignoring soak syrup as a water+sugar addition"
+      ],
+      "acceptance_tests": [
+        "each component closed; assembly ratios stated"
+      ],
+      "revisit_triggers": [
+        "component swap",
+        "assembled taste imbalance"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ENRICH_THRESH",
+      "topic": "enrichment_threshold_bands",
+      "definition": "Classify doughs/batters as lean vs enriched by fat+sugar+dairy thresholds (e.g., brioche enrichment when butter >20% flour and eggs present). Enrichment changes expected hydration feel, yeast dose, and mix method. Misclassification applies wrong bands.",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "lean vs enriched classification rules",
+          "band set selection by class"
+        ],
+        "excluded": [
+          "legal standards of identity for enriched flour fortification"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.61,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.27,
+        "lock_score": 0.68,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "added butter or sugar pushes formula across enrichment threshold",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Classifying enrichment selects the correct hydration and yeast priors",
+          "example": "brioche at 50% butter uses different mix and ferment than baguette at 2% fat"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Borderline formulas (10% butter sandwich bread) sit between heuristics",
+          "example": "may need hybrid guidance"
+        }
+      ],
+      "failure_modes": [
+        "applying lean bread hydration feel targets to panettone",
+        "using muffin method priors for laminated dough"
+      ],
+      "acceptance_tests": [
+        "enrichment class labeled with fat+sugar evidence"
+      ],
+      "revisit_triggers": [
+        "fat or sugar budget crosses threshold"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PROCESS_LOSS",
+      "topic": "process_loss_and_evaporation_factors",
+      "definition": "Account for mix bowl adhesion, divider waste, bake evaporation, and post-bake trim. Use product-class factors as priors (e.g., 8-15% bake mass loss for many breads; less for high-fat cookies). Yield math without loss overpromises portions.",
+      "node_type": "work_unit",
+      "group": "scaling",
+      "scope_boundary": {
+        "included": [
+          "loss categories",
+          "empirical update path",
+          "portion planning"
+        ],
+        "excluded": [
+          "industrial scrap reclaim systems"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOTAL_MASS",
+        "BAKE_TIME_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.4,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.56,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.69,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "weigh-before/after data updates loss factor",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Loss-aware yield prevents shorting a party tray of 24 cookies",
+          "example": "plan 10% extra dough mass for scoop loss and spread trim"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-applying bread evaporation factors to brownies overproduces",
+          "example": "high-fat dense products lose less moisture"
+        }
+      ],
+      "failure_modes": [
+        "quoting raw batter portions as finished servings",
+        "ignoring soak-up of syrups that add mass after bake"
+      ],
+      "acceptance_tests": [
+        "loss factor stated by category for yield claims"
+      ],
+      "revisit_triggers": [
+        "portion complaints",
+        "oven humidity change"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "TOLERANCE",
+      "topic": "tolerance_bands_and_rounding",
+      "definition": "Define acceptable variance: home scale \u00b11-2 g on minor ingredients, tighter on leavener and salt relative to their small masses. Rounding eggs to whole units requires gram compensation with water or omitting elsewhere. Tolerance bands prevent false precision theater while protecting high-leverage minors.",
+      "node_type": "work_unit",
+      "group": "closure",
+      "scope_boundary": {
+        "included": [
+          "absolute vs relative tolerance",
+          "egg rounding compensation",
+          "leavener/salt criticality"
+        ],
+        "excluded": [
+          "ISO laboratory uncertainty frameworks"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "LEAVEN_DOSE",
+        "SALT_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.59,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.7,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.45
+        ],
+        "posterior_importance": 0.61,
+        "update_signal": "scale precision class changes (0.1 g vs 1 g home scale)",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tighter absolute tolerance on 5 g soda than on 200 g flour matches leverage",
+          "example": "\u00b10.5 g on soda vs \u00b15 g on flour"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Obsessive 0.01 g precision on flour does not improve home cakes",
+          "example": "false precision wastes time"
+        }
+      ],
+      "failure_modes": [
+        "rounding 1.5 eggs to 2 without removing ~25 g elsewhere",
+        "measuring soda by volume loosely"
+      ],
+      "acceptance_tests": [
+        "tolerance policy stated for flour, water, minors"
+      ],
+      "revisit_triggers": [
+        "equipment precision change",
+        "batch variance complaints"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "COST_BATCH",
+      "topic": "optional_cost_per_batch_overlay",
+      "definition": "Optional overlay: unit costs \u00d7 grams for batch cost and cost per baked portion after loss. Cost never overrides food-safety or structure closure. Used when user asks for cheaper swaps \u2014 still reclose functional budgets after cheaper ingredient substitution.",
+      "node_type": "work_unit",
+      "group": "overlay",
+      "scope_boundary": {
+        "included": [
+          "unit cost \u00d7 mass",
+          "portion cost after loss",
+          "cheap-swap still needs budget closure"
+        ],
+        "excluded": [
+          "full managerial accounting"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOTAL_MASS",
+        "PROCESS_LOSS",
+        "BUDGET_CLOSE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.85,
+        "user_value": 0.75,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.6,
+        "irreversibility": 0.3,
+        "confidence": 0.75,
+        "node_conflict_pressure": 0.3,
+        "risk_score": 0.48,
+        "confidence_score": 0.6,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.75,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.25,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.75,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.35,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "ingredient unit prices change or cheaper substitute proposed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Portion cost after loss gives honest catering quotes",
+          "example": "raw dough cost / (count \u00d7 (1-loss)) "
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Cheapest fat may be rancid risk or wrong plastic range",
+          "example": "price-only shortening choice fails creaming"
+        }
+      ],
+      "failure_modes": [
+        "optimizing cost before structure closure",
+        "ignoring loss in per-serving cost"
+      ],
+      "acceptance_tests": [
+        "if cost used, structure budgets still closed first"
+      ],
+      "revisit_triggers": [
+        "price-driven substitution request"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "INCLUSION_MASS",
+      "topic": "inclusions_and_mix_ins_mass_rules",
+      "definition": "Chocolate chips, nuts, fruit, and seeds are often budgeted as % flour on top of base formula (e.g., 20-40% chips). They add mass and local heat sinks but usually are outside hydration flour base. Fold-in timing does not change mass math but changes distribution.",
+      "node_type": "work_unit",
+      "group": "budgets",
+      "scope_boundary": {
+        "included": [
+          "inclusion % flour bands",
+          "wet vs dry fruit water accounting",
+          "heat-sink bake effect note"
+        ],
+        "excluded": [
+          "allergen labeling legal copy"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BAKERS_PCT",
+        "TOTAL_MASS",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.84,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.57,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.71,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.45
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "inclusion type change (dried vs wet fruit) alters water and sugar",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Budgeting inclusions separately keeps base crumb math clean",
+          "example": "cookie dough base closed, then +30% chips on flour"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Wet fruit bleeds water and sugar into base during bake",
+          "example": "blueberry muffins need base adjustment or coated fruit"
+        }
+      ],
+      "failure_modes": [
+        "dumping inclusions into flour base % and wrecking hydration interpretation",
+        "scaling chips with pan size only ignoring flour base"
+      ],
+      "acceptance_tests": [
+        "inclusion % and wet/dry class recorded"
+      ],
+      "revisit_triggers": [
+        "wet fruit swap",
+        "sink or bleed issues"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "BAKERS_PCT",
+      "to": "FLOUR_BASE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "baseline definition uses baker % language",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_002",
+      "from": "BAKERS_PCT",
+      "to": "HYDRATION_BAND",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "hydration is water % of flour base",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_003",
+      "from": "BAKERS_PCT",
+      "to": "FAT_BUDGET",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "fat budget is fat % of flour base",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_004",
+      "from": "BAKERS_PCT",
+      "to": "SUGAR_BUDGET",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "sugar budget is sugar % of flour base",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_005",
+      "from": "BAKERS_PCT",
+      "to": "SALT_BUDGET",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "salt budget is salt % of flour base",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_006",
+      "from": "BAKERS_PCT",
+      "to": "LEAVEN_DOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "chemical leavener dosed as % flour",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_007",
+      "from": "BAKERS_PCT",
+      "to": "YEAST_DOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "yeast dosed as % flour",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_008",
+      "from": "BAKERS_PCT",
+      "to": "TOTAL_MASS",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "mass sum starts from baker % gram conversion",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_009",
+      "from": "BAKERS_PCT",
+      "to": "VOL_TO_MASS",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "volume conversion feeds baker % inputs",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_010",
+      "from": "BAKERS_PCT",
+      "to": "TOLERANCE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "tolerances apply to baker % gram quantities",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_011",
+      "from": "BAKERS_PCT",
+      "to": "INCLUSION_MASS",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "inclusions budgeted as % flour",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_012",
+      "from": "FLOUR_BASE",
+      "to": "HYDRATION_BAND",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "hydration denominator is the declared flour base",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_013",
+      "from": "FLOUR_BASE",
+      "to": "ENRICH_THRESH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "enrichment judged on flour-base percentages",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_014",
+      "from": "HYDRATION_BAND",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "closure requires hydration line closed",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_015",
+      "from": "HYDRATION_BAND",
+      "to": "LEAVEN_DOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "hydration context affects gas retention assumptions",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_016",
+      "from": "HYDRATION_BAND",
+      "to": "YEAST_DOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "dough hydration interacts with fermentation schedule",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_017",
+      "from": "FAT_BUDGET",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "closure requires fat line closed",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_018",
+      "from": "FAT_BUDGET",
+      "to": "BAKE_TIME_MODEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "fat delays set and influences time priors",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_019",
+      "from": "FAT_BUDGET",
+      "to": "ENRICH_THRESH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "fat level is an enrichment classifier",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_020",
+      "from": "FAT_BUDGET",
+      "to": "LAYER_RATIO",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "component fat contributes to assembly averages",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_021",
+      "from": "SUGAR_BUDGET",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "closure requires sugar line closed",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_022",
+      "from": "SUGAR_BUDGET",
+      "to": "BAKE_TIME_MODEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "sugar delays gelatinization affecting time",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_023",
+      "from": "SUGAR_BUDGET",
+      "to": "ENRICH_THRESH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "sugar level is an enrichment classifier",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_024",
+      "from": "SUGAR_BUDGET",
+      "to": "LAYER_RATIO",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "component sugar contributes to assembly averages",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_025",
+      "from": "SALT_BUDGET",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "closure requires salt line closed",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_026",
+      "from": "LEAVEN_DOSE",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "closure requires leavener line closed",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_027",
+      "from": "TOTAL_MASS",
+      "to": "PAN_GEOM",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "pan fill uses total batter/dough mass",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_028",
+      "from": "TOTAL_MASS",
+      "to": "SCALE_LAWS",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "scaling changes total mass by a factor",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_029",
+      "from": "TOTAL_MASS",
+      "to": "PROCESS_LOSS",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "loss factors apply to total mass for yield",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_030",
+      "from": "TOTAL_MASS",
+      "to": "LAYER_RATIO",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "assembly ratios need component masses",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_031",
+      "from": "TOTAL_MASS",
+      "to": "COST_BATCH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "cost multiplies mass lines",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_032",
+      "from": "PAN_GEOM",
+      "to": "BATTER_DEPTH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "depth derives from mass and pan footprint",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_033",
+      "from": "BATTER_DEPTH",
+      "to": "BAKE_TIME_MODEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "time priors depend on depth",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_034",
+      "from": "SCALE_LAWS",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "after scale, reclose pans and feasibility",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_035",
+      "from": "BUDGET_CLOSE",
+      "to": "PREF_CONSTRAINT",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "constraints re-enter closure loop",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_036",
+      "from": "BUDGET_CLOSE",
+      "to": "COST_BATCH",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "cost overlay only after structure closure",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "precision_vs_practicality",
+      "description": "Lab-grade gram precision vs home cooking speed",
+      "poles": [
+        "0.1 g obsession",
+        "cup convenience"
+      ],
+      "resolution_hint": "weigh high-leverage minors; allow coarser flour tolerance",
+      "affected_nodes": [
+        "TOLERANCE",
+        "VOL_TO_MASS",
+        "LEAVEN_DOSE"
+      ],
+      "id": "CA_01"
+    },
+    {
+      "name": "mass_scale_vs_bake_time_scale",
+      "description": "Users scale time with mass factor incorrectly",
+      "poles": [
+        "time \u221d mass",
+        "time from depth+doneness"
+      ],
+      "resolution_hint": "recompute depth; use doneness hierarchy",
+      "affected_nodes": [
+        "SCALE_LAWS",
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH"
+      ],
+      "id": "CA_02"
+    },
+    {
+      "name": "band_purity_vs_regional_style",
+      "description": "House bands vs legitimate style outliers",
+      "poles": [
+        "strict band gate",
+        "style-exception waive"
+      ],
+      "resolution_hint": "allow explicit waives with reason",
+      "affected_nodes": [
+        "BUDGET_CLOSE",
+        "HYDRATION_BAND",
+        "ENRICH_THRESH"
+      ],
+      "id": "CA_03"
+    },
+    {
+      "name": "component_math_vs_assembled_taste",
+      "description": "Baker % per layer vs eaten slice sweetness/fat",
+      "poles": [
+        "component purity",
+        "assembled sensory"
+      ],
+      "resolution_hint": "report both component budgets and weighted assembly",
+      "affected_nodes": [
+        "LAYER_RATIO",
+        "SUGAR_BUDGET",
+        "FAT_BUDGET"
+      ],
+      "id": "CA_04"
+    },
+    {
+      "name": "cost_vs_structure",
+      "description": "Cheaper ingredients vs functional closure",
+      "poles": [
+        "minimum cost",
+        "structure first"
+      ],
+      "resolution_hint": "structure closure dominates cost overlay",
+      "affected_nodes": [
+        "COST_BATCH",
+        "BUDGET_CLOSE",
+        "PREF_CONSTRAINT"
+      ],
+      "id": "CA_05"
+    },
+    {
+      "name": "constraint_fidelity_vs_product_identity",
+      "description": "Hard diet constraints vs keeping original product class",
+      "poles": [
+        "keep identity",
+        "change class to stay feasible"
+      ],
+      "resolution_hint": "state infeasibility; propose nearest feasible class",
+      "affected_nodes": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ],
+      "id": "CA_06"
+    },
+    {
+      "name": "single_pan_deep_vs_multi_pan_shallow",
+      "description": "One deep pan convenience vs even bake",
+      "poles": [
+        "one pan simplicity",
+        "shallow even bake"
+      ],
+      "resolution_hint": "prefer depth in band for product; split pans if needed",
+      "affected_nodes": [
+        "PAN_GEOM",
+        "BATTER_DEPTH",
+        "BAKE_TIME_MODEL"
+      ],
+      "id": "CA_07"
+    },
+    {
+      "name": "yeast_mass_vs_schedule",
+      "description": "More yeast for speed vs flavor from time",
+      "poles": [
+        "same-day high yeast",
+        "long cool low yeast"
+      ],
+      "resolution_hint": "pick schedule first then dose",
+      "affected_nodes": [
+        "YEAST_DOSE",
+        "HYDRATION_BAND"
+      ],
+      "id": "CA_08"
+    },
+    {
+      "name": "inclusion_load_vs_base_structure",
+      "description": "Heavy mix-ins vs crumb integrity",
+      "poles": [
+        "maximum chips/fruit",
+        "clean base crumb"
+      ],
+      "resolution_hint": "cap inclusions % flour; adjust bake for heat sinks",
+      "affected_nodes": [
+        "INCLUSION_MASS",
+        "TOTAL_MASS",
+        "BAKE_TIME_MODEL"
+      ],
+      "id": "CA_09"
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "Only volumetric recipe available with packed brown sugar and scooped flour",
+      "trigger": "cups-only input with high flour variance risk",
+      "affected_nodes": [
+        "VOL_TO_MASS",
+        "TOLERANCE",
+        "BAKERS_PCT"
+      ],
+      "mitigation": "declare density assumptions; widen uncertainty; recommend scale for next iteration",
+      "severity": "medium",
+      "id": "EC_01"
+    },
+    {
+      "description": "Double batch left in a single original pan",
+      "trigger": "scale factor 2 with unchanged pan",
+      "affected_nodes": [
+        "SCALE_LAWS",
+        "BATTER_DEPTH",
+        "BAKE_TIME_MODEL",
+        "PAN_GEOM"
+      ],
+      "mitigation": "treat as depth change; lower temp extend time; or split pans",
+      "severity": "high",
+      "id": "EC_02"
+    },
+    {
+      "description": "Altitude above 3000 ft",
+      "trigger": "user elevation or chronic dome-and-collapse",
+      "affected_nodes": [
+        "LEAVEN_DOSE",
+        "HYDRATION_BAND",
+        "BAKE_TIME_MODEL"
+      ],
+      "mitigation": "reduce chemical leavener slightly; increase liquid; adjust temp/time; trial",
+      "severity": "high",
+      "id": "EC_03"
+    },
+    {
+      "description": "Butter measured as fat 100% in spreadsheet",
+      "trigger": "fat budget overstated, water understated",
+      "affected_nodes": [
+        "FAT_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "mitigation": "apply ~81% fat / ~16% water split for butter; reclose",
+      "severity": "medium",
+      "id": "EC_04"
+    },
+    {
+      "description": "Honey swapped 1:1 for sucrose by grams",
+      "trigger": "liquid sweetener without solids/water split",
+      "affected_nodes": [
+        "SUGAR_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "mitigation": "count ~80% sugar solids ~17% water; reduce other liquid; reclose",
+      "severity": "medium",
+      "id": "EC_05"
+    },
+    {
+      "description": "Vegan + gluten-free + deep sugar cut on angel food",
+      "trigger": "multi hard constraints on foam cake identity",
+      "affected_nodes": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ],
+      "mitigation": "declare infeasible identity; propose different dessert class",
+      "severity": "high",
+      "id": "EC_06"
+    },
+    {
+      "description": "Bundt pan volume unknown",
+      "trigger": "decorative pan without dimensions",
+      "affected_nodes": [
+        "PAN_GEOM",
+        "BATTER_DEPTH"
+      ],
+      "mitigation": "water-fill measure pan volume; set fill fraction; then depth estimate",
+      "severity": "medium",
+      "id": "EC_07"
+    },
+    {
+      "description": "Catering count short after bake",
+      "trigger": "yield planned on raw mass only",
+      "affected_nodes": [
+        "PROCESS_LOSS",
+        "TOTAL_MASS",
+        "COST_BATCH"
+      ],
+      "mitigation": "apply loss factor and bake a buffer tray",
+      "severity": "medium",
+      "id": "EC_08"
+    },
+    {
+      "description": "Mixer cannot develop double dough mass",
+      "trigger": "scale-up beyond equipment",
+      "affected_nodes": [
+        "SCALE_LAWS",
+        "TOTAL_MASS"
+      ],
+      "mitigation": "split batches; do not fake scale in one underpowered mix",
+      "severity": "high",
+      "id": "EC_09"
+    },
+    {
+      "description": "Sheet cake to cupcake conversion",
+      "trigger": "same batter new depth class",
+      "affected_nodes": [
+        "BATTER_DEPTH",
+        "BAKE_TIME_MODEL",
+        "PAN_GEOM"
+      ],
+      "mitigation": "recompute depth; cut time drastically; watch doneness signals",
+      "severity": "low",
+      "id": "EC_10"
+    },
+    {
+      "description": "Wet fruit inclusions at 40% flour",
+      "trigger": "berries bleed and sink",
+      "affected_nodes": [
+        "INCLUSION_MASS",
+        "HYDRATION_BAND",
+        "BAKE_TIME_MODEL"
+      ],
+      "mitigation": "coat fruit, reduce other liquid slightly, fold late; accept some bleed",
+      "severity": "medium",
+      "id": "EC_11"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "convert_to_grams",
+      "node_ref": "VOL_TO_MASS",
+      "description": "Convert all volume inputs to grams with declared densities",
+      "artifact": "gram formula",
+      "gate": "every line has grams",
+      "id": "WF_01",
+      "step": 1
+    },
+    {
+      "action": "declare_flour_base",
+      "node_ref": "FLOUR_BASE",
+      "description": "List what is in the 100% flour base",
+      "artifact": "base definition",
+      "gate": "base membership explicit",
+      "id": "WF_02",
+      "step": 2
+    },
+    {
+      "action": "compute_bakers_pct",
+      "node_ref": "BAKERS_PCT",
+      "description": "Express all ingredients as % flour",
+      "artifact": "baker % table",
+      "gate": "flour line is 100%",
+      "id": "WF_03",
+      "step": 3
+    },
+    {
+      "action": "close_hydration_fat_sugar_salt",
+      "node_ref": "HYDRATION_BAND",
+      "description": "Itemize water/fat/sugar/salt budgets",
+      "artifact": "budget sheet",
+      "gate": "primary budgets numeric",
+      "id": "WF_04",
+      "step": 4
+    },
+    {
+      "action": "dose_leavening",
+      "node_ref": "LEAVEN_DOSE",
+      "description": "Set chemical or yeast dose from flour base and schedule",
+      "artifact": "leavener line",
+      "gate": "dose as % flour present",
+      "id": "WF_05",
+      "step": 5
+    },
+    {
+      "action": "classify_enrichment",
+      "node_ref": "ENRICH_THRESH",
+      "description": "Label lean vs enriched and select band set",
+      "artifact": "class label",
+      "gate": "class matches fat+sugar evidence",
+      "id": "WF_06",
+      "step": 6
+    },
+    {
+      "action": "sum_mass_and_loss",
+      "node_ref": "TOTAL_MASS",
+      "description": "Total mass and process loss yield estimate",
+      "artifact": "yield estimate",
+      "gate": "total mass equals sum of parts",
+      "id": "WF_07",
+      "step": 7
+    },
+    {
+      "action": "match_pan_geometry",
+      "node_ref": "PAN_GEOM",
+      "description": "Choose pans; compute fill and depth",
+      "artifact": "pan plan",
+      "gate": "fill fraction in safe band",
+      "id": "WF_08",
+      "step": 8
+    },
+    {
+      "action": "set_bake_time_prior",
+      "node_ref": "BAKE_TIME_MODEL",
+      "description": "Depth- and composition-aware time prior with doneness checks",
+      "artifact": "bake plan",
+      "gate": "time not sole doneness criterion",
+      "id": "WF_09",
+      "step": 9
+    },
+    {
+      "action": "run_budget_closure",
+      "node_ref": "BUDGET_CLOSE",
+      "description": "Full closure checklist including constraints",
+      "artifact": "closure report",
+      "gate": "all lines pass or waived with reason",
+      "id": "WF_10",
+      "step": 10
+    },
+    {
+      "action": "apply_constraints_and_cost",
+      "node_ref": "PREF_CONSTRAINT",
+      "description": "Apply diet constraints and optional cost overlay",
+      "artifact": "constraint+cost note",
+      "gate": "structure still closed after any swap",
+      "id": "WF_11",
+      "step": 11
+    }
+  ],
+  "priority_order": [
+    "BUDGET_CLOSE",
+    "BAKE_TIME_MODEL",
+    "PREF_CONSTRAINT",
+    "HYDRATION_BAND",
+    "LEAVEN_DOSE",
+    "PAN_GEOM",
+    "BATTER_DEPTH",
+    "BAKERS_PCT",
+    "FLOUR_BASE",
+    "SCALE_LAWS",
+    "FAT_BUDGET",
+    "SUGAR_BUDGET",
+    "YEAST_DOSE",
+    "VOL_TO_MASS",
+    "LAYER_RATIO",
+    "TOTAL_MASS",
+    "ENRICH_THRESH",
+    "TOLERANCE",
+    "INCLUSION_MASS",
+    "PROCESS_LOSS",
+    "SALT_BUDGET",
+    "COST_BATCH"
+  ],
+  "priority_rationale": "Baker % and flour base unlock all budgets; mass and pan geometry unlock depth and time; closure and constraints finish the formula before cost overlays.",
+  "dominance_rules": [
+    {
+      "rule": "structure_budgets_over_cost",
+      "rationale": "cheap broken product is worthless",
+      "trigger": "cost cut proposal",
+      "action": "reclose budgets after any cheaper swap",
+      "id": "DR_01",
+      "priority": 1
+    },
+    {
+      "rule": "depth_doneness_over_mass_proportional_time",
+      "rationale": "heat path is geometric",
+      "trigger": "user scales time by mass factor",
+      "action": "recompute depth-based prior",
+      "id": "DR_02",
+      "priority": 2
+    },
+    {
+      "rule": "declared_flour_base_consistency",
+      "rationale": "shifting denominator corrupts all %",
+      "trigger": "cocoa or nut meal added",
+      "action": "restate base policy before new %",
+      "id": "DR_03",
+      "priority": 3
+    },
+    {
+      "rule": "hard_constraints_over_identity_nostalgia",
+      "rationale": "infeasible identity should be renamed not faked",
+      "trigger": "multi-constraint impossibility",
+      "action": "propose new product class",
+      "id": "DR_04",
+      "priority": 1
+    },
+    {
+      "rule": "mass_over_volume_for_leavener_and_salt",
+      "rationale": "high leverage minors",
+      "trigger": "volume-only minor ingredients",
+      "action": "require grams for salt and leavener",
+      "id": "DR_05",
+      "priority": 2
+    },
+    {
+      "rule": "itemized_water_over_water_line_alone",
+      "rationale": "hidden water dominates errors",
+      "trigger": "hydration dispute",
+      "action": "sum all wet fractions",
+      "id": "DR_06",
+      "priority": 3
+    },
+    {
+      "rule": "pan_feasibility_over_single_pan_convenience",
+      "rationale": "overflow and raw centers are failures",
+      "trigger": "overfill or extreme depth",
+      "action": "split pans or redesign mass",
+      "id": "DR_07",
+      "priority": 1
+    },
+    {
+      "rule": "loss_aware_yield_over_raw_mass_portions",
+      "rationale": "honest counts need loss factors",
+      "trigger": "catering portion planning",
+      "action": "apply process loss before promising counts",
+      "id": "DR_08",
+      "priority": 2
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "do_not_scale_bake_time_by_mass_factor",
+      "prevents": "raw deep centers or burnt thin trays",
+      "id": "ARR_01"
+    },
+    {
+      "rule": "do_not_count_butter_as_100_percent_fat",
+      "prevents": "hydration and fat budget errors",
+      "id": "ARR_02"
+    },
+    {
+      "rule": "do_not_close_without_pan_fill_check",
+      "prevents": "overflow disasters",
+      "id": "ARR_03"
+    },
+    {
+      "rule": "do_not_change_flour_base_silently",
+      "prevents": "corrupt baker % comparisons",
+      "id": "ARR_04"
+    },
+    {
+      "rule": "do_not_apply_cost_swap_without_reclosure",
+      "prevents": "structure regressions",
+      "id": "ARR_05"
+    },
+    {
+      "rule": "do_not_treat_cups_of_flour_as_precise",
+      "prevents": "hidden hydration swings",
+      "id": "ARR_06"
+    },
+    {
+      "rule": "do_not_ignore_wet_inclusion_water",
+      "prevents": "gummy fruit zones and wrong hydration",
+      "id": "ARR_07"
+    },
+    {
+      "rule": "do_not_promise_portions_on_raw_mass_only",
+      "prevents": "short catering counts",
+      "id": "ARR_08"
+    },
+    {
+      "rule": "do_not_mix_density_tables_mid_formula",
+      "prevents": "inconsistent gram conversions",
+      "id": "ARR_09"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "raw center with dark exterior",
+      "action": "reduce depth or temp; extend time; recheck sugar/fat delay",
+      "nodes": [
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH",
+        "SUGAR_BUDGET"
+      ],
+      "priority": 1,
+      "id": "IP_01"
+    },
+    {
+      "trigger": "overflow or crater from overfill",
+      "action": "reduce fill fraction; split mass",
+      "nodes": [
+        "PAN_GEOM",
+        "TOTAL_MASS",
+        "BATTER_DEPTH"
+      ],
+      "priority": 1,
+      "id": "IP_02"
+    },
+    {
+      "trigger": "dough feel mismatches claimed hydration",
+      "action": "recompute hidden water; verify flour base",
+      "nodes": [
+        "HYDRATION_BAND",
+        "FLOUR_BASE",
+        "VOL_TO_MASS"
+      ],
+      "priority": 1,
+      "id": "IP_03"
+    },
+    {
+      "trigger": "scale-up quality drop",
+      "action": "check mixer energy, pan depth, loss factors",
+      "nodes": [
+        "SCALE_LAWS",
+        "PROCESS_LOSS",
+        "BAKE_TIME_MODEL"
+      ],
+      "priority": 2,
+      "id": "IP_04"
+    },
+    {
+      "trigger": "constraint added",
+      "action": "rerun PREF_CONSTRAINT and BUDGET_CLOSE",
+      "nodes": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ],
+      "priority": 1,
+      "id": "IP_05"
+    },
+    {
+      "trigger": "portion shortage",
+      "action": "update PROCESS_LOSS and TOTAL_MASS yield",
+      "nodes": [
+        "PROCESS_LOSS",
+        "TOTAL_MASS",
+        "COST_BATCH"
+      ],
+      "priority": 2,
+      "id": "IP_06"
+    },
+    {
+      "trigger": "soapy or flat quick bread",
+      "action": "revisit LEAVEN_DOSE and acid assumptions",
+      "nodes": [
+        "LEAVEN_DOSE",
+        "HYDRATION_BAND"
+      ],
+      "priority": 1,
+      "id": "IP_07"
+    },
+    {
+      "trigger": "batch variance on cups recipes",
+      "action": "move flour and minors to weighed grams",
+      "nodes": [
+        "VOL_TO_MASS",
+        "TOLERANCE",
+        "BAKERS_PCT"
+      ],
+      "priority": 2,
+      "id": "IP_08"
+    }
+  ],
+  "validation_protocol": {
+    "required_checks": [
+      "all node ids unique",
+      "all edge ids unique EDGE_XXX format",
+      "all from/to in edges reference valid node ids",
+      "all competency_question_refs resolve to valid CQ ids",
+      "all evidence_refs resolve to valid source_registry ids",
+      "all priority_order entries are valid node ids with no duplicates",
+      "high_risk_nodes (risk_if_wrong>=0.80) have non-empty acceptance_tests and human_review_required=true",
+      "high_coupling_nodes (cross_topic_coupling>=0.75) have non-empty revisit_triggers",
+      "conflict edges have signed_tension<0 and resolution_rule present",
+      "dependency edges form no cycles",
+      "observed_impact=0.0 for all nodes (no observed data)",
+      "SRC_HEURISTIC_PRIOR in source_registry",
+      "19-24 nodes, 32-40 edges, 8-10 conflict_axes, 10-12 edge_cases, 9-12 workflow steps",
+      "schema_version=1.3"
+    ],
+    "post_formula_checks": [
+      "all derived fields non-zero after compute run",
+      "final_importance in [0,1] for all nodes",
+      "risk_score, confidence_score, revisit_pressure, lock_score in [0,1]",
+      "posterior_importance in [0,1]",
+      "edge_priority, edge_score, edge_heat in [0,1]"
+    ]
+  },
+  "validation_report": {
+    "status": "pending",
+    "last_validated": null,
+    "validator_version": null,
+    "failed_checks": [],
+    "passed_checks": [],
+    "notes": "built by kb_forge.py; run validators/kb_validator.py --mode dense to certify"
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_core_properties_of_culinary_formulation_math_kb",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "smallest meaningful instance in this domain",
+        "expected_properties": [
+          "highest-priority node engaged first",
+          "obligations enforced"
+        ]
+      }
+    ],
+    "metrics": [
+      "coverage",
+      "consistency",
+      "obligation_adherence"
+    ],
+    "regression_policy": "re-run evaluation suite after any node addition or formula change",
+    "minimum_pass_conditions": [
+      "all required checks pass",
+      "no formula mismatches"
+    ]
+  },
+  "traceability_matrix": [
+    {
+      "node_id": "BAKERS_PCT",
+      "workflow_steps": [
+        "WF_03"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "FLOUR_BASE",
+      "workflow_steps": [
+        "WF_02"
+      ],
+      "competency_questions": [
+        "CQ_01"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "HYDRATION_BAND",
+      "workflow_steps": [
+        "WF_04"
+      ],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "conflict_axes": [
+        "CA_03",
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "FAT_BUDGET",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SUGAR_BUDGET",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SALT_BUDGET",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_02"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "LEAVEN_DOSE",
+      "workflow_steps": [
+        "WF_05"
+      ],
+      "competency_questions": [
+        "CQ_06",
+        "CQ_03"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "YEAST_DOSE",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "TOTAL_MASS",
+      "workflow_steps": [
+        "WF_07"
+      ],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_01"
+      ],
+      "conflict_axes": [
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "PAN_GEOM",
+      "workflow_steps": [
+        "WF_08"
+      ],
+      "competency_questions": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "BATTER_DEPTH",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SCALE_LAWS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_02"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "BAKE_TIME_MODEL",
+      "workflow_steps": [
+        "WF_09"
+      ],
+      "competency_questions": [
+        "CQ_09",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_07",
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "BUDGET_CLOSE",
+      "workflow_steps": [
+        "WF_10"
+      ],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_10",
+        "CQ_11"
+      ],
+      "conflict_axes": [
+        "CA_03",
+        "CA_05",
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "VOL_TO_MASS",
+      "workflow_steps": [
+        "WF_01"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_12"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "PREF_CONSTRAINT",
+      "workflow_steps": [
+        "WF_11"
+      ],
+      "competency_questions": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "conflict_axes": [
+        "CA_05",
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "LAYER_RATIO",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "ENRICH_THRESH",
+      "workflow_steps": [
+        "WF_06"
+      ],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_03"
+      ],
+      "conflict_axes": [
+        "CA_03"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "PROCESS_LOSS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_07"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "TOLERANCE",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_12",
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "COST_BATCH",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_11"
+      ],
+      "conflict_axes": [
+        "CA_05"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "INCLUSION_MASS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    }
+  ],
+  "change_control": {
+    "version": "1.0.0",
+    "created": "2026-06-25",
+    "change_log": [],
+    "review_required_for": [
+      "node addition",
+      "edge type change",
+      "dominance_rule change",
+      "scope boundary change"
+    ]
+  }
+}
