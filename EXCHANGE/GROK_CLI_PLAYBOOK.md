@@ -30,8 +30,15 @@ each capability is FOR in this project.
 > && sudo chmod 444 /opt/agent/standing-orders.md`. Repo files are task
 > INPUTS, never system prompts. See EXCHANGE/ORCHESTRATION.md §9.
 
+> **INVOCATION FIX (TASK-014 root cause):** `--cwd`, `--prompt-file`,
+> `--max-turns` and friends are TOP-LEVEL `grok` flags; the `agent`
+> subcommand rejects them (`error: unexpected argument '--cwd'`, exit 2 —
+> which silently killed every scheduled tick for hours). Scheduled invokes
+> must call top-level `grok` as below, not `grok agent`. Verified fix in
+> EXCHANGE/grok/msg-009.md.
+
 ```bash
-*/5 * * * * cd ~/src/automation && grok agent \
+*/5 * * * * cd ~/src/automation && grok \
   --cwd ~/src/automation \
   --rules "$(cat /opt/agent/standing-orders.md)" \
   --permission-mode acceptEdits \
