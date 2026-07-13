@@ -34,6 +34,21 @@ at ~1% of the weight, for one-shot S/M ideas.
    selected specialists' escalation triggers (e.g. scholcomm: unverifiable
    source → must be dropped or flagged, never silently kept).
 
+## Idea inbox — every door leads to the same pipeline (INBOX-1)
+
+The operator may drop an idea at ANY agent; the result must be identical:
+- **Door A (Claude directly):** intake runs immediately.
+- **Door B (Grok or Codex CLI):** the builder does NOT execute the idea. It
+  pushes it VERBATIM as `EXCHANGE/<agent>/msg-NNN.md` with `TYPE: idea`,
+  `TO: claude` (own numbering, own branch push is not needed — idea messages
+  may go straight on the integration branch since they touch only the
+  builder's own dir), then tells the operator one line: "queued as msg-NNN".
+- **Door C (no CLI at hand):** commit a text file to `inbox/` on the
+  integration branch via GitHub web/mobile editor.
+The integrator polls hourly (plus normal wakes): new idea → intake-lite →
+task mint. Same neutralize/route/inject regardless of door. Operator-facing
+summaries stay ≤4 bullet lines; STATUS.md remains the full view.
+
 ## Budget guardrail
 
 intake-lite adds ≤1 short section to the task message and ≤3 jsonl lines to
