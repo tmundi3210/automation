@@ -8,8 +8,8 @@ TASK-016 (Codex self-verification + gate audit) integrate.
 | # | Assumption | Why unresolved | Resolution path |
 |---|---|---|---|
 | A1 | Grok CLI has native X-search | Never demonstrated in a task; xAI product makes it likely | TASK-015 harmless test |
-| A2 | Codex CLI web-search capability | Never exercised here | TASK-016 harmless test |
-| A3 | Grok and Codex gate state may COLLIDE in `~/.exchange-gate/` (shared `last_seen_tip` would starve one builder's wakes) | Both ACKs name the same dir; only Grok's contents were inspected | TASK-016 audit + de-conflict; observe two natural wakes after |
+| A2 | ~~Codex CLI web-search~~ RESOLVED (TASK-016): `--search` exists but is BLOCKED — configured model `gpt-5.6-terra` rejected by build 0.140.0. Treat as unavailable; new assumption: operator may want to fix the model pin | — | operator decision |
+| A3 | Grok and Codex gate state may COLLIDE in `~/.exchange-gate/` — still open; TWO duplicate-ACK incidents are consistent with it | Codex could not inspect `$HOME` from its sandbox | OPERATOR: run `bash incoming/task-016__capability-codex/gate_audit.sh` on the Mac, apply its ACTION lines, paste output |
 | A4 | "Hermes Agent" and "OpenClaw" exact official projects | Multiple same-named projects exist; operator naming ambiguous | TASK-015 resolution with cited URLs; UNRESOLVED until then |
 | A5 | Plan/rate limits for all three subscriptions | Not visible from configs inspected so far | Self-verification tasks; else operator-supplied |
 | A6 | Only ONE authorized repo (`tmundi3210/automation`) | Hub's GitHub scope is this repo; repo-list tool unavailable in this session; other local projects on the operator's Mac are invisible to the hub | Operator confirms project list; builders can inventory local paths in a later read-only task if authorized |

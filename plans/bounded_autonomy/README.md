@@ -23,7 +23,7 @@ operator approves this package.
 | 13 | Implementation phases | `IMPLEMENTATION_PHASES.md` | done (A-H, operator checkpoints) |
 | 14 | Operations runbook | `OPERATIONS_RUNBOOK.md` | done (digests, kill switch, playbooks) |
 | 15 | Code skeleton | in `SYSTEM_ARCHITECTURE.md` (documented only — no code, per stop condition) | done |
-| 16 | Review objects | `reviews/review_claude.json` done; `reviews/review_grok.json` + `reviews/review_codex.json` arrive via TASK-015/016 | partial |
+| 16 | Review objects | `reviews/review_claude.json` done; `reviews/review_codex.json` done; `reviews/review_grok.json` arrives via TASK-015 | partial |
 | 17 | Assumptions & risks | `ASSUMPTIONS_AND_RISKS.md` | done (living; finalizes with 15/16) |
 
 ## How it was produced

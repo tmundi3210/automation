@@ -62,15 +62,15 @@ assigned as TASK-016.
 
 | Capability | Status | Evidence |
 |---|---|---|
-| Product/version | OpenAI Codex CLI, 0.140.0 at last pin (2026-07) `[O]`; re-verify `[U]` | recipe pin |
+| Product/version | OpenAI Codex CLI **0.140.0** `[T]` (`codex --version`, TASK-016) | msg-036 delivery |
 | Interface | Local CLI on macOS; headless `codex exec -C <repo> --sandbox workspace-write --json` `[O]` | pinned invocation |
 | Filesystem | Sandbox `workspace-write` limits writes to the workspace `[C]` | codex docs/flags |
 | Shell | Yes inside sandbox `[O]` | task builds |
 | Git/GitHub | Pushes as owner account with `codex-bot` identity + trailer (WAIVER-001) `[O]` | deliveries |
-| Web search | `[U]` — never demonstrated in a task; TASK-016 must test | — |
-| X search | None expected `[U]` | — |
-| MCP/tools | `[U]` (codex MCP support exists per docs `[C]`; unconfigured here) | — |
-| Scheduling | cron + zero-token gate (TASK-012 ACK) `[O]`; NOTE: ack says state in `~/.exchange-gate/` — SAME dir Grok uses. Possible last_seen_tip collision between the two builders → starved wakes. MUST be verified/de-conflicted in TASK-016 | msg-022 vs msg-009 |
+| Web search | `--search` flag EXISTS `[T]` but live probe FAILS: configured model `gpt-5.6-terra` rejected by this build ("requires a newer Codex") — search effectively unavailable until the pin or build changes `[T]` | TASK-016 test |
+| X search | None — no X flag/command in CLI surface `[T]` | TASK-016 |
+| MCP/tools | `mcp` + `mcp-server` commands present `[T]`; unconfigured here `[C]` | TASK-016 |
+| Scheduling | cron + zero-token gate (TASK-012 ACK) `[O]`; gate-state COLLISION with Grok's `~/.exchange-gate/` remains PLAUSIBLE — two duplicate-ACK incidents are consistent with it. Operator-run `incoming/task-016__capability-codex/gate_audit.sh` is the resolution step; target state dir `~/.exchange-gate-codex/` | TASK-016 audit script |
 | Sandboxing | `--sandbox` modes (read-only / workspace-write) `[C]` | codex CLI |
 | Approval | sandbox + approval flags; `--ask-for-approval on-failure` deprecated in 0.140.0 `[O]` | recipe notes |
 | Auth | Operator's OpenAI account `[C]` | — |
