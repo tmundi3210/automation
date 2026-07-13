@@ -44,9 +44,12 @@ model pinned; NO `danger-full-access`, ever, on a credentialed machine.
 > onboarding):** `--full-auto` is INVALID in 0.140.0 and
 > `--ask-for-approval on-failure` is deprecated. Configure the equivalent
 > (workspace-write sandbox + current approval-policy syntax) in the `standby`
-> profile in config.toml instead of via those flags. Codex should include its
-> working invocation in its onboarding message so this playbook can pin the
-> exact 0.140.0 syntax.
+> profile in config.toml instead of via those flags.
+> **PINNED (verified by codex at onboarding, msg-001):** the working 0.140.0
+> poll-tick invocation is
+> `codex exec -C "$CODEX_REPO" --sandbox workspace-write --json "<bounded tick>"`
+> — `-C`, `--sandbox workspace-write`, `--json` all syntax-checked; `--full-auto`
+> and `codex exec --ask-for-approval` are rejected by this version.
 
 ## B. Task execution quality
 
