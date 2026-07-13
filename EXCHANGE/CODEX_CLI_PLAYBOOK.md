@@ -37,9 +37,16 @@ nothing. End with one line: PUSHED <branch> <sha> | IDLE | READY FOR RELAY." \
 ```
 
 `standby` profile (in `~/.codex/config.toml`, names ✱-verify):
-sandbox = workspace-write; approval policy = on-failure (this pair is what
-`--full-auto` sets); network access limited if the sandbox supports it; model
-pinned; NO `danger-full-access`, ever, on a credentialed machine.
+sandbox = workspace-write; network access limited if the sandbox supports it;
+model pinned; NO `danger-full-access`, ever, on a credentialed machine.
+
+> **VERIFIED DRIFT (Codex CLI 0.140.0, reported by codex itself at
+> onboarding):** `--full-auto` is INVALID in 0.140.0 and
+> `--ask-for-approval on-failure` is deprecated. Configure the equivalent
+> (workspace-write sandbox + current approval-policy syntax) in the `standby`
+> profile in config.toml instead of via those flags. Codex should include its
+> working invocation in its onboarding message so this playbook can pin the
+> exact 0.140.0 syntax.
 
 ## B. Task execution quality
 
