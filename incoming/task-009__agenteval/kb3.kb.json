@@ -1,0 +1,5448 @@
+{
+  "domain": "eval_routing_decision",
+  "domain_label": "Routing and Assignment Decisions",
+  "purpose": "Turn competence and risk signals into assignment decisions with capability matching, exploration floors, confidence-aware choices, human escalation thresholds, and auditable traces.",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "Competence vectors and breaker states are available",
+    "Tasks carry type SIZE RISK pattern fields",
+    "Human escalation channel exists"
+  ],
+  "exclusions": [
+    "General HR workforce scheduling products",
+    "Network packet routing",
+    "Kubernetes pod scheduling as primary scope"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What is the routing objective and how is the eligibility set built?",
+      "must_be_answerable_from": [
+        "ROUTING_OBJECTIVE",
+        "ELIGIBILITY_SET",
+        "CAPABILITY_MATCH"
+      ],
+      "acceptance_condition": "states utility/constraints and eligibility predicates",
+      "covered_by": [
+        "ROUTING_OBJECTIVE",
+        "ELIGIBILITY_SET",
+        "CAPABILITY_MATCH",
+        "CONSTRAINT_SOLVER",
+        "LOAD_BALANCE"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How does the exploration floor work numerically?",
+      "must_be_answerable_from": [
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK",
+        "ROUTING_OBJECTIVE"
+      ],
+      "acceptance_condition": "floor >=1 in 5 and near-tie handling",
+      "covered_by": [
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK",
+        "ROUTING_OBJECTIVE",
+        "STARVATION_DETECT"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How are capability match and xverify split enforced?",
+      "must_be_answerable_from": [
+        "CAPABILITY_MATCH",
+        "MULTI_AGENT_SPLIT",
+        "REASSIGN_POLICY"
+      ],
+      "acceptance_condition": "lane match and builder!=xverify",
+      "covered_by": [
+        "CAPABILITY_MATCH",
+        "MULTI_AGENT_SPLIT",
+        "REASSIGN_POLICY",
+        "CONFIDENCE_WEIGHT"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How do canaries and starvation controls protect recovery?",
+      "must_be_answerable_from": [
+        "CANARY_ROUTING",
+        "EXPLORATION_FLOOR",
+        "STARVATION_DETECT"
+      ],
+      "acceptance_condition": "half-open only S canaries; 14d starvation boost",
+      "covered_by": [
+        "CANARY_ROUTING",
+        "EXPLORATION_FLOOR",
+        "STARVATION_DETECT",
+        "HUMAN_ESCALATION"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How do confidence/CI width and decision traces affect routing?",
+      "must_be_answerable_from": [
+        "CONFIDENCE_WEIGHT",
+        "DECISION_TRACE",
+        "SHADOW_ROUTE"
+      ],
+      "acceptance_condition": "ECE and ci_width rules; trace schema; optional shadow",
+      "covered_by": [
+        "CONFIDENCE_WEIGHT",
+        "DECISION_TRACE",
+        "SHADOW_ROUTE",
+        "ROUTING_SIM"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What human escalation thresholds and risk floors apply?",
+      "must_be_answerable_from": [
+        "HUMAN_ESCALATION",
+        "RISK_GATING",
+        "SLA_CLASS"
+      ],
+      "acceptance_condition": "numeric escalation triggers and HIGH trust floor example",
+      "covered_by": [
+        "HUMAN_ESCALATION",
+        "RISK_GATING",
+        "SLA_CLASS",
+        "BACKPRESSURE",
+        "ELIGIBILITY_SET"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do load caps, SLA priority, and backpressure interact?",
+      "must_be_answerable_from": [
+        "LOAD_BALANCE",
+        "SLA_CLASS",
+        "BACKPRESSURE"
+      ],
+      "acceptance_condition": "concurrency caps; priority order; queue threshold action",
+      "covered_by": [
+        "LOAD_BALANCE",
+        "SLA_CLASS",
+        "BACKPRESSURE",
+        "TIE_BREAK"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "What may half-open agents receive and how is risk gated?",
+      "must_be_answerable_from": [
+        "CANARY_ROUTING",
+        "RISK_GATING",
+        "MULTI_AGENT_SPLIT"
+      ],
+      "acceptance_condition": "S canaries only; HIGH floors; split roles",
+      "covered_by": [
+        "CANARY_ROUTING",
+        "RISK_GATING",
+        "MULTI_AGENT_SPLIT",
+        "CAPABILITY_MATCH"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How are pool awards audited against starvation?",
+      "must_be_answerable_from": [
+        "POOL_AWARD",
+        "DECISION_TRACE",
+        "STARVATION_DETECT"
+      ],
+      "acceptance_condition": "award rules deny invalid claims; traces and share metrics",
+      "covered_by": [
+        "POOL_AWARD",
+        "DECISION_TRACE",
+        "STARVATION_DETECT",
+        "SHADOW_ROUTE"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How are reassigns and policy changes governed?",
+      "must_be_answerable_from": [
+        "REASSIGN_POLICY",
+        "ROUTING_SIM",
+        "CONSTRAINT_SOLVER"
+      ],
+      "acceptance_condition": "revise reassign rules; sim gate on policy change; filter order",
+      "covered_by": [
+        "REASSIGN_POLICY",
+        "ROUTING_SIM",
+        "CONSTRAINT_SOLVER",
+        "ELIGIBILITY_SET"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "eligibility_set",
+      "definition": "Agents passing breaker risk load and lane predicates"
+    },
+    {
+      "term": "exploration_floor",
+      "definition": "Minimum fraction of assigns to non-leader eligible agents (>=1/5)"
+    },
+    {
+      "term": "half_open",
+      "definition": "Breaker state allowing only canary S tasks"
+    },
+    {
+      "term": "competence_match",
+      "definition": "Selecting by task_type lane trust among eligible"
+    },
+    {
+      "term": "escalation_threshold",
+      "definition": "Numeric condition requiring human decision"
+    },
+    {
+      "term": "decision_trace",
+      "definition": "Logged candidates filters trusts and chosen rule path"
+    },
+    {
+      "term": "risk_floor",
+      "definition": "Minimum trust and n required for a RISK class"
+    },
+    {
+      "term": "starvation",
+      "definition": "Eligible agent receiving far below floor share"
+    },
+    {
+      "term": "shadow_assignee",
+      "definition": "Counterfactual assignee without exploration for offline eval"
+    },
+    {
+      "term": "constraint_order",
+      "definition": "Fixed sequence of routing filters for determinism"
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model"
+    ],
+    "probabilistic_modeling": [
+      "nodes"
+    ],
+    "risk_analysis": [
+      "edge_cases"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic priors for multi-agent routing decisions aligned with EXCHANGE scoring scaffold",
+      "citation_or_locator": "heuristic prior; operational scoring practice; no external dataset supplied",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "ROUTING_OBJECTIVE",
+      "topic": "routing_objective_function",
+      "definition": "Route each task to maximize expected successful accept under constraints: lane competence match, exploration floor, breaker state, load, and human-escalation risk. Objective is not lowest latency alone and not pure favoritism to current leader.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "expected accept utility",
+          "constraint set"
+        ],
+        "excluded": [
+          "job shop scheduling metaphor"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.93,
+        "business_value": 0.92,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.65,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.71,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "posterior_importance": 0.74,
+        "update_signal": "router always picks the globally highest trust ignoring lane and breakers",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit objective prevents ad-hoc favoritism",
+          "example": "utility uses lane trust and constraints"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Misspecified utility can still starve recovery",
+          "example": "need exploration term"
+        }
+      ],
+      "failure_modes": [
+        "manual who is free only",
+        "ignore breakers"
+      ],
+      "acceptance_tests": [
+        "objective and constraints written"
+      ],
+      "revisit_triggers": [
+        "ad-hoc assignment patterns"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CAPABILITY_MATCH",
+      "topic": "capability_matched_routing",
+      "definition": "Match task_type to agent competence_vector lane trust. Require candidate breaker_state=closed (or half-open canary). Prefer argmax trust among eligible, subject to exploration floor.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "lane match",
+          "breaker eligibility",
+          "argmax among eligible"
+        ],
+        "excluded": [
+          "skill-based routing contact centers"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "ROUTING_OBJECTIVE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.9,
+        "user_value": 0.89,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.63,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.71,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.91,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "posterior_importance": 0.73,
+        "update_signal": "content task assigned to agent with only verify-lane evidence",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Lane match raises first-pass odds",
+          "example": "content to content-competent agent"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Cold start agents never eligible without prior blend",
+          "example": "need prior path"
+        }
+      ],
+      "failure_modes": [
+        "ignore lane",
+        "assign open-breaker agents full tasks"
+      ],
+      "acceptance_tests": [
+        "eligibility: lane key + breaker closed/half-open rules"
+      ],
+      "revisit_triggers": [
+        "wrong-lane assigns"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "EXPLORATION_FLOOR",
+      "topic": "exploration_vs_exploitation_floor",
+      "definition": "Never give 100 percent of a lane to the current leader. Reserve exploration floor >=1 in 5 assignments (20 percent) for a lower-scored ACTIVE eligible agent or recovering half-open canary, so bad streaks can be broken and metrics stay identifiable.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "floor >=1/5",
+          "ACTIVE only",
+          "canary counts as exploration"
+        ],
+        "excluded": [
+          "bandit epsilon-greedy"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "ROUTING_OBJECTIVE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.46,
+        "risk_score": 0.65,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.7,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.69,
+        "update_signal": "leader takes every content task for a month; others starve",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Floor prevents monopoly and enables recovery data",
+          "example": "1 in 5 to challenger"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Floor can reduce short-term accept rate",
+          "example": "pay exploration tax"
+        }
+      ],
+      "failure_modes": [
+        "always exploit leader",
+        "randomize 50 percent always"
+      ],
+      "acceptance_tests": [
+        "floor fraction documented and enforced in router"
+      ],
+      "revisit_triggers": [
+        "starvation incidents"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CONFIDENCE_WEIGHT",
+      "topic": "confidence_weighted_verdicts",
+      "definition": "When combining multi-judge axis scores, weight by calibrated confidence only if ECE<=0.15; else equal weight. For routing, treat ci_width on trust as uncertainty: if width>0.25, reduce exploitation preference and increase exploration probability for that agent.",
+      "node_type": "work_unit",
+      "group": "decision",
+      "scope_boundary": {
+        "included": [
+          "ECE gate 0.15",
+          "ci_width>0.25 exploration boost"
+        ],
+        "excluded": [
+          "forecast ensembles"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "ROUTING_OBJECTIVE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.65,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.28,
+        "lock_score": 0.67,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.61,
+        "update_signal": "router treats uncalibrated 0.99 confidence as certainty",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Uncertainty-aware routing avoids false precision",
+          "example": "wide CI => explore others"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Always-wide CI agents never exploited",
+          "example": "need prior blend path"
+        }
+      ],
+      "failure_modes": [
+        "raw confidence always",
+        "ignore CI width"
+      ],
+      "acceptance_tests": [
+        "ECE and ci_width policies in router"
+      ],
+      "revisit_triggers": [
+        "false certainty routing"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "HUMAN_ESCALATION",
+      "topic": "human_escalation_thresholds",
+      "definition": "Escalate to human when: safety/scope conflict unresolved; two agents disagree on high-stakes ACCEPT with |Q diff|>=2.0; trust of only eligible agent <0.40 with n>=5; or breaker would leave lane with zero eligible agents. Default response SLA target 24h for MED tasks.",
+      "node_type": "work_unit",
+      "group": "escalation",
+      "scope_boundary": {
+        "included": [
+          "thresholds list",
+          "SLA 24h MED",
+          "safety always escalate"
+        ],
+        "excluded": [
+          "on-call escalation policies"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "CONFIDENCE_WEIGHT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.91,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.67,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.7,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "posterior_importance": 0.72,
+        "update_signal": "pipeline silently assigns despite zero eligible agents",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Numeric thresholds make escalation non-political",
+          "example": "Q diff>=2.0 triggers human"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too-low thresholds overwhelm humans",
+          "example": "tune with volume metrics"
+        }
+      ],
+      "failure_modes": [
+        "never escalate",
+        "escalate every nit"
+      ],
+      "acceptance_tests": [
+        "escalation threshold table with values"
+      ],
+      "revisit_triggers": [
+        "silent zero-eligible assigns"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "LOAD_BALANCE",
+      "topic": "load_and_concurrency_limits",
+      "definition": "Cap concurrent in_progress tasks per agent (default 1 build + 1 verify, or 2 total). Prefer eligible idle agents among top trust tier. Prevents queue pileup and context thrash.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "concurrency caps",
+          "idle preference"
+        ],
+        "excluded": [
+          "worker pool sizing"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.58,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.24,
+        "lock_score": 0.71,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "same agent given five concurrent builds",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Caps protect quality and latency",
+          "example": "max 2 in_progress"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Caps can idle capacity if set too low",
+          "example": "tune per agent class"
+        }
+      ],
+      "failure_modes": [
+        "unlimited concurrency",
+        "always pile on leader"
+      ],
+      "acceptance_tests": [
+        "concurrency caps documented"
+      ],
+      "revisit_triggers": [
+        "overload quality drops"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CANARY_ROUTING",
+      "topic": "canary_and_half_open_routing",
+      "definition": "Half-open agents only receive canary-tagged tasks (size S, clear gates). Success closes breaker; failure re-opens. Canaries count toward exploration floor. Never send SIZE L to half-open.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "canary tag",
+          "size S only",
+          "success closes"
+        ],
+        "excluded": [
+          "feature flag rollouts"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "EXPLORATION_FLOOR",
+        "CAPABILITY_MATCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.86,
+        "user_value": 0.87,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.64,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.7,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.68,
+        "update_signal": "half-open agent receives full MED content rewrite",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Bounded canaries make recovery safe",
+          "example": "S task then close"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Canary drought blocks recovery",
+          "example": "reserve canary backlog"
+        }
+      ],
+      "failure_modes": [
+        "full traffic on half-open",
+        "canary without gates"
+      ],
+      "acceptance_tests": [
+        "half-open may only take canary S tasks"
+      ],
+      "revisit_triggers": [
+        "oversized half-open assigns"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "TIE_BREAK",
+      "topic": "tie_break_and_fairness",
+      "definition": "When trusts within 0.03, break ties by: lower current load, then longer time since last assign (fairness), then higher ci_width exploration need, then stable hash of task_id. Prevents silent leader lock-in on near-ties.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "0.03 near-tie band",
+          "load then recency then CI"
+        ],
+        "excluded": [
+          "lottery scheduling"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "LOAD_BALANCE",
+        "EXPLORATION_FLOOR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.38,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.57,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.71,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.81,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "0.01 trust edge always wins forever",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fair tie-break reduces lock-in",
+          "example": "recency spreads work"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Complex tie-break harder to debug",
+          "example": "log decision trace"
+        }
+      ],
+      "failure_modes": [
+        "pure argmax always",
+        "random without seed"
+      ],
+      "acceptance_tests": [
+        "tie-break order documented and logged"
+      ],
+      "revisit_triggers": [
+        "near-tie monopolies"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DECISION_TRACE",
+      "topic": "routing_decision_trace",
+      "definition": "Log each assignment: task_id, candidates, eligibility filters, trusts, exploration flag, chosen agent, rule path. Traces enable audit and debugging of starvation or bias.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "candidate set log",
+          "rule path",
+          "exploration flag"
+        ],
+        "excluded": [
+          "decision audit logs"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "ROUTING_OBJECTIVE",
+        "CAPABILITY_MATCH",
+        "TIE_BREAK"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.86,
+        "user_value": 0.84,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.59,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.22,
+        "lock_score": 0.72,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "posterior_importance": 0.68,
+        "update_signal": "cannot explain why agent B never receives tasks",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Traces make routing auditable",
+          "example": "starvation debug in minutes"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Verbose traces storage cost",
+          "example": "retain 90d"
+        }
+      ],
+      "failure_modes": [
+        "no logs",
+        "logs without candidate trusts"
+      ],
+      "acceptance_tests": [
+        "trace schema required per assignment"
+      ],
+      "revisit_triggers": [
+        "unexplained starvation"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SLA_CLASS",
+      "topic": "sla_and_priority_classes",
+      "definition": "Map SIZE/RISK to priority: safety and protocol tasks first; then HIGH risk; MED default; S canaries fill exploration. SLA targets example: HIGH 12h, MED 24h, S 48h for first response assignment.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "priority order",
+          "SLA hours by class"
+        ],
+        "excluded": [
+          "incident priority matrices"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "HUMAN_ESCALATION",
+        "LOAD_BALANCE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.83,
+        "business_value": 0.84,
+        "user_value": 0.82,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.57,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.71,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.16,
+          0.38
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "canary S jumps ahead of safety-critical protocol task",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Priority protects critical path",
+          "example": "safety before canary"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Starved low priority forever",
+          "example": "aging boost after 2x SLA"
+        }
+      ],
+      "failure_modes": [
+        "FIFO only",
+        "canaries preempt safety"
+      ],
+      "acceptance_tests": [
+        "priority and SLA table documented"
+      ],
+      "revisit_triggers": [
+        "critical path waits"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MULTI_AGENT_SPLIT",
+      "topic": "split_pattern_routing",
+      "definition": "For single+xverify patterns, route builder by content/code lane trust and xverify by verify-lane trust with different agent than builder. Never assign same agent both roles on same task.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "distinct builder and verifier",
+          "lane-specific picks"
+        ],
+        "excluded": [
+          "maker-checker banking"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "EXPLORATION_FLOOR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.89,
+        "technical_complexity": 0.52,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.64,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.71,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "posterior_importance": 0.71,
+        "update_signal": "builder also assigned as xverify on own delivery",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Split roles enforce no self-grade structurally",
+          "example": "different agents"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "With only two agents limited pairs",
+          "example": "may escalate if cannot split"
+        }
+      ],
+      "failure_modes": [
+        "same agent both roles",
+        "xverify by author family session"
+      ],
+      "acceptance_tests": [
+        "pattern rules forbid builder equals xverify"
+      ],
+      "revisit_triggers": [
+        "self-xverify incidents"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "POOL_AWARD",
+      "topic": "pool_claim_and_award",
+      "definition": "When tasks are POOL, agents may claim; integrator awards by eligibility, trust, load, and exploration needs. Claims are data not self-assignment of authority. Deny claims that violate breaker or lane mismatch.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "claim is data",
+          "award by rules",
+          "deny invalid claims"
+        ],
+        "excluded": [
+          "ticket claim systems"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "LOAD_BALANCE",
+        "EXPLORATION_FLOOR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.83,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.61,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.7,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.64,
+        "update_signal": "first claim auto-wins regardless of breaker",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Award rules beat claim races",
+          "example": "breaker claim denied"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Slow awards frustrate agents",
+          "example": "SLA on award decision"
+        }
+      ],
+      "failure_modes": [
+        "first claim wins always",
+        "claims become TASK without award"
+      ],
+      "acceptance_tests": [
+        "award algorithm uses eligibility trust load exploration"
+      ],
+      "revisit_triggers": [
+        "invalid claim awards"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "STARVATION_DETECT",
+      "topic": "starvation_and_fairness_metrics",
+      "definition": "Monitor tasks_assigned per agent per lane over 14d; flag starvation if eligible agent receives < floor share minus epsilon. Auto-boost exploration probability next window.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "14d share monitor",
+          "auto boost"
+        ],
+        "excluded": [
+          "fair queuing"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK",
+        "DECISION_TRACE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.62,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.7,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "posterior_importance": 0.64,
+        "update_signal": "eligible agent gets zero tasks for 14 days",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Starvation metrics close the loop on floor policy",
+          "example": "boost after detect"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Short windows false starve",
+          "example": "require eligibility majority of window"
+        }
+      ],
+      "failure_modes": [
+        "no share metrics",
+        "manual complaints only"
+      ],
+      "acceptance_tests": [
+        "starvation metric and boost rule"
+      ],
+      "revisit_triggers": [
+        "zero-share eligible agents"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "RISK_GATING",
+      "topic": "risk_based_assignment_gates",
+      "definition": "HIGH risk tasks require higher trust floor (example trust>=0.60 and n>=5) or human co-sign. MED default trust>=0.45 or prior blend. S canaries allow half-open. Risk gating prevents novices on dangerous mutations.",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "risk to trust floors",
+          "human co-sign HIGH"
+        ],
+        "excluded": [
+          "change management risk"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "HUMAN_ESCALATION",
+        "CONFIDENCE_WEIGHT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.89,
+        "business_value": 0.86,
+        "user_value": 0.87,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.65,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.24,
+        "lock_score": 0.71,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "posterior_importance": 0.7,
+        "update_signal": "n=1 agent assigned HIGH risk protocol change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.89,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Risk floors protect critical tasks",
+          "example": "HIGH needs trust>=0.60 n>=5"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Floors can block all agents",
+          "example": "escalate human"
+        }
+      ],
+      "failure_modes": [
+        "ignore RISK field",
+        "HIGH to any idle"
+      ],
+      "acceptance_tests": [
+        "risk-to-floor table documented"
+      ],
+      "revisit_triggers": [
+        "HIGH to novices"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "REASSIGN_POLICY",
+      "topic": "reassign_on_revise_or_fail",
+      "definition": "On REVISE, default same agent if revise_count<2 and breaker closed; else consider reassign to higher-trust eligible peer. On repeated FAIL, reassign or escalate. Lane correction reassigns when evidence shows wrong lane (content authoring misroutes).",
+      "node_type": "work_unit",
+      "group": "routing",
+      "scope_boundary": {
+        "included": [
+          "same-agent revise default",
+          "reassign rules",
+          "lane correction"
+        ],
+        "excluded": [
+          "support ticket reassign"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "EXPLORATION_FLOOR",
+        "HUMAN_ESCALATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.87,
+        "business_value": 0.85,
+        "user_value": 0.86,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.46,
+        "risk_score": 0.64,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.69,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "third identical revise stays with same failing approach forever",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Reassign escapes local failure modes",
+          "example": "lane correction to content specialist"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too-eager reassign loses context",
+          "example": "prefer same agent for first revise"
+        }
+      ],
+      "failure_modes": [
+        "infinite same-agent revises",
+        "reassign every nit"
+      ],
+      "acceptance_tests": [
+        "reassign policy table"
+      ],
+      "revisit_triggers": [
+        "stuck revise loops"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SHADOW_ROUTE",
+      "topic": "shadow_and_counterfactual",
+      "definition": "Optionally compute counterfactual assignee (who would have been chosen without exploration) and log for offline evaluation of floor tax. Shadow mode does not change live assignment.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "counterfactual log",
+          "offline eval"
+        ],
+        "excluded": [
+          "bandit offline eval"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "EXPLORATION_FLOOR",
+        "DECISION_TRACE",
+        "CAPABILITY_MATCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.8,
+        "user_value": 0.76,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.58,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.27,
+        "lock_score": 0.69,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.22,
+          0.48
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "cannot measure cost of exploration floor",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Shadow logs quantify exploration tax",
+          "example": "compare accept rates"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Extra compute and complexity",
+          "example": "sample 10 percent of tasks"
+        }
+      ],
+      "failure_modes": [
+        "no offline eval",
+        "shadow changes live route"
+      ],
+      "acceptance_tests": [
+        "optional shadow log fields defined"
+      ],
+      "revisit_triggers": [
+        "unknown exploration cost"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CONSTRAINT_SOLVER",
+      "topic": "constraint_satisfaction_order",
+      "definition": "Apply filters in order: (1) hard denials/pattern constraints (2) breaker eligibility (3) risk floors (4) concurrency caps (5) lane match (6) exploration floor lottery (7) tie-break. Ordering makes behavior predictable and testable.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "ordered filter pipeline",
+          "test vectors"
+        ],
+        "excluded": [
+          "rules engines"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "ROUTING_OBJECTIVE",
+        "CAPABILITY_MATCH",
+        "RISK_GATING",
+        "LOAD_BALANCE",
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.86,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.66,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.7,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.69,
+        "update_signal": "filters applied in random order yielding unstable assigns",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stable order makes router unit-testable",
+          "example": "same inputs same assignee"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rigid order may need rare overrides",
+          "example": "log overrides"
+        }
+      ],
+      "failure_modes": [
+        "unordered heuristics",
+        "undocumented overrides"
+      ],
+      "acceptance_tests": [
+        "filter order documented with tests"
+      ],
+      "revisit_triggers": [
+        "unstable assignments"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "BACKPRESSURE",
+      "topic": "queue_backpressure",
+      "definition": "If unassigned queue exceeds threshold (example 10 MED), raise exploration temporarily to idle eligible agents, or escalate for more capacity. Backpressure prevents silent queue growth.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "queue threshold 10 MED",
+          "capacity escalate"
+        ],
+        "excluded": [
+          "streaming backpressure"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "LOAD_BALANCE",
+        "HUMAN_ESCALATION",
+        "SLA_CLASS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.84,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.61,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.7,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "queue of 25 tasks with no alert",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.83,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Backpressure surfaces capacity limits",
+          "example": "alert at 10"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Threshold tuning needed per installation",
+          "example": "start conservative"
+        }
+      ],
+      "failure_modes": [
+        "infinite silent queue",
+        "drop tasks quietly"
+      ],
+      "acceptance_tests": [
+        "queue threshold and action table"
+      ],
+      "revisit_triggers": [
+        "silent queue growth"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "ROUTING_SIM",
+      "topic": "routing_policy_simulation",
+      "definition": "Before changing floor fractions or trust floors, simulate on historical decision traces. Reject policy changes that increase predicted FAIL rate >5 percent absolute without human approval.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "replay traces",
+          "FAIL rate delta 5 percent gate"
+        ],
+        "excluded": [
+          "policy simulators"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "DECISION_TRACE",
+        "SHADOW_ROUTE",
+        "EXPLORATION_FLOOR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.63,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.27,
+        "lock_score": 0.68,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "floor changed live to 50 percent without simulation",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.81,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Sim reduces reckless policy flips",
+          "example": "block >5 percent predicted FAIL rise"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Historical traces miss new task types",
+          "example": "complement with canaries"
+        }
+      ],
+      "failure_modes": [
+        "live flip no sim",
+        "sim without FAIL metric"
+      ],
+      "acceptance_tests": [
+        "policy change requires sim or explicit waiver"
+      ],
+      "revisit_triggers": [
+        "unsimulated flips"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "ELIGIBILITY_SET",
+      "topic": "build_eligibility_set",
+      "definition": "Build candidate set as agents where: active status, breaker allows, risk floor met, concurrency available, lane defined. Empty set => human escalation, never force ineligible assign.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "eligibility predicates",
+          "empty escalates"
+        ],
+        "excluded": [
+          "RBAC allow lists"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "RISK_GATING",
+        "LOAD_BALANCE",
+        "CANARY_ROUTING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.91,
+        "business_value": 0.88,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.64,
+        "confidence_score": 0.64,
+        "revisit_pressure": 0.22,
+        "lock_score": 0.72,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.82,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.12,
+          0.34
+        ],
+        "posterior_importance": 0.74,
+        "update_signal": "router assigns DEGRADED agent because set building skipped",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Eligibility set is hard safety boundary",
+          "example": "empty escalates"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-tight predicates empty set often",
+          "example": "widen with priors carefully"
+        }
+      ],
+      "failure_modes": [
+        "skip eligibility",
+        "force assign ineligible"
+      ],
+      "acceptance_tests": [
+        "predicates listed; empty set escalates"
+      ],
+      "revisit_triggers": [
+        "ineligible assigns"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "ROUTING_OBJECTIVE",
+      "to": "CAPABILITY_MATCH",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "match serves objective",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_002",
+      "from": "ROUTING_OBJECTIVE",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "floor in objective",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_003",
+      "from": "ROUTING_OBJECTIVE",
+      "to": "CONFIDENCE_WEIGHT",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "uncertainty in objective",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_004",
+      "from": "ROUTING_OBJECTIVE",
+      "to": "CONSTRAINT_SOLVER",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "solver implements objective",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_005",
+      "from": "CAPABILITY_MATCH",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "explore among matched",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_006",
+      "from": "CAPABILITY_MATCH",
+      "to": "LOAD_BALANCE",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "load among matched",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_007",
+      "from": "CAPABILITY_MATCH",
+      "to": "MULTI_AGENT_SPLIT",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "split uses match",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_008",
+      "from": "CAPABILITY_MATCH",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "eligibility includes match",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_009",
+      "from": "CAPABILITY_MATCH",
+      "to": "POOL_AWARD",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "award uses match",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_010",
+      "from": "EXPLORATION_FLOOR",
+      "to": "CANARY_ROUTING",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "canaries are exploration",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_011",
+      "from": "EXPLORATION_FLOOR",
+      "to": "TIE_BREAK",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "ties interact with floor",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_012",
+      "from": "EXPLORATION_FLOOR",
+      "to": "STARVATION_DETECT",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "floor failures show as starve",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_013",
+      "from": "EXPLORATION_FLOOR",
+      "to": "SHADOW_ROUTE",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "shadow measures floor tax",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_014",
+      "from": "CONFIDENCE_WEIGHT",
+      "to": "HUMAN_ESCALATION",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "low conf escalates",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_015",
+      "from": "CONFIDENCE_WEIGHT",
+      "to": "RISK_GATING",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "risk uses confidence/n",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_016",
+      "from": "HUMAN_ESCALATION",
+      "to": "SLA_CLASS",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "escalation has SLA",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_017",
+      "from": "HUMAN_ESCALATION",
+      "to": "BACKPRESSURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "capacity escalate",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_018",
+      "from": "LOAD_BALANCE",
+      "to": "TIE_BREAK",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "load in tie-break",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_019",
+      "from": "LOAD_BALANCE",
+      "to": "POOL_AWARD",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "award respects load",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_020",
+      "from": "LOAD_BALANCE",
+      "to": "BACKPRESSURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "load links queue",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_021",
+      "from": "CANARY_ROUTING",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "half-open eligibility",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_022",
+      "from": "TIE_BREAK",
+      "to": "DECISION_TRACE",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "trace includes tie path",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_023",
+      "from": "DECISION_TRACE",
+      "to": "SHADOW_ROUTE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "shadow uses traces",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_024",
+      "from": "DECISION_TRACE",
+      "to": "ROUTING_SIM",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "sim replays traces",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_025",
+      "from": "DECISION_TRACE",
+      "to": "STARVATION_DETECT",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "traces prove shares",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_026",
+      "from": "SLA_CLASS",
+      "to": "BACKPRESSURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "SLA pressure from queue",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_027",
+      "from": "RISK_GATING",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "risk filters eligible",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_028",
+      "from": "RISK_GATING",
+      "to": "REASSIGN_POLICY",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "risk on reassign",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_029",
+      "from": "MULTI_AGENT_SPLIT",
+      "to": "REASSIGN_POLICY",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "split on re-verify",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_030",
+      "from": "CONSTRAINT_SOLVER",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "solver builds set first",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_031",
+      "from": "ELIGIBILITY_SET",
+      "to": "CAPABILITY_MATCH",
+      "edge_type": "constraint",
+      "relation_strength": 0.94,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.33,
+      "prior_relation_strength": 0.94,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "never assign outside eligible",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_032",
+      "from": "MULTI_AGENT_SPLIT",
+      "to": "POOL_AWARD",
+      "edge_type": "constraint",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "award cannot make builder=xverify",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_033",
+      "from": "ELIGIBILITY_SET",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "sequence",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "eligible then explore lottery",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_034",
+      "from": "CONSTRAINT_SOLVER",
+      "to": "DECISION_TRACE",
+      "edge_type": "sequence",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "decide then log",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_035",
+      "from": "STARVATION_DETECT",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "starve boosts floor",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_036",
+      "from": "ROUTING_SIM",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "feedback",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.76,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "sim tunes floor",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_037",
+      "from": "SHADOW_ROUTE",
+      "to": "ROUTING_SIM",
+      "edge_type": "similarity",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "both offline policy tools",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_038",
+      "from": "EXPLORATION_FLOOR",
+      "to": "CAPABILITY_MATCH",
+      "edge_type": "conflict",
+      "relation_strength": 0.8,
+      "signed_tension": -0.45,
+      "edge_score": 0.28,
+      "edge_heat": 0.36,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.28,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "always pick best vs force exploration",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "argmax among eligible except floor slots for challenger/canary"
+    },
+    {
+      "id": "EDGE_039",
+      "from": "RISK_GATING",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "conflict",
+      "relation_strength": 0.78,
+      "signed_tension": -0.45,
+      "edge_score": 0.28,
+      "edge_heat": 0.35,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.28,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "HIGH risk floors vs need to explore novices",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "explore on MED/S; HIGH requires trust floors or human"
+    },
+    {
+      "id": "EDGE_040",
+      "from": "LOAD_BALANCE",
+      "to": "SLA_CLASS",
+      "edge_type": "conflict",
+      "relation_strength": 0.74,
+      "signed_tension": -0.45,
+      "edge_score": 0.26,
+      "edge_heat": 0.34,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.26,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "spread load vs meet priority SLA",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "priority first within concurrency caps"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "exploit_vs_explore",
+      "description": "Best agent vs floor for others",
+      "poles": [
+        "always leader",
+        "high random"
+      ],
+      "resolution_hint": ">=1/5 floor",
+      "affected_nodes": [
+        "EXPLORATION_FLOOR",
+        "CAPABILITY_MATCH",
+        "STARVATION_DETECT"
+      ],
+      "id": "CA_01"
+    },
+    {
+      "name": "risk_vs_learning",
+      "description": "HIGH floors vs novice exploration",
+      "poles": [
+        "only veterans on all",
+        "anyone on HIGH"
+      ],
+      "resolution_hint": "HIGH floors; explore MED/S",
+      "affected_nodes": [
+        "RISK_GATING",
+        "EXPLORATION_FLOOR",
+        "CANARY_ROUTING"
+      ],
+      "id": "CA_02"
+    },
+    {
+      "name": "load_vs_sla",
+      "description": "Spread work vs hit priority SLA",
+      "poles": [
+        "perfect balance",
+        "always priority pile-on"
+      ],
+      "resolution_hint": "priority within caps",
+      "affected_nodes": [
+        "LOAD_BALANCE",
+        "SLA_CLASS",
+        "BACKPRESSURE"
+      ],
+      "id": "CA_03"
+    },
+    {
+      "name": "same_agent_revise_vs_reassign",
+      "description": "Context continuity vs escape failure",
+      "poles": [
+        "always same",
+        "always reassign"
+      ],
+      "resolution_hint": "same for first revise; then consider reassign",
+      "affected_nodes": [
+        "REASSIGN_POLICY",
+        "MULTI_AGENT_SPLIT"
+      ],
+      "id": "CA_04"
+    },
+    {
+      "name": "claim_race_vs_award",
+      "description": "First claim vs ruled award",
+      "poles": [
+        "first wins",
+        "slow central award"
+      ],
+      "resolution_hint": "claims data; award by rules",
+      "affected_nodes": [
+        "POOL_AWARD",
+        "ELIGIBILITY_SET"
+      ],
+      "id": "CA_05"
+    },
+    {
+      "name": "trace_cost_vs_audit",
+      "description": "Logging cost vs debuggability",
+      "poles": [
+        "no traces",
+        "log everything forever"
+      ],
+      "resolution_hint": "schema traces retain 90d",
+      "affected_nodes": [
+        "DECISION_TRACE",
+        "SHADOW_ROUTE"
+      ],
+      "id": "CA_06"
+    },
+    {
+      "name": "empty_eligible_vs_force",
+      "description": "Escalate vs force ineligible",
+      "poles": [
+        "always escalate",
+        "force anyone"
+      ],
+      "resolution_hint": "never force; escalate",
+      "affected_nodes": [
+        "ELIGIBILITY_SET",
+        "HUMAN_ESCALATION"
+      ],
+      "id": "CA_07"
+    },
+    {
+      "name": "sim_gate_vs_agility",
+      "description": "Require sim vs flip policy fast",
+      "poles": [
+        "sim always",
+        "live flip always"
+      ],
+      "resolution_hint": "sim or waiver on policy change",
+      "affected_nodes": [
+        "ROUTING_SIM",
+        "EXPLORATION_FLOOR"
+      ],
+      "id": "CA_08"
+    },
+    {
+      "name": "confidence_vs_equal_weight",
+      "description": "Trust confident judges vs equal",
+      "poles": [
+        "always conf weight",
+        "never"
+      ],
+      "resolution_hint": "only if ECE<=0.15",
+      "affected_nodes": [
+        "CONFIDENCE_WEIGHT",
+        "HUMAN_ESCALATION"
+      ],
+      "id": "CA_09"
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "Leader monopoly for 30d",
+      "trigger": "no floor",
+      "affected_nodes": [
+        "EXPLORATION_FLOOR",
+        "STARVATION_DETECT"
+      ],
+      "mitigation": "enforce 1/5 floor",
+      "severity": "high",
+      "id": "EC_01"
+    },
+    {
+      "description": "Builder==xverify",
+      "trigger": "split skipped",
+      "affected_nodes": [
+        "MULTI_AGENT_SPLIT",
+        "POOL_AWARD"
+      ],
+      "mitigation": "hard deny",
+      "severity": "high",
+      "id": "EC_02"
+    },
+    {
+      "description": "Half-open gets MED build",
+      "trigger": "canary rules skipped",
+      "affected_nodes": [
+        "CANARY_ROUTING",
+        "ELIGIBILITY_SET"
+      ],
+      "mitigation": "S only",
+      "severity": "high",
+      "id": "EC_03"
+    },
+    {
+      "description": "Empty eligible set silent assign",
+      "trigger": "no escalation",
+      "affected_nodes": [
+        "ELIGIBILITY_SET",
+        "HUMAN_ESCALATION"
+      ],
+      "mitigation": "escalate",
+      "severity": "high",
+      "id": "EC_04"
+    },
+    {
+      "description": "HIGH risk to n=1 agent",
+      "trigger": "risk floor missing",
+      "affected_nodes": [
+        "RISK_GATING",
+        "CONFIDENCE_WEIGHT"
+      ],
+      "mitigation": "floor or human co-sign",
+      "severity": "high",
+      "id": "EC_05"
+    },
+    {
+      "description": "Queue grows to 25 unnoticed",
+      "trigger": "no backpressure",
+      "affected_nodes": [
+        "BACKPRESSURE",
+        "SLA_CLASS"
+      ],
+      "mitigation": "threshold alert",
+      "severity": "medium",
+      "id": "EC_06"
+    },
+    {
+      "description": "Near-tie always same winner",
+      "trigger": "no tie-break fairness",
+      "affected_nodes": [
+        "TIE_BREAK",
+        "LOAD_BALANCE"
+      ],
+      "mitigation": "recency fairness",
+      "severity": "medium",
+      "id": "EC_07"
+    },
+    {
+      "description": "Stuck on third identical revise",
+      "trigger": "no reassign",
+      "affected_nodes": [
+        "REASSIGN_POLICY",
+        "CAPABILITY_MATCH"
+      ],
+      "mitigation": "reassign or lane correct",
+      "severity": "medium",
+      "id": "EC_08"
+    },
+    {
+      "description": "Invalid pool claim awarded",
+      "trigger": "first-claim wins",
+      "affected_nodes": [
+        "POOL_AWARD",
+        "ELIGIBILITY_SET"
+      ],
+      "mitigation": "ruled award",
+      "severity": "medium",
+      "id": "EC_09"
+    },
+    {
+      "description": "Policy floor flipped live without sim",
+      "trigger": "no ROUTING_SIM",
+      "affected_nodes": [
+        "ROUTING_SIM",
+        "EXPLORATION_FLOOR"
+      ],
+      "mitigation": "sim or waiver",
+      "severity": "medium",
+      "id": "EC_10"
+    },
+    {
+      "description": "Cannot explain assignment",
+      "trigger": "no decision trace",
+      "affected_nodes": [
+        "DECISION_TRACE",
+        "SHADOW_ROUTE"
+      ],
+      "mitigation": "require traces",
+      "severity": "low",
+      "id": "EC_11"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "read_competence",
+      "node_ref": "CAPABILITY_MATCH",
+      "description": "Load competence vectors",
+      "artifact": "vectors",
+      "gate": "freshness ok",
+      "id": "WF_01",
+      "step": 1
+    },
+    {
+      "action": "build_eligible",
+      "node_ref": "ELIGIBILITY_SET",
+      "description": "Apply predicates",
+      "artifact": "eligible set",
+      "gate": "nonempty or escalate",
+      "id": "WF_02",
+      "step": 2
+    },
+    {
+      "action": "apply_risk",
+      "node_ref": "RISK_GATING",
+      "description": "Filter by RISK floors",
+      "artifact": "risk-filtered set",
+      "gate": "HIGH floors applied",
+      "id": "WF_03",
+      "step": 3
+    },
+    {
+      "action": "apply_load",
+      "node_ref": "LOAD_BALANCE",
+      "description": "Drop over-cap agents",
+      "artifact": "load-filtered",
+      "gate": "caps applied",
+      "id": "WF_04",
+      "step": 4
+    },
+    {
+      "action": "exploration_slot",
+      "node_ref": "EXPLORATION_FLOOR",
+      "description": "Decide exploit vs explore slot",
+      "artifact": "slot type",
+      "gate": "floor accounting updated",
+      "id": "WF_05",
+      "step": 5
+    },
+    {
+      "action": "choose_agent",
+      "node_ref": "CONSTRAINT_SOLVER",
+      "description": "Argmax or challenger via ordered filters",
+      "artifact": "assignee",
+      "gate": "deterministic",
+      "id": "WF_06",
+      "step": 6
+    },
+    {
+      "action": "split_xverify",
+      "node_ref": "MULTI_AGENT_SPLIT",
+      "description": "Pick distinct verifier if pattern needs",
+      "artifact": "xverify assignee",
+      "gate": "builder!=xverify",
+      "id": "WF_07",
+      "step": 7
+    },
+    {
+      "action": "log_trace",
+      "node_ref": "DECISION_TRACE",
+      "description": "Write decision trace",
+      "artifact": "trace",
+      "gate": "schema valid",
+      "id": "WF_08",
+      "step": 8
+    },
+    {
+      "action": "check_sla_queue",
+      "node_ref": "BACKPRESSURE",
+      "description": "Queue and SLA checks",
+      "artifact": "alerts",
+      "gate": "thresholds evaluated",
+      "id": "WF_09",
+      "step": 9
+    },
+    {
+      "action": "escalate_if_needed",
+      "node_ref": "HUMAN_ESCALATION",
+      "description": "Human path if thresholds hit",
+      "artifact": "escalation ticket",
+      "gate": "if required",
+      "id": "WF_10",
+      "step": 10
+    },
+    {
+      "action": "shadow_optional",
+      "node_ref": "SHADOW_ROUTE",
+      "description": "Log counterfactual",
+      "artifact": "shadow",
+      "gate": "optional",
+      "id": "WF_11",
+      "step": 11
+    }
+  ],
+  "priority_order": [
+    "ROUTING_OBJECTIVE",
+    "HUMAN_ESCALATION",
+    "EXPLORATION_FLOOR",
+    "CONSTRAINT_SOLVER",
+    "CAPABILITY_MATCH",
+    "MULTI_AGENT_SPLIT",
+    "RISK_GATING",
+    "ELIGIBILITY_SET",
+    "CONFIDENCE_WEIGHT",
+    "CANARY_ROUTING",
+    "REASSIGN_POLICY",
+    "STARVATION_DETECT",
+    "POOL_AWARD",
+    "ROUTING_SIM",
+    "DECISION_TRACE",
+    "BACKPRESSURE",
+    "LOAD_BALANCE",
+    "SLA_CLASS",
+    "TIE_BREAK",
+    "SHADOW_ROUTE"
+  ],
+  "priority_rationale": "Eligibility and role-split dominate convenience; exploration floors dominate pure exploitation; escalation dominates forced ineligible assigns.",
+  "dominance_rules": [
+    {
+      "rule": "eligibility_over_preference",
+      "rationale": "safety",
+      "trigger": "assignment",
+      "action": "never assign ineligible",
+      "id": "DR_01",
+      "priority": 1
+    },
+    {
+      "rule": "split_over_convenience",
+      "rationale": "no self-grade",
+      "trigger": "xverify pattern",
+      "action": "distinct agents",
+      "id": "DR_02",
+      "priority": 2
+    },
+    {
+      "rule": "floor_over_pure_exploit",
+      "rationale": "recovery and identification",
+      "trigger": "lane monopoly risk",
+      "action": "enforce >=1/5",
+      "id": "DR_03",
+      "priority": 3
+    },
+    {
+      "rule": "risk_floors_over_idle_fill",
+      "rationale": "critical tasks",
+      "trigger": "HIGH risk",
+      "action": "apply trust/n floors",
+      "id": "DR_04",
+      "priority": 1
+    },
+    {
+      "rule": "escalate_over_force",
+      "rationale": "empty eligible",
+      "trigger": "no candidates",
+      "action": "human escalate",
+      "id": "DR_05",
+      "priority": 2
+    },
+    {
+      "rule": "priority_within_caps",
+      "rationale": "SLA with quality",
+      "trigger": "load vs priority",
+      "action": "priority inside concurrency caps",
+      "id": "DR_06",
+      "priority": 3
+    },
+    {
+      "rule": "trace_over_opacity",
+      "rationale": "audit",
+      "trigger": "every assign",
+      "action": "write decision trace",
+      "id": "DR_07",
+      "priority": 1
+    },
+    {
+      "rule": "sim_before_policy_flip",
+      "rationale": "stability",
+      "trigger": "floor/weight change",
+      "action": "simulate or waiver",
+      "id": "DR_08",
+      "priority": 2
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "no_assign_ineligible",
+      "prevents": "breaker/risk bypass",
+      "id": "ARR_01"
+    },
+    {
+      "rule": "no_builder_equals_xverify",
+      "prevents": "self-grade structural failure",
+      "id": "ARR_02"
+    },
+    {
+      "rule": "no_leader_100_percent_lane",
+      "prevents": "starvation and unidentifiable metrics",
+      "id": "ARR_03"
+    },
+    {
+      "rule": "no_half_open_full_traffic",
+      "prevents": "recovery overreach",
+      "id": "ARR_04"
+    },
+    {
+      "rule": "no_silent_empty_eligible",
+      "prevents": "forced bad assigns",
+      "id": "ARR_05"
+    },
+    {
+      "rule": "no_first_claim_auto_award",
+      "prevents": "racey invalid claims",
+      "id": "ARR_06"
+    },
+    {
+      "rule": "no_untraced_assignment",
+      "prevents": "unauditable routing",
+      "id": "ARR_07"
+    },
+    {
+      "rule": "no_unsimulated_floor_flip",
+      "prevents": "reckless policy swings",
+      "id": "ARR_08"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "empty eligibility set",
+      "action": "escalate human; do not force",
+      "nodes": [
+        "ELIGIBILITY_SET",
+        "HUMAN_ESCALATION"
+      ],
+      "priority": 1,
+      "id": "IP_01"
+    },
+    {
+      "trigger": "starvation flag",
+      "action": "boost exploration probability",
+      "nodes": [
+        "STARVATION_DETECT",
+        "EXPLORATION_FLOOR"
+      ],
+      "priority": 2,
+      "id": "IP_02"
+    },
+    {
+      "trigger": "builder==xverify attempt",
+      "action": "deny; re-pick verifier",
+      "nodes": [
+        "MULTI_AGENT_SPLIT",
+        "POOL_AWARD"
+      ],
+      "priority": 1,
+      "id": "IP_03"
+    },
+    {
+      "trigger": "HIGH risk below floor",
+      "action": "human co-sign or reassign",
+      "nodes": [
+        "RISK_GATING",
+        "HUMAN_ESCALATION"
+      ],
+      "priority": 1,
+      "id": "IP_04"
+    },
+    {
+      "trigger": "queue > threshold",
+      "action": "backpressure actions",
+      "nodes": [
+        "BACKPRESSURE",
+        "SLA_CLASS",
+        "LOAD_BALANCE"
+      ],
+      "priority": 2,
+      "id": "IP_05"
+    },
+    {
+      "trigger": "stuck revise_count>=2 same failure",
+      "action": "reassign or lane correct",
+      "nodes": [
+        "REASSIGN_POLICY",
+        "CAPABILITY_MATCH"
+      ],
+      "priority": 2,
+      "id": "IP_06"
+    },
+    {
+      "trigger": "policy change proposed",
+      "action": "run ROUTING_SIM",
+      "nodes": [
+        "ROUTING_SIM",
+        "SHADOW_ROUTE",
+        "EXPLORATION_FLOOR"
+      ],
+      "priority": 3,
+      "id": "IP_07"
+    }
+  ],
+  "validation_protocol": {
+    "required_checks": [
+      "all node ids unique",
+      "all edge ids unique EDGE_XXX format",
+      "all from/to in edges reference valid node ids",
+      "all competency_question_refs resolve to valid CQ ids",
+      "all evidence_refs resolve to valid source_registry ids",
+      "all priority_order entries are valid node ids with no duplicates",
+      "high_risk_nodes (risk_if_wrong>=0.80) have non-empty acceptance_tests and human_review_required=true",
+      "high_coupling_nodes (cross_topic_coupling>=0.75) have non-empty revisit_triggers",
+      "conflict edges have signed_tension<0 and resolution_rule present",
+      "dependency edges form no cycles",
+      "observed_impact=0.0 for all nodes (no observed data)",
+      "SRC_HEURISTIC_PRIOR in source_registry",
+      "19-24 nodes, 32-40 edges, 8-10 conflict_axes, 10-12 edge_cases, 9-12 workflow steps",
+      "schema_version=1.3"
+    ],
+    "post_formula_checks": [
+      "all derived fields non-zero after compute run",
+      "final_importance in [0,1] for all nodes",
+      "risk_score, confidence_score, revisit_pressure, lock_score in [0,1]",
+      "posterior_importance in [0,1]",
+      "edge_priority, edge_score, edge_heat in [0,1]"
+    ]
+  },
+  "validation_report": {
+    "status": "pending",
+    "last_validated": null,
+    "validator_version": null,
+    "failed_checks": [],
+    "passed_checks": [],
+    "notes": "built by kb_forge.py; run validators/kb_validator.py --mode dense to certify"
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_eligibility_floor_split_escalation_and_traces",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "smallest meaningful instance in this domain",
+        "expected_properties": [
+          "highest-priority node engaged first",
+          "obligations enforced"
+        ]
+      }
+    ],
+    "metrics": [
+      "coverage",
+      "consistency",
+      "obligation_adherence"
+    ],
+    "regression_policy": "re-run evaluation suite after any node addition or formula change",
+    "minimum_pass_conditions": [
+      "all required checks pass",
+      "no formula mismatches"
+    ]
+  },
+  "traceability_matrix": [
+    {
+      "node_id": "ROUTING_OBJECTIVE",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CAPABILITY_MATCH",
+      "workflow_steps": [
+        "WF_01"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "EXPLORATION_FLOOR",
+      "workflow_steps": [
+        "WF_05"
+      ],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "conflict_axes": [
+        "CA_01",
+        "CA_02",
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CONFIDENCE_WEIGHT",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "HUMAN_ESCALATION",
+      "workflow_steps": [
+        "WF_10"
+      ],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_07",
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "LOAD_BALANCE",
+      "workflow_steps": [
+        "WF_04"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_07"
+      ],
+      "conflict_axes": [
+        "CA_03"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CANARY_ROUTING",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_02"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "TIE_BREAK",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_07"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "DECISION_TRACE",
+      "workflow_steps": [
+        "WF_08"
+      ],
+      "competency_questions": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SLA_CLASS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "conflict_axes": [
+        "CA_03"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "MULTI_AGENT_SPLIT",
+      "workflow_steps": [
+        "WF_07"
+      ],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "POOL_AWARD",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_05"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "STARVATION_DETECT",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "RISK_GATING",
+      "workflow_steps": [
+        "WF_03"
+      ],
+      "competency_questions": [
+        "CQ_06",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_02"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "REASSIGN_POLICY",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SHADOW_ROUTE",
+      "workflow_steps": [
+        "WF_11"
+      ],
+      "competency_questions": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CONSTRAINT_SOLVER",
+      "workflow_steps": [
+        "WF_06"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_10"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "BACKPRESSURE",
+      "workflow_steps": [
+        "WF_09"
+      ],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_03"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "ROUTING_SIM",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_05",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "ELIGIBILITY_SET",
+      "workflow_steps": [
+        "WF_02"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_05",
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    }
+  ],
+  "change_control": {
+    "version": "1.0.0",
+    "created": "2026-07-13",
+    "change_log": [],
+    "review_required_for": [
+      "node addition",
+      "edge type change",
+      "dominance_rule change",
+      "scope boundary change"
+    ]
+  }
+}
