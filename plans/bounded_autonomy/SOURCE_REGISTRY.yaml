@@ -1,0 +1,854 @@
+# SOURCE_REGISTRY.yaml — SPEC Phase 3 deliverable
+# Bounded-Autonomy AI Intelligence System
+# Generated 2026-07-13. Requirements source: plans/bounded_autonomy/SPEC.md (Phase 3).
+# Seed provenance: incoming/task-013__ai-prod-sources/SOURCES.md (every seed URL
+# from that file was HTTP-checked 200 on 2026-07-13 by TASK-013). Rows added in
+# this session that could NOT be re-verified (session proxy returned 403/blocked
+# for github.com, arxiv rss, x.ai, openai dev portal, huggingface.co) are marked
+# verification: UNVERIFIED — the URLs are well-known but must be HTTP-checked
+# before the poller is enabled against them.
+# Discipline applied: libarch (appraise authority/proximity/bias before trust;
+# vendor flags carried, not hidden; evidence labels over apparent precision),
+# infosci (stable ids, controlled type/tier enums), kr (scores are declared
+# null-until-observed rather than invented — heuristic priors stay labeled).
+
+_schema:
+  version: "1.0.0"
+  status: draft_for_review
+  id_policy: "source_id is snake_case, stable forever; never reused. Renaming a source keeps the id."
+  scoring_policy: >
+    accuracy_history, snr_score, duplicate_rate, and relevance are OBSERVED
+    metrics computed by the pipeline from this system's own ingestion history.
+    They start null with bootstrap: true and are first populated after a 30-day
+    observation window (monthly source-quality review). No score in this file
+    may be hand-invented; a null score is information, not a defect.
+  source_fields:
+    # Every per-source field required by SPEC Phase 3, with types.
+    source_id: "string, snake_case, unique, stable (SPEC: Source ID)"
+    url: "string|null — exact canonical URL, account, or repository (SPEC: exact feed, API, repository, account, or URL)"
+    feed: "string|null — machine-pollable feed endpoint (RSS/Atom/JSON) if distinct from url"
+    api: "string|null — API endpoint if polled via API rather than feed/scrape"
+    type: "enum: official_docs | changelog_release_notes | repository_releases | paper_listing | paper | benchmark | blog | engineering_writeup | newsletter | podcast | youtube_channel | conference_talks | x_list | aggregator | case_study"
+    tier: "enum: A | B | C (SPEC tiering: A=primary evidence, B=early signals, C=synthesis/interpretation)"
+    topics: "list of topic ids from TOPIC_ONTOLOGY.yaml (SPEC: topic coverage)"
+    expected_latency: "enum: minutes | hours | days | weekly | monthly — typical lag behind the original event (SPEC: expected update latency)"
+    poll_mechanism: "enum: webhook | rss_event | rss_daily | api_poll_1_3h | api_poll_daily | scrape_daily | static | none (SPEC: polling/event mechanism). Must be consistent with cadence_policy."
+    accuracy_history: "number 0..1 | null — fraction of this source's claims that later verified (SPEC: accuracy history)"
+    snr_score: "number 0..1 | null — fraction of ingested items that were decision-relevant (SPEC: signal-to-noise score)"
+    duplicate_rate: "number 0..1 | null — fraction of items already ingested from an earlier source (SPEC: duplicate rate)"
+    relevance: "number 0..1 | null — observed topical relevance to subscribed projects (SPEC: relevance score)"
+    primary_proximity: "enum: primary | near_primary | secondary | aggregator (SPEC: primary-source proximity). Structural property, assessable at registration."
+    repro_availability: "enum: always | frequent | occasional | rare | none (SPEC: code/reproducibility availability)"
+    license_constraints: "string — license and ingestion constraints (SPEC). Default posture: store hash+extract+link; do not republish full text."
+    rate_limits_cost: "string — rate limits and estimated cost (SPEC)"
+    enabled: "boolean (SPEC: enabled/disabled status). Rows with verification UNVERIFIED or status pending_resolution must be enabled: false until checked."
+    # Registry-management fields (beyond SPEC minimum):
+    bootstrap: "boolean — true until first monthly source-quality review populates scores"
+    bias_flags: "list of strings — vendor/incentive flags carried verbatim from appraisal (e.g. 'vendor: LangChain'). A flag is a weighting input, not a ban."
+    status: "enum: active | probation | pending_resolution | disabled_dead_link | pruned"
+    verification: "string — how/when the URL was last confirmed live; 'UNVERIFIED' if never confirmed by this system"
+    provenance: "string — how this source entered the registry (seed list, discovery edge, human)"
+    notes: "string|null"
+
+cadence_policy:
+  # SPEC Phase 3, verbatim:
+  spec_verbatim: |
+    Initial suggested cadence:
+
+    - Webhooks or release feeds: event-driven where possible
+    - Official announcements and high-priority X lists: metadata check every 1–3 hours
+    - Repositories, package releases, papers, and documentation: daily
+    - Newsletter and podcast RSS: on publication or daily
+    - Daily project-specific digest
+    - Weekly architecture and technique synthesis
+    - Monthly source-quality and source-pruning review
+
+    Only invoke expensive model analysis when new or materially changed content is detected.
+  implementation_note: >
+    poll_mechanism on each row maps onto these lines: webhook/rss_event =
+    event-driven; api_poll_1_3h = official announcements and high-priority X
+    lists; api_poll_daily/rss_daily/scrape_daily = repositories, packages,
+    papers, docs, newsletters, podcasts. "Materially changed" is decided by
+    normalized_hash comparison (see DATA_SCHEMAS.md content_hash spec), never
+    by a model call.
+
+discovery_expansion:
+  spec_verbatim: >
+    The source-discovery process must expand from seed sources through
+    citations, maintainers, repository contributors, referenced
+    implementations, conference programs, and repeated first-to-signal
+    performance. Rank sources by demonstrated value, not follower count.
+  expansion_edges:
+    - edge: citation
+      rule: "Papers cited by (or citing) an ingested Tier-A paper become candidate sources; the paper's venue/author feed becomes a candidate feed."
+    - edge: maintainer
+      rule: "Maintainers of registered Tier-A repositories: their blogs/accounts become Tier-B candidates."
+    - edge: contributor
+      rule: "Recurring top contributors to registered repositories: same treatment as maintainers, lower initial weight."
+    - edge: referenced_implementation
+      rule: "Implementations referenced by evidence records (repos, gists with runnable code) become candidate Tier-A repository sources."
+    - edge: conference_program
+      rule: "Accepted-talk programs of conferences already producing verified evidence (e.g. the AI Engineer talk stream) are polled for new speaker/project sources."
+    - edge: first_to_signal
+      rule: "A source that is repeatedly FIRST to surface items later confirmed by Tier-A evidence earns first_to_signal credits; enough credits triggers a promotion proposal."
+  candidate_intake:
+    - "New candidates enter with status: probation, bootstrap: true, all observed scores null, enabled per human approval."
+    - "Minimum 30 days of observation before any tier promotion."
+  ranking_rule:
+    - "Rank by demonstrated value: accuracy_history, snr_score, first_to_signal credits, primary_proximity, and per-project relevance."
+    - "Follower counts, subscriber counts, and stars are NOT ranking inputs (SPEC verbatim: rank by demonstrated value, not follower count)."
+  change_control:
+    - "Adding/removing sources and changing polling frequency are bounded self-evolution proposals (SPEC Phase 11): the system proposes with before/after evidence; application follows AUTONOMY_POLICY.yaml. Monthly source-pruning review is the scheduled venue."
+
+sources:
+  # =====================================================================
+  # SEED ENTRIES — converted from TASK-013 SOURCES.md (link-verified 2026-07-13).
+  # Scores null + bootstrap true per scoring_policy.
+  # =====================================================================
+
+  - source_id: latent_space
+    url: "https://www.latent.space/"
+    feed: "https://www.latent.space/podcast"
+    api: null
+    type: podcast
+    tier: C
+    topics: [agent_loops, coding_agents, evaluation_frameworks, deployment_infrastructure, tool_use_mcp]
+    expected_latency: days
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: secondary
+    repro_availability: occasional
+    license_constraints: "Public web/podcast; store extract+link, no full-text republication."
+    rate_limits_cost: "Free; polite crawl."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 podcast #1 + newsletter #6 (canonical single entry)"
+    notes: "Top-5 starter pack; closest match to how teams actually run agent systems. Podcast + written deep dives, one registry entry."
+
+  - source_id: simon_willison_weblog
+    url: "https://simonwillison.net/"
+    feed: null
+    api: null
+    type: blog
+    tier: B
+    topics: [coding_agents, tool_use_mcp, security_prompt_injection, agent_loops, context_engineering]
+    expected_latency: hours
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: near_primary
+    repro_availability: frequent
+    license_constraints: "CC-licensed blog content; extract+link."
+    rate_limits_cost: "Free; polite crawl."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #5"
+    notes: "Practitioner ground truth on tool loops and prompt injection; frequently first-to-signal on injection findings. Feed endpoint to be confirmed at poller setup."
+
+  - source_id: import_ai
+    url: "https://jack-clark.net/"
+    feed: null
+    api: null
+    type: newsletter
+    tier: C
+    topics: [multi_agent_coordination, security_prompt_injection, evaluation_frameworks, fine_tuning_adaptation]
+    expected_latency: weekly
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: secondary
+    repro_availability: rare
+    license_constraints: "Newsletter; extract+link."
+    rate_limits_cost: "Free."
+    enabled: true
+    bootstrap: true
+    bias_flags: ["outlet: Anthropic co-founder as author — incentive flag, not a ban"]
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #1"
+    notes: "Excellent early paper-spotting; treat as discovery, follow into primary."
+
+  - source_id: the_batch
+    url: "https://www.deeplearning.ai/the-batch"
+    feed: null
+    api: null
+    type: newsletter
+    tier: C
+    topics: [agent_loops, coding_agents, evaluation_frameworks, multimodal_generation]
+    expected_latency: weekly
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: secondary
+    repro_availability: rare
+    license_constraints: "Newsletter; extract+link."
+    rate_limits_cost: "Free."
+    enabled: true
+    bootstrap: true
+    bias_flags: ["vendor: DeepLearning.AI"]
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #2"
+
+  - source_id: interconnects
+    url: "https://www.interconnects.ai/"
+    feed: null
+    api: null
+    type: newsletter
+    tier: C
+    topics: [fine_tuning_adaptation, model_routing, evaluation_frameworks]
+    expected_latency: days
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: near_primary
+    repro_availability: occasional
+    license_constraints: "Substack newsletter; extract+link."
+    rate_limits_cost: "Free tier sufficient."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #3"
+    notes: "Post-training/RL context for why agent stacks behave as they do."
+
+  - source_id: ahead_of_ai
+    url: "https://magazine.sebastianraschka.com/"
+    feed: null
+    api: null
+    type: newsletter
+    tier: C
+    topics: [fine_tuning_adaptation, context_engineering, evaluation_frameworks]
+    expected_latency: weekly
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: secondary
+    repro_availability: frequent
+    license_constraints: "Substack newsletter; extract+link."
+    rate_limits_cost: "Free tier sufficient."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #4"
+    notes: "Use when agent failures trace back to model/architecture limits."
+
+  - source_id: langchain_blog
+    url: "https://blog.langchain.com/"
+    feed: null
+    api: null
+    type: engineering_writeup
+    tier: B
+    topics: [supervisor_worker, multi_agent_coordination, observability, agent_loops, memory_retrieval]
+    expected_latency: days
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: near_primary
+    repro_availability: frequent
+    license_constraints: "Company blog; extract+link."
+    rate_limits_cost: "Free."
+    enabled: true
+    bootstrap: true
+    bias_flags: ["vendor: LangChain — framework-primary narrative"]
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #7"
+
+  - source_id: anthropic_engineering
+    url: "https://www.anthropic.com/engineering"
+    feed: null
+    api: null
+    type: engineering_writeup
+    tier: A
+    topics: [agent_loops, tool_use_mcp, context_compaction, computer_use_agents, evaluation_frameworks, security_prompt_injection]
+    expected_latency: days
+    poll_mechanism: scrape_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: occasional
+    license_constraints: "Vendor site; extract+link."
+    rate_limits_cost: "Free; polite crawl."
+    enabled: true
+    bootstrap: true
+    bias_flags: ["vendor: Anthropic"]
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #8 (research hub https://www.anthropic.com/research cross-ref)"
+    notes: "Tier A as maintainer announcements/engineering write-ups from a frontier lab; vendor flag still applies to comparative claims."
+
+  - source_id: hugging_face_blog
+    url: "https://huggingface.co/blog"
+    feed: null
+    api: null
+    type: engineering_writeup
+    tier: B
+    topics: [fine_tuning_adaptation, agent_loops, evaluation_frameworks, multimodal_generation, image_video_workflows]
+    expected_latency: days
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: near_primary
+    repro_availability: frequent
+    license_constraints: "Open blog; code usually Apache-2.0; extract+link."
+    rate_limits_cost: "Free."
+    enabled: true
+    bootstrap: true
+    bias_flags: ["vendor: Hugging Face"]
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #9"
+
+  - source_id: tldr_ai
+    url: "https://tldr.tech/ai"
+    feed: null
+    api: null
+    type: newsletter
+    tier: C
+    topics: [agent_loops, coding_agents, multimodal_generation, deployment_infrastructure]
+    expected_latency: days
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: aggregator
+    repro_availability: none
+    license_constraints: "Digest newsletter; extract+link; always follow through to primary."
+    rate_limits_cost: "Free."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 newsletters #10"
+    notes: "High-recall skim layer; expected high duplicate_rate — candidate for early pruning if dedup confirms."
+
+  - source_id: ai_engineer_youtube
+    url: "https://www.youtube.com/@aiDotEngineer"
+    feed: null
+    api: null
+    type: conference_talks
+    tier: B
+    topics: [supervisor_worker, multi_agent_coordination, agent_loops, tool_use_mcp, deployment_infrastructure]
+    expected_latency: days
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: near_primary
+    repro_availability: occasional
+    license_constraints: "YouTube ToS: transcript extraction for internal analysis; link, do not redistribute."
+    rate_limits_cost: "Free via YouTube RSS; transcript fetch cost minor."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 youtube #1"
+    notes: "Conference-grade talks from people shipping agents; also a conference_program discovery edge."
+
+  - source_id: sam_witteveen_youtube
+    url: "https://www.youtube.com/@samwitteveenai"
+    feed: null
+    api: null
+    type: youtube_channel
+    tier: B
+    topics: [agent_loops, supervisor_worker, tool_use_mcp, rag_knowledge_graphs]
+    expected_latency: days
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: secondary
+    repro_availability: frequent
+    license_constraints: "YouTube ToS; notebooks usually linked with permissive licenses."
+    rate_limits_cost: "Free via YouTube RSS."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 youtube #2"
+    notes: "Tier B on 'practitioner discussions with reproducible examples' — tutorials ship runnable code."
+
+  - source_id: practical_ai_podcast
+    url: "https://changelog.com/practicalai"
+    feed: null
+    api: null
+    type: podcast
+    tier: C
+    topics: [deployment_infrastructure, observability, agent_loops]
+    expected_latency: weekly
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: secondary
+    repro_availability: rare
+    license_constraints: "Podcast; transcript extract+link."
+    rate_limits_cost: "Free."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013; note practicalai.fm returned 525 — use changelog.com URL only)"
+    provenance: "SOURCES.md TASK-013 podcasts #2"
+
+  - source_id: twiml_podcast
+    url: "https://twimlai.com/"
+    feed: null
+    api: null
+    type: podcast
+    tier: C
+    topics: [security_prompt_injection, multi_agent_coordination, evaluation_frameworks]
+    expected_latency: weekly
+    poll_mechanism: rss_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: secondary
+    repro_availability: rare
+    license_constraints: "Podcast; transcript extract+link."
+    rate_limits_cost: "Free."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 podcasts #3"
+
+  - source_id: multiagentbench_paper
+    url: "https://arxiv.org/abs/2503.01935"
+    feed: null
+    api: null
+    type: benchmark
+    tier: A
+    topics: [multi_agent_coordination, evaluation_frameworks]
+    expected_latency: monthly
+    poll_mechanism: static
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: frequent
+    license_constraints: "arXiv preprint (non-exclusive license); benchmark artifacts per repo license — check before execution."
+    rate_limits_cost: "Free; arXiv API polite limits."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (TASK-013)"
+    provenance: "SOURCES.md TASK-013 papers #1"
+    notes: "Static seed anchor: measurement vocabulary for multi-agent evals. ACL 2025 acceptance reported on abs page but not independently confirmed — treat venue as need-to-confirm."
+
+  # =====================================================================
+  # REQUIRED TIER-A ROWS — added this session per SPEC Tier-A strategy.
+  # Session proxy blocked live re-checks of most of these (github.com 403 via
+  # proxy, transport errors elsewhere): rows marked UNVERIFIED start disabled.
+  # =====================================================================
+
+  - source_id: anthropic_claude_code_docs
+    url: "https://docs.claude.com/en/docs/claude-code/overview"
+    feed: null
+    api: null
+    type: official_docs
+    tier: A
+    topics: [coding_agents, tool_use_mcp, agent_loops, context_compaction]
+    expected_latency: hours
+    poll_mechanism: scrape_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: frequent
+    license_constraints: "Vendor docs; extract+link."
+    rate_limits_cost: "Free; polite crawl."
+    enabled: true
+    bootstrap: true
+    bias_flags: ["vendor: Anthropic"]
+    status: active
+    verification: "HTTP 200 on 2026-07-13 (this session, via agent proxy)"
+    provenance: "SPEC Phase 3 Tier-A requirement (official documentation)"
+
+  - source_id: anthropic_claude_code_changelog
+    url: "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"
+    feed: "https://github.com/anthropics/claude-code/releases.atom"
+    api: null
+    type: changelog_release_notes
+    tier: A
+    topics: [coding_agents, tool_use_mcp, agent_loops]
+    expected_latency: hours
+    poll_mechanism: rss_event
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: frequent
+    license_constraints: "Public repo; extract+link."
+    rate_limits_cost: "GitHub unauthenticated 60 req/h; authenticated 5000 req/h; free."
+    enabled: false
+    bootstrap: true
+    bias_flags: ["vendor: Anthropic"]
+    status: probation
+    verification: "UNVERIFIED — repo path well-known but session proxy returned 403 for github.com; HTTP-check before enabling"
+    provenance: "SPEC Phase 3 Tier-A requirement (product release notes and changelogs)"
+
+  - source_id: openai_codex_changelog
+    url: "https://developers.openai.com/codex/changelog"
+    feed: "https://github.com/openai/codex/releases.atom"
+    api: null
+    type: changelog_release_notes
+    tier: A
+    topics: [coding_agents, agent_loops, tool_use_mcp]
+    expected_latency: hours
+    poll_mechanism: rss_event
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: frequent
+    license_constraints: "Vendor docs + Apache-2.0 repo; extract+link."
+    rate_limits_cost: "Free; GitHub API limits as above."
+    enabled: false
+    bootstrap: true
+    bias_flags: ["vendor: OpenAI"]
+    status: probation
+    verification: "UNVERIFIED — both URLs blocked by session proxy (transport error / 403); HTTP-check both before enabling; docs path is a best-known guess and may need correction"
+    provenance: "SPEC Phase 3 Tier-A requirement (product release notes and changelogs)"
+
+  - source_id: xai_grok_docs
+    url: "https://docs.x.ai/"
+    feed: null
+    api: null
+    type: official_docs
+    tier: A
+    topics: [agent_loops, tool_use_mcp, model_routing, cost_latency_optimization]
+    expected_latency: hours
+    poll_mechanism: scrape_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: occasional
+    license_constraints: "Vendor docs; extract+link."
+    rate_limits_cost: "Free; polite crawl."
+    enabled: false
+    bootstrap: true
+    bias_flags: ["vendor: xAI"]
+    status: probation
+    verification: "UNVERIFIED — session proxy blocked x.ai transport; HTTP-check before enabling. Grok Build product docs location also unresolved — extend this row or add a sibling once confirmed."
+    provenance: "SPEC Phase 3 Tier-A requirement (official documentation); SPEC Phase 0 warns not to assume Grok/Grok Build are interchangeable"
+
+  - source_id: arxiv_cs_ma
+    url: "https://arxiv.org/list/cs.MA/recent"
+    feed: "https://rss.arxiv.org/rss/cs.MA"
+    api: "http://export.arxiv.org/api/query?search_query=cat:cs.MA"
+    type: paper_listing
+    tier: A
+    topics: [multi_agent_coordination, supervisor_worker, planner_executor, evaluation_frameworks]
+    expected_latency: days
+    poll_mechanism: api_poll_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: occasional
+    license_constraints: "arXiv metadata CC0; full text per-paper license; preprints — venue acceptance is a separate claim to verify."
+    rate_limits_cost: "arXiv API: 1 request / 3 seconds; free."
+    enabled: true
+    bootstrap: true
+    bias_flags: []
+    status: active
+    verification: "Listing page HTTP 200 on 2026-07-13 (TASK-013); rss/api endpoints UNVERIFIED this session (proxy-blocked) — confirm at poller setup"
+    provenance: "SPEC Phase 3 Tier-A requirement (research papers); SOURCES.md cs.MA live-feed entry"
+    notes: "Do not cite from titles alone without opening the abs page (TASK-013 rule)."
+
+  - source_id: arxiv_cs_cl
+    url: "https://arxiv.org/list/cs.CL/recent"
+    feed: "https://rss.arxiv.org/rss/cs.CL"
+    api: "http://export.arxiv.org/api/query?search_query=cat:cs.CL"
+    type: paper_listing
+    tier: A
+    topics: [context_engineering, memory_retrieval, rag_knowledge_graphs, fine_tuning_adaptation, evaluation_frameworks]
+    expected_latency: days
+    poll_mechanism: api_poll_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: occasional
+    license_constraints: "As arxiv_cs_ma."
+    rate_limits_cost: "arXiv API: 1 request / 3 seconds; free. High volume — fielded queries required, not full-category ingest."
+    enabled: false
+    bootstrap: true
+    bias_flags: []
+    status: probation
+    verification: "UNVERIFIED this session (proxy-blocked); URL pattern identical to verified cs.MA listing — confirm then enable"
+    provenance: "SPEC Phase 3 Tier-A requirement (research papers)"
+
+  - source_id: arxiv_cs_se
+    url: "https://arxiv.org/list/cs.SE/recent"
+    feed: "https://rss.arxiv.org/rss/cs.SE"
+    api: "http://export.arxiv.org/api/query?search_query=cat:cs.SE"
+    type: paper_listing
+    tier: A
+    topics: [coding_agents, evaluation_frameworks, agent_loops]
+    expected_latency: days
+    poll_mechanism: api_poll_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: occasional
+    license_constraints: "As arxiv_cs_ma."
+    rate_limits_cost: "arXiv API: 1 request / 3 seconds; free."
+    enabled: false
+    bootstrap: true
+    bias_flags: []
+    status: probation
+    verification: "UNVERIFIED this session (proxy-blocked); URL pattern identical to verified cs.MA listing — confirm then enable"
+    provenance: "SPEC Phase 3 Tier-A requirement (research papers)"
+
+  - source_id: gh_releases_langgraph
+    url: "https://github.com/langchain-ai/langgraph"
+    feed: "https://github.com/langchain-ai/langgraph/releases.atom"
+    api: null
+    type: repository_releases
+    tier: A
+    topics: [supervisor_worker, multi_agent_coordination, agent_loops, memory_retrieval]
+    expected_latency: hours
+    poll_mechanism: rss_event
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: always
+    license_constraints: "MIT (confirm at ingest); release notes extract+link."
+    rate_limits_cost: "GitHub feed free; API limits as above."
+    enabled: false
+    bootstrap: true
+    bias_flags: ["vendor: LangChain"]
+    status: probation
+    verification: "UNVERIFIED — github.com 403 via session proxy and MCP scoped to user repo only; HTTP-check before enabling"
+    provenance: "SPEC Phase 3 Tier-A requirement (official repositories / package-release feeds)"
+
+  - source_id: gh_releases_autogen
+    url: "https://github.com/microsoft/autogen"
+    feed: "https://github.com/microsoft/autogen/releases.atom"
+    api: null
+    type: repository_releases
+    tier: A
+    topics: [multi_agent_coordination, supervisor_worker, agent_loops]
+    expected_latency: hours
+    poll_mechanism: rss_event
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: always
+    license_constraints: "MIT/CC variants per component (confirm at ingest)."
+    rate_limits_cost: "GitHub feed free."
+    enabled: false
+    bootstrap: true
+    bias_flags: ["vendor: Microsoft"]
+    status: probation
+    verification: "UNVERIFIED — github.com 403 via session proxy; HTTP-check before enabling"
+    provenance: "SPEC Phase 3 Tier-A requirement (official repositories / package-release feeds)"
+
+  - source_id: gh_releases_openhands
+    url: "https://github.com/All-Hands-AI/OpenHands"
+    feed: "https://github.com/All-Hands-AI/OpenHands/releases.atom"
+    api: null
+    type: repository_releases
+    tier: A
+    topics: [coding_agents, agent_loops, tool_use_mcp, deployment_infrastructure]
+    expected_latency: hours
+    poll_mechanism: rss_event
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: always
+    license_constraints: "MIT (confirm at ingest)."
+    rate_limits_cost: "GitHub feed free."
+    enabled: false
+    bootstrap: true
+    bias_flags: []
+    status: probation
+    verification: "UNVERIFIED — github.com 403 via session proxy; HTTP-check before enabling"
+    provenance: "SPEC Phase 3 Tier-A requirement; paper anchor arXiv:2407.16741 verified 200 by TASK-013"
+
+  - source_id: gh_releases_swe_agent
+    url: "https://github.com/SWE-agent/SWE-agent"
+    feed: "https://github.com/SWE-agent/SWE-agent/releases.atom"
+    api: null
+    type: repository_releases
+    tier: A
+    topics: [coding_agents, tool_use_mcp, evaluation_frameworks]
+    expected_latency: hours
+    poll_mechanism: rss_event
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: always
+    license_constraints: "MIT (confirm at ingest)."
+    rate_limits_cost: "GitHub feed free."
+    enabled: false
+    bootstrap: true
+    bias_flags: []
+    status: probation
+    verification: "UNVERIFIED — github.com 403 via session proxy; org name (SWE-agent vs original princeton-nlp) must be confirmed before enabling"
+    provenance: "SPEC Phase 3 Tier-A requirement; paper anchor arXiv:2405.15793 verified 200 by TASK-013"
+
+  - source_id: gh_releases_smolagents
+    url: "https://github.com/huggingface/smolagents"
+    feed: "https://github.com/huggingface/smolagents/releases.atom"
+    api: null
+    type: repository_releases
+    tier: A
+    topics: [agent_loops, tool_use_mcp, supervisor_worker]
+    expected_latency: hours
+    poll_mechanism: rss_event
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: always
+    license_constraints: "Apache-2.0 (confirm at ingest)."
+    rate_limits_cost: "GitHub feed free."
+    enabled: false
+    bootstrap: true
+    bias_flags: ["vendor: Hugging Face"]
+    status: probation
+    verification: "UNVERIFIED — github.com 403 via session proxy; HTTP-check before enabling"
+    provenance: "SPEC Phase 3 Tier-A requirement (official repositories / package-release feeds)"
+
+  - source_id: hf_papers_feed
+    url: "https://huggingface.co/papers"
+    feed: null
+    api: null
+    type: paper_listing
+    tier: A
+    topics: [multi_agent_coordination, coding_agents, multimodal_generation, fine_tuning_adaptation, evaluation_frameworks]
+    expected_latency: days
+    poll_mechanism: scrape_daily
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: aggregator
+    repro_availability: frequent
+    license_constraints: "Curation page; the linked arXiv paper is the evidence object, never the curation entry itself."
+    rate_limits_cost: "Free; HF Hub API available for structured access."
+    enabled: false
+    bootstrap: true
+    bias_flags: ["vendor: Hugging Face — community-curated selection layer"]
+    status: probation
+    verification: "UNVERIFIED this session (proxy-blocked transport); well-known endpoint — confirm then enable"
+    provenance: "SPEC Phase 3 Tier-A requirement (papers + supplementary material discovery)"
+    notes: "Registered Tier A per plan requirement, but primary_proximity is aggregator: evidence records must point at the linked paper, with this row as discovered_via."
+
+  # =====================================================================
+  # PLACEHOLDERS — pending scout resolution. SPEC Phase 3: "Include Hermes
+  # Agent and OpenClaw as initial architecture case studies after resolving
+  # their exact official projects and repositories." URLs deliberately null:
+  # inventing them would poison the registry (name-collision risk is high).
+  # =====================================================================
+
+  - source_id: hermes_agent_case_study
+    url: null
+    feed: null
+    api: null
+    type: case_study
+    tier: A
+    topics: [agent_loops, supervisor_worker, tool_use_mcp]
+    expected_latency: days
+    poll_mechanism: none
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: null
+    license_constraints: "Unknown until repository resolved."
+    rate_limits_cost: "Unknown until repository resolved."
+    enabled: false
+    bootstrap: true
+    bias_flags: []
+    status: pending_resolution
+    verification: "UNVERIFIED — official project/repository being resolved by scout task; do not fill url without scout evidence"
+    provenance: "SPEC Phase 3 explicit requirement (initial architecture case study)"
+    notes: "Multiple unrelated projects share the name 'Hermes' — resolution requires maintainer-confirmed identity, not name match. Tier/topics provisional until resolved."
+
+  - source_id: openclaw_case_study
+    url: null
+    feed: null
+    api: null
+    type: case_study
+    tier: A
+    topics: [agent_loops, tool_use_mcp, deployment_infrastructure]
+    expected_latency: days
+    poll_mechanism: none
+    accuracy_history: null
+    snr_score: null
+    duplicate_rate: null
+    relevance: null
+    primary_proximity: primary
+    repro_availability: null
+    license_constraints: "Unknown until repository resolved."
+    rate_limits_cost: "Unknown until repository resolved."
+    enabled: false
+    bootstrap: true
+    bias_flags: []
+    status: pending_resolution
+    verification: "UNVERIFIED — official project/repository being resolved by scout task; do not fill url without scout evidence"
+    provenance: "SPEC Phase 3 explicit requirement (initial architecture case study)"
+    notes: "Tier/topics provisional until resolved."

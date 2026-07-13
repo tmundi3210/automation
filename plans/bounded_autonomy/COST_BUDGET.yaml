@@ -1,0 +1,317 @@
+# COST_BUDGET.yaml — bounded-autonomy AI intelligence system
+# Planning deliverable #12 (SPEC.md PLANNING DELIVERABLES; satisfies PHASE 10
+# budget/caching/backoff requirements and the PHASE 3 "expensive analysis only
+# on new or materially changed content" rule).
+#
+# ACCOUNTING UNITS: all three AI components run on flat-rate subscription
+# plans, NOT per-token APIs. Dollars are therefore not the scarce resource;
+# the scarce resources are (1) plan rate/usage limits and (2) operator machine
+# time. Budgets are denominated in INVOCATIONS (model sessions started) and
+# WALL_MINUTES (live model-session minutes). Shell gate executions cost zero
+# model budget and are tracked only for health, never capped for cost.
+#
+# COST PHILOSOPHY (extends the proven polling-v1 result): the 5-minute
+# zero-token shell gates already eliminated ~285 wasted model invocations per
+# builder per day (283-285 of 288 daily ticks exit in shell; EXCHANGE/POLLING.md).
+# Every stage below applies the same principle: deterministic zero-cost checks
+# first, model invocations only on verified change.
+#
+# UNVERIFIED: exact subscription plan names, tiers, rate limits, and session
+# quotas for Claude Code, Grok CLI, and Codex CLI are UNVERIFIED. All ceilings
+# below are conservative operator-tunable defaults chosen to sit safely under
+# any plausible plan limit; verify actual plan limits during Phase A
+# (IMPLEMENTATION_PHASES.md) and re-baseline.
+
+version: "1.0"
+status: draft-for-operator-approval
+date: "2026-07-13"
+authority: "SPEC.md PHASE 10 + PHASE 3 cadence + governance rule 9"
+
+# ---------------------------------------------------------------------------
+# GOVERNANCE — immutable by the system
+# ---------------------------------------------------------------------------
+budget_change_requires: operator   # immutable per SPEC governance rule 9:
+# the system may not autonomously alter budget ceilings. PHASE 11 permits the
+# system to PROPOSE ceiling changes with before/after evidence; only the
+# operator applies them. Any diff to this file not authored by the operator
+# (or explicitly operator-approved) is a security incident — see
+# OPERATIONS_RUNBOOK.md failure playbooks and SECURITY_POLICY.md (planned).
+
+governance:
+  ceiling_edits: operator-only
+  system_may_propose: true          # PHASE 11 bounded self-evolution
+  system_may_apply: false
+  enforcement_point: "deterministic control plane (shell/python), outside any model"
+  audit: "every budget counter increment carries run_id + trace_id; ledger is append-only"
+
+# ---------------------------------------------------------------------------
+# COMPONENTS — budgets by model/plan
+# ---------------------------------------------------------------------------
+components:
+
+  claude_code_hub:
+    role: "integrator / judge / final verifier (trust lanes, EXCHANGE/ORCHESTRATION.md section 1)"
+    interface: "Claude Code remote sessions (hub); hourly Routine cron exists (verified)"
+    plan: "subscription, flat-rate; per-session token budgets exist (exact limits UNVERIFIED)"
+    daily:
+      routine_wakes_max: 24         # hourly Routine cron ceiling; most wakes must
+                                    # exit cheaply via a hub-side change gate
+      invocations_max: 30           # 24 routine + 6 ad hoc/operator-triggered
+      wall_minutes_max: 180
+    monthly:
+      invocations_max: 780          # 26x daily, deliberately < 31x to force headroom
+      wall_minutes_max: 4680
+    notes: "per-session token budgets are the binding sub-constraint; long jobs
+      must checkpoint state to files and resume, never marathon one session
+      (also the context-quality guidance in EXCHANGE/RESEARCH_DIGEST.md section E)"
+
+  grok_cli:
+    role: "scout: X/web signals, high-volume drafting, source curation (content lane)"
+    interface: "Grok CLI on operator Mac; launchd job, 5-minute zero-token shell gate (verified, TASK-014)"
+    plan: "subscription, flat-rate with rate limits (exact limits UNVERIFIED)"
+    daily:
+      gate_executions: 288          # shell only, zero model cost; health metric, not a cost cap
+      invocations_max: 15           # heartbeat wakes (4/day at 6h) + 2-5 expected
+                                    # false wakes + real scout/task work
+      wall_minutes_max: 150
+    monthly:
+      invocations_max: 390
+      wall_minutes_max: 3900
+
+  codex_cli:
+    role: "implementer / mechanical verifier: code builds, tests, experiment runs (code lane)"
+    interface: "Codex CLI on operator Mac; 5-minute zero-token shell gate (verified)"
+    plan: "subscription, flat-rate with rate limits (exact limits UNVERIFIED)"
+    daily:
+      gate_executions: 288
+      invocations_max: 12
+      wall_minutes_max: 120
+    monthly:
+      invocations_max: 312
+      wall_minutes_max: 3120
+
+  operator_reserve:
+    description: "10% of every daily ceiling is reserved for operator-initiated
+      work; automation budgets are enforced against 90% of the numbers above.
+      The reserve cannot be spent by any scheduled or autonomous job."
+    fraction: 0.10
+
+# ---------------------------------------------------------------------------
+# COST MULTIPLIERS — used when estimating a stage's spend before starting it
+# (EXCHANGE/RESEARCH_DIGEST.md section E, Anthropic-measured; pattern costs
+#  from EXCHANGE/ORCHESTRATION.md section 5)
+# ---------------------------------------------------------------------------
+multipliers:
+  chat_baseline: 1
+  single_agent_run: 4               # agents ~4x a chat
+  multi_agent_run: 15               # multi-agent ~15x a chat; spend only where
+                                    # task value justifies it (HIGH-risk judging)
+  pattern_single_xverify: 1.3       # ORCHESTRATION pattern (a)
+  pattern_parallel_judge: 2.5       # ORCHESTRATION pattern (b); reserve for
+                                    # HIGH-risk or content-density-dominant work
+
+# ---------------------------------------------------------------------------
+# PIPELINE-STAGE BUDGETS (per day unless noted)
+# Both constraint sets apply: a stage stops when EITHER its own ceiling OR its
+# host component's ceiling is reached.
+# ---------------------------------------------------------------------------
+pipeline_stages:
+
+  scout_ticks:
+    component: [grok_cli, codex_cli]
+    zero_token_gates_per_day: 576   # 2 x 288; shell only, no model
+    model_wakes_max: 12             # grok scout lane; a wake happens only on a
+                                    # real change surfaced by the gate
+    wall_minutes_max: 45
+    cadence: "per SPEC PHASE 3: webhooks/release feeds event-driven where
+      possible; official announcements + high-priority X lists metadata-checked
+      every 1-3h (metadata check = shell/HTTP conditional GET, zero model);
+      repos, package releases, papers, docs daily; newsletter/podcast RSS on
+      publication or daily"
+
+  ingestion_analysis:
+    description: "NORMALIZED -> DEDUPLICATED -> VERIFIED -> SCORED (PHASE 4)"
+    component: [claude_code_hub, grok_cli]
+    items_analyzed_max: 20          # items that pass the hash gate and get model analysis
+    per_tier_caps: { tier_A: 12, tier_B: 6, tier_C: 2 }   # budget by source tier;
+                                    # Tier B/C are discovery-grade, cheapest analysis only
+    invocations_max: 8              # batch items per invocation; never 1 invocation per item
+    wall_minutes_max: 60
+
+  deep_dives:
+    description: "PHASE 6 framework analysis; architecture comparisons"
+    component: claude_code_hub
+    per_day_max: 2
+    wall_minutes_each_max: 30
+    wall_minutes_max: 60
+    trigger: "only for items scored above the deep-dive threshold in
+      EXCHANGE/SCORING.md-style composite scoring, or operator request"
+
+  experiments:
+    description: "PHASE 8 isolated-worktree experiments"
+    component: codex_cli
+    started_per_day_max: 2
+    concurrent_max: 1
+    wall_minutes_each_max: 60
+    wall_minutes_max: 120
+    rule: "single-agent pattern inside the sandbox (4x class); multi-agent
+      (15x class) experiment orchestration requires operator pre-approval"
+
+  reviews:
+    description: "review objects, cross-verify, judging, draft-PR review"
+    component: [claude_code_hub, codex_cli, grok_cli]
+    review_objects_max: 6
+    wall_minutes_max: 45
+    rule: "deterministic gates rule first (zero model cost: check_scope.sh +
+      git diff --stat mechanical reject); LLM judges only on what gates cannot
+      decide; pattern (b) parallel+judge only where the ORCHESTRATION
+      RISK x SIZE table forces it"
+
+  digests_and_synthesis:
+    component: claude_code_hub
+    daily_digest: { per_day: 1, wall_minutes_max: 10 }
+    weekly_synthesis: { per_week: 1, wall_minutes_max: 45 }
+    monthly_source_review: { per_month: 1, wall_minutes_max: 60 }
+    cadence_authority: "SPEC PHASE 3: daily project digest, weekly architecture
+      and technique synthesis, monthly source-quality and pruning review"
+
+# ---------------------------------------------------------------------------
+# HARD RULES (control-plane enforced, not prompt-enforced)
+# ---------------------------------------------------------------------------
+hard_rules:
+  - id: HASH_GATE
+    rule: "Expensive model analysis runs ONLY on new-or-materially-changed
+      content. Before any model call on ingested content, the control plane
+      computes the normalized content hash and compares against the dedupe
+      store; unchanged hash = no invocation, zero model cost. Per SPEC PHASE 3
+      ('Only invoke expensive model analysis when new or materially changed
+      content is detected') and PHASE 4 (content hash in every evidence record)."
+  - id: ZERO_TOKEN_IDLE
+    rule: "No model in any polling loop. Idle ticks are shell-only (gate.sh
+      pattern, EXCHANGE/POLLING.md section 1); a model is invoked only on a
+      gate-verified WAKE."
+  - id: GATES_BEFORE_JUDGES
+    rule: "Deterministic checks (parse, scope, diff-stat, schema) always run
+      before any LLM review; mechanical rejects cost zero model budget."
+  - id: BATCHING
+    rule: "Ingestion analysis batches multiple hash-gated items into one
+      invocation; one-item-one-session is prohibited except for HIGH-risk items."
+  - id: NO_SELF_SERVICE_CEILINGS
+    rule: "No component may raise, disable, or route around any ceiling in this
+      file. budget_change_requires: operator."
+
+# ---------------------------------------------------------------------------
+# CACHING RULES
+# ---------------------------------------------------------------------------
+caching:
+  content_hash_dedupe:
+    hash: "sha256 over the NORMALIZED content (canonical text: markup stripped,
+      whitespace collapsed, volatile fields removed)"
+    materially_changed: "hash differs on tracked substantive fields (title,
+      body, code, release notes). Metadata churn — view counts, like counts,
+      re-crawled timestamps, ad blocks — never counts as change."
+    store: "append-only dedupe index keyed by content_hash -> evidence_id;
+      lives in the evidence store (Phase C)"
+    negative_cache: "items rejected at DEDUPLICATED are recorded so re-polls
+      of the same content skip for free"
+  prompt_prefix_stability:
+    rule: "byte-stable prompt prefixes for provider cache hits (adopted from
+      EXCHANGE/POLLING.md section 3): standing-orders/instructions verbatim and
+      byte-identical every invocation, fixed tool order, same model/params.
+      Banned from the static region: timestamps, tick counters, tip SHAs,
+      message counts. ALL per-invocation variance goes in one final segment,
+      in fixed order."
+    target_prefix_hit_rate: ">= 0.90 on scheduled wakes"
+  analysis_result_cache:
+    key: "(content_hash, task_type, prompt_version, model_id)"
+    rule: "a cache hit returns the stored analysis verbatim; no re-invocation.
+      Invalidated only by prompt_version or model_id change (version registry,
+      PHASE 5 layer 8)."
+  request_caching:
+    rule: "HTTP polling uses conditional requests (ETag / If-Modified-Since)
+      wherever the source supports them; 304 = zero download, zero analysis"
+
+# ---------------------------------------------------------------------------
+# BACKOFF / RATE-LIMIT POLICY
+# ---------------------------------------------------------------------------
+backoff_and_rate_limits:
+  source_side:                       # polling external sources
+    strategy: "exponential backoff with full jitter"
+    base_seconds: 60
+    factor: 2
+    cap_seconds: 3600
+    respect_retry_after: true
+    per_source_budget: "each SOURCE_REGISTRY entry carries its own rate limit;
+      the poller enforces it with a token bucket; a source that 429s three
+      consecutive times is auto-paused for 24h and flagged in the daily digest"
+  model_side:                        # hitting subscription plan limits
+    on_rate_limit: "mark the component RATE_LIMITED; pause its lane; NO tight
+      retries — flat-rate plans throttle, so retry storms only burn quota.
+      Cool-off default 30 minutes (UNVERIFIED — tune to observed plan behavior)."
+    on_three_consecutive_limits: "advance one degradation rung + alert operator
+      in the next digest"
+  idempotency: "every job carries a run_id; retries are idempotent (safe to
+    re-run; writes are keyed by run_id so replays never double-apply). Jobs
+    that exhaust max_attempts: 3 go to the dead-letter queue
+    (OPERATIONS_RUNBOOK.md dead-letter handling), never into silent loops."
+
+# ---------------------------------------------------------------------------
+# DEGRADATION LADDER — what gets skipped first as spend approaches a ceiling.
+# Evaluated per component per day against invocations AND wall_minutes
+# (whichever is higher percent). Rungs are cumulative.
+# ---------------------------------------------------------------------------
+degradation_ladder:
+  rungs:
+  - at_percent: 70
+    action: "defer Tier C analysis (newsletters, podcasts, general media) to
+      the next day; batch Tier B items into fewer invocations; note in digest"
+  - at_percent: 80
+    action: "defer deep-dives and weekly synthesis; scout model wakes restricted
+      to high-priority sources only (gates keep running for everything)"
+  - at_percent: 90
+    action: "start no new experiments (running ones finish and are recorded);
+      defer any work whose ORCHESTRATION minimum review pattern is unaffordable
+      — NEVER run it with a downgraded pattern (the RISK x SIZE table is a
+      floor, per ORCHESTRATION section 5b: the hub may upgrade, never downgrade)"
+  - at_percent: 95
+    action: "stop all new model-invoking work except: the daily digest,
+      security/quarantine triage, and operator-requested tasks"
+  - at_percent: 100
+    action: "full stop of automated model invocations for that component until
+      the daily/monthly window resets; zero-token gates and audit logging keep
+      running; pending work queues to backlog; operator alerted in digest and
+      via failure alert"
+  never_degraded:                    # the floor that no rung may cut
+    - "zero-token shell gates (they cost no model budget)"
+    - "audit logging, run/trace IDs, dead-letter capture"
+    - "kill-switch responsiveness (OPERATIONS_RUNBOOK.md)"
+    - "security quarantine triage (small reserved allocation: 1 invocation +
+       10 wall-minutes per day per component, taken from operator_reserve
+       only if the main budget is exhausted)"
+    - "operator-initiated commands (spend from operator_reserve)"
+
+# ---------------------------------------------------------------------------
+# ALERTS AND MEASUREMENT (PHASE 10)
+# ---------------------------------------------------------------------------
+alerts:
+  - "70% of any daily ceiling -> WARN line in next morning digest"
+  - "85% -> degradation rung active + digest alert"
+  - "95% -> hard-stop alert (digest + failure-alert channel)"
+  - "any budget-file diff not operator-authored -> security incident alert"
+measurement:
+  unit_of_account: "invocations + wall_minutes (flat-rate plans; dollars N/A)"
+  metrics:                            # the PHASE 10 cost-relevant system metrics
+    - cost_per_accepted_improvement   # invocations + wall-minutes per adopted change
+    - useful_alert_precision
+    - duplicate_rate                  # dedupe effectiveness; target < 0.05 reaching analysis
+    - cache_hit_rates                 # prefix cache, analysis cache, HTTP 304 rate
+    - wasted_invocation_rate          # wakes that produced no state change; target < 0.05
+                                      # (the polling-v1 baseline to preserve)
+    - human_review_burden             # operator minutes/day consumed by the system
+  review_cadence: "weekly spend review in the weekly synthesis; monthly ceiling
+    re-baseline at the monthly source-quality review (operator applies changes)"
+
+retention:
+  budget_ledgers: "raw per-day counters retained 13 months; monthly rollups indefinitely"
+  note: "full storage/retention policy lives with the memory architecture
+    deliverable (MEMORY_ARCHITECTURE.md, planned)"
