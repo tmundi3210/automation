@@ -74,8 +74,11 @@ uncomputable (no soda↔powder factor, no puree water constants).
   re-audit. *Fixed.*
 - kb2: 1.84 vs 1.85 rounding inconsistency. *Fixed.*
 - kb3: enriched-bread band 85–93 °C ran ~3 °C low → 88–93 °C. *Fixed.*
-- kb1 (noted, kept): GF xanthan "1–2%" upper end is high in practice (~1–1.5%
-  typical with psyllium); leavening band "1–5%" upper end loose.
+- kb1: alkaline "reddening" loosely attributed to anthocyanins (anthocyanins
+  redden under acid); rephrased to cocoa polyphenol pigments. *Fixed.*
+
+(Attribution correction: the GF-xanthan "1–2%" and leavening "1–5%" upper-end
+nits flagged by the kb1 judge belong to the **Grok** build, not the Claude one.)
 
 ## 5. Caveats (read before quoting the scores)
 
@@ -93,7 +96,15 @@ uncomputable (no soda↔powder factor, no puree water constants).
   for reaction/composition depth. Coverage breadth vs anchor density is a real
   design tradeoff, not a pure win.
 
-## 6. Bottom line
+## 6. Production decision
+
+Based on the 4/4 blind result, the integrated production specialist
+(`specialists/culinary.specialist.json` + `knowledge_base/knowledge_searcher/culinary__*`)
+was swapped to the Claude build (with all judge-found fixes applied and re-gated).
+The Grok build remains preserved verbatim under `incoming/culinary/` as the
+exchange record and on its `partner/culinary-build` branch.
+
+## 7. Bottom line
 
 Same gates, same prompt: the gates equalize *shape* (both look identical on
 counts) but not *content*. Grok produces a competent, mechanically perfect build

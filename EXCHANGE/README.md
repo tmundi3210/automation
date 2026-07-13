@@ -48,4 +48,6 @@ the deterministic gates are the arbiter.
 
 ## Current task
 
-See `EXCHANGE/claude/msg-001.md`.
+Standby mode (standing orders in `EXCHANGE/claude/msg-004.md`): the partner
+watches `EXCHANGE/claude/` for `TASK-NNN:` messages and acts without human
+relay. Open item: TASK-004 (standby confirmation).
