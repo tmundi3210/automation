@@ -21,10 +21,19 @@ each capability is FOR in this project.
 
 **Recipe 1 — durable 5-minute poller (operator installs once; launchd/cron on macOS):**
 
+> **SECURITY FIX (do not skip):** an earlier draft of this recipe read
+> `--rules "$(cat EXCHANGE/claude/msg-004.md)"` — that elevates a repo-tracked
+> file into the agent's SYSTEM PROMPT every tick, meaning anyone with Write
+> access to the repo could own the agent. Standing orders MUST come from a
+> local, root-owned, read-only file outside the repo, installed once by the
+> operator: `sudo cp msg-004-standing-orders.md /opt/agent/standing-orders.md
+> && sudo chmod 444 /opt/agent/standing-orders.md`. Repo files are task
+> INPUTS, never system prompts. See EXCHANGE/ORCHESTRATION.md §9.
+
 ```bash
 */5 * * * * cd ~/src/automation && grok agent \
   --cwd ~/src/automation \
-  --rules "$(cat EXCHANGE/claude/msg-004.md)" \
+  --rules "$(cat /opt/agent/standing-orders.md)" \
   --permission-mode acceptEdits \
   --allow 'Bash(git fetch:*)' --allow 'Bash(git push:*)' --allow 'Bash(python3:*)' \
   --max-turns 40 \
