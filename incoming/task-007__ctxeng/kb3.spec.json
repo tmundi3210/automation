@@ -1,0 +1,2515 @@
+{
+  "domain": "ctx_retrieval_grounding",
+  "domain_label": "Context Retrieval and Grounding",
+  "purpose": "Decide what to load when, attach provenance and citations, detect stale/wrong-version/duplicate context, and keep multi-agent answers grounded in authoritative sources without fabrication.",
+  "assumptions": [
+    "Tools can read repository files with path and content hashes",
+    "Task branch/ref is knowable at start",
+    "Some claims are version-specific and must not rely only on training memory"
+  ],
+  "exclusions": [
+    "Building a commercial web search engine",
+    "Academic bibliography style manuals",
+    "Hardware memory paging design",
+    "Medical hallucination clinical protocols"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "When should the agent retrieve and how is retrieval budgeted?",
+      "must_be_answerable_from": [
+        "RETRIEVAL_TRIGGER",
+        "LAZY_RETRIEVAL",
+        "RETRIEVAL_BUDGET"
+      ],
+      "acceptance_condition": "lists triggers including read-before-edit and a budget cap approach",
+      "covered_by": [
+        "RETRIEVAL_TRIGGER",
+        "LAZY_RETRIEVAL",
+        "RETRIEVAL_BUDGET",
+        "RANKING_RELEVANCE"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What provenance fields must each retrieval carry?",
+      "must_be_answerable_from": [
+        "PROVENANCE_TRACK",
+        "FILE_LOCATOR",
+        "CITATION_DISCIPLINE"
+      ],
+      "acceptance_condition": "path, version/sha or mtime, and actionable locator",
+      "covered_by": [
+        "PROVENANCE_TRACK",
+        "FILE_LOCATOR",
+        "CITATION_DISCIPLINE"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How do lazy load, chunking, and dedup interact under pressure?",
+      "must_be_answerable_from": [
+        "LAZY_RETRIEVAL",
+        "CHUNK_STRATEGY",
+        "DUPLICATE_CONTEXT"
+      ],
+      "acceptance_condition": "smallest unit, semantic chunks with crumbs, path+sha dedup",
+      "covered_by": [
+        "LAZY_RETRIEVAL",
+        "CHUNK_STRATEGY",
+        "DUPLICATE_CONTEXT",
+        "RETRIEVAL_BUDGET"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How do you cite observed repo facts versus memory?",
+      "must_be_answerable_from": [
+        "CITATION_DISCIPLINE",
+        "PROVENANCE_TRACK",
+        "WRONG_VERSION"
+      ],
+      "acceptance_condition": "observed vs recalled labels and resolvable path citations",
+      "covered_by": [
+        "CITATION_DISCIPLINE",
+        "PROVENANCE_TRACK",
+        "WRONG_VERSION",
+        "GROUND_VS_MEMORIZE"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "When must grounding beat memorization for project facts?",
+      "must_be_answerable_from": [
+        "GROUND_VS_MEMORIZE",
+        "SOURCE_AUTHORITY",
+        "GROUNDING_CHECK"
+      ],
+      "acceptance_condition": "local/project facts require retrieve; checklist before finalize",
+      "covered_by": [
+        "GROUND_VS_MEMORIZE",
+        "SOURCE_AUTHORITY",
+        "GROUNDING_CHECK",
+        "CITATION_DISCIPLINE"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How are conflicting sources resolved for actionable rules?",
+      "must_be_answerable_from": [
+        "SOURCE_AUTHORITY",
+        "MULTI_SOURCE_MERGE",
+        "CONFLICT_SOURCES"
+      ],
+      "acceptance_condition": "authority ladder and no silent blend; safety escalate",
+      "covered_by": [
+        "SOURCE_AUTHORITY",
+        "MULTI_SOURCE_MERGE",
+        "CONFLICT_SOURCES",
+        "HALLUCINATION_GUARD"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do you detect stale or wrong-version context?",
+      "must_be_answerable_from": [
+        "STALE_FETCH",
+        "WRONG_VERSION",
+        "SNAPSHOT_PIN"
+      ],
+      "acceptance_condition": "sha/mtime invalidation and task ref pin with conscious refetch rules",
+      "covered_by": [
+        "STALE_FETCH",
+        "WRONG_VERSION",
+        "SNAPSHOT_PIN",
+        "PROVENANCE_TRACK"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "What happens on empty or missing retrieval?",
+      "must_be_answerable_from": [
+        "EMPTY_RETRIEVAL",
+        "RETRY_MISSING",
+        "RANKING_RELEVANCE"
+      ],
+      "acceptance_condition": "bounded retry then explicit miss; no fabrication",
+      "covered_by": [
+        "EMPTY_RETRIEVAL",
+        "RETRY_MISSING",
+        "RANKING_RELEVANCE",
+        "HALLUCINATION_GUARD"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "What makes a locator actionable and how is it traced to actions?",
+      "must_be_answerable_from": [
+        "FILE_LOCATOR",
+        "TRACE_LINK",
+        "CHUNK_STRATEGY"
+      ],
+      "acceptance_condition": "repo-relative paths and action-to-retrieval links on high-stakes acts",
+      "covered_by": [
+        "FILE_LOCATOR",
+        "TRACE_LINK",
+        "CHUNK_STRATEGY",
+        "CITATION_DISCIPLINE"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How do grounding check and hallucination guards block bad deliveries?",
+      "must_be_answerable_from": [
+        "GROUNDING_CHECK",
+        "HALLUCINATION_GUARD",
+        "EMPTY_RETRIEVAL"
+      ],
+      "acceptance_condition": "checklist requires citations; no invented paths on miss",
+      "covered_by": [
+        "GROUNDING_CHECK",
+        "HALLUCINATION_GUARD",
+        "EMPTY_RETRIEVAL",
+        "RETRY_MISSING"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How do snapshot pins and retrieve budgets stabilize long tasks?",
+      "must_be_answerable_from": [
+        "SNAPSHOT_PIN",
+        "RETRIEVAL_BUDGET",
+        "TRACE_LINK"
+      ],
+      "acceptance_condition": "base tip recorded; retrieve share capped; actions traced",
+      "covered_by": [
+        "SNAPSHOT_PIN",
+        "RETRIEVAL_BUDGET",
+        "TRACE_LINK",
+        "PROVENANCE_TRACK"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How do you merge multi-source notes without silent conflict blends?",
+      "must_be_answerable_from": [
+        "MULTI_SOURCE_MERGE",
+        "CONFLICT_SOURCES",
+        "SOURCE_AUTHORITY"
+      ],
+      "acceptance_condition": "agreements, conflicts, chosen authority recorded",
+      "covered_by": [
+        "MULTI_SOURCE_MERGE",
+        "CONFLICT_SOURCES",
+        "SOURCE_AUTHORITY",
+        "CITATION_DISCIPLINE"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "provenance",
+      "definition": "Path, version/sha, line range, and fetch time for a retrieved artifact"
+    },
+    {
+      "term": "lazy_retrieval",
+      "definition": "Load smallest sufficient unit only when a trigger fires"
+    },
+    {
+      "term": "citation",
+      "definition": "Resolvable pointer from a claim to provenance"
+    },
+    {
+      "term": "stale_fetch",
+      "definition": "Previously loaded content invalidated by later edits or tip movement"
+    },
+    {
+      "term": "wrong_version",
+      "definition": "Content from a non-task ref/worktree presented as current"
+    },
+    {
+      "term": "authority_ladder",
+      "definition": "Ordered preference among source classes for a claim type"
+    },
+    {
+      "term": "grounding_check",
+      "definition": "Pre-finalize checklist that claims cite resolvable current sources"
+    },
+    {
+      "term": "retrieval_budget",
+      "definition": "Cap on tokens spent loading external context per turn/task"
+    },
+    {
+      "term": "snapshot_pin",
+      "definition": "Recorded base ref/file shas that define the task world"
+    },
+    {
+      "term": "trace_link",
+      "definition": "Link from an action (edit/push) back to supporting retrievals"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "RETRIEVAL_TRIGGER",
+      "topic": "when_to_retrieve",
+      "definition": "Decide when to load external context: on explicit path reference, before edit, on failed assumption, or when L0 facts are insufficient for a CQ. Avoid retrieve-every-turn (budget burn and noise) and avoid never-retrieve (hallucinated files). Triggers should be explicit in the agent loop.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.88,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "agent patches a file never read this session"
+      },
+      "scope_boundary": {
+        "included": [
+          "pre-edit retrieve",
+          "failure-driven retrieve",
+          "CQ-driven retrieve"
+        ],
+        "excluded": [
+          "web search product ranking generally"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Explicit triggers cut blind edits",
+          "example": "read-before-edit gate blocks ungrounded patches"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Over-trigger floods context with low-value files",
+          "example": "retrieve whole package on any import mention"
+        }
+      ],
+      "failure_modes": [
+        "edit without read",
+        "retrieve entire monorepo on task start"
+      ],
+      "acceptance_tests": [
+        "policy lists retrieve triggers including read-before-edit"
+      ],
+      "revisit_triggers": [
+        "ungrounded edit rate",
+        "retrieve volume per turn"
+      ]
+    },
+    {
+      "id": "LAZY_RETRIEVAL",
+      "topic": "lazy_on_demand_loading",
+      "definition": "Load the smallest sufficient artifact: function or section before whole file, file before directory, directory listing before recursive dump. Lazy retrieval pairs with progressive disclosure and token budgets. Prefer search hits with line ranges over whole-file pastes when tools allow.",
+      "group": "retrieval",
+      "dependencies": [
+        "RETRIEVAL_TRIGGER"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.87,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.38,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "agent loads 5 full services to change one handler"
+      },
+      "scope_boundary": {
+        "included": [
+          "smallest sufficient unit",
+          "line-range reads",
+          "listing before dump"
+        ],
+        "excluded": [
+          "OS virtual memory paging internals"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Lazy loads preserve budget for reasoning",
+          "example": "200-line read beats 8k-line file for local fix"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Too-lazy misses cross-file contracts",
+          "example": "edits API without reading client types"
+        }
+      ],
+      "failure_modes": [
+        "always cat entire files",
+        "never expand when tests fail across modules"
+      ],
+      "acceptance_tests": [
+        "default read is bounded; expand criteria documented"
+      ],
+      "revisit_triggers": [
+        "missed cross-file bugs",
+        "avg tokens per retrieve"
+      ]
+    },
+    {
+      "id": "PROVENANCE_TRACK",
+      "topic": "provenance_and_locators",
+      "definition": "Every retrieved claim carries provenance: path, commit/version, line range, fetch time. Provenance enables citation, stale detection, and rehydrate. Without it, agents cannot defend answers or detect wrong-version files. Store provenance in working set or L0, not only in raw dumps.",
+      "group": "grounding",
+      "dependencies": [
+        "LAZY_RETRIEVAL"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.91,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "update_signal": "answer cites 'the config' with no path or revision"
+      },
+      "scope_boundary": {
+        "included": [
+          "path version line-range",
+          "fetch timestamp",
+          "provenance in L0"
+        ],
+        "excluded": [
+          "academic bibliography styles only"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "claim": "Provenance makes grounding auditable",
+          "example": "citation lists path@sha lines 40-62"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Verbose provenance blocks can bloat if not compacted to KV",
+          "example": "full git blame in prompt"
+        }
+      ],
+      "failure_modes": [
+        "orphan quotes without locator",
+        "drop version when summarizing retrieval"
+      ],
+      "acceptance_tests": [
+        "each used retrieval has path and version or mtime in register"
+      ],
+      "revisit_triggers": [
+        "uncited claims in deliveries",
+        "version missing on critical files"
+      ]
+    },
+    {
+      "id": "CITATION_DISCIPLINE",
+      "topic": "citation_discipline",
+      "definition": "When asserting file facts, include citations resolvable to provenance. Distinguish observed (retrieved this session) from recalled (parametric memory). Prefer observed for repo state. Citation discipline is how xverify and humans audit grounding.",
+      "group": "grounding",
+      "dependencies": [
+        "PROVENANCE_TRACK"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.89,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.36,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "specialist claims node counts without pointing at spec files"
+      },
+      "scope_boundary": {
+        "included": [
+          "observed vs recalled labels",
+          "resolvable citations",
+          "audit-friendly claims"
+        ],
+        "excluded": [
+          "legal Bluebook citation formatting"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.89,
+          "claim": "Citations enable independent verification",
+          "example": "reviewer opens path@sha and confirms"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.48,
+          "claim": "Over-citation of trivialities slows prose",
+          "example": "every the and and has a footnote"
+        }
+      ],
+      "failure_modes": [
+        "unsourced definitive repo claims",
+        "fabricated line numbers"
+      ],
+      "acceptance_tests": [
+        "delivery claims about repo state include at least path citations"
+      ],
+      "revisit_triggers": [
+        "xverify finds uncited factual claims",
+        "fabricated locators"
+      ]
+    },
+    {
+      "id": "GROUND_VS_MEMORIZE",
+      "topic": "grounding_vs_memorization",
+      "definition": "Prefer retrieving current repo state over relying on training knowledge for version-specific APIs, local schemas, and project protocols. Parametric knowledge is a prior; working tree is authority for this task. State when falling back to memory and mark lower confidence.",
+      "group": "grounding",
+      "dependencies": [
+        "CITATION_DISCIPLINE",
+        "RETRIEVAL_TRIGGER"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.91,
+        "business_value": 0.86,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "agent uses outdated API from training while repo has v2 types"
+      },
+      "scope_boundary": {
+        "included": [
+          "repo authority over training",
+          "confidence marks on memory fallback",
+          "when memory is ok"
+        ],
+        "excluded": [
+          "human educational memorization techniques"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Repo-grounded answers match the actual code",
+          "example": "reads local schema before emitting JSON"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Over-retrieve for stable public knowledge wastes budget",
+          "example": "fetching PEP-8 full text every turn"
+        }
+      ],
+      "failure_modes": [
+        "trust training for local protocol versions",
+        "never use memory even for generic algorithms"
+      ],
+      "acceptance_tests": [
+        "policy: local/project facts require retrieve; general algorithms may use memory with label"
+      ],
+      "revisit_triggers": [
+        "version skew bugs",
+        "unnecessary full-doc retrieves"
+      ]
+    },
+    {
+      "id": "STALE_FETCH",
+      "topic": "stale_fetch_detection",
+      "definition": "Detect when a previously retrieved artifact may be stale: branch moved, file mtime changed, fetch older than N minutes during active edit storms, or DELIVERED-SHA advanced. Re-fetch or invalidate cached chunks. Stale context causes patches that do not apply and wrong reviews.",
+      "group": "failure_modes",
+      "dependencies": [
+        "PROVENANCE_TRACK",
+        "LAZY_RETRIEVAL"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.87,
+        "business_value": 0.82,
+        "user_value": 0.85,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.45,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "patch fails because file changed after early full read"
+      },
+      "scope_boundary": {
+        "included": [
+          "mtime/sha invalidation",
+          "TTL during edit storms",
+          "re-fetch rules"
+        ],
+        "excluded": [
+          "CDN cache purge product features"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "claim": "Invalidation prevents ghost edits",
+          "example": "re-read before patch if sha mismatch"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Aggressive invalidation causes thrash re-reads",
+          "example": "re-fetch every turn regardless"
+        }
+      ],
+      "failure_modes": [
+        "never re-read after first fetch",
+        "ignore apply failures as model error only"
+      ],
+      "acceptance_tests": [
+        "stale policy: re-read before patch if sha/mtime changed or apply fails"
+      ],
+      "revisit_triggers": [
+        "patch apply fail rate",
+        "redundant re-fetch rate"
+      ]
+    },
+    {
+      "id": "WRONG_VERSION",
+      "topic": "wrong_version_files",
+      "definition": "Avoid loading the wrong version: different branch, tag, worktree, or vendored copy. Pin ref when retrieving (branch tip sha). Compare paths across worktrees. Wrong-version grounding is worse than no grounding because it looks cited but is false for the active task.",
+      "group": "failure_modes",
+      "dependencies": [
+        "PROVENANCE_TRACK",
+        "GROUND_VS_MEMORIZE"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.89,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "agent reads main while task branch diverged on same file"
+      },
+      "scope_boundary": {
+        "included": [
+          "ref pin on retrieve",
+          "worktree awareness",
+          "vendored copy disambiguation"
+        ],
+        "excluded": [
+          "semver marketing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Ref-pinned reads match the branch under work",
+          "example": "git show branch:path for task ref"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Pinning too hard blocks seeing integrator tip updates",
+          "example": "never fetch origin tip when asked"
+        }
+      ],
+      "failure_modes": [
+        "read whatever cwd file without checking branch",
+        "mix paths from two worktrees silently"
+      ],
+      "acceptance_tests": [
+        "retrieval records include ref/sha; active branch checked against task branch"
+      ],
+      "revisit_triggers": [
+        "cross-branch confusion incidents",
+        "vendored duplicate path errors"
+      ]
+    },
+    {
+      "id": "DUPLICATE_CONTEXT",
+      "topic": "duplicate_context_dedup",
+      "definition": "Detect duplicated chunks: same file loaded twice, overlapping line ranges, repeated tool dumps. Dedup by path+sha or content hash; keep one copy plus provenance. Duplicates waste budget and amplify attention on accidental text (including hostile repeats).",
+      "group": "retrieval",
+      "dependencies": [
+        "LAZY_RETRIEVAL",
+        "PROVENANCE_TRACK"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "same 3k file appears four times after multiple greps"
+      },
+      "scope_boundary": {
+        "included": [
+          "path+sha dedup",
+          "overlap merge",
+          "drop duplicate tool dumps"
+        ],
+        "excluded": [
+          "general data lake ETL dedup"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "claim": "Dedup frees tokens without losing unique info",
+          "example": "one copy of schema kept"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Naive dedup may drop intentionally different versions",
+          "example": "v1 and v2 both needed for migrate"
+        }
+      ],
+      "failure_modes": [
+        "append all tool results forever",
+        "hash-collapse distinct versions"
+      ],
+      "acceptance_tests": [
+        "dedup rule by path+sha; version variants kept if sha differs and both needed"
+      ],
+      "revisit_triggers": [
+        "duplicate rate in telemetry",
+        "accidental collapse of two versions"
+      ]
+    },
+    {
+      "id": "RANKING_RELEVANCE",
+      "topic": "relevance_ranking",
+      "definition": "Rank candidates by task relevance: path match to active working set, symbol hit, recency of edit, test failure linkage. Prefer precision over recall when budget tight. Bad ranking is a grounding failure even if the right file exists somewhere in the pile.",
+      "group": "retrieval",
+      "dependencies": [
+        "RETRIEVAL_TRIGGER",
+        "LAZY_RETRIEVAL"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.4,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.24,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.24,
+          0.52
+        ],
+        "update_signal": "top hit is unrelated README while failing test file ranks low"
+      },
+      "scope_boundary": {
+        "included": [
+          "working-set biased rank",
+          "failure-linked boost",
+          "precision under budget"
+        ],
+        "excluded": [
+          "web search ad ranking"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Task-biased rank surfaces the failing test file first",
+          "example": "test name hit outranks generic docs"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.56,
+          "claim": "Over-bias can hide needed distant dependencies",
+          "example": "never sees shared lib"
+        }
+      ],
+      "failure_modes": [
+        "pure lexical rank ignoring failing test",
+        "load top-50 always"
+      ],
+      "acceptance_tests": [
+        "ranking features documented; budgeted top-k default"
+      ],
+      "revisit_triggers": [
+        "missed relevant files",
+        "noise in top-k"
+      ]
+    },
+    {
+      "id": "CHUNK_STRATEGY",
+      "topic": "chunking_strategy",
+      "definition": "Chunk large artifacts by semantic boundaries (function, section, message) not only fixed token windows. Include header/path crumbs in each chunk so isolated chunks remain interpretable. Overlap lightly where contracts span boundaries; avoid both tiny fragments and monolith chunks.",
+      "group": "retrieval",
+      "dependencies": [
+        "LAZY_RETRIEVAL",
+        "RANKING_RELEVANCE"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.81,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "update_signal": "fixed 500-token windows split mid-function losing signature"
+      },
+      "scope_boundary": {
+        "included": [
+          "semantic boundaries",
+          "path crumbs per chunk",
+          "light overlap"
+        ],
+        "excluded": [
+          "video streaming chunk codecs"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.83,
+          "claim": "Semantic chunks preserve meaning under lazy load",
+          "example": "function-level chunk keeps signature+body"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Bad boundaries still orphan related consts",
+          "example": "const in other file not linked"
+        }
+      ],
+      "failure_modes": [
+        "only fixed windows",
+        "chunks without path headers"
+      ],
+      "acceptance_tests": [
+        "chunk policy prefers semantic units with path crumbs"
+      ],
+      "revisit_triggers": [
+        "mid-unit splits causing bugs",
+        "chunk too large for budget"
+      ]
+    },
+    {
+      "id": "SOURCE_AUTHORITY",
+      "topic": "source_authority_ranking",
+      "definition": "Rank sources by authority for the claim class: task branch tree > integrator EXCHANGE msg for tasks > docs in repo > training memory > random web. Authority is claim-type dependent. Never let low-authority sources override higher on the same fact without explicit conflict handling.",
+      "group": "grounding",
+      "dependencies": [
+        "GROUND_VS_MEMORIZE",
+        "PROVENANCE_TRACK"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.87,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.52,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "blog post overrides local PROTOCOL-VERSION in agent reasoning"
+      },
+      "scope_boundary": {
+        "included": [
+          "claim-type authority order",
+          "conflict handling across sources"
+        ],
+        "excluded": [
+          "academic journal impact factors"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Authority order prevents web from rewriting protocol",
+          "example": "local EXCHANGE README wins on version"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Blind local-always can miss known upstream security advisories",
+          "example": "ignore CVE because not in repo"
+        }
+      ],
+      "failure_modes": [
+        "web equals repo authority",
+        "no conflict rule when sources disagree"
+      ],
+      "acceptance_tests": [
+        "authority ladder documented per claim class (protocol, code, general knowledge)"
+      ],
+      "revisit_triggers": [
+        "wrong authority incidents",
+        "security advisory misses"
+      ]
+    },
+    {
+      "id": "GROUNDING_CHECK",
+      "topic": "grounding_self_check",
+      "definition": "Before finalizing answers that depend on repo state, run a grounding checklist: each key claim has citation; citations resolve; no contradiction with pinned facts; versions match task branch. This is the last line of defense against fluent ungrounded text.",
+      "group": "grounding",
+      "dependencies": [
+        "CITATION_DISCIPLINE",
+        "PROVENANCE_TRACK",
+        "WRONG_VERSION"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.9,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "delivery claims gate PASS without citing gate output"
+      },
+      "scope_boundary": {
+        "included": [
+          "pre-finalize checklist",
+          "citation resolve",
+          "branch version match"
+        ],
+        "excluded": [
+          "grammar linters"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Checklist catches fluent fabrication",
+          "example": "blocks ship when SHA claim uncited"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.48,
+          "claim": "Heavy checklist on tiny claims slows trivial Q&A",
+          "example": "cite for what is 2+2"
+        }
+      ],
+      "failure_modes": [
+        "skip check on high-stakes delivery",
+        "check only tone not locators"
+      ],
+      "acceptance_tests": [
+        "finalize path for repo claims runs grounding checklist"
+      ],
+      "revisit_triggers": [
+        "xverify ungrounded findings",
+        "false checklist passes"
+      ]
+    },
+    {
+      "id": "HALLUCINATION_GUARD",
+      "topic": "hallucination_guards",
+      "definition": "Treat unsupported specifics (exact line numbers, SHAs, API fields) as high-risk without retrieval. If retrieve fails, say so and lower confidence; do not invent paths. Guards include refusal to fabricate locators and marking uncertainty intervals on memory-only answers.",
+      "group": "failure_modes",
+      "dependencies": [
+        "GROUNDING_CHECK",
+        "GROUND_VS_MEMORIZE"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.93,
+        "business_value": 0.88,
+        "user_value": 0.92,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.6,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "agent invents validators/foo.py that does not exist"
+      },
+      "scope_boundary": {
+        "included": [
+          "no fabricated locators",
+          "uncertainty on memory-only",
+          "retrieve-fail honesty"
+        ],
+        "excluded": [
+          "medical hallucination clinical protocols"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.93,
+          "claim": "Refusal to invent paths prevents cascading wrong edits",
+          "example": "says file not found instead of fake path"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Over-refusal may withhold useful generic guidance",
+          "example": "won't discuss algorithms without a file"
+        }
+      ],
+      "failure_modes": [
+        "invent paths when search empty",
+        "state exact SHAs from memory"
+      ],
+      "acceptance_tests": [
+        "on retrieve miss: explicit miss + no fabricated path; memory answers marked"
+      ],
+      "revisit_triggers": [
+        "invented path rate",
+        "over-refusal complaints"
+      ]
+    },
+    {
+      "id": "FILE_LOCATOR",
+      "topic": "actionable_file_locators",
+      "definition": "Locators must be actionable in this environment: repo-relative paths preferred, worktree-aware, optional line anchors. Avoid dead locators (/tmp cleaned, other users home). Locators are the bridge between grounding and rehydrate/edit tools.",
+      "group": "retrieval",
+      "dependencies": [
+        "PROVENANCE_TRACK",
+        "LAZY_RETRIEVAL"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.86,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.36,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "citation points at /Users/other/project/file already gone"
+      },
+      "scope_boundary": {
+        "included": [
+          "repo-relative paths",
+          "line anchors",
+          "environment-valid locators"
+        ],
+        "excluded": [
+          "URI RFC trivia"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Actionable locators make citations operational",
+          "example": "path opens in same clone"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Over-relative paths confuse multi-repo workspaces",
+          "example": "ambiguous README.md"
+        }
+      ],
+      "failure_modes": [
+        "absolute foreign home paths in shared msgs",
+        "locators without repo root context"
+      ],
+      "acceptance_tests": [
+        "shared citations use repo-relative paths; multi-repo disambiguated"
+      ],
+      "revisit_triggers": [
+        "dead locators in EXCHANGE",
+        "ambiguous basenames"
+      ]
+    },
+    {
+      "id": "SNAPSHOT_PIN",
+      "topic": "snapshot_pin_for_task",
+      "definition": "At task start, pin the integration ref sha and key file shas that define the problem. Snapshot pins stabilize grounding against concurrent tip movement mid-task; re-fetch consciously when protocol requires catching tip (poll ticks).",
+      "group": "grounding",
+      "dependencies": [
+        "WRONG_VERSION",
+        "PROVENANCE_TRACK"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "mid-task tip moves and agent mixes old and new protocol files"
+      },
+      "scope_boundary": {
+        "included": [
+          "task-start ref pin",
+          "conscious re-fetch policy",
+          "key file sha set"
+        ],
+        "excluded": [
+          "database snapshot isolation theory deep dive"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Pins stabilize a coherent world for the build",
+          "example": "task works against known tip sha"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Stale pins miss integrator hotfixes needed mid-task",
+          "example": "ignore required fetch on poll"
+        }
+      ],
+      "failure_modes": [
+        "no pin ever",
+        "never refetch when task says catch tip"
+      ],
+      "acceptance_tests": [
+        "task records base tip sha; poll tasks refetch by design"
+      ],
+      "revisit_triggers": [
+        "mixed-version bugs",
+        "missed required tip catch"
+      ]
+    },
+    {
+      "id": "RETRY_MISSING",
+      "topic": "retry_on_missing_retrieval",
+      "definition": "When expected path missing: verify branch/worktree, try alternate search (symbol, grep), broaden once, then report miss. Do not invent. Retry budget bounded (e.g. 2 strategies) to avoid loops.",
+      "group": "failure_modes",
+      "dependencies": [
+        "HALLUCINATION_GUARD",
+        "RANKING_RELEVANCE",
+        "FILE_LOCATOR"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.83,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "infinite search loop after rename without reporting miss"
+      },
+      "scope_boundary": {
+        "included": [
+          "branch check",
+          "alternate search strategies",
+          "bounded retry then miss"
+        ],
+        "excluded": [
+          "HTTP retry storms"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Bounded retry recovers renames without fabrication",
+          "example": "grep symbol finds new path"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Retries without bound waste turns",
+          "example": "20 strategies for missing file"
+        }
+      ],
+      "failure_modes": [
+        "invent after one miss",
+        "unbounded search loops"
+      ],
+      "acceptance_tests": [
+        "retry policy max strategies; terminal miss message required"
+      ],
+      "revisit_triggers": [
+        "loop incidents",
+        "premature miss on renames"
+      ]
+    },
+    {
+      "id": "RETRIEVAL_BUDGET",
+      "topic": "retrieval_token_budget",
+      "definition": "Cap tokens spent on retrieval per turn and per task (e.g. 15–30% of context for long builds). When over cap, raise relevance threshold, shrink chunks, externalize bulk. Retrieval budget is part of context engineering not an afterthought.",
+      "group": "retrieval",
+      "dependencies": [
+        "LAZY_RETRIEVAL",
+        "RANKING_RELEVANCE",
+        "DUPLICATE_CONTEXT"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.85,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.42,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "retrieval occupies 70% of context leaving no room for plan"
+      },
+      "scope_boundary": {
+        "included": [
+          "per-turn retrieve cap",
+          "raise threshold under pressure",
+          "externalize bulk hits"
+        ],
+        "excluded": [
+          "cloud FinOps generally"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Retrieve caps protect reasoning room",
+          "example": "top-k shrinks when util high"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Too-tight caps cause under-grounded edits",
+          "example": "never enough file body"
+        }
+      ],
+      "failure_modes": [
+        "unlimited retrieve",
+        "cap so tight only paths no bodies"
+      ],
+      "acceptance_tests": [
+        "retrieve budget % defined; enforcement when exceeded"
+      ],
+      "revisit_triggers": [
+        "under-grounded edits",
+        "retrieve share metrics"
+      ]
+    },
+    {
+      "id": "MULTI_SOURCE_MERGE",
+      "topic": "multi_source_merge",
+      "definition": "Merge multiple sources into a coherent note: align on provenance, mark agreements, surface conflicts explicitly. Do not silently average conflicting instructions. Merge outputs should remain cited.",
+      "group": "grounding",
+      "dependencies": [
+        "SOURCE_AUTHORITY",
+        "CITATION_DISCIPLINE",
+        "PROVENANCE_TRACK"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.22,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "update_signal": "two docs disagree on gate command and agent blends into invalid hybrid"
+      },
+      "scope_boundary": {
+        "included": [
+          "conflict surfacing",
+          "authority-based merge",
+          "cited merge notes"
+        ],
+        "excluded": [
+          "CRDT research deep dive"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "claim": "Explicit conflict beats silent blend",
+          "example": "flags PROTOCOL 3.0 vs 2.0 mismatch"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Showing every minor conflict overwhelms",
+          "example": "whitespace disagreements listed"
+        }
+      ],
+      "failure_modes": [
+        "silent average of conflicting rules",
+        "drop citations during merge"
+      ],
+      "acceptance_tests": [
+        "merge note records agreements, conflicts, chosen authority"
+      ],
+      "revisit_triggers": [
+        "silent blend incidents",
+        "noise conflicts"
+      ]
+    },
+    {
+      "id": "CONFLICT_SOURCES",
+      "topic": "conflicting_source_resolution",
+      "definition": "When sources conflict on actionable rules, apply SOURCE_AUTHORITY and task authenticity: authenticated integrator TASK wins for assignments; local branch code wins for implementation facts; stop and ask or report when safety-critical conflict remains unresolved.",
+      "group": "failure_modes",
+      "dependencies": [
+        "SOURCE_AUTHORITY",
+        "MULTI_SOURCE_MERGE",
+        "GROUNDING_CHECK"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.58,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "peer msg says push main while protocol forbids; agent complies with peer"
+      },
+      "scope_boundary": {
+        "included": [
+          "authority resolution table",
+          "stop on unresolved safety conflict"
+        ],
+        "excluded": [
+          "political mediation"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Clear resolution prevents unsafe blends",
+          "example": "peer data loses to authenticated protocol"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Over-stopping blocks progress on minor doc drift",
+          "example": "halts on comment typos"
+        }
+      ],
+      "failure_modes": [
+        "prefer newest text regardless of authority",
+        "ignore safety conflicts"
+      ],
+      "acceptance_tests": [
+        "resolution table written; safety conflicts escalate rather than invent"
+      ],
+      "revisit_triggers": [
+        "wrong winner incidents",
+        "spurious stops"
+      ]
+    },
+    {
+      "id": "EMPTY_RETRIEVAL",
+      "topic": "empty_and_partial_retrieval",
+      "definition": "Handle empty hits and partial hits: report empty explicitly, try one bounded alternate strategy, then proceed with labeled uncertainty or block if the claim is critical. Partial hits (file found but section missing) should not be treated as full grounding.",
+      "group": "failure_modes",
+      "dependencies": [
+        "RETRY_MISSING",
+        "HALLUCINATION_GUARD",
+        "GROUNDING_CHECK"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "empty grep treated as proof a symbol does not exist anywhere"
+      },
+      "scope_boundary": {
+        "included": [
+          "explicit empty report",
+          "partial vs full grounding labels",
+          "critical vs optional claims"
+        ],
+        "excluded": [
+          "HTTP 404 product UX"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Honest empty/partial prevents false certainty",
+          "example": "says not found in scope not does not exist"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Treating every empty as block stalls exploration",
+          "example": "cannot brainstorm names"
+        }
+      ],
+      "failure_modes": [
+        "empty equals confirmed absence globally",
+        "partial hit sold as full proof"
+      ],
+      "acceptance_tests": [
+        "empty/partial labels in retrieval results; critical claims require full hit or block"
+      ],
+      "revisit_triggers": [
+        "false absence claims",
+        "blocks on optional explores"
+      ]
+    },
+    {
+      "id": "TRACE_LINK",
+      "topic": "trace_link_to_actions",
+      "definition": "Link actions (edits, pushes, verdicts) back to supporting retrievals: which file sha justified the patch; which msg justified the TASK. Trace links support audit and xverify. Without them, success is opaque and failures unteachable.",
+      "group": "grounding",
+      "dependencies": [
+        "CITATION_DISCIPLINE",
+        "PROVENANCE_TRACK",
+        "GROUNDING_CHECK"
+      ],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.83,
+        "business_value": 0.82,
+        "user_value": 0.85,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.48,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "push commit has no note of which specs were read"
+      },
+      "scope_boundary": {
+        "included": [
+          "action-to-retrieval links",
+          "audit for xverify",
+          "teachable failures"
+        ],
+        "excluded": [
+          "distributed tracing APM products"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Traces make deliveries reviewable",
+          "example": "commit message cites kb paths read"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.48,
+          "claim": "Heavy tracing on every keystroke is noise",
+          "example": "link each cursor move"
+        }
+      ],
+      "failure_modes": [
+        "no link from patch to source read",
+        "fake traces"
+      ],
+      "acceptance_tests": [
+        "high-stakes actions record supporting locators in commit or EXCHANGE msg"
+      ],
+      "revisit_triggers": [
+        "unverifiable deliveries",
+        "missing traces on incidents"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "RETRIEVAL_TRIGGER",
+      "to": "LAZY_RETRIEVAL",
+      "edge_type": "dependency",
+      "why_related": "trigger then smallest load",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "RETRIEVAL_TRIGGER",
+      "to": "RANKING_RELEVANCE",
+      "edge_type": "dependency",
+      "why_related": "trigger then rank candidates",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "RETRIEVAL_TRIGGER",
+      "to": "GROUND_VS_MEMORIZE",
+      "edge_type": "dependency",
+      "why_related": "when to prefer retrieve over memory",
+      "relation_strength": 0.85
+    },
+    {
+      "from": "LAZY_RETRIEVAL",
+      "to": "PROVENANCE_TRACK",
+      "edge_type": "dependency",
+      "why_related": "loads need provenance",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "LAZY_RETRIEVAL",
+      "to": "CHUNK_STRATEGY",
+      "edge_type": "dependency",
+      "why_related": "lazy uses chunks",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "LAZY_RETRIEVAL",
+      "to": "DUPLICATE_CONTEXT",
+      "edge_type": "dependency",
+      "why_related": "lazy still can duplicate",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "LAZY_RETRIEVAL",
+      "to": "FILE_LOCATOR",
+      "edge_type": "dependency",
+      "why_related": "loads use locators",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "LAZY_RETRIEVAL",
+      "to": "RETRIEVAL_BUDGET",
+      "edge_type": "dependency",
+      "why_related": "lazy respects budget",
+      "relation_strength": 0.87
+    },
+    {
+      "from": "PROVENANCE_TRACK",
+      "to": "CITATION_DISCIPLINE",
+      "edge_type": "dependency",
+      "why_related": "citations need provenance",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "PROVENANCE_TRACK",
+      "to": "STALE_FETCH",
+      "edge_type": "dependency",
+      "why_related": "stale uses provenance fields",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "PROVENANCE_TRACK",
+      "to": "WRONG_VERSION",
+      "edge_type": "dependency",
+      "why_related": "version in provenance",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "PROVENANCE_TRACK",
+      "to": "SNAPSHOT_PIN",
+      "edge_type": "dependency",
+      "why_related": "pins are provenance",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CITATION_DISCIPLINE",
+      "to": "GROUNDING_CHECK",
+      "edge_type": "dependency",
+      "why_related": "check verifies citations",
+      "relation_strength": 0.87
+    },
+    {
+      "from": "CITATION_DISCIPLINE",
+      "to": "MULTI_SOURCE_MERGE",
+      "edge_type": "dependency",
+      "why_related": "merge keeps citations",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "CITATION_DISCIPLINE",
+      "to": "TRACE_LINK",
+      "edge_type": "dependency",
+      "why_related": "traces are citations for actions",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "GROUND_VS_MEMORIZE",
+      "to": "SOURCE_AUTHORITY",
+      "edge_type": "dependency",
+      "why_related": "authority includes memory rank",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "GROUND_VS_MEMORIZE",
+      "to": "HALLUCINATION_GUARD",
+      "edge_type": "dependency",
+      "why_related": "memory risks fabrication",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "RANKING_RELEVANCE",
+      "to": "CHUNK_STRATEGY",
+      "edge_type": "dependency",
+      "why_related": "rank then chunk top hits",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "RANKING_RELEVANCE",
+      "to": "RETRIEVAL_BUDGET",
+      "edge_type": "dependency",
+      "why_related": "budget tightens rank threshold",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SOURCE_AUTHORITY",
+      "to": "MULTI_SOURCE_MERGE",
+      "edge_type": "dependency",
+      "why_related": "merge uses authority",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "SOURCE_AUTHORITY",
+      "to": "CONFLICT_SOURCES",
+      "edge_type": "dependency",
+      "why_related": "conflict uses authority",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "GROUNDING_CHECK",
+      "to": "HALLUCINATION_GUARD",
+      "edge_type": "dependency",
+      "why_related": "check blocks hallucinations",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "HALLUCINATION_GUARD",
+      "to": "RETRY_MISSING",
+      "edge_type": "dependency",
+      "why_related": "miss handling without invent",
+      "relation_strength": 0.85
+    },
+    {
+      "from": "HALLUCINATION_GUARD",
+      "to": "EMPTY_RETRIEVAL",
+      "edge_type": "dependency",
+      "why_related": "empty honesty",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "FILE_LOCATOR",
+      "to": "RETRY_MISSING",
+      "edge_type": "dependency",
+      "why_related": "retry uses locators",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "WRONG_VERSION",
+      "to": "SNAPSHOT_PIN",
+      "edge_type": "dependency",
+      "why_related": "pins fight wrong version",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "RETRY_MISSING",
+      "to": "EMPTY_RETRIEVAL",
+      "edge_type": "dependency",
+      "why_related": "retry then empty",
+      "relation_strength": 0.83
+    },
+    {
+      "from": "MULTI_SOURCE_MERGE",
+      "to": "CONFLICT_SOURCES",
+      "edge_type": "dependency",
+      "why_related": "merge escalates conflicts",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "STALE_FETCH",
+      "to": "GROUNDING_CHECK",
+      "edge_type": "causal",
+      "why_related": "stale fails grounding",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "DUPLICATE_CONTEXT",
+      "to": "RETRIEVAL_BUDGET",
+      "edge_type": "causal",
+      "why_related": "dupes consume budget",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "HALLUCINATION_GUARD",
+      "to": "CITATION_DISCIPLINE",
+      "edge_type": "constraint",
+      "why_related": "no cite of invented paths",
+      "relation_strength": 0.92
+    },
+    {
+      "from": "SOURCE_AUTHORITY",
+      "to": "CONFLICT_SOURCES",
+      "edge_type": "constraint",
+      "why_related": "lower authority cannot win silently",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "RETRIEVAL_TRIGGER",
+      "to": "LAZY_RETRIEVAL",
+      "edge_type": "sequence",
+      "why_related": "order: trigger then load",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "PROVENANCE_TRACK",
+      "to": "CITATION_DISCIPLINE",
+      "edge_type": "sequence",
+      "why_related": "order: track then cite",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "GROUNDING_CHECK",
+      "to": "TRACE_LINK",
+      "edge_type": "sequence",
+      "why_related": "check then record trace on action",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "TRACE_LINK",
+      "to": "RANKING_RELEVANCE",
+      "edge_type": "feedback",
+      "why_related": "failed traces tune ranking features",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "EMPTY_RETRIEVAL",
+      "to": "RETRY_MISSING",
+      "edge_type": "feedback",
+      "why_related": "empty patterns improve retry strategy",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "STALE_FETCH",
+      "to": "WRONG_VERSION",
+      "edge_type": "similarity",
+      "why_related": "both version-coherence failures",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "CITATION_DISCIPLINE",
+      "to": "TRACE_LINK",
+      "edge_type": "similarity",
+      "why_related": "both attach evidence to claims/actions",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "LAZY_RETRIEVAL",
+      "to": "GROUND_VS_MEMORIZE",
+      "edge_type": "conflict",
+      "why_related": "minimal load vs thorough grounding from sources",
+      "resolution_rule": "lazy default; expand when claim is version-critical or edit-targeted",
+      "relation_strength": 0.74,
+      "signed_tension": -0.45
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "lazy_vs_thorough",
+      "description": "Minimal loads vs deep multi-file grounding",
+      "poles": [
+        "always minimal",
+        "always exhaustive"
+      ],
+      "resolution_hint": "lazy default; expand on edit targets and version-critical claims",
+      "affected_nodes": [
+        "LAZY_RETRIEVAL",
+        "GROUND_VS_MEMORIZE",
+        "RETRIEVAL_BUDGET"
+      ]
+    },
+    {
+      "name": "memory_vs_repo",
+      "description": "Parametric knowledge vs working tree authority",
+      "poles": [
+        "trust training",
+        "retrieve everything"
+      ],
+      "resolution_hint": "repo for project facts; memory ok for generic algorithms if labeled",
+      "affected_nodes": [
+        "GROUND_VS_MEMORIZE",
+        "SOURCE_AUTHORITY",
+        "HALLUCINATION_GUARD"
+      ]
+    },
+    {
+      "name": "recall_vs_budget",
+      "description": "More candidates vs token cap",
+      "poles": [
+        "high recall top-50",
+        "tiny top-1 only"
+      ],
+      "resolution_hint": "budgeted top-k; boost failure-linked paths",
+      "affected_nodes": [
+        "RANKING_RELEVANCE",
+        "RETRIEVAL_BUDGET",
+        "DUPLICATE_CONTEXT"
+      ]
+    },
+    {
+      "name": "pin_vs_fresh_tip",
+      "description": "Stable snapshot vs catching integrator updates",
+      "poles": [
+        "never refetch",
+        "always latest tip"
+      ],
+      "resolution_hint": "pin at task start; refetch when protocol/poll requires",
+      "affected_nodes": [
+        "SNAPSHOT_PIN",
+        "STALE_FETCH",
+        "WRONG_VERSION"
+      ]
+    },
+    {
+      "name": "merge_vs_single_winner",
+      "description": "Keep minority sources vs act on authority winner",
+      "poles": [
+        "show all views",
+        "only winner"
+      ],
+      "resolution_hint": "winner for action; note safety-relevant minority",
+      "affected_nodes": [
+        "MULTI_SOURCE_MERGE",
+        "CONFLICT_SOURCES",
+        "SOURCE_AUTHORITY"
+      ]
+    },
+    {
+      "name": "cite_density",
+      "description": "Heavy citation vs readability",
+      "poles": [
+        "cite every token",
+        "cite nothing"
+      ],
+      "resolution_hint": "cite repo-state claims and high-stakes actions",
+      "affected_nodes": [
+        "CITATION_DISCIPLINE",
+        "GROUNDING_CHECK",
+        "TRACE_LINK"
+      ]
+    },
+    {
+      "name": "retry_vs_stop",
+      "description": "Search harder vs report miss",
+      "poles": [
+        "unbounded search",
+        "immediate miss"
+      ],
+      "resolution_hint": "bounded alternate strategies then explicit miss",
+      "affected_nodes": [
+        "RETRY_MISSING",
+        "EMPTY_RETRIEVAL",
+        "HALLUCINATION_GUARD"
+      ]
+    },
+    {
+      "name": "chunk_size",
+      "description": "Tiny fragments vs monolith chunks",
+      "poles": [
+        "micro chunks",
+        "whole files always"
+      ],
+      "resolution_hint": "semantic units with path crumbs; expand on need",
+      "affected_nodes": [
+        "CHUNK_STRATEGY",
+        "LAZY_RETRIEVAL",
+        "RETRIEVAL_BUDGET"
+      ]
+    },
+    {
+      "name": "web_vs_local_security",
+      "description": "External advisories vs local authority bias",
+      "poles": [
+        "web always wins",
+        "local always wins"
+      ],
+      "resolution_hint": "local for protocol/code; allow external for CVE with explicit conflict note",
+      "affected_nodes": [
+        "SOURCE_AUTHORITY",
+        "CONFLICT_SOURCES",
+        "GROUND_VS_MEMORIZE"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "Edit without reading file this session",
+      "trigger": "skipped RETRIEVAL_TRIGGER",
+      "affected_nodes": [
+        "RETRIEVAL_TRIGGER",
+        "LAZY_RETRIEVAL",
+        "GROUNDING_CHECK"
+      ],
+      "mitigation": "read-before-edit gate",
+      "severity": "high"
+    },
+    {
+      "description": "Cited main while on task branch",
+      "trigger": "wrong worktree/ref",
+      "affected_nodes": [
+        "WRONG_VERSION",
+        "SNAPSHOT_PIN",
+        "PROVENANCE_TRACK"
+      ],
+      "mitigation": "record branch+sha on retrieve",
+      "severity": "high"
+    },
+    {
+      "description": "Invented path after empty grep",
+      "trigger": "hallucination on miss",
+      "affected_nodes": [
+        "HALLUCINATION_GUARD",
+        "EMPTY_RETRIEVAL",
+        "RETRY_MISSING"
+      ],
+      "mitigation": "explicit miss; forbid fabricate",
+      "severity": "high"
+    },
+    {
+      "description": "Stale file body after tip moved",
+      "trigger": "no invalidation",
+      "affected_nodes": [
+        "STALE_FETCH",
+        "SNAPSHOT_PIN",
+        "GROUNDING_CHECK"
+      ],
+      "mitigation": "re-read on sha mismatch / before patch",
+      "severity": "medium"
+    },
+    {
+      "description": "Same file duplicated 4x in context",
+      "trigger": "repeated greps",
+      "affected_nodes": [
+        "DUPLICATE_CONTEXT",
+        "RETRIEVAL_BUDGET"
+      ],
+      "mitigation": "path+sha dedup",
+      "severity": "medium"
+    },
+    {
+      "description": "Web blog overrides PROTOCOL-VERSION",
+      "trigger": "authority inversion",
+      "affected_nodes": [
+        "SOURCE_AUTHORITY",
+        "CONFLICT_SOURCES",
+        "MULTI_SOURCE_MERGE"
+      ],
+      "mitigation": "authority ladder; local protocol wins",
+      "severity": "high"
+    },
+    {
+      "description": "Silent blend of two gate commands",
+      "trigger": "multi-doc merge",
+      "affected_nodes": [
+        "MULTI_SOURCE_MERGE",
+        "CONFLICT_SOURCES"
+      ],
+      "mitigation": "surface conflict; pick by authority",
+      "severity": "high"
+    },
+    {
+      "description": "Partial section hit treated as full proof",
+      "trigger": "chunk without full contract",
+      "affected_nodes": [
+        "EMPTY_RETRIEVAL",
+        "CHUNK_STRATEGY",
+        "GROUNDING_CHECK"
+      ],
+      "mitigation": "label partial; expand if claim critical",
+      "severity": "medium"
+    },
+    {
+      "description": "Absolute /Users path in shared EXCHANGE cite",
+      "trigger": "non-portable locator",
+      "affected_nodes": [
+        "FILE_LOCATOR",
+        "TRACE_LINK"
+      ],
+      "mitigation": "repo-relative paths in shared msgs",
+      "severity": "low"
+    },
+    {
+      "description": "Retrieve uses 70% of context",
+      "trigger": "no retrieve budget",
+      "affected_nodes": [
+        "RETRIEVAL_BUDGET",
+        "RANKING_RELEVANCE",
+        "LAZY_RETRIEVAL"
+      ],
+      "mitigation": "cap and raise threshold",
+      "severity": "medium"
+    },
+    {
+      "description": "Action pushed with no supporting read trace",
+      "trigger": "missing TRACE_LINK",
+      "affected_nodes": [
+        "TRACE_LINK",
+        "CITATION_DISCIPLINE",
+        "GROUNDING_CHECK"
+      ],
+      "mitigation": "require supporting locators on high-stakes actions",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "pin_snapshot",
+      "node_ref": "SNAPSHOT_PIN",
+      "description": "Record task base tip and key file shas",
+      "artifact": "snapshot pin",
+      "gate": "base sha recorded"
+    },
+    {
+      "action": "decide_retrieve",
+      "node_ref": "RETRIEVAL_TRIGGER",
+      "description": "Check triggers before edit or claim",
+      "artifact": "retrieve decision",
+      "gate": "read-before-edit satisfied or waived with reason"
+    },
+    {
+      "action": "rank_candidates",
+      "node_ref": "RANKING_RELEVANCE",
+      "description": "Rank by working set and failure links",
+      "artifact": "top-k list",
+      "gate": "k within budget"
+    },
+    {
+      "action": "lazy_load",
+      "node_ref": "LAZY_RETRIEVAL",
+      "description": "Load smallest sufficient chunk with path crumbs",
+      "artifact": "chunks",
+      "gate": "semantic unit preferred"
+    },
+    {
+      "action": "attach_provenance",
+      "node_ref": "PROVENANCE_TRACK",
+      "description": "Store path version lines fetch time",
+      "artifact": "provenance records",
+      "gate": "each chunk has locator"
+    },
+    {
+      "action": "dedup",
+      "node_ref": "DUPLICATE_CONTEXT",
+      "description": "Collapse path+sha duplicates",
+      "artifact": "dedup report",
+      "gate": "no identical duplicates retained"
+    },
+    {
+      "action": "authority_merge",
+      "node_ref": "MULTI_SOURCE_MERGE",
+      "description": "Merge sources noting conflicts",
+      "artifact": "merge note",
+      "gate": "conflicts explicit"
+    },
+    {
+      "action": "resolve_conflicts",
+      "node_ref": "CONFLICT_SOURCES",
+      "description": "Apply authority ladder; escalate safety ties",
+      "artifact": "resolution",
+      "gate": "actionable winner or stop"
+    },
+    {
+      "action": "grounding_check",
+      "node_ref": "GROUNDING_CHECK",
+      "description": "Verify citations resolve on task ref",
+      "artifact": "checklist",
+      "gate": "critical claims cited"
+    },
+    {
+      "action": "guard_hallucination",
+      "node_ref": "HALLUCINATION_GUARD",
+      "description": "Block invented paths/SHAs",
+      "artifact": "guard result",
+      "gate": "no fabricated locators"
+    },
+    {
+      "action": "trace_action",
+      "node_ref": "TRACE_LINK",
+      "description": "Link edit/push to supporting retrievals",
+      "artifact": "trace record",
+      "gate": "high-stakes action has locators"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "repo_over_memory_for_project_facts",
+      "rationale": "working tree is authority for this task",
+      "trigger": "version-specific or local protocol claim",
+      "action": "retrieve or mark low confidence"
+    },
+    {
+      "rule": "no_fabricated_locators",
+      "rationale": "false paths cause cascading wrong edits",
+      "trigger": "retrieve miss",
+      "action": "explicit miss; do not invent"
+    },
+    {
+      "rule": "authority_over_recency",
+      "rationale": "newest low-tier text must not override protocol",
+      "trigger": "conflicting sources",
+      "action": "apply authority ladder"
+    },
+    {
+      "rule": "read_before_edit",
+      "rationale": "ungrounded patches fail or corrupt",
+      "trigger": "file edit intent",
+      "action": "retrieve current body first"
+    },
+    {
+      "rule": "cite_repo_state_claims",
+      "rationale": "unverifiable claims fail xverify",
+      "trigger": "assert file facts in delivery",
+      "action": "include path citations"
+    },
+    {
+      "rule": "budget_protects_reasoning",
+      "rationale": "all-retrieve context cannot plan",
+      "trigger": "retrieve share too high",
+      "action": "raise threshold; shrink chunks"
+    },
+    {
+      "rule": "explicit_conflict_over_blend",
+      "rationale": "hybrid invalid rules are dangerous",
+      "trigger": "disagreeing instructions",
+      "action": "surface and resolve by authority"
+    },
+    {
+      "rule": "partial_is_not_full",
+      "rationale": "section hit is incomplete grounding",
+      "trigger": "critical claim on partial chunk",
+      "action": "expand or block"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "no_edit_without_read",
+      "prevents": "ungrounded patches"
+    },
+    {
+      "rule": "no_invented_paths_or_shas",
+      "prevents": "cascading false edits"
+    },
+    {
+      "rule": "no_silent_conflict_blend",
+      "prevents": "invalid hybrid procedures"
+    },
+    {
+      "rule": "no_uncited_repo_state_claims_in_delivery",
+      "prevents": "unverifiable deliveries"
+    },
+    {
+      "rule": "no_wrong_branch_as_current",
+      "prevents": "wrong-version grounding"
+    },
+    {
+      "rule": "no_unlimited_retrieve",
+      "prevents": "context monopoly by dumps"
+    },
+    {
+      "rule": "no_empty_means_global_absence",
+      "prevents": "false certainty from narrow search"
+    },
+    {
+      "rule": "no_foreign_absolute_paths_in_shared_cites",
+      "prevents": "dead locators for peers"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "patch apply fails",
+      "action": "re-read current file; treat as stale; retry once",
+      "nodes": [
+        "STALE_FETCH",
+        "LAZY_RETRIEVAL",
+        "GROUNDING_CHECK"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "retrieve miss on expected path",
+      "action": "branch check; alternate search; then explicit miss",
+      "nodes": [
+        "RETRY_MISSING",
+        "EMPTY_RETRIEVAL",
+        "HALLUCINATION_GUARD"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "conflicting instructions found",
+      "action": "authority resolve; do not blend; escalate if safety",
+      "nodes": [
+        "CONFLICT_SOURCES",
+        "SOURCE_AUTHORITY",
+        "MULTI_SOURCE_MERGE"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "xverify reports uncited claims",
+      "action": "add citations or weaken claims; rerun grounding check",
+      "nodes": [
+        "CITATION_DISCIPLINE",
+        "GROUNDING_CHECK",
+        "TRACE_LINK"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "retrieve budget exceeded",
+      "action": "dedup; raise rank threshold; externalize bulk",
+      "nodes": [
+        "RETRIEVAL_BUDGET",
+        "DUPLICATE_CONTEXT",
+        "RANKING_RELEVANCE"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "wrong version suspected",
+      "action": "verify branch/worktree; re-pin; re-read",
+      "nodes": [
+        "WRONG_VERSION",
+        "SNAPSHOT_PIN",
+        "PROVENANCE_TRACK"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "partial hit on critical claim",
+      "action": "expand chunk or full file; relabel grounding",
+      "nodes": [
+        "EMPTY_RETRIEVAL",
+        "CHUNK_STRATEGY",
+        "GROUNDING_CHECK"
+      ],
+      "priority": 3
+    }
+  ],
+  "priority_rationale": "Grounding and non-fabrication dominate fluency; authority resolution dominates recency; read-before-edit dominates speed.",
+  "eval_objective": "verify_triggers_provenance_citations_stale_guards_and_no_fabricated_locators",
+  "created": "2026-07-13",
+  "source_description": "heuristic priors for retrieval and grounding engineering in multi-agent LLM systems",
+  "source_citation": "heuristic prior; operational practice for agent orchestration; no external dataset supplied"
+}
