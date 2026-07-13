@@ -1,0 +1,722 @@
+{
+  "domain": "culinary_technique_doneness",
+  "domain_label": "Culinary Technique and Doneness Protocol",
+  "purpose": "An engineering-grade protocol for home bakers covering how mixing methods mechanically build (or protect) structure, how temperature bands govern yeast, chocolate, and egg work, how rest/ferment/proof endpoints are read from dough state rather than the clock, why internal temperature dominates every other doneness signal, and how lookalike failures (wet-skewer sink vs dry-crater sink, dense vs tough crumb, tunneling) are told apart because they demand opposite fixes.",
+  "assumptions": [
+    "no observed dataset supplied; all scores are heuristic priors",
+    "audience is home cooks with a probe thermometer, a stand or hand mixer, and a conventional home oven at sea level unless an edge case says otherwise",
+    "temperatures are Celsius with typical published band widths; a calibrated probe (ice-bath 0 C check) is assumed before any doneness call",
+    "recipes are conventional wheat-flour, chicken-egg, cane-sugar formulas; substitutions are handled only as flagged edge cases"
+  ],
+  "exclusions": [
+    "ingredient function and formula ratios (flour protein selection, sugar/fat/liquid balance) — covered by the ingredient-science KB",
+    "equipment selection, oven calibration hardware, and pan material physics beyond their effect on doneness signals",
+    "sourdough starter maintenance and wild-yeast microbiology (only commercial-yeast bands are specified here)",
+    "food-safety pathogen kill charts beyond the doneness temperatures themselves",
+    "plated-dessert presentation, decoration, and flavor pairing"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "Given a target crumb (velvety cake, coarse tender muffin, flaky biscuit, airy sponge, chewy bread), which mixing method do I choose and what mechanical outcome does each method engineer?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "MIXING_METHOD_SELECTION maps each named crumb target to creaming, muffin, biscuit, foam, or kneaded method and states the structural mechanism (aeration, fat coating, lamination, foam, gluten) behind each mapping",
+      "covered_by": ["MIXING_METHOD_SELECTION"]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What butter temperature window makes creaming work, how do I verify the butter is in it, and what do the batter stages look like when creaming succeeds or breaks?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "CREAMING_METHOD states the 18-21 C plasticity window, the finger-dent verification, the 3-5 minute pale-and-fluffy endpoint, and the greasy (too warm) vs curdled (too cold or fast egg addition) failure signatures",
+      "covered_by": ["CREAMING_METHOD"]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What are the whip stages for egg foams, how do I recognize ribbon stage, and what fold protocol incorporates dry ingredients without collapsing the foam?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "FOAM_SPONGE_METHOD defines soft/medium/stiff peak and the 2-3 second ribbon; FOLDING_PROTOCOL gives the thirds-addition, J-stroke, quarter-turn technique and the stop condition (no dry streaks, not one stroke more)",
+      "covered_by": ["FOAM_SPONGE_METHOD", "FOLDING_PROTOCOL"]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How do I know bread dough is kneaded enough, and what temperature discipline keeps a laminated dough's butter in discrete layers?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "KNEADING_GLUTEN gives the windowpane test and typical 8-12 minute machine-knead band; LAMINATION_BASICS gives the 13-16 C butter-block window, chill intervals between letter folds, and the below-27 C proof cap for yeasted lamination",
+      "covered_by": ["KNEADING_GLUTEN", "LAMINATION_BASICS"]
+    },
+    {
+      "id": "CQ_05",
+      "question": "What water and dough temperatures keep commercial yeast alive and active, and how do the bands differ between active dry and instant yeast?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "YEAST_TEMPERATURE_BANDS states ADY rehydration at 40-43 C, instant direct-add with a 24-27 C final dough target, stress onset near 46 C, and the 54-60 C death band",
+      "covered_by": ["YEAST_TEMPERATURE_BANDS"]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How do I read volume fraction and the poke test to end bulk fermentation and final proof, and how does ending proof correctly preserve oven spring?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "BULK_FERMENT_ENDPOINT gives the 1.5-2x volume band and dough-state cues; PROOF_ENDPOINT_POKE_TEST decodes the three poke outcomes; OVEN_SPRING explains the first 8-12 minutes of expansion and why full proof leaves no spring headroom",
+      "covered_by": ["BULK_FERMENT_ENDPOINT", "PROOF_ENDPOINT_POKE_TEST", "OVEN_SPRING"]
+    },
+    {
+      "id": "CQ_07",
+      "question": "What melt, cool, and working temperatures temper dark versus milk and white chocolate, and how do I verify temper before committing the batch?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "CHOCOLATE_TEMPERING gives melt 45-50 C (dark), cool to 27-28 C, work at 31-32 C dark / 29-30 C milk-white, and the 5-minute streak-test snap-and-gloss verification",
+      "covered_by": ["CHOCOLATE_TEMPERING"]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How do I temper eggs into a hot liquid without scrambling them, and to what temperature do I cook a stirred custard so it sets without curdling?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "EGG_TEMPERING gives the gradual hot-into-cold ladle protocol, the 76-82 C stirred-custard doneness band, the roughly 85 C curdle threshold, and the spoon-coat check",
+      "covered_by": ["EGG_TEMPERING"]
+    },
+    {
+      "id": "CQ_09",
+      "question": "When doneness signals disagree — the crust looks done but the probe reads low, or the skewer is clean but the center jiggles — which signal wins and in what order do I trust the rest?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "DONENESS_SIGNAL_HIERARCHY ranks internal temperature first, skewer second, touch/springback third, color last, with the reason each lower signal is confounded; INTERNAL_TEMP_TARGETS and SKEWER_AND_TOUCH_TESTS supply the concrete readings",
+      "covered_by": ["DONENESS_SIGNAL_HIERARCHY", "INTERNAL_TEMP_TARGETS", "SKEWER_AND_TOUCH_TESTS"]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What internal temperature is 'done' for lean bread, enriched bread, butter and sponge cakes, cheesecake, molten-center cakes, and stirred custard, and how does carryover change when I pull each one?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "INTERNAL_TEMP_TARGETS states 96-99 C lean bread, 85-91 C enriched, 93-99 C butter/sponge cakes, 65-70 C cheesecake center, 71-77 C molten styles, 76-82 C custard; CARRYOVER_COOL_SET quantifies the 2-5 C residual rise and cool-set for cheesecake and custard",
+      "covered_by": ["INTERNAL_TEMP_TARGETS", "CARRYOVER_COOL_SET"]
+    },
+    {
+      "id": "CQ_11",
+      "question": "My cake sank in the middle — how do I determine whether it was underbaked or over-leavened, and why are the two fixes opposite?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "SUNK_CENTER_DIFFERENTIAL separates the wet-skewer/gummy-layer underbake (fix: bake longer, verify oven temperature) from the dry-crater over-leavened collapse (fix: reduce leavening or creaming aeration) and states that applying either fix to the other cause makes the next bake worse",
+      "covered_by": ["SUNK_CENTER_DIFFERENTIAL"]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How do I tell dense crumb from tough crumb from tunneling, and for any diagnosed failure, what is recoverable mid-process versus only preventable next bake?",
+      "must_be_answerable_from": ["nodes", "workflow"],
+      "acceptance_condition": "DENSE_TOUGH_CRUMB_DIFFERENTIAL separates compact-but-tender (fermentation/aeration deficit) from rubbery-chew (gluten overdevelopment); TUNNELING_DIAGNOSIS identifies vertical channels from overmixed quick-bread batter; RECOVERY_VS_PREVENTION sorts each failure into salvage-now versus log-and-prevent",
+      "covered_by": ["DENSE_TOUGH_CRUMB_DIFFERENTIAL", "TUNNELING_DIAGNOSIS", "RECOVERY_VS_PREVENTION"]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "fat plasticity window",
+      "definition": "The temperature band (18-21 C for butter in creaming) in which a solid fat is soft enough to shear and trap air but firm enough to hold the bubbles; below it the fat fractures, above it the crystal network melts and leaks the air back out."
+    },
+    {
+      "term": "windowpane test",
+      "definition": "Gluten-development check: a golf-ball piece of dough stretched slowly between fingers forms a translucent membrane you can read light through without tearing; tearing at a thick opaque stage means the network needs more kneading or rest."
+    },
+    {
+      "term": "ribbon stage",
+      "definition": "Whole-egg foam endpoint for genoise and sponge: eggs and sugar whipped (typically 5-8 minutes on high) until roughly tripled and pale, so batter falling from the whisk sits as a visible ribbon on the surface for 2-3 seconds before sinking in."
+    },
+    {
+      "term": "poke test",
+      "definition": "Proof endpoint check: a floured fingertip pressed about 1-2 cm into proofed dough; the dent springing back slowly and only partway means ready, springing back instantly and fully means underproofed, and staying or deflating means overproofed."
+    },
+    {
+      "term": "desired dough temperature (DDT)",
+      "definition": "The target temperature of dough at the end of mixing (24-27 C for most instant-yeast breads), hit by adjusting water temperature against flour and room temperature so fermentation runs on a predictable clock."
+    },
+    {
+      "term": "Form V crystals",
+      "definition": "The stable beta cocoa-butter polymorph that gives tempered chocolate snap, gloss, and bloom resistance; created by melting out all crystals (45-50 C for dark), cooling to 27-28 C to nucleate, then working at 31-32 C dark or 29-30 C milk/white so only Form V survives."
+    },
+    {
+      "term": "carryover cooking",
+      "definition": "The 2-5 C internal temperature rise after an item leaves the oven as outer-layer heat conducts inward; dense items and custards are pulled below final target because carryover finishes the set."
+    },
+    {
+      "term": "cool-set",
+      "definition": "Structure that only firms during cooling — starch retrogradation in bread crumb, egg-protein and starch networks in cheesecake and custard — which is why a 65-70 C cheesecake center still jiggles at pull and why slicing hot reads as underbaked."
+    },
+    {
+      "term": "oven spring",
+      "definition": "The rapid rise in the first 8-12 minutes of baking as yeast surges until it dies around 54-60 C, dissolved CO2 comes out of solution, gases expand, and water vaporizes — the last expansion before crust set locks the loaf's volume."
+    },
+    {
+      "term": "tunneling",
+      "definition": "Elongated vertical holes in muffins and quick breads caused by overmixed batter: developed gluten strands channel leavening gas into chimneys instead of holding a uniform coarse crumb; the signature pairs with peaked, glossy tops."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "MIXING_METHOD_SELECTION",
+      "topic": "mixing_method_to_crumb_mapping",
+      "definition": "Choose the mixing method from the target crumb, because each method engineers a different structure: creaming (plastic butter 18-21 C beaten with sugar 3-5 minutes) builds a fine, velvety, aerated cake crumb; the muffin/two-bowl method (wet into dry, 10-15 strokes, lumps tolerated) yields a coarse, tender quick-bread crumb by minimizing gluten; biscuit/cut-in (cold fat rubbed to pea-size, minimal hydration) yields flaky layers; foam/sponge methods leaven with whipped-egg air alone; kneading develops a continuous gluten network for chewy, gas-holding bread. The method decision is the first irreversible fork in any bake: it fixes which failure modes are even possible downstream and which doneness signals will be readable.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": [
+          "the crumb-target to method mapping for creaming, muffin, biscuit, foam, and kneaded doughs",
+          "the structural mechanism (aeration, fat coating, lamination, foam, gluten) each method exploits",
+          "which downstream failure families each method exposes"
+        ],
+        "excluded": [
+          "step-by-step execution of any single method (own nodes)",
+          "formula ratios and ingredient substitutions"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Mapping crumb to method up front prevents the most common home-baker category error: applying bread-style thorough mixing to a tenderness-critical batter",
+          "example": "a muffin batter beaten smooth like a cake batter develops gluten and tunnels; the mapping says 10-15 strokes and stop",
+          "weight": 0.85
+        },
+        {
+          "claim": "Knowing the mechanism lets a cook improvise correctly when equipment changes",
+          "example": "no mixer for creaming means switching to the muffin method with melted butter, accepting a coarser crumb, rather than hand-creaming cold butter badly",
+          "weight": 0.68
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The mapping is a simplification that blurs hybrid methods, so it can mislead on recipes that deliberately cross categories",
+          "example": "reverse creaming (flour-coated butter) reads as neither creaming nor biscuit in the map, yet is standard for fine-crumbed wedding cakes",
+          "weight": 0.55
+        },
+        {
+          "claim": "Method choice alone cannot rescue a formula whose ratios fight the chosen structure",
+          "example": "perfect creaming technique still collapses in a cake carrying 1.5x the workable baking powder per cup of flour",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "method chosen by recipe title rather than crumb target, e.g. creaming a 'muffin' recipe that is really a butter cake formula, producing peaked tough muffins",
+        "switching methods mid-recipe (starting a fold, finishing with a beater) so the batter gets neither foam protection nor full gluten development"
+      ],
+      "acceptance_tests": [
+        "given each of five crumb targets (velvety cake, coarse muffin, flaky biscuit, airy sponge, chewy bread), the node names the correct method and its mechanism"
+      ],
+      "revisit_triggers": [
+        "a downstream diagnosis node repeatedly traces failures to a method-selection error rather than execution",
+        "a hybrid method (reverse creaming, tangzhong) becomes common enough in target recipes to need its own mapping row"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.78,
+        "user_value": 0.88,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.7,
+        "confidence": 0.85,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.82,
+        "failure_rate": 0.15,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [0.62, 0.8],
+        "update_signal": "recipe-corpus analysis showing a different method taxonomy fits home recipes better than the classic five"
+      }
+    },
+    {
+      "id": "CREAMING_METHOD",
+      "topic": "creaming_fat_plasticity_and_aeration",
+      "definition": "Creaming beats plastic butter with sugar so sugar crystals shear microscopic air pockets into the fat; those pockets are the cake's leavening nuclei, later inflated by CO2 and steam. The method lives or dies on the 18-21 C fat plasticity window: butter should dent under a finger without your finger sliding in (too warm, above about 22-23 C, the crystal network melts and the batter turns greasy and loses air) and without cracking (too cold, below about 16 C, sugar cannot shear it and aeration never happens). Beat 3-5 minutes at medium until pale and roughly 1.5x in volume, then add room-temperature eggs gradually — cold eggs or fast addition breaks the emulsion into a curdled, cottage-cheese look that bakes into a dense, sometimes sunken cake.",
+      "group": "mixing_methods",
+      "dependencies": ["MIXING_METHOD_SELECTION"],
+      "competency_question_refs": ["CQ_02"],
+      "scope_boundary": {
+        "included": [
+          "the 18-21 C butter window and finger-dent verification",
+          "the 3-5 minute pale-and-fluffy endpoint and 1.5x volume cue",
+          "gradual room-temperature egg addition and emulsion maintenance"
+        ],
+        "excluded": [
+          "reverse creaming variants",
+          "which recipes should use creaming at all (selection node)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Creaming gives the finest, most uniform cake crumb of any method because the air is pre-dispersed as micro-bubbles in fat",
+          "example": "a properly creamed pound cake shows a tight, velvety crumb no muffin-method version can match",
+          "weight": 0.82
+        },
+        {
+          "claim": "The visual endpoints (pale color, 1.5x volume) make the method self-verifying without instruments",
+          "example": "batter that stays yellow and dense after 5 minutes tells you the butter was out of window before anything bakes",
+          "weight": 0.66
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The 18-21 C window is narrow and kitchen-dependent, making creaming the most temperature-fragile mixing method",
+          "example": "a 28 C summer kitchen melts butter past plasticity in minutes; the same recipe that worked in January turns greasy in July",
+          "weight": 0.7
+        },
+        {
+          "claim": "Over-creaming past the endpoint loads the batter with more air than the flour structure can hold",
+          "example": "an 8-10 minute creamed butter cake rises fast, then sinks into a dry crater as excess bubbles coalesce and burst",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "greasy slick batter (butter too warm): air already lost, distinguishable from curdling because the batter looks shiny and slack, not lumpy",
+        "curdled batter (cold or rushed eggs): lumpy with visible fat flecks; partially recoverable by warming the bowl slightly and beating, unlike the greasy state",
+        "under-creamed batter (butter too cold or time too short): dense yellow batter that bakes flat with a tight, heavy crumb mistaken for underbaking"
+      ],
+      "acceptance_tests": [
+        "the node states the 18-21 C window with both out-of-window failure signatures and how they differ visually",
+        "the egg-addition protocol specifies room-temperature eggs added gradually with the curdle-recovery step"
+      ],
+      "revisit_triggers": [
+        "sunken-center diagnoses repeatedly trace back to creaming aeration rather than leavening amounts"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.72,
+        "user_value": 0.85,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.65,
+        "confidence": 0.86,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.84,
+        "failure_rate": 0.25,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [0.68, 0.84],
+        "update_signal": "instrumented tests showing home butters (higher water content) shift the plasticity window meaningfully off 18-21 C"
+      }
+    },
+    {
+      "id": "MUFFIN_METHOD",
+      "topic": "muffin_two_bowl_minimal_mixing",
+      "definition": "The muffin/two-bowl method combines all wet ingredients in one bowl, all dry in another, then folds wet into dry with about 10-15 strokes — stopping when no dry flour streaks remain, even though the batter is still lumpy. The entire point is gluten suppression: liquid fat or melted butter coats flour proteins, and the stroke cap keeps the little gluten that hydrates from organizing into strands. The reward is a coarse, tender, open crumb; the tax on every extra stroke is gluten development that shows up as peaked glossy tops, rubbery texture, and tunneling. Rest the portioned batter 10-15 minutes only if the recipe uses double-acting powder; single-acting formulas must bake immediately or lose lift.",
+      "group": "mixing_methods",
+      "dependencies": ["MIXING_METHOD_SELECTION"],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": [
+          "the two-bowl protocol and the 10-15 stroke cap",
+          "the lumps-are-correct stop condition",
+          "when a bench rest is safe (double-acting powder) versus lift-destroying"
+        ],
+        "excluded": [
+          "diagnosing tunneling after the fact (diagnosis node)",
+          "creamed-butter muffin variants"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The method is the fastest and most robust for beginners because its only skill demand is stopping early",
+          "example": "a first-time baker following the stroke cap gets acceptable muffins; the same beginner attempting creaming usually misses the butter window",
+          "weight": 0.75
+        },
+        {
+          "claim": "Tolerating lumps makes the stop condition unambiguous and observable",
+          "example": "'no dry streaks, lumps fine' is checkable at a glance, unlike 'mix until just combined' which beginners overshoot",
+          "weight": 0.64
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The stroke cap fails silently when the leavening is poorly dispersed, because you cannot stir more to fix clumps",
+          "example": "un-whisked baking soda in the dry bowl leaves bitter brown speckles, and the fix (thorough dry-whisking first) must happen before the wet hits",
+          "weight": 0.6
+        },
+        {
+          "claim": "The coarse crumb ceiling means the method cannot produce a fine cake texture no matter how well executed",
+          "example": "a birthday cake made muffin-method reads as cornbread-textured beside a creamed cake",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "overmixing: batter turns smooth and elastic, bakes with peaked tops and vertical tunnels — the signature differential from undermixing, which leaves raw flour pockets",
+        "undermixing: visible dry flour streaks bake into pale mealy pockets; distinguishable at batter stage, invisible from the outside once baked",
+        "long bench rest on single-acting leavening: batter deflates before the oven, producing squat dense muffins misdiagnosed as oven trouble"
+      ],
+      "acceptance_tests": [
+        "the node states the stroke cap, the lumps-tolerated stop rule, and both mixing failure signatures with how to tell them apart"
+      ],
+      "revisit_triggers": [],
+      "base": {
+        "criticality": 0.72,
+        "business_value": 0.65,
+        "user_value": 0.8,
+        "technical_complexity": 0.3,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.6,
+        "irreversibility": 0.72,
+        "confidence": 0.88,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.85,
+        "failure_rate": 0.3,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [0.72, 0.88],
+        "update_signal": "stroke-count experiments showing modern low-protein flours tolerate materially more than 15 strokes before tunneling"
+      }
+    },
+    {
+      "id": "BISCUIT_CUT_IN",
+      "topic": "biscuit_cut_in_cold_fat_flake",
+      "definition": "The biscuit/cut-in method rubs or cuts cold solid fat (butter straight from the fridge, roughly 4-7 C) into flour until the pieces range from coarse sand to pea size, then adds cold liquid with minimal handling. The discrete fat pieces do two jobs: they waterproof patches of flour (tenderness) and, in the oven, melt and flash their water to steam, jacking apart the dough into flakes. Everything in the method defends fat coldness and discreteness: cold hands or a pastry cutter, chilled liquid, a short 20-30 second knead just to cohesion, and an optional 15-30 minute fridge rest before baking hot (typically 220 C) so steam generation outruns fat melt. Warm, smeared-in fat gives a uniform bready crumb — the diagnostic opposite of flaky.",
+      "group": "mixing_methods",
+      "dependencies": ["MIXING_METHOD_SELECTION"],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": [
+          "pea-size cold-fat cut-in and the steam-flake mechanism",
+          "handling discipline: cold tools, minimal kneading, chill before bake",
+          "the hot-oven requirement so steam beats fat melt"
+        ],
+        "excluded": [
+          "full lamination with a butter block (lamination node)",
+          "chemical leavening chemistry"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Visible pea-size fat is a direct, inspectable predictor of flake before anything bakes",
+          "example": "a dough showing marbled butter flecks reliably bakes in layers; a uniform pale dough reliably bakes bready — you know the outcome at shaping",
+          "weight": 0.78
+        },
+        {
+          "claim": "The method tolerates low-protein and even gluten-free flours better than kneaded doughs because structure comes from steam layers, not gluten",
+          "example": "a tender cake-flour biscuit still flakes, while a cake-flour bread loaf collapses",
+          "weight": 0.58
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The method's cold-chain requirement conflicts with slow, careful beginners — the longer you handle, the worse it gets",
+          "example": "ten minutes of deliberate rubbing in a warm kitchen melts the fat you were trying to keep discrete, and no amount of extra skill recovers the flake",
+          "weight": 0.68
+        },
+        {
+          "claim": "Minimal hydration and handling leave the dough ragged, so shaping errors (twisting the cutter, re-rolling scraps) cost disproportionate height",
+          "example": "twisted-cut biscuits seal their edges and rise lopsided at half height; second-roll scraps bake noticeably tougher",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "fat smeared to invisibility (too warm or overworked): bakes bready and uniform — told apart from over-kneading by the absence of chew",
+        "fat left in walnut-size chunks: leaks during baking, leaving greasy hollows and a fried bottom",
+        "oven too cool (below about 200 C): fat melts before steam lifts, biscuits spread flat and greasy instead of rising in layers"
+      ],
+      "acceptance_tests": [],
+      "revisit_triggers": [],
+      "base": {
+        "criticality": 0.68,
+        "business_value": 0.6,
+        "user_value": 0.75,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.58,
+        "cross_topic_coupling": 0.55,
+        "irreversibility": 0.68,
+        "confidence": 0.84,
+        "node_conflict_pressure": 0.32,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.28,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [0.66, 0.84],
+        "update_signal": "side-by-side bakes quantifying how far above 7 C starting butter can drift before measurable flake loss"
+      }
+    },
+    {
+      "id": "FOAM_SPONGE_METHOD",
+      "topic": "egg_foam_whip_stages_and_sponge",
+      "definition": "Foam/sponge methods leaven with whipped-egg air alone or primarily. Whites progress through defined stages: frothy (no structure), soft peak (tip folds over immediately), medium peak (tip curls but holds), stiff peak (stands straight, glossy, bowl-invertible), then overwhipped (grainy, clumped, weeping liquid — for most uses unrecoverable, though folding in one fresh unwhipped white can partially rescue). Whole-egg sponges (genoise) whip eggs and sugar 5-8 minutes on high to roughly triple volume and pale ribbon stage — batter falling from the whisk holds a 2-3 second ribbon on the surface. Warm eggs (about 21-27 C, or briefly warmed over a bain-marie to about 43 C for genoise) whip faster and higher; a trace of yolk fat in whites can halve final white-foam volume. The whip stage chosen is a structural decision: soft-to-medium peaks fold into batters with less loss; stiff peaks carry soufflés and meringues.",
+      "group": "mixing_methods",
+      "dependencies": ["MIXING_METHOD_SELECTION"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": [
+          "the named whip stages with their visual/mechanical tests",
+          "ribbon stage for whole-egg sponges (triple volume, 2-3 second ribbon)",
+          "egg temperature effects and fat-contamination sensitivity"
+        ],
+        "excluded": [
+          "the folding motion itself (folding node)",
+          "cooked meringues (Italian/Swiss syrup temperatures)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Whip stages give discrete, testable checkpoints so the baker can stop at the exact structure the recipe needs",
+          "example": "the tip-curl test distinguishes medium from stiff in two seconds, and choosing medium for a mousse fold saves the foam that stiff would cost",
+          "weight": 0.76
+        },
+        {
+          "claim": "Egg foams leaven with no chemical taste and the lightest possible crumb",
+          "example": "a genoise at ribbon stage rises purely on egg foam and reads cleaner than any baking-powder sponge",
+          "weight": 0.6
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The foam is a decaying asset from the second whipping stops, imposing a hard clock on everything downstream",
+          "example": "ribbon-stage genoise batter left 15 minutes while the oven preheats loses enough air to drop the baked height by a third",
+          "weight": 0.72
+        },
+        {
+          "claim": "The stage boundaries are close together at the stiff end, so 30-60 seconds of inattention crosses from stiff to grainy-broken",
+          "example": "walking away from a stand mixer on high with whites at medium peak routinely returns curdled foam",
+          "weight": 0.65
+        }
+      ],
+      "failure_modes": [
+        "overwhipped whites: grainy clumps and weeping — differentiated from underwhipped (pourable, no peaks) because both fail to fold cleanly but only overwhipped shows liquid separation",
+        "yolk or grease contamination: whites plateau at frothy/soft no matter how long whipped — tells itself apart from overwhipping by never having reached volume at all",
+        "ribbon called early: batter ribbon sinks immediately; the sponge bakes short and dense with a rubbery base layer"
+      ],
+      "acceptance_tests": [
+        "the node defines soft, medium, and stiff peak with observable tests, the 2-3 second ribbon criterion, and both contamination and overwhip signatures"
+      ],
+      "revisit_triggers": [],
+      "base": {
+        "criticality": 0.78,
+        "business_value": 0.66,
+        "user_value": 0.8,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.75,
+        "confidence": 0.85,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.83,
+        "failure_rate": 0.3,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.66, 0.85],
+        "update_signal": "controlled trials on carton pasteurized whites shifting whip-time and max-volume expectations versus shell eggs"
+      }
+    },
+    {
+      "id": "FOLDING_PROTOCOL",
+      "topic": "fold_technique_foam_preservation",
+      "definition": "Folding incorporates dense ingredients into a foam while surrendering the least air. Protocol: lighten first (stir one-quarter to one-third of the foam into the heavy base to loosen it — this sacrifice portion is expected to deflate), then add the remaining foam in two or three additions; cut down through the center with a flexible spatula, sweep along the bowl bottom, roll up the side and over in a J-stroke, rotating the bowl a quarter turn per stroke. Sift dry ingredients over the surface in thirds for sponges. Stop at no visible streaks — every stroke past homogeneity costs volume, and a typical careful fold loses 10-20% of foam volume while a stirred 'fold' loses half. A deflated fold cannot be re-whipped: air beaten back into a flour-bearing batter develops gluten instead.",
+      "group": "mixing_methods",
+      "dependencies": ["FOAM_SPONGE_METHOD"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": [
+          "the lighten-first sacrifice portion",
+          "J-stroke and quarter-turn mechanics with thirds addition",
+          "the no-streaks stop condition and the no-rewhip rule"
+        ],
+        "excluded": [
+          "producing the foam (foam node)",
+          "folding laminated dough (lamination node)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The lighten-first step converts an impossible fold (dense chocolate into airy whites) into an easy one at a small fixed air cost",
+          "example": "stirring a third of the whites into melted-chocolate base first lets the rest fold in with a handful of strokes",
+          "weight": 0.74
+        },
+        {
+          "claim": "Thirds addition localizes damage: a mistake on the first third still leaves two-thirds of the foam intact",
+          "example": "over-folding the first flour addition into genoise costs some volume but the remaining additions folded correctly still carry the sponge",
+          "weight": 0.6
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Folding under-mixes by design, so pockets of unmixed base sink and bake as dense streaks when the stop rule is applied too eagerly",
+          "example": "a chocolate soufflé with white streaks bakes with heavy chocolate veins at the bottom of the ramekin",
+          "weight": 0.58
+        },
+        {
+          "claim": "The technique is grip-and-rhythm dependent and degrades badly with the wrong tool",
+          "example": "folding with a wooden spoon instead of a flexible spatula roughly doubles air loss because the blade cannot sweep the bowl wall",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "over-folding: batter turns visibly slack and pourable, bakes low and rubbery — distinguished from under-folding, which bakes at height but with streaks and dense pockets",
+        "adding foam all at once to a stiff base: the base breaks the foam faster than it loosens, losing the batch",
+        "flour dumped rather than sifted in thirds: pockets ball up, and chasing them with extra strokes deflates the sponge"
+      ],
+      "acceptance_tests": [],
+      "revisit_triggers": [],
+      "base": {
+        "criticality": 0.74,
+        "business_value": 0.6,
+        "user_value": 0.76,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.66,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.78,
+        "confidence": 0.84,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.32,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.64, 0.82],
+        "update_signal": "measured volume-retention comparisons across folding tools and addition counts contradicting the thirds heuristic"
+      }
+    },
+    {
+      "id": "KNEADING_GLUTEN",
+      "topic": "kneading_gluten_development_windowpane",
+      "definition": "Kneading organizes hydrated glutenin and gliadin into an aligned, elastic gluten network that traps fermentation gas. Typical development: 8-12 minutes in a stand mixer on low-medium or 10-15 minutes by hand for a standard lean dough; high-hydration doughs can substitute stretch-and-folds at 30-minute intervals across bulk. The endpoint is the windowpane test — a golf-ball piece stretched slowly forms a translucent membrane without tearing; smooth surface sheen and a dough that springs back from a light poke corroborate. Under-kneaded dough tears at a thick opaque stage and bakes into a tight, crumbly loaf; true over-kneading (mostly a machine risk, 20+ minutes) turns the dough slack, sticky, and shiny as the network shears apart. A 20-30 minute autolyse (flour and water rested before salt and yeast) cuts required kneading time roughly in half. Kneading also sets final dough temperature: friction adds about 1-2 C per 10 minutes of machine kneading, which must be budgeted into the 24-27 C DDT.",
+      "group": "mixing_methods",
+      "dependencies": ["MIXING_METHOD_SELECTION"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": [
+          "windowpane, sheen, and poke-springback endpoints",
+          "hand versus machine timings, stretch-and-fold equivalence, autolyse shortcut",
+          "friction heat's contribution to desired dough temperature"
+        ],
+        "excluded": [
+          "fermentation schedule after kneading (bulk node)",
+          "enriched-dough butter incorporation order"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The windowpane test measures the actual structural property (extensible film) rather than proxies like time, so it transfers across flours and mixers",
+          "example": "the same 10-minute knead that windowpanes bread flour leaves all-purpose flour short; the test catches it, the clock does not",
+          "weight": 0.84
+        },
+        {
+          "claim": "Stretch-and-fold equivalence lets high-hydration doughs reach full development with almost no mechanical work",
+          "example": "a 75% hydration dough given four fold sets over 2 hours windowpanes without a mixer",
+          "weight": 0.62
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The windowpane endpoint is wrong for goods where gluten is the enemy, and habit-transferring it ruins them",
+          "example": "kneading biscuit or pie dough to a windowpane produces leathery hardtack — the test's success criterion inverts across product families",
+          "weight": 0.66
+        },
+        {
+          "claim": "Friction heat is invisible without a probe, so a correct-looking knead can silently blow the dough past its 24-27 C target",
+          "example": "12 minutes on speed 4 in a summer kitchen delivers 29-30 C dough that overferments an hour ahead of the recipe schedule",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "under-kneading: membrane tears thick and opaque; loaf bakes tight and crumbly with poor rise — distinguished from dead-yeast density by the crumb still showing some (small) alveoli",
+        "machine over-kneading: dough goes from smooth to wet-shiny and slack, loses all bounce; unlike under-kneading, resting does not improve it",
+        "ignoring friction heat so the ferment clock runs fast and the loaf is judged 'mysteriously overproofed'"
+      ],
+      "acceptance_tests": [
+        "the node states the windowpane procedure with the tear-vs-translucent criterion and both under- and over-kneading signatures"
+      ],
+      "revisit_triggers": [
+        "dense-crumb diagnoses cluster on doughs that passed windowpane, implying the endpoint or the flour assumption needs revision",
+        "adoption of no-knead or long-cold-ferment recipes where time replaces mechanical development"
+      ],
+      "base": {
+        "criticality": 0.85,
+        "business_value": 0.7,
+        "user_value": 0.84,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.86,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.84,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.7, 0.86],
+        "update_signal": "evidence that stretch-and-fold schedules fully replace windowpane-verified kneading across the flours this KB assumes"
+      }
+    },
+    {
+      "id": "LAMINATION_BASICS",
+      "topic": "laminating_butter_block_fold_discipline",
+      "definition": "Lamination locks a continuous butter sheet between dough layers and multiplies the layers by folding: a butter block worked to plasticity at about 13-16 C (colder cracks and shatters through the dough; warmer than about 18-19 C smears into it) is enveloped in chilled, moderately developed dough, then sheeted and given letter (3-fold) or book (4-fold) turns — croissants classically take 3 letter folds for 27 theoretical butter layers — with 20-30 minute fridge rests between turns to relax gluten and re-chill fat. Yeasted laminated doughs must proof below about 27 C, safely under butter's roughly 32 C melting range, or the layers leak out before the oven; bake hot (200-220 C initial) so steam from the butter's ~16% water content jacks the layers apart before the fat fully melts. Honeycomb interior with distinct sheets is success; a bready, cakey interior means the butter integrated somewhere along the way.",
+      "group": "mixing_methods",
+      "dependencies": ["KNEADING_GLUTEN"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": [
+          "butter-block plasticity window 13-16 C and dough-butter consistency matching",
+          "letter/book fold counts, layer arithmetic, and 20-30 minute chill intervals",
+          "the below-27 C proof cap for yeasted lamination and the hot-bake steam requirement"
+        ],
+        "excluded": [
+          "individual pastry shaping and egg-wash finishing",
+          "rough-puff shortcuts (covered conceptually by the cut-in node)"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The chill-between-turns rule converts an impossible continuous skill (keeping butter plastic for an hour) into short manageable windows",
+          "example": "each turn only needs 3-4 minutes of rolling before the dough goes back to the fridge, so even a warm kitchen can laminate in bursts",
+          "weight": 0.72
+        },
+        {
+          "claim": "Layer arithmetic makes the process auditable: fold count predicts interior structure before you cut",
+          "example": "a croissant with two turns instead of three shows visibly coarse, thick layers — traceable to the missing fold, not to baking",
+          "weight": 0.6
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Lamination stacks every temperature discipline in the KB simultaneously (fat window, dough temperature, proof cap), so it has the widest failure surface of any method",
+          "example": "perfect folds are undone by proofing at 30 C — butter pools in the pan and the croissant bakes as brioche in a puddle",
+          "weight": 0.75
+        },
+        {
+          "claim": "Butter and dough must match consistency at each turn, a feel-based judgment that resists written specification",
+          "example": "fridge-hard butter under soft dough shatters into shards on the first pass, and the shards telegraph through as blotches",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "butter shatter (block below about 10-12 C): broken glass-like fragments visible through the dough skin after rolling — distinct from smear, which shows as translucent greasy patches",
+        "butter smear (block or room too warm): dough turns homogeneous and bakes bready; unlike shatter, invisible until the crumb is cut",
+        "proofing above 27 C: butter leak-out during proof, pooled fat under the pastry, flat dense result despite perfect folds"
+      ],
+      "acceptance_tests": [],
+      "revisit_triggers": [
+        "yeast-band or kneading guidance changes, since lamination inherits both its dough and its proof constraints from those nodes"
+      ],
+      "base": {
+        "criticality": 0.7,
+        "business_value": 0.62,
+        "user_value": 0.72,
+        "technical_complexity": 0.85,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.8,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.4,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.6, 0.8],
+        "update_signal": "European-style high-fat butter becoming the default assumption, which widens the workable block window at the warm end"
+      }
+    },
+    {
+      "id": "YEAST_TEMPERATURE_BANDS",
+      "topic": "yeast_viability_temperature_bands",
+      "definition": "Commercial yeast performance is banded by temperature, and the bands differ by product. Active dry yeast (ADY) rehydrates in water at 40-43 C — warm enough to dissolve the protective dead-cell coat, cool enough not to injure live cells — and should visibly foam within 5-10 minutes (no foam means dead yeast: stop and replace before wasting flour). Instant yeast is added directly to flour with no rehydration step and tolerates cooler liquid. Either way, the dough itself should finish mixing at 24-27 C (the DDT), where fermentation is vigorous but flavor development keeps pace. Stress begins around 46 C — cells are damaged and activity becomes erratic — and the death band is 54-60 C, which is also exactly why oven spring ends when the loaf interior crosses that range. On the cold side, refrigerator temperatures (3-5 C) do not kill yeast but slow it enormously, the
