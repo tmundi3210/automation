@@ -125,13 +125,13 @@
     },
     {
       "id": "CQ_08",
-      "question": "Given pan dimensions and batter mass, what depth and fill fraction result?",
+      "question": "Given pan dimensions, batter mass, and a product-class density prior, what depth and fill fraction result?",
       "must_be_answerable_from": [
         "PAN_GEOM",
         "BATTER_DEPTH",
         "TOTAL_MASS"
       ],
-      "acceptance_condition": "computes volume, fill fraction, and depth estimate",
+      "acceptance_condition": "computes pan volume, states density prior (creamed cake 0.85\u20131.0, foam 0.45\u20130.6, bread dough 1.1\u20131.2, cookie 1.0\u20131.1 g/mL), converts mass\u2192volume\u2192depth, and reports fill fraction",
       "covered_by": [
         "PAN_GEOM",
         "BATTER_DEPTH",
@@ -359,13 +359,15 @@
       ],
       "cons": [
         {
-          "claim": "requires care at edges",
-          "example": "edge conditions need checks",
-          "weight": 0.55
+          "claim": "mixing conventions across collaborators (wheat-only vs all dry powders in the 100% base) silently corrupts every baker % comparison",
+          "example": "team A bases on wheat only while team B folds rye and cocoa into 100%, so both report '70% hydration' for different doughs",
+          "weight": 0.64
         }
       ],
       "failure_modes": [
-        "skipping this unit degrades formula quality"
+        "adding almond flour or cocoa without restating what is in the flour base",
+        "switching base definition between mix notes and bake notes",
+        "comparing two formulas that use different base membership without reconciling"
       ],
       "acceptance_tests": [
         "flour base membership is explicitly listed",
@@ -379,7 +381,7 @@
     {
       "id": "HYDRATION_BAND",
       "topic": "hydration_budget_bands",
-      "definition": "Set total water (including water fractions of eggs, milk, purees) as % of flour. Typical bands: stiff cookie doughs ~20-40% free liquid, cake batters ~60-100%+, lean bread 60-75%, high-hydration ciabatta 75-85%+. Band depends on flour protein and enrichment. Closing hydration means summing all water sources, not only the water line.",
+      "definition": "Set total water (including water fractions of eggs, milk, purees) as % of flour. Typical bands: stiff cookie doughs ~20-40% free liquid, cake batters ~60-100%+, lean bread 60-75%, high-hydration ciabatta 75-85%+. Band depends on flour protein and enrichment. Closing hydration means summing all water sources, not only the water line. Reference hidden-water constants used unless better data is given: whole egg ~75% water, cow's milk ~87\u201388% water, butter ~16% water (butter is also ~80\u201382% fat).",
       "group": "budgets",
       "dependencies": [
         "BAKERS_PCT",
@@ -430,13 +432,15 @@
       ],
       "cons": [
         {
-          "claim": "requires care at edges",
-          "example": "edge conditions need checks",
-          "weight": 0.55
+          "claim": "purees and fruit bind some water in fiber so effective free water is lower than mass suggests; milk and eggs hide large water fractions if only the water line is counted",
+          "example": "100% banana bread is not a 100% hydration bread dough; eggs at 50 g on 250 g flour add ~15% hydration-equivalent water",
+          "weight": 0.66
         }
       ],
       "failure_modes": [
-        "skipping this unit degrades formula quality"
+        "ignoring milk and egg water when claiming a hydration target",
+        "targeting lean-bread hydration feel on a high-fat brioche without enrichment adjustment",
+        "treating puree mass as fully free water for dough feel predictions"
       ],
       "acceptance_tests": [
         "hydration includes itemized water fractions",
@@ -450,7 +454,7 @@
     {
       "id": "FAT_BUDGET",
       "topic": "fat_budget_as_percent_flour",
-      "definition": "Track total fat (butter water-adjusted, oil, egg yolk fat, cream fat, chocolate cocoa butter) as baker % of flour. Bands: lean bread <5%, enriched dough 10-50%+, pound cake ~50%+, shortbread very high. Fat budget predicts tenderness, spread, and emulsion difficulty.",
+      "definition": "Track total fat (butter water-adjusted, oil, egg yolk fat, cream fat, chocolate cocoa butter) as baker % of flour. Bands: lean bread <5%, enriched dough 10-50%+, pound cake ~50%+, shortbread very high. Fat budget predicts tenderness, spread, and emulsion difficulty. Reference constants: butter ~80\u201382% fat and ~16% water; whole egg fat is mostly yolk (~30% of whole egg mass as fat fraction varies by size \u2014 prefer weighed yolk when precision matters); cream and chocolate cocoa butter must be itemized separately.",
       "group": "budgets",
       "dependencies": [
         "BAKERS_PCT",
@@ -712,13 +716,15 @@
       ],
       "cons": [
         {
-          "claim": "requires care at edges",
-          "example": "edge conditions need checks",
-          "weight": 0.55
+          "claim": "acid variability and altitude change effective gas yield so flour-relative dose still needs acid pairing and elevation notes; spent powder cannot be fixed by raising grams",
+          "example": "homemade cultured dairy varies batch to batch; at 5000 ft the same 3% powder over-domes then collapses",
+          "weight": 0.68
         }
       ],
       "failure_modes": [
-        "skipping this unit degrades formula quality"
+        "scaling powder with sugar instead of flour when batch size changes",
+        "doubling powder to fix dense crumb without checking acid load or powder freshness",
+        "using sea-level dose unchanged at high altitude"
       ],
       "acceptance_tests": [
         "leavener % of flour recorded",
@@ -873,7 +879,7 @@
     {
       "id": "PAN_GEOM",
       "topic": "pan_geometry_volume_and_surface",
-      "definition": "Pan volume (L\u00d7W\u00d7H for rectangular; \u03c0r\u00b2h for round) and batter fill fraction determine depth. Surface-to-volume ratio drives browning and bake time. Bundt vs sheet pan at equal mass bake very differently. Always match formula mass to pan volume capacity (~50-67% fill typical for cakes to allow rise).",
+      "definition": "Pan volume (L\u00d7W\u00d7H for rectangular; \u03c0r\u00b2h for round) and batter fill fraction determine depth. Surface-to-volume ratio drives browning and bake time. Bundt vs sheet pan at equal mass bake very differently. Always match formula mass to pan volume capacity (~50-67% fill typical for cakes to allow rise). When fill height is estimated from batter mass, state the density prior used (see BATTER_DEPTH product-class bands) so mass\u2192volume\u2192depth is reproducible.",
       "group": "geometry",
       "dependencies": [
         "TOTAL_MASS"
@@ -923,13 +929,15 @@
       ],
       "cons": [
         {
-          "claim": "requires care at edges",
-          "example": "edge conditions need checks",
-          "weight": 0.55
+          "claim": "nominal pan sizes vary by brand wall angle and true volume so labeled inches are not interchangeable without measuring",
+          "example": "two '9-inch' rounds differ by 10%+ volume; a bundt of unknown volume overflows a loaf formula",
+          "weight": 0.63
         }
       ],
       "failure_modes": [
-        "skipping this unit degrades formula quality"
+        "moving a loaf formula to a sheet pan without rewriting time and depth",
+        "overfilling a bundt causing spill and a dense ring",
+        "assuming brand A 8-inch equals brand B 8-inch capacity"
       ],
       "acceptance_tests": [
         "pan volume and fill fraction stated",
@@ -943,7 +951,7 @@
     {
       "id": "BATTER_DEPTH",
       "topic": "batter_depth_and_heat_path",
-      "definition": "Depth (cm) of batter or dough in the pan controls heat path to the center. Deeper masses need lower temperature and longer time; thin sheet cakes finish fast. Depth is the bridge from pan geometry and mass to bake-time models.",
+      "definition": "Depth (cm) of batter or dough in the pan controls heat path to the center. Deeper masses need lower temperature and longer time; thin sheet cakes finish fast. Depth is the bridge from pan geometry and mass to bake-time models. Convert mass to depth only with an explicit batter density prior by product class: creamed cake ~0.85\u20131.0 g/mL, foam batter ~0.45\u20130.6 g/mL, bread dough ~1.1\u20131.2 g/mL, cookie dough ~1.0\u20131.1 g/mL. volume_mL \u2248 mass_g / density; depth_cm \u2248 volume_mL / pan_area_cm2.",
       "group": "geometry",
       "dependencies": [
         "PAN_GEOM",
@@ -994,20 +1002,27 @@
       ],
       "cons": [
         {
-          "claim": "requires care at edges",
-          "example": "edge conditions need checks",
-          "weight": 0.55
+          "claim": "dense fruit-laden or high-inclusion batters conduct heat slower at the same depth so depth alone underpredicts center lag",
+          "example": "banana bread at 6 cm lags more than plain butter cake at 6 cm; blueberry heat sinks delay set",
+          "weight": 0.65
         }
       ],
       "failure_modes": [
-        "skipping this unit degrades formula quality"
+        "scaling mass up in the same pan without changing time or temperature",
+        "assuming bake time scales linearly with mass regardless of footprint",
+        "ignoring density when converting mass to fill height"
       ],
       "acceptance_tests": [
-        "depth or fill height estimated before bake-time set"
+        "depth or fill height estimated before bake-time set",
+        "depth estimate states the product-class density prior used to convert mass to volume",
+        "estimated depth band stated for bake-time plan"
       ],
       "revisit_triggers": [
         "pan change",
-        "center lag failures"
+        "center lag failures",
+        "pan footprint change at constant mass",
+        "raw center with dark exterior",
+        "density prior challenged by measured pan fill height"
       ]
     },
     {
@@ -1086,7 +1101,7 @@
     {
       "id": "BAKE_TIME_MODEL",
       "topic": "bake_time_versus_depth_model",
-      "definition": "Heuristic: bake time rises faster than linear with depth; a common prior is time ratio roughly scales with depth^1.2\u20131.5 for similar batter and oven, then confirm with internal temperature. Higher sugar/fat delays set. Convection vs still air changes effective time. Never publish a time without a doneness signal hierarchy.",
+      "definition": "Heuristic prior for the same batter and oven: bake time scales approximately with depth to the power 0.8\u20131.1 (near-linear, often slightly sublinear) \u2014 doubling depth is roughly 1.7\u20132.1\u00d7 time, not a super-linear jump. Higher sugar and fat delay set and can stretch the prior; convection vs still air changes effective time. Never publish a clock time without a doneness signal hierarchy; internal temperature confirmation dominates when a product-class target exists.",
       "group": "scaling",
       "dependencies": [
         "BATTER_DEPTH",
@@ -1132,20 +1147,22 @@
       },
       "pros": [
         {
-          "weight": 0.78,
-          "claim": "Depth-aware time priors reduce raw centers when pans change",
-          "example": "moving from cupcakes to 8-inch layers multiplies time more than mass ratio alone suggests"
+          "weight": 0.84,
+          "claim": "Depth-aware near-linear time priors reduce raw centers when pans change",
+          "example": "cupcakes to 8-inch layers: depth roughly doubles \u2192 about 1.7\u20132.1\u00d7 time, then confirm with internal temp"
         }
       ],
       "cons": [
         {
-          "claim": "requires care at edges",
-          "example": "edge conditions need checks",
-          "weight": 0.55
+          "claim": "priors mislead across very different formulations at the same depth; sugar/fat delay and inclusion heat sinks stretch time beyond the depth exponent alone",
+          "example": "brownie vs sponge at 3 cm depth need different times; copying a box time after doubling pan depth underbakes the center",
+          "weight": 0.7
         }
       ],
       "failure_modes": [
-        "skipping this unit degrades formula quality"
+        "scaling bake time by the same factor as mass when only depth changed",
+        "using wall clock as the sole doneness criterion",
+        "applying a super-linear depth exponent that over-extends thin products or under-extends deep ones"
       ],
       "acceptance_tests": [
         "bake plan includes depth, time prior, and non-time doneness checks"
@@ -1812,252 +1829,252 @@
       "to": "FLOUR_BASE",
       "edge_type": "dependency",
       "why_related": "baseline definition uses baker % language",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "HYDRATION_BAND",
       "edge_type": "dependency",
       "why_related": "hydration is water % of flour base",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "FAT_BUDGET",
       "edge_type": "dependency",
       "why_related": "fat budget is fat % of flour base",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "SUGAR_BUDGET",
       "edge_type": "dependency",
       "why_related": "sugar budget is sugar % of flour base",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "SALT_BUDGET",
       "edge_type": "dependency",
       "why_related": "salt budget is salt % of flour base",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "LEAVEN_DOSE",
       "edge_type": "dependency",
       "why_related": "chemical leavener dosed as % flour",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "YEAST_DOSE",
       "edge_type": "dependency",
       "why_related": "yeast dosed as % flour",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "TOTAL_MASS",
       "edge_type": "dependency",
       "why_related": "mass sum starts from baker % gram conversion",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "VOL_TO_MASS",
       "edge_type": "dependency",
       "why_related": "volume conversion feeds baker % inputs",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "TOLERANCE",
       "edge_type": "dependency",
       "why_related": "tolerances apply to baker % gram quantities",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "BAKERS_PCT",
       "to": "INCLUSION_MASS",
       "edge_type": "dependency",
       "why_related": "inclusions budgeted as % flour",
-      "relation_strength": 0.82
+      "relation_strength": 0.9
     },
     {
       "from": "FLOUR_BASE",
       "to": "HYDRATION_BAND",
       "edge_type": "dependency",
       "why_related": "hydration denominator is the declared flour base",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "FLOUR_BASE",
       "to": "ENRICH_THRESH",
       "edge_type": "dependency",
       "why_related": "enrichment judged on flour-base percentages",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "HYDRATION_BAND",
       "to": "BUDGET_CLOSE",
       "edge_type": "dependency",
       "why_related": "closure requires hydration line closed",
-      "relation_strength": 0.82
+      "relation_strength": 0.88
     },
     {
       "from": "HYDRATION_BAND",
       "to": "LEAVEN_DOSE",
       "edge_type": "dependency",
       "why_related": "hydration context affects gas retention assumptions",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "HYDRATION_BAND",
       "to": "YEAST_DOSE",
       "edge_type": "dependency",
       "why_related": "dough hydration interacts with fermentation schedule",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "FAT_BUDGET",
       "to": "BUDGET_CLOSE",
       "edge_type": "dependency",
       "why_related": "closure requires fat line closed",
-      "relation_strength": 0.82
+      "relation_strength": 0.88
     },
     {
       "from": "FAT_BUDGET",
       "to": "BAKE_TIME_MODEL",
       "edge_type": "dependency",
       "why_related": "fat delays set and influences time priors",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "FAT_BUDGET",
       "to": "ENRICH_THRESH",
       "edge_type": "dependency",
       "why_related": "fat level is an enrichment classifier",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "FAT_BUDGET",
       "to": "LAYER_RATIO",
       "edge_type": "dependency",
       "why_related": "component fat contributes to assembly averages",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "SUGAR_BUDGET",
       "to": "BUDGET_CLOSE",
       "edge_type": "dependency",
       "why_related": "closure requires sugar line closed",
-      "relation_strength": 0.82
+      "relation_strength": 0.88
     },
     {
       "from": "SUGAR_BUDGET",
       "to": "BAKE_TIME_MODEL",
       "edge_type": "dependency",
       "why_related": "sugar delays gelatinization affecting time",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "SUGAR_BUDGET",
       "to": "ENRICH_THRESH",
       "edge_type": "dependency",
       "why_related": "sugar level is an enrichment classifier",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "SUGAR_BUDGET",
       "to": "LAYER_RATIO",
       "edge_type": "dependency",
       "why_related": "component sugar contributes to assembly averages",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "SALT_BUDGET",
       "to": "BUDGET_CLOSE",
       "edge_type": "dependency",
       "why_related": "closure requires salt line closed",
-      "relation_strength": 0.82
+      "relation_strength": 0.88
     },
     {
       "from": "LEAVEN_DOSE",
       "to": "BUDGET_CLOSE",
       "edge_type": "dependency",
       "why_related": "closure requires leavener line closed",
-      "relation_strength": 0.82
+      "relation_strength": 0.88
     },
     {
       "from": "TOTAL_MASS",
       "to": "PAN_GEOM",
       "edge_type": "dependency",
       "why_related": "pan fill uses total batter/dough mass",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "TOTAL_MASS",
       "to": "SCALE_LAWS",
       "edge_type": "dependency",
       "why_related": "scaling changes total mass by a factor",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "TOTAL_MASS",
       "to": "PROCESS_LOSS",
       "edge_type": "dependency",
       "why_related": "loss factors apply to total mass for yield",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "TOTAL_MASS",
       "to": "LAYER_RATIO",
       "edge_type": "dependency",
       "why_related": "assembly ratios need component masses",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "TOTAL_MASS",
       "to": "COST_BATCH",
       "edge_type": "dependency",
       "why_related": "cost multiplies mass lines",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "PAN_GEOM",
       "to": "BATTER_DEPTH",
       "edge_type": "dependency",
       "why_related": "depth derives from mass and pan footprint",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "BATTER_DEPTH",
       "to": "BAKE_TIME_MODEL",
       "edge_type": "dependency",
       "why_related": "time priors depend on depth",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "SCALE_LAWS",
       "to": "BUDGET_CLOSE",
       "edge_type": "dependency",
       "why_related": "after scale, reclose pans and feasibility",
-      "relation_strength": 0.82
+      "relation_strength": 0.88
     },
     {
       "from": "BUDGET_CLOSE",
       "to": "PREF_CONSTRAINT",
       "edge_type": "dependency",
       "why_related": "constraints re-enter closure loop",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     },
     {
       "from": "BUDGET_CLOSE",
       "to": "COST_BATCH",
       "edge_type": "dependency",
       "why_related": "cost overlay only after structure closure",
-      "relation_strength": 0.82
+      "relation_strength": 0.84
     }
   ],
   "conflict_axes": [
