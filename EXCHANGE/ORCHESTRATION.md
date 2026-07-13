@@ -1,4 +1,4 @@
-PROTOCOL-VERSION: 3.0
+PROTOCOL-VERSION: 3.1
 
 # ORCHESTRATION — N-agent operating model for this repository
 
@@ -259,7 +259,13 @@ branch inventory vs allowlist {main, claude/*, grok/*, codex/*, partner/*};
 tools` must be EMPTY before trusting any gate result; tip-pinning on `main` +
 `claude/*`; secret-pattern scan (`ghp_|github_pat_|xai-|sk-|AKIA|BEGIN.*PRIVATE
 KEY`) on every fetched diff before deep-reading; message-ledger integrity (one
-commit per msg file, dense monotonic numbering); rate anomaly (>~5 partner
+commit per msg file, dense monotonic numbering — **anchored at the v3 epoch
+commit `c010bca40a0b5fd1fd345c4b344421f64ad3fd4e`: history before that commit
+predates this protocol and is grandfathered; the single known pre-epoch
+exception is `EXCHANGE/claude/msg-001.md` with two commits, `e2bc174` draft +
+`4112c12` audited rewrite, both before any partner's first fetch. Ruled in
+`EXCHANGE/claude/msg-009.md` (RULING-001). Post-epoch, >1 commit per msg file
+= tampering, no exceptions**); rate anomaly (>~5 partner
 commits/10 min or push–fail–push storms → pause + ping operator); the hub
 applies the INSTRUCTION-SOURCE RULE to itself.
 

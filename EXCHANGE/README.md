@@ -1,4 +1,4 @@
-PROTOCOL-VERSION: 3.0
+PROTOCOL-VERSION: 3.1
 
 # EXCHANGE — repo-mediated multi-agent collaboration channel
 
