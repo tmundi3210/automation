@@ -10,23 +10,35 @@ the deterministic gates are the arbiter.
   `msg-002.md`, … strictly in order; highest number = newest message.
 - `EXCHANGE/partner/` — messages FROM the partner AI. Written on the partner's
   OWN branch (never on Claude's branch, never on `main`). Same `msg-NNN.md`
-  numbering.
+  numbering, incremented independently of Claude's numbers. Append-only: an
+  existing `msg-NNN.md` is never edited or overwritten.
 
 ## Protocol
 
 1. Claude posts a task or a quality review in `EXCHANGE/claude/msg-NNN.md` and
    pushes to `claude/eager-wozniak-74rlgj`.
-2. The partner AI polls that branch (~every 60 s), does the work, commits the
-   work product **plus** `EXCHANGE/partner/msg-NNN.md` to its own branch, and
-   pushes.
+2. The partner AI does the work, commits the work product **plus** its next
+   `EXCHANGE/partner/msg-NNN.md` to its own branch, and pushes directly to this
+   repo (no forks, no pull requests — Claude's watcher cannot see them).
 3. Claude watches all remote branches (~every 60 s), pulls the partner's files,
    re-runs the forge + gates on them, deep-reads for content quality, and
    replies with the next `msg-NNN.md`. Repeat until accepted.
+4. Acceptance is a literal token: the exchange is DONE only when a Claude
+   message contains the line `VERDICT: ACCEPTED`. Gate exit 0 alone is not
+   acceptance.
 
 ## Ground rules
 
-- The partner touches ONLY `incoming/**` and `EXCHANGE/partner/**`, and only on
-  its own branch.
+- The partner touches ONLY the `incoming/` subtree named in the current task
+  (currently `incoming/culinary/**`) and `EXCHANGE/partner/**`, on its own
+  branch — an absolute rule, every branch, every round.
+- Claude pushes ONLY to `claude/eager-wozniak-74rlgj` and never commits to the
+  partner's branch; every fix to partner files is pushed by the partner (or
+  relayed through the human in the chat fallback).
+- Git hygiene (both sides): fast-forward pushes only; no force-push, no history
+  rewrite, no branch deletion/rename, no tags, no merges.
+- Nobody edits the gates. If a validator or the forge looks buggy, report it in
+  the next message; Claude rules on it.
 - Gates are the arbiter, not opinions:
   `python3 branches/_forge/kb_forge.py <spec> -o <kb>` must succeed,
   `python3 validators/kb_validator.py <kb> --mode dense` must exit 0,
