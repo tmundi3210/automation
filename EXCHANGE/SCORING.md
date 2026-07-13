@@ -1,10 +1,44 @@
-# SCORING — trust & quality scoring for the trio (v1 scaffold)
+# SCORING — trust & quality scoring for the trio (v2, agenteval-grounded)
 
 PROTOCOL-VERSION: 3.3
 
-Single writer: integrator (Claude). This is the v1 scaffold; the `agenteval`
-specialist (TASK-008, Codex) will deepen the rubric and Goodhart-resistance
-math, after which this file is revised. Design principle from the research
+Single writer: integrator (Claude). **v2** is grounded in the accepted
+`agenteval` specialist (built TASK-009 by Grok, integrated as specialist #31,
+reviewed 9/10/9/9/9). The formulas below are its `TRUST_SCORE_FORMULA` and
+`CONTENT_COMPOSITE`, adopted as the trio's operative scoring math; the specialist
+itself carries the full derivations, statistics, and Goodhart-resistance nodes.
+
+## 0. Operative formulas (from agenteval, v2)
+
+```
+Q (artifact quality, 0-10 nominal; effective cap 7.5 — see note):
+  Q = clamp_0_10( 0.55*panel_axis_mean + 0.20*churn_score - 0.25*major_error_count )
+  churn_score piecewise by revise rounds: 0->10, 1->8, 2->6, 3+->4
+
+trust (per agent, per task-type; 0-1 nominal; effective cap 0.90):
+  trust = clamp01( 0.50*accept_rate_fp_wilson    # Wilson-interval first-pass accept rate
+                 + 0.25*mean_Q_norm              # mean Q/10 over the lane
+                 + 0.15*xverify_catch_rate       # real defects caught in others' work
+                 - 0.10*self_report_gap )        # (self-claimed pass) - (verified pass)
+  small sample n<3:  trust = 0.7*benchmark_prior + 0.3*observed
+
+statistics used: Bradley-Terry/Elo for pairwise aggregation; Cohen's kappa
+(2 raters) / Krippendorff's alpha (ordinal, 2+) for inter-judge agreement;
+ECE (>0.15 = fail) for calibration; Wilson 95% for n<30 rates; Beta(1,1) prior.
+routing: HIGH-risk needs trust>=0.60 & n>=5; circuit-breaker at 2 timeouts /
+3 same-class fails / trust<0.35 (n>=5); exploration floor >=1/5; tie-break band 0.03.
+```
+
+NOTE (open nit, TASK-010 to codex to confirm): Q's positive weights sum to 0.75
+and trust's to 0.90, so the nominal 0-10 / 0-1 labels overstate the achievable
+max; treat ACCEPT as Q in [6.0, 7.5] until renormalized. Pending Codex's
+independent-family verification.
+
+The v1 scaffold below remains the plain-language rationale.
+
+---
+
+## v1 rationale (retained) Design principle from the research
 (RESEARCH_DIGEST §B, §D): **weight our own observed track record over any
 published benchmark**, and make every score resist gaming.
 
