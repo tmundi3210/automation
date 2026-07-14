@@ -130,3 +130,15 @@ Also recorded: codex's pinned workspace path was found EMPTY while the
 populated clone lives at ~/Documents/movie/automation — likely a factor in
 today's scheduled-wake silence; wrapper/workspace pin to be reconciled when
 terminal access returns.
+
+ADDENDUM (same day, via operator relay of codex self-report): codex CLI is
+now 0.144.4 (was 0.140.0 at TASK-016); the silent interactive session ran
+sandbox=danger-full-access, approval=never (operator-side launch setting —
+recommend re-pin to workspace-write/on-request); its TUI auto-created an
+empty dated scratch workspace named after the intended folder
+(~/Documents/Codex/2026-07-14/work-in-documents-movie-automation-two),
+which explains the empty-workspace deadlock. Bootstrap clause applied live:
+codex instructed to clone the repo into its scratch workspace as its
+PERMANENT per-agent clone (grok keeps ~/Documents/movie/automation) —
+per-agent-clone doctrine now physically true. Web-search/model-pin defect
+(A2) needs re-probing on 0.144.4.
