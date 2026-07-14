@@ -5,6 +5,9 @@ this document. Protocol context: EXCHANGE v3.3 (ORCHESTRATION.md), POLLING
 v1.1 (delivery-gated tip advance). Operator ask: "GitHub as main, then
 terminal CLI as talking brain." All latency numbers below are HEURISTIC
 (order-of-magnitude); no timing data was collected.
+Second-pass review (agenteval advisor, 2026-07-14): APPROVE_WITH_CHANGES —
+all findings revised in place, plus two live facts folded in (clone path
+confirmed; tip-reset kick disproven on the current grok wrapper).
 
 ## 1. System framing (loops)
 
@@ -58,7 +61,7 @@ very failure loops below. Guards precede speed.
 
 | Failure loop | Structure | Guard in this design |
 |---|---|---|
-| Tip-burn (TASK-015 forensics) | Wrapper advanced `last_seen_tip` on `model_exit=0` without delivery → wake flow decoupled from the unprocessed-work stock → starvation (broken balancing loop) | POLLING v1.1 delivery-gated advance stays the ONLY writer of `last_seen_tip`; local kicks go THROUGH the wrapper, never hand-edit gate state except the documented reset-to-force-wake |
+| Tip-burn (TASK-015 forensics) | Wrapper advanced `last_seen_tip` on `model_exit=0` without delivery → wake flow decoupled from the unprocessed-work stock → starvation (broken balancing loop) | POLLING v1.1 delivery-gated advance stays the ONLY writer of `last_seen_tip`; local kicks go THROUGH the wrapper, never hand-edit gate state except the §3(b) tip reset (NEW — defined by this plan, unreliable until TASK-018 lands; see §3(b)) |
 | Duplicate-ACK (A3, two incidents) | Colliding gate state (`~/.exchange-gate/`) → same message processed twice → double-applied effect (idempotency violated) | Separate state dirs per agent (`~/.exchange-gate`, `~/.exchange-gate-codex`) + per-agent REPLAY GUARD; kicks are per-agent commands; idempotency-before-retry: never kick both agents "to be safe" for one agent's task |
 | Cross-agent clobber | Two writers, one path → last-write-wins race (positive/amplifying coupling) | Ownership stays a total function: per-agent clones or worktrees, per-task disjoint scopes gated at mint (`gate_all --repo`) and pre-push (`check_scope.sh`); topology C rejected outright (§2) |
 
@@ -89,7 +92,8 @@ mechanics. Unattended behavior is byte-identical to today.
 
 ## 3. Operator commands (copy-paste)
 
-Clone path assumed `~/src/automation` — **OPERATOR-CONFIRM** before use.
+Clone path CONFIRMED 2026-07-14 (operator `find` output):
+`~/Documents/movie/automation`. All commands below use it.
 
 **(a) After-restart health check** — use first thing after any reboot/login to
 confirm both pollers reloaded.
@@ -99,21 +103,32 @@ launchctl list | grep -E 'exchange-poll'
 ```
 
 Expect two lines (`com.mundi.exchange-poll-v1`, `com.mundi.exchange-poll-codex`);
-a `-` in the first column means not-running-now (normal between ticks); a
-nonzero second column is a failing job. Note: `last_seen_tip` files PERSIST
+a `-` in the first column means not-running-now (normal between ticks). A
+PERSISTENTLY nonzero second column plus errors in the wrapper log suggests a
+failing job — but verify what the wrapper propagates before reading exit codes
+as failures: gate.sh exits 1 on every idle tick by design (POLLING.md), and
+the operator's 2026-07-14 check showed both jobs healthy at status 0.
+Note: `last_seen_tip` files PERSIST
 across restarts and may hold a stale-but-valid tip; that is safe (next real
 push wakes them) but means no catch-up wake happens at login — kick manually
 if work was pushed while the Mac was off.
 
 **(b) Grok kick** — use when grok must process the current tip NOW (e.g. a
-task was just pushed, or after a restart with work pending).
+task was just pushed, or after a restart with work pending). Preferred form
+(bypasses the gate entirely; verified working 2026-07-14):
 
 ```sh
-: > ~/.exchange-gate/last_seen_tip && sh ~/.exchange-gate/poll-wrapper.sh
+grok --cwd ~/Documents/movie/automation --permission-mode acceptEdits \
+  --allow 'Bash(git fetch:*)' --allow 'Bash(git push:*)' --max-turns 40 \
+  -p "WAKE: fetch origin claude/eager-wozniak-74rlgj, read the newest EXCHANGE/claude message; execute any open task assigned to you per protocol and push."
 ```
 
-Truncating the tip forces the fail-open unknown-range wake; the wrapper still
-applies replay/delivery gating, so a double-kick is safe (idempotent).
+Tip-reset variant (NEW — defined by this plan, not by POLLING.md):
+`: > ~/.exchange-gate/last_seen_tip && sh ~/.exchange-gate/poll-wrapper.sh`.
+**LIVE-DISPROVEN on the current wrapper** (operator test 2026-07-14 returned
+`IDLE gate_exit=1` — the wrapper silently re-arms on an empty tip, the very
+defect class TASK-018 fixes). It becomes the cheap kick only after TASK-018's
+v1.1 wrapper lands; until then use the direct form above.
 
 **(c) Codex kick** — same purpose for codex; its wrapper wakes on tip
 difference without a reset.
@@ -124,10 +139,13 @@ sh ~/.exchange-gate-codex/poll-wrapper.sh
 
 **(d) Local claude hub (talking brain / candidate integrator)** — use for
 attended integration rounds: reviewing deliveries, issuing verdicts, minting
-tasks at interactive latency. Take the hub lock first (§4).
+tasks at interactive latency. Take the hub lock first (§4). Until HUB_LOCK
+ships (Q3), apply Q3's rule instead: cloud session live ⇒ local hub is
+read-only (advise/draft only, no integration-branch pushes, no verdicts);
+the operator arbitrates.
 
 ```sh
-cd ~/src/automation && git fetch origin && git checkout claude/eager-wozniak-74rlgj && git pull --ff-only && claude
+cd ~/Documents/movie/automation && git fetch origin && git checkout claude/eager-wozniak-74rlgj && git pull --ff-only && claude
 ```
 
 (`claude -c` resumes the previous local hub session; `claude -p "<prompt>"`
@@ -140,13 +158,19 @@ becomes a deliverable still goes on the task branch through the gates.
 
 ```sh
 # grok (top-level flags only; the `agent` subcommand rejects --cwd, exit 2)
-grok --cwd ~/src/automation --rules "$(cat /opt/agent/standing-orders.md)"
+grok --cwd ~/Documents/movie/automation --rules "$(cat /opt/agent/standing-orders.md)"
 ```
 
 ```sh
-# codex (plain `codex` is interactive; -C sets the working dir)
-codex -C ~/src/automation -s workspace-write -a on-request
+# codex (plain `codex` is interactive; --cd sets the working dir)
+codex --cd ~/Documents/movie/automation --sandbox workspace-write --ask-for-approval on-request
 ```
+
+Codex flag shapes use long form throughout; both verified against the
+operator-pasted `codex help` output of 2026-07-14 (`-C/--cd`, `-s/--sandbox`,
+`-a/--ask-for-approval` with `on-request` all present on this build). If a
+future build rejects `--ask-for-approval`, drop it and rely on the config
+default (OPERATOR-VERIFY via `codex --help` after any update).
 
 ## 4. Local-lane rules
 
@@ -170,6 +194,10 @@ codex -C ~/src/automation -s workspace-write -a on-request
      act of a hub session. Fast-forward-only pushes on the single branch make
      git's atomic ref update the arbiter: if the push is rejected non-FF, you
      lost the race — fetch, read the current holder, stand down to read-only.
+   - The CLOUD hub also pushes a SINCE-refresh of HUB_LOCK as its session's
+     first act — otherwise "no cloud commit for >6 h" cannot distinguish a
+     live-but-quiet cloud session from a dead one, and a local takeover could
+     green-light while cloud is alive (reviewer finding, accepted).
    - The non-holder instance is read-only: it may read, advise, and draft,
      but must not push to the integration branch or issue verdicts.
    - Stale-holder takeover: if HOLDER is cloud and the integration branch has
@@ -182,14 +210,15 @@ codex -C ~/src/automation -s workspace-write -a on-request
    (bounded retries, no retry storm).
 5. **No new writers of gate state.** Only the wrappers advance
    `last_seen_tip` (POLLING v1.1). The local claude hub never edits either
-   agent's `~/.exchange-gate*` contents beyond the documented kick reset.
+   agent's `~/.exchange-gate*` contents beyond the §3(b) tip reset (NEW,
+   defined by this plan; pending operator adoption and TASK-018).
 
 ## 5. Risks and open questions
 
 | # | Item | Type | Handling |
 |---|---|---|---|
-| Q1 | Clone path `~/src/automation` unconfirmed | OPERATOR-CONFIRM | Operator pastes `pwd` from the clone before installing anything |
-| Q2 | LaunchAgents after restart: jobs reload at login but stale `last_seen_tip` means no catch-up wake | Risk (low) | §3a health check + manual kicks are the documented recovery; consider a login-time forced wake later |
+| Q1 | ~~Clone path unconfirmed~~ RESOLVED 2026-07-14: `~/Documents/movie/automation` (operator `find` output) | done | — |
+| Q2 | LaunchAgents after restart: jobs reload at login but stale `last_seen_tip` means no catch-up wake; grok's clone was found 284 commits behind after one restart | Risk (med, observed) | §3a health check + §3b direct kick are the documented recovery; consider a login-time forced wake later |
 | Q3 | Both-hubs-alive race window before HUB_LOCK exists | Risk (med) | Until the marker ships, rule of thumb: cloud session live ⇒ local hub is read-only; operator arbitrates |
 | Q4 | Codex `--search` broken (model pin `gpt-5.6-terra` rejected by 0.140.0) | Known defect | Treat codex as no-web; route research to grok/claude; operator may fix the pin (A2) |
 | Q5 | Gate-state collision A3 (duplicate-ACK root cause) not yet closed by audit | Open | Operator runs `incoming/task-016__capability-codex/gate_audit.sh` and pastes output |
