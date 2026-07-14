@@ -1,0 +1,127 @@
+# CAPABILITY_GROK.yaml — Phase-0 self-verification for Grok CLI (operator Mac)
+# TASK-015 deliverable 1. Generated 2026-07-14. Non-mutating tests only.
+# Verification tags: config | doc | test  (per SPEC Phase 0 / msg-034)
+
+agent_id: grok
+component: "Grok CLI / Grok Build TUI (local macOS)"
+verified_at_utc: "2026-07-14T07:45:00Z"
+host: "operator Mac (user scope); work clone /tmp/automation"
+repo: "tmundi3210/automation"
+
+fields:
+
+  - name: product_and_version
+    value: "grok 0.2.99 (b1b49ccb71a7) [stable]"
+    method: test
+    command: "/Users/mundi/.grok/bin/grok --version"
+    output_one_line: "grok 0.2.99 (b1b49ccb71a7) [stable]"
+
+  - name: interface
+    value: "Local CLI/TUI; headless via top-level `grok --cwd … --prompt-file/--single -p …` (NOT `grok agent` for those flags)"
+    method: doc
+    command: "/Users/mundi/.grok/bin/grok --help | head -5"
+    output_one_line: "Grok Build TUI / Usage: grok [OPTIONS] [PROMPT] [COMMAND]"
+
+  - name: filesystem_read_write_scope
+    value: "Full user-scope FS via tools; writes observed in work clone and $HOME/.exchange-gate (local state). No claim of sandbox isolation unless --sandbox set."
+    method: test
+    command: "echo ok > /tmp/grok-cap-test.txt && cat /tmp/grok-cap-test.txt && rm /tmp/grok-cap-test.txt"
+    output_one_line: "ok"
+
+  - name: shell_execution
+    value: "Yes — agent tools include shell (run_terminal_command / Bash permission rules)"
+    method: test
+    command: "/bin/echo shell_ok"
+    output_one_line: "shell_ok"
+
+  - name: git_and_github
+    value: "git present; gh authenticated as tmundi3210 (active) with scopes gist,read:org,repo; pushes use git identity grok-bot + Agent trailer (WAIVER-001)"
+    method: test
+    command: "git --version; gh auth status 2>&1 | head -6"
+    output_one_line: "git version (Apple git); Logged in to github.com account tmundi3210 (keyring) Active account: true"
+
+  - name: web_search
+    value: "Yes — built-in web_search / open_page tools in agent sessions; disable flag exists"
+    method: test
+    command: "grok --help 2>&1 | rg -n 'disable-web-search'"
+    output_one_line: "--disable-web-search  Disable web search and web fetch tools"
+    prior_evidence: "TASK-013 multi-angle search + HTTP URL verification (SOURCES.md)"
+
+  - name: x_search
+    value: "YES — native X tools in this agent runtime: x_keyword_search, x_semantic_search, x_thread_fetch, x_user_search (not a CLI flag; tool-surface inside agent session). No separate `grok x-search` subcommand on CLI."
+    method: test
+    command: "x_keyword_search query='from:xai OR from:grok \"Grok\"' mode=Latest limit=3"
+    output_one_line: "returned posts (e.g. @grok reply threads 2026-07-14; product/news posts via semantic search) — tools functional read-only"
+    notes: >
+      Harmless read-only queries only. Interactive agent tools, not a pollable
+      X API feed from the CLI itself. Cadence for X sources must be
+      scout-tick-driven unless a separate feed/API is authorized (closes A1/A7
+      directionally: capability exists; feed-polling does not).
+
+  - name: mcp_or_tool_calling
+    value: "MCP subcommand present; configured servers: codex_orchestrator (local stdio), plus grok.com Linear (47 tools) and GitHub (91 tools) via doctor"
+    method: test
+    command: "grok mcp list; grok mcp doctor"
+    output_one_line: "codex_orchestrator configured; doctor: codex_orchestrator + grok_com_linear + grok_com_github handshakes OK"
+
+  - name: scheduling
+    value: "launchd LaunchAgent com.mundi.exchange-poll-v1 StartInterval=300; zero-token gate.sh; poll-wrapper invokes headless grok on WAKE"
+    method: test
+    command: "launchctl list | grep exchange-poll; launchctl print gui/$(id -u)/com.mundi.exchange-poll-v1 | grep -E 'run interval|last exit|runs'"
+    output_one_line: "com.mundi.exchange-poll-v1 last exit 0; run interval = 300 seconds; runs 140+"
+
+  - name: sandboxing
+    value: "Built-in profiles via --sandbox / GROK_SANDBOX: off (default), workspace, read-only, strict, devbox; custom profiles in sandbox.toml"
+    method: doc
+    command: "rg -n 'workspace|read-only|strict|devbox' ~/.grok/docs/user-guide/18-sandbox.md | head -8"
+    output_one_line: "profiles documented: workspace, read-only, strict, devbox, off; --sandbox <profile> accepted by CLI"
+    method_secondary: test
+    command_secondary: "grok --sandbox read-only --help 2>&1 | head -2"
+    output_secondary: "Grok Build TUI / Usage: grok [OPTIONS] (flag accepted; full sandboxed session not required for flag parse)"
+
+  - name: approval_mechanism
+    value: "CLI: --permission-mode {default,acceptEdits,auto,dontAsk,bypassPermissions,plan}; --allow/--deny rules; --always-approve. Config: permission_mode=always-approve in ~/.grok/config.toml; poller uses acceptEdits + allow/deny allowlist"
+    method: config
+    command: "rg -n 'permission_mode|yolo' ~/.grok/config.toml; rg -n 'permission-mode' ~/.exchange-gate/poll-wrapper.sh | head -3"
+    output_one_line: "config permission_mode = \"always-approve\"; wrapper --permission-mode acceptEdits + Bash allow rules"
+
+  - name: authentication_method
+    value: "Logged in with grok.com (OAuth/device-auth available via `grok login --oauth|--device-auth`); auth cache present at ~/.grok/auth.json (mode 600)"
+    method: test
+    command: "grok models 2>&1 | head -3; ls -la ~/.grok/auth.json | awk '{print $1,$5}'"
+    output_one_line: "You are logged in with grok.com. / auth.json -rw------- size=1634"
+
+  - name: secret_exposure_risk
+    value: "MEDIUM — personal Mac with credentials; mitigated by permission rules, standing orders outside repo, no secrets written to repo"
+    method: config
+    command: "ls -la ~/.grok/auth.json ~/.agent-state/standing-orders-grok.md 2>&1 | awk '{print $1,$9}'"
+    output_one_line: "auth.json 600; standing-orders present outside clone"
+
+  - name: cost_rate_limits
+    value: "UNVERIFIED numeric quotas — not exposed in config.toml. Visible: default model grok-4.5; available grok-4.5, grok-composer-2.5-fast; flat-rate plan assumed"
+    method: test
+    command: "grok models 2>&1"
+    output_one_line: "Default model: grok-4.5; Available: grok-4.5, grok-composer-2.5-fast (no rate numbers in output)"
+
+  - name: known_limitations
+    value: >
+      (1) Wrong headless shape `grok agent --cwd` exits 2 (TASK-014 fixed).
+      (2) Poller advances last_seen_tip on any model_exit=0 even if no task
+      deliverable was produced — can IDLE through assigned work (see submit msg).
+      (3) X tools are session tools, not a feed poller.
+      (4) Shared ~/.exchange-gate with Codex remains a collision risk (A3).
+      (5) macOS sandbox network restrict is no-op for child processes per docs.
+    method: test
+    command: "rg -n 'model_exit=0|ADVANCED|IDLE' ~/.exchange-gate/poll.log | tail -20"
+    output_one_line: "continuous TICK/IDLE; last ADVANCED tip=6358e741 at heartbeat 2026-07-14T04:01:31Z"
+
+defaults_observed:
+  default_model: grok-4.5
+  cli_installer: internal
+  config_path: "~/.grok/config.toml"
+  binary_path: "/Users/mundi/.grok/bin/grok"
+
+closing_assumptions:
+  A1_x_search: "RESOLVED-as-tools: native X tools work in-session; NOT a CLI subcommand or feed API"
+  A5_rate_limits: "still UNVERIFIED for numeric plan caps"
+  A7_x_ingestion: "scout-tick-driven X coverage; no verified firehose/API poll"
