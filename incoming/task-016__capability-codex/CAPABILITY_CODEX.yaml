@@ -5,10 +5,10 @@ version:
   evidence: "codex --version => codex-cli 0.140.0"
 interface:
   value: "local CLI on macOS"
-  evidence: "codex doctor => runtime macos-aarch64; repo detected true"
+  evidence: "codex --help => local CLI subcommands; config.toml loaded from ~/.codex/config.toml"
 filesystem:
-  value: "unrestricted filesystem in this local installation; network enabled"
-  evidence: "codex doctor => filesystem unrestricted + network enabled; codex --help => --sandbox with read-only, workspace-write, danger-full-access"
+  value: "sandboxed per invocation; current config defaults to danger-full-access"
+  evidence: "codex --help => --sandbox possible values read-only, workspace-write, danger-full-access; ~/.codex/config.toml => sandbox_mode = \"danger-full-access\""
 shell_execution:
   value: "yes"
   evidence: "codex exec/review/apply/sandbox subcommands are present in codex --help"
@@ -19,7 +19,7 @@ scheduling:
   evidence:
     - "plans/bounded_autonomy/CAPABILITY_MATRIX.md flagged the last_seen_tip collision risk"
     - "incoming/task-016__capability-codex/gate_audit.sh reports the shared state dir and the target codex dir"
-    - "local inspection found only $HOME/.exchange-gate and no separate $HOME/.exchange-gate-codex"
+    - "local inspection found /Users/mundi/.exchange-gate in LaunchAgents and no separate /Users/mundi/.exchange-gate-codex"
   note: "The task requested a de-conflict move, but this poll tick cannot write outside the repository clone."
 verification:
   codex_version:
@@ -28,33 +28,33 @@ verification:
     output_line: "codex-cli 0.140.0"
   sandbox_modes:
     method: "doc"
-    command: "codex --help | rg -n '^-s, --sandbox|--dangerously-bypass-approvals-and-sandbox'"
-    output_line: "sandbox policy selector is exposed with read-only, workspace-write, and danger-full-access"
+    command: "codex --help | sed -n '1,120p'"
+    output_line: "sandbox policy selector exposes read-only, workspace-write, and danger-full-access"
   approval_flags:
     method: "doc"
-    command: "codex --help | rg -n '--ask-for-approval|approval policy|on-request|never|on-failure'"
-    output_line: "approval policies on-request, never, and deprecated on-failure are documented"
+    command: "codex --help | sed -n '1,120p'"
+    output_line: "approval bypass is available via --dangerously-bypass-approvals-and-sandbox; explicit ask-for-approval flags are not exposed here"
   web_search:
-    method: "test"
-    command: "codex --help | rg -n '^\\s*--search'"
-    output_line: "--search exists and enables live web search"
+    method: "config"
+    command: "web tool available in this Codex environment; codex features list | rg -n 'standalone_web_search|web_search'"
+    output_line: "yes via host web tool; standalone_web_search feature is under development and currently false"
   x_search:
     method: "doc"
-    command: "codex --help | rg -n '(^\\s*--x-search|x-search)'"
-    output_line: "UNVERIFIED: no X-search surface exposed in codex help or doctor"
+    command: "codex --help | rg -n '(^\\s*--x-search|x-search)'; codex features list | rg -n 'x_search|standalone_web_search'"
+    output_line: "UNVERIFIED: no X-search surface exposed in codex help or features"
   mcp_support:
     method: "doc"
     command: "codex --help | rg -n '(^\\s*mcp\\s+|mcp-server)'"
     output_line: "mcp and mcp-server commands are present"
   auth_method:
     method: "config"
-    command: "codex doctor | rg -n 'auth mode|stored ChatGPT tokens|stored API key|auth storage mode'"
-    output_line: "auth mode chatgpt; stored ChatGPT tokens true; stored API key false"
+    command: "python3 - <<'PY' ... ~/.codex/auth.json ... PY"
+    output_line: "auth_mode=chatgpt; OPENAI_API_KEY unset in auth.json"
   rate_plan_limits:
     method: "config"
-    command: "codex doctor | rg -n 'rate|quota|plan|limit'"
-    output_line: "UNVERIFIED: no visible per-plan rate/usage limits in the emitted doctor output"
+    command: "codex features list; ~/.codex/config.toml"
+    output_line: "UNVERIFIED: no visible per-plan rate/usage limits in local config or features output"
 known_limits:
-  - "No X-search surface was exposed by codex help or doctor."
-  - "Version is current as installed but not latest available; update availability is informational only."
+  - "No X-search surface was exposed by codex help or features."
+  - "Version is current as installed; update availability was not checked."
   - "Gate-state de-conflict remains unresolved because the required home-directory move is outside repo write scope."
