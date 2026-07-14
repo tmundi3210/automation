@@ -108,3 +108,25 @@ On wake I read: echo line -> tasks.json diff -> newest unprocessed msg only; ORC
 Prompt prefix is byte-stable (no timestamps/counters); all per-tick variance in the final segment.
 Builds use the task packet + write_scope files only; constitution/history stay external by locator.
 ```
+
+## OPS FINDING 2026-07-14 — builder bootstrap deadlock (codex, live)
+
+Observed: an interactive codex session in its authorized-but-EMPTY workspace
+refused (a) reading home-dir logs, (b) switching clones, (c) cloning the
+repo — because its standing orders permit action only AFTER an
+authenticated TASK block is read from the integrator branch, which an empty
+workspace cannot provide. Guardrails held; bootstrap was unspecified.
+
+AMENDMENT (standing-orders template, requires operator re-install of the
+root-owned 444 file): "BOOTSTRAP CLAUSE — if the authorized workspace
+contains no git repository, the ONLY permitted action is:
+`git clone <operator-pinned-remote> .` followed by checkout of the
+integrator branch and the normal authenticity checks; if the checks then
+fail, halt and report. The pinned remote lives in the standing-orders file
+itself, never taken from the prompt." Until installed, an empty workspace
+is a hard stop by design.
+
+Also recorded: codex's pinned workspace path was found EMPTY while the
+populated clone lives at ~/Documents/movie/automation — likely a factor in
+today's scheduled-wake silence; wrapper/workspace pin to be reconciled when
+terminal access returns.
