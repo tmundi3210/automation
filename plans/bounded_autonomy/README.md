@@ -40,7 +40,11 @@ different-family reviews. Case studies (Hermes Agent, OpenClaw) are
 pending exact-project resolution by the scout; their registry rows are
 `pending_resolution` with null URLs rather than guessed links.
 
-## Operator decision requested
+## Operator decision — RECEIVED
 
-APPROVE / APPROVE_WITH_CHANGES / REJECT (reply forms in
-`OPERATIONS_RUNBOOK.md`). Implementation Phase A starts only on approval.
+**APPROVE_WITH_CHANGES (2026-07-14, DECISION.md):** OpenClaw and Hermes
+excluded as components (case studies only); first-party channels for
+delivery; ARCH_REVIEW edits 1–3 applied minus OpenClaw items. **Phase A is
+OPEN** — TASK-019 (grok: live poller validation + capability probes +
+source URL-verification), TASK-020 (codex: control-plane skeleton).
+Per-phase operator checkpoints remain binding (next one closes Phase A).

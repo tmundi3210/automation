@@ -1,9 +1,15 @@
 # IMPLEMENTATION_PHASES — build order for the bounded-autonomy system
 
-Planning deliverable #13 (SPEC.md PLANNING DELIVERABLES). This is a plan, not
-a work order: per the SPEC STOP CONDITION, **no phase starts until the operator
-reviews and approves the full planning package.** Nothing below modifies
-project files today.
+Planning deliverable #13 (SPEC.md PLANNING DELIVERABLES).
+**STATUS UPDATE 2026-07-14 (DECISION.md): the operator ruled
+APPROVE_WITH_CHANGES — the STOP CONDITION is lifted and Phase A is OPEN**
+(TASK-019 grok, TASK-020 codex). Changes bound in: OpenClaw and Hermes are
+EXCLUDED as components (case studies only); channel delivery uses first-party
+channels; a thin deterministic controller service (executing these phases'
+schemas) and per-lane interface upgrades (Claude Agent SDK, codex app-server,
+grok ACP — each gated on a TASK-01x-style capability verification on the
+installed builds) are added to Phases C/D scope per ARCH_REVIEW. Per-phase
+operator checkpoints below remain binding.
 
 Sizes are S / M / L (the EXCHANGE task-size scale: roughly ≤1h / ≤4h / ≤24h of
 builder effort), not dates. Builder assignments follow the evidence-based trust

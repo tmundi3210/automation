@@ -663,3 +663,43 @@ HUMAN_APPROVED → DEPLOYED → MONITORED → RETAINED | ROLLED_BACK`
 8. **Model summaries have no state effects.** Adding, editing, or deleting
    `annotations[]` never changes `state` — annotations are not evidence
    (global provenance rule 1).
+
+## 9. task_packet (added by DECISION.md, 2026-07-14 — ARCH_REVIEW edit 1)
+
+Structured task issuance for the control plane; supersedes nothing — it is
+the machine-readable twin of ORCHESTRATION §4's TASK block, and the two must
+carry identical facts for the same task.
+
+```json
+{
+  "$id": "task_packet",
+  "type": "object",
+  "required": ["task_id", "project_id", "base_commit", "role", "objective",
+               "allowed_paths", "forbidden_paths", "acceptance_criteria",
+               "verification_commands", "permission_profile",
+               "max_wall_minutes", "max_invocations", "output_schema"],
+  "properties": {
+    "task_id":      {"type": "string", "pattern": "^TASK-[0-9]{3,}$"},
+    "project_id":   {"type": "string"},
+    "base_commit":  {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
+    "role":         {"enum": ["research", "plan", "implement", "review", "verify"]},
+    "objective":    {"type": "string", "maxLength": 2000},
+    "input_artifacts":       {"type": "array", "items": {"type": "string"}},
+    "allowed_paths":         {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "forbidden_paths":       {"type": "array", "items": {"type": "string"}},
+    "acceptance_criteria":   {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "verification_commands": {"type": "array", "items": {"type": "string"}},
+    "permission_profile":    {"type": "string"},
+    "max_wall_minutes":  {"type": "integer", "minimum": 1,
+                          "description": "per-task ceiling; COST_BUDGET denominates in wall-minutes/invocations, never USD (flat-rate plans)"},
+    "max_invocations":   {"type": "integer", "minimum": 1},
+    "output_schema":     {"type": "string", "description": "schema id the result must validate against"}
+  }
+}
+```
+
+Rules: `forbidden_paths` is enforced by the same pre-merge scope gate that
+enforces `allowed_paths` (deny wins); exceeding either ceiling parks the task
+at a checkpoint (COST_BUDGET degradation rungs), never silently truncates
+review. The result packet is the existing `review_object`/delivery message
+pair plus the Phase-8 metric fields registered in EVALUATION_REGISTRY.

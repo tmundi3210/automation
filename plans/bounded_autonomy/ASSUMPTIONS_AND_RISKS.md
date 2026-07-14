@@ -52,3 +52,9 @@ gateways under a separate macOS user account, and deny their configs read
 access to `~/.exchange-gate*`, `~/.codex/`, `~/.grok/`, and the clone.
 Also observed: `com.mundi.PremiumCapsule.auto-deploy` failing (status 78) —
 operator-owned, outside this system's scope, flagged for operator review.
+
+Update 2026-07-14 (DECISION.md): the operator ruled OpenClaw and Hermes OUT
+as system components — the ARCH_REVIEW #8 gateway question is closed
+(REJECTED). The machine-level exposure above is UNCHANGED until the
+gateways are booted out or moved to a separate user; the recommendation
+stands.
