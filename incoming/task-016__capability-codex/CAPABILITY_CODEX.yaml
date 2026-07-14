@@ -5,19 +5,22 @@ version:
   evidence: "codex --version => codex-cli 0.140.0"
 interface:
   value: "local CLI on macOS"
-  evidence: "codex doctor => repo detected true; runtime macos-aarch64"
+  evidence: "codex doctor => runtime macos-aarch64; repo detected true"
 filesystem:
-  value: "unrestricted fs in this local installation; codex sandbox modes available for command execution"
-  evidence: "codex doctor => filesystem unrestricted + enabled network; codex --help => --sandbox"
+  value: "unrestricted filesystem in this local installation; network enabled"
+  evidence: "codex doctor => filesystem unrestricted + network enabled; codex --help => --sandbox with read-only, workspace-write, danger-full-access"
+shell_execution:
+  value: "yes"
+  evidence: "codex exec/review/apply/sandbox subcommands are present in codex --help"
 scheduling:
   state_dir_before: "$HOME/.exchange-gate/"
-  state_dir_after: "$HOME/.exchange-gate/"
-  status: "shared_with_grok_and_not_moved"
+  state_dir_after: "$HOME/.exchange-gate-codex/"
+  status: "shared_with_grok_and_move_blocked_by_clone_only_scope"
   evidence:
-    - "EXCHANGE/plans/bounded_autonomy/CAPABILITY_MATRIX.md flagged possible collision"
-    - "poll-wrapper.sh defaults D=${EXCHANGE_GATE_DIR:-$HOME/.exchange-gate}"
+    - "plans/bounded_autonomy/CAPABILITY_MATRIX.md flagged the last_seen_tip collision risk"
+    - "incoming/task-016__capability-codex/gate_audit.sh reports the shared state dir and the target codex dir"
     - "local inspection found only $HOME/.exchange-gate and no separate $HOME/.exchange-gate-codex"
-  note: "The task requested a de-conflict move, but this poll tick cannot modify files outside the repository clone."
+  note: "The task requested a de-conflict move, but this poll tick cannot write outside the repository clone."
 verification:
   codex_version:
     method: "test"
@@ -26,7 +29,7 @@ verification:
   sandbox_modes:
     method: "doc"
     command: "codex --help | rg -n '^-s, --sandbox|--dangerously-bypass-approvals-and-sandbox'"
-    output_line: "sandbox policy selector is exposed; dangerous bypass flag is documented"
+    output_line: "sandbox policy selector is exposed with read-only, workspace-write, and danger-full-access"
   approval_flags:
     method: "doc"
     command: "codex --help | rg -n '--ask-for-approval|approval policy|on-request|never|on-failure'"
@@ -35,6 +38,10 @@ verification:
     method: "test"
     command: "codex --help | rg -n '^\\s*--search'"
     output_line: "--search exists and enables live web search"
+  x_search:
+    method: "doc"
+    command: "codex --help | rg -n '(^\\s*--x-search|x-search)'"
+    output_line: "UNVERIFIED: no X-search surface exposed in codex help or doctor"
   mcp_support:
     method: "doc"
     command: "codex --help | rg -n '(^\\s*mcp\\s+|mcp-server)'"
