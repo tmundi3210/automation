@@ -38,3 +38,17 @@ TASK-016 (Codex self-verification + gate audit) integrate.
 - Social-media generation/scheduling (a SPEC topic) has no verified
   execution surface in any component — planning covers ingestion/research
   side only until a posting tool is authorized.
+
+## R6 (added 2026-07-14, operator-confirmed)
+
+Operator runs third-party agent gateways (Hermes Agent `ai.hermes.gateway`,
+OpenClaw `ai.openclaw.gateway`) as the same macOS user that holds the owner
+GitHub token, `~/.codex/auth.json`, builder state dirs, and the automation
+clone. Hermes' loop was the source of the recurring Terminal windows
+(driving local codex sessions). OpenClaw's community skill templates are a
+known supply-chain surface (CASE_STUDIES.md), now co-resident with builder
+credentials. Operator-accepted for now; recommended mitigation: run
+gateways under a separate macOS user account, and deny their configs read
+access to `~/.exchange-gate*`, `~/.codex/`, `~/.grok/`, and the clone.
+Also observed: `com.mundi.PremiumCapsule.auto-deploy` failing (status 78) —
+operator-owned, outside this system's scope, flagged for operator review.
