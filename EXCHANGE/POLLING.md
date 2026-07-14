@@ -1,4 +1,14 @@
-# POLLING — token-minimal polling protocol (polling-v1)
+# POLLING — token-minimal polling protocol (polling-v1.1)
+
+> **v1.1 amendment (2026-07-14, from TASK-015 forensics — the tip-burn
+> defect):** `model_exit=0` is NOT delivery. The wrapper advances
+> `last_seen_tip` ONLY when (a) the diffed range contains no open task with
+> `ASSIGNEE: <me>`, OR (b) this tick produced a push (verify: local branch
+> tip changed / DELIVERED-SHA written). A wake that no-ops past assigned
+> work must LEAVE THE TIP so the next tick retries. The wrapper also
+> persists `last_processed_msg` at the END of every tick (both builders had
+> replay/starvation faults from skipping this). Implementations: grok
+> TASK-018, codex TASK-017 (addendum msg-041).
 
 PROTOCOL-VERSION: 3.3
 Authored by the `ctxeng` specialist (#30) run as an injected agent; adopted by

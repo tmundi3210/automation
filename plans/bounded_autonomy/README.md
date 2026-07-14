@@ -23,7 +23,7 @@ operator approves this package.
 | 13 | Implementation phases | `IMPLEMENTATION_PHASES.md` | done (A-H, operator checkpoints) |
 | 14 | Operations runbook | `OPERATIONS_RUNBOOK.md` | done (digests, kill switch, playbooks) |
 | 15 | Code skeleton | in `SYSTEM_ARCHITECTURE.md` (documented only — no code, per stop condition) | done |
-| 16 | Review objects | `reviews/review_claude.json` done; `reviews/review_codex.json` done; `reviews/review_grok.json` arrives via TASK-015 | partial |
+| 16 | Review objects | `reviews/review_claude.json` done;  all three present: `reviews/review_{claude,codex,grok}.json` | **done** |
 | 17 | Assumptions & risks | `ASSUMPTIONS_AND_RISKS.md` | done (living; finalizes with 15/16) |
 | + | Case studies (SPEC Phase 6) | `CASE_STUDIES.md` | done (Hermes Agent + OpenClaw resolved; DEEP-DIVE cells for Phase B) |
 | + | Operator watchlist import | `import/WATCHLIST_ANALYSIS.md` + raw xlsx + derived JSON | done (100 people + 43 seeds; merge in Phase B) |

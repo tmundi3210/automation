@@ -39,14 +39,14 @@ self-verification assigned as TASK-015; matrix to be finalized from its reply.
 
 | Capability | Status | Evidence |
 |---|---|---|
-| Product/version | Grok CLI / Grok Build TUI; exact version string `[U]` (TASK-015) | playbook header |
+| Product/version | **grok 0.2.99 (b1b49ccb71a7) [stable]** `[T]` (TASK-015) | msg-011 |
 | Interface | Local CLI/TUI on macOS; headless via top-level `grok -p/--prompt-file` (NOT `grok agent` for scheduler flags — TASK-014 root cause) `[O]` | msg-009 |
 | Filesystem | Operator user scope; repo clone `~/automation`; secondary clone `/tmp/automation` (volatile — flagged) `[O]` | msg-025 nit |
 | Shell | Yes via agent tooling; `--sandbox` profiles exist per help `[O]`, untested `[U]` | playbook §C |
 | Git/GitHub | Pushes as owner account with `grok-bot` git identity + Agent trailer (OPERATOR WAIVER-001) `[O][T]` | all deliveries |
 | Web search | Yes `[O]` (TASK-013 performed multi-angle search + URL verification); `--disable-web-search` flag exists `[C]` | SOURCES.md |
-| X search | Expected (xAI product) but NOT yet demonstrated in any task `[U]` (TASK-015 must test harmlessly) | — |
-| MCP/tools | `mcp` subcommand listed in help `[C]`; unconfigured/untested `[U]` | playbook §D |
+| X search | **YES — native session tools** (`x_keyword_search`, `x_semantic_search`, `x_thread_fetch`, `x_user_search`), live-tested read-only `[T]`. NOT a pollable feed API — X coverage is scout-tick-driven | TASK-015 test |
+| MCP/tools | Verified: `grok mcp list`/`doctor` — codex_orchestrator + Linear + GitHub servers healthy `[T]` | TASK-015 |
 | Scheduling | launchd LaunchAgent `com.mundi.exchange-poll-v1`, 300s interval + zero-token shell gate; automatic wake PROVEN `[T]` | TASK-014 Phase 2 |
 | Sandboxing | Worktrees (`-w/--worktree-ref`) `[C]`; sandbox profiles `[U]` | playbook §B/§C |
 | Approval | `--permission-mode acceptEdits` + `--allow`/`--deny` rules (switched from `--always-approve` 2026-07-13) `[O]` | msg-010 |

@@ -7,13 +7,13 @@ TASK-016 (Codex self-verification + gate audit) integrate.
 
 | # | Assumption | Why unresolved | Resolution path |
 |---|---|---|---|
-| A1 | Grok CLI has native X-search | Never demonstrated in a task; xAI product makes it likely | TASK-015 harmless test |
+| A1 | ~~Grok X-search~~ RESOLVED (TASK-015): native session tools, live-tested; NOT a feed API | — | done |
 | A2 | ~~Codex CLI web-search~~ RESOLVED (TASK-016): `--search` exists but is BLOCKED — configured model `gpt-5.6-terra` rejected by build 0.140.0. Treat as unavailable; new assumption: operator may want to fix the model pin | — | operator decision |
 | A3 | Grok and Codex gate state may COLLIDE in `~/.exchange-gate/` — still open; TWO duplicate-ACK incidents are consistent with it | Codex could not inspect `$HOME` from its sandbox | OPERATOR: run `bash incoming/task-016__capability-codex/gate_audit.sh` on the Mac, apply its ACTION lines, paste output |
 | A4 | ~~Hermes Agent / OpenClaw resolution~~ RESOLVED (hub WebSearch, 2026-07-13): NousResearch/hermes-agent and openclaw/openclaw — see CASE_STUDIES.md | — | done |
 | A5 | Plan/rate limits for all three subscriptions | Not visible from configs inspected so far | Self-verification tasks; else operator-supplied |
 | A6 | Only ONE authorized repo (`tmundi3210/automation`) | Hub's GitHub scope is this repo; repo-list tool unavailable in this session; other local projects on the operator's Mac are invisible to the hub | Operator confirms project list; builders can inventory local paths in a later read-only task if authorized |
-| A7 | X API ingestion for the source registry | No component currently has verified X API access; Grok CLI may provide interactive X search only (no feed polling) | TASK-015; if interactive-only, cadence for X sources becomes scout-tick-driven, not feed-driven |
+| A7 | ~~X API ingestion~~ RESOLVED-DIRECTIONALLY (TASK-015): interactive-only confirmed; X cadence is scout-tick-driven (SOURCE_REGISTRY amendment v1_1) unless operator authorizes an X API | — | done |
 | A8 | Podcast/audio ingestion needs a transcript source | No component has been verified to transcribe audio | Prefer show-notes/transcript feeds (Tier C is discovery-only anyway) |
 
 ## Accepted residual risks (recorded, operator-acknowledged)
