@@ -48,3 +48,39 @@ openclaw equivalent) or move them to a separate macOS user.
   review reject).
 - Hub: integration, review, capability-matrix sign-off; Phase A operator
   checkpoint (demo no-op tick + kill switch) before Phase B.
+
+---
+
+# OPERATOR DECISION 2026-07-15 — codex promoted to LOCAL OPERATIONS OWNER
+
+Operator ruling (verbatim): "if its not working yet then lets make the
+codex the main operator - change the files directiosn line in agent.md etc
+etc {that will be much easier as codex can manage it better as it can make
+changes locally and can push to github also"
+
+Context: the 2026-07-15 forensics (POLLING.md OPS FINDINGS) proved every
+remaining orchestration failure is Mac-LOCAL plumbing — /tmp repo pins,
+plist env overrides, a wrapper syntax error, and a gate that is remote-blind
+under launchd — a class of defect the cloud hub can never touch directly.
+
+## Bounded interpretation (in force)
+
+1. codex ROLE becomes `builder + local-ops-owner`. It OWNS the Mac-side
+   orchestration infrastructure: BOTH gate dirs (~/.exchange-gate,
+   ~/.exchange-gate-codex), the com.mundi.exchange-poll-* LaunchAgent
+   plists, wrapper/gate scripts, and local standing-orders installs. It may
+   modify these LOCAL files under an authenticated TASK block, and under a
+   standing maintenance mandate (MAINT-1) for like-for-like repair of wake
+   plumbing, with pre-edit backups and evidence in its delivery messages.
+2. Repo-side write scope is UNCHANGED (EXCHANGE/codex/** + per-task SCOPE).
+   No new merge rights. GitHub integrator/single-writer authority — merges,
+   verdicts, ledger, gates — remains with claude: the operator's stated
+   rationale is local file management + push ability, both satisfied
+   without transferring merge authority. If the operator additionally
+   intends to transfer integrator/merge authority to codex, that requires
+   a separate explicit ruling naming it.
+3. grok is unaffected; codex touching ~/.exchange-gate (grok's dir) is
+   authorized ONLY for wake-plumbing files, never grok's task content.
+4. First act: TASK-023 (msg-055) — wrapper syntax fix, gate remote-blindness
+   fix, error-visibility logging, F2 standing-orders re-point, end-to-end
+   wake proof. TASK-022 folds into it (superseded).
