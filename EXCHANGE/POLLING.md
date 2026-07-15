@@ -180,3 +180,19 @@ reloaded. Codex's permanent clone verified on-disk at its scratch path
 (.git + full tree). Doctrine addendum: the repo pin must live in exactly
 ONE place; an installer that writes both a script default AND a plist env
 var creates a shadowed config that survives half a fix.
+
+RESOLVED 2026-07-15T18:15Z (operator): plists re-pinned, jobs
+bootout/bootstrap-reloaded, `launchctl print` confirms EXCHANGE_REPO now
+/Users paths on both. First post-fix ticks: grok `model_exit=0` +
+`ADVANCED reason=no_open_grok_task`; codex mid-tick with correct 3.3
+version echo + doc reload. Two follow-ups from the live lines:
+(F1) grok's wrapper ADVANCED on `tip=unknown` while TASK-019/021 sit open
+in the ledger — the in-range open-task check is blind when the tip cache
+is invalid; recovery path is `last_processed_msg` (still msg-043) on the
+next waking tick, and the operator's manual grok session is executing
+019/021 in parallel, so no re-kick will be pushed until it finishes
+(double-execution risk beats starvation risk today).
+(F2) codex's wrapper hands codex a `standing-orders-grok.md` path from
+outside its clone; codex correctly refused the wrong-agent orders and
+proceeded on branch-side docs — wrapper must be re-pointed at a codex
+standing-orders file (fold into TASK-022 evidence or a follow-up mint).
