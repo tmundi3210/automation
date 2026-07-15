@@ -142,3 +142,31 @@ codex instructed to clone the repo into its scratch workspace as its
 PERMANENT per-agent clone (grok keeps ~/Documents/movie/automation) —
 per-agent-clone doctrine now physically true. Web-search/model-pin defect
 (A2) needs re-probing on 0.144.4.
+
+## OPS FINDING 2026-07-15 — /tmp repo pin: both schedulers dead since reboot (ROOT CAUSE, live logs)
+
+Operator-supplied poll.log tails + wrapper greps closed the silent-scheduler
+mystery. Both gate dirs pin `REPO="${EXCHANGE_REPO:-/tmp/automation}"`
+(gate.sh:6, poll-wrapper.sh:7 in BOTH ~/.exchange-gate/ and
+~/.exchange-gate-codex/). macOS clears /tmp at reboot; the operator restarted
+the Mac 2026-07-14, so every tick since fails with
+`Failed to set working directory to "/tmp/automation"` → `model_exit=1` →
+v1.1 correctly holds the tip (`NO_ADVANCE reason=model_exit_1`,
+`last_processed_msg=msg-043.md` frozen). launchctl shows both jobs loaded
+with last-exit 1. Confirmations gained for free: grok's TASK-018 v1.1
+wrapper IS live (real NO_ADVANCE + last_processed_msg persistence lines —
+the live-sample debt from msg-044 is now partially paid: hold-on-failure
+proven; delivery-gated ADVANCE still unobserved), and codex's poller shares
+the identical defect (TASK-022's stale-pin hypothesis confirmed, wrong
+path: /tmp, not the old Documents clone).
+
+HOTFIX (operator, sed re-pin to durable /Users paths):
+grok gate → /Users/mundi/Documents/movie/automation;
+codex gate → /Users/mundi/Documents/Codex/2026-07-14/work-in-documents-movie-automation-two.
+CAVEAT: `${EXCHANGE_REPO:-...}` means a plist EnvironmentVariables entry
+overrides the file default — plists must be checked for EXCHANGE_REPO.
+
+DOCTRINE (binding on future installs): a poller's repo pin MUST point at a
+reboot-durable path (never /tmp, never $TMPDIR); installer must verify the
+path is a git clone at install time and the wrapper must log the resolved
+REPO on every TICK start line so a bad pin is visible in one log line.
