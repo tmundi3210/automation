@@ -170,3 +170,13 @@ DOCTRINE (binding on future installs): a poller's repo pin MUST point at a
 reboot-durable path (never /tmp, never $TMPDIR); installer must verify the
 path is a git clone at install time and the wrapper must log the resolved
 REPO on every TICK start line so a bad pin is visible in one log line.
+
+CONFIRMED 2026-07-15 (operator launchctl print): both plists
+(~/Library/LaunchAgents/com.mundi.exchange-poll-{v1,codex}.plist) inject
+`EXCHANGE_REPO => /tmp/automation` via EnvironmentVariables, overriding the
+sed-fixed wrapper defaults — post-fix kickstarted ticks still failed until
+the plists themselves were re-pinned and the jobs bootout/bootstrap
+reloaded. Codex's permanent clone verified on-disk at its scratch path
+(.git + full tree). Doctrine addendum: the repo pin must live in exactly
+ONE place; an installer that writes both a script default AND a plist env
+var creates a shadowed config that survives half a fix.
