@@ -34,11 +34,11 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 
 | # | slug | Business | Wave | KBs (dense gate) | Specialist | Verified |
 |---|------|----------|:---:|:---:|:---:|:---:|
-| 1 | `security_dealer` | Home Security & Alarm Dealer | 1 | — | — | — |
-| 2 | `pos_agent` | Merchant Processing / POS Agent | 1 | — | — | — |
-| 3 | `voip_reseller` | Business VoIP Reseller | 1 | — | — | — |
-| 4 | `connectivity_agent` | Business Internet & Wireless Agent | 1 | — | — | — |
-| 5 | `cctv_cloud` | CCTV & Cloud Video Recording | 1 | — | — | — |
+| 1 | `security_dealer` | Home Security & Alarm Dealer | 1 | 3/3 | pass | ✅ |
+| 2 | `pos_agent` | Merchant Processing / POS Agent | 1 | 3/3 | pass | ✅ |
+| 3 | `voip_reseller` | Business VoIP Reseller | 1 | 3/3 | pass | ✅ |
+| 4 | `connectivity_agent` | Business Internet & Wireless Agent | 1 | 3/3 | pass | ✅ |
+| 5 | `cctv_cloud` | CCTV & Cloud Video Recording | 1 | 3/3 | pass | ✅ |
 | 6 | `fleet_tracking` | GPS / Fleet Tracking Reseller | 2 | — | — | — |
 | 7 | `managed_wifi` | Managed Wi-Fi Provider | 2 | — | — | — |
 | 8 | `web_hosting` | Website & Hosting Reseller | 2 | — | — | — |
@@ -60,5 +60,5 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 24 | `travel_agent` | Travel Agent / Advisory | 5 | — | — | — |
 | 25 | `solar_referral` | Solar Sales / Referral | 5 | — | — | — |
 
-Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
+Wave 1 landed 2026-08-12 (all five verified). Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
 `3/3` / `13/13` / `✅` as each vertical lands; each business is committed individually.
