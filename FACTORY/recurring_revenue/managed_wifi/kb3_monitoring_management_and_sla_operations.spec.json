@@ -1,0 +1,1204 @@
+{
+  "domain": "wifi_monitoring_management_and_sla_operations",
+  "domain_label": "Wi-Fi Monitoring, Management & SLA Operations",
+  "purpose": "What the operator of a managed Wi-Fi book reasons about after the installers leave: monitoring many small-venue networks remotely, keeping firmware and configurations healthy, designing SLAs the monitoring can prove and reporting uptime honestly, running tiered support and vendor escalation, proving enough value to renew management subscriptions, and expanding accounts to more sites and adjacent services without breaching guest privacy or overrunning the promises the contract actually made.",
+  "assumptions": [
+    "no observed dataset supplied; all scores are heuristic priors",
+    "the provider operates cloud-managed Wi-Fi fleets for small venues (restaurants, motels, offices, retail, multi-tenant) under a monthly management subscription, and this KB covers the ongoing operations phase that begins at deployment handoff",
+    "monitoring observes device- and network-health telemetry only; the content of guest traffic is never intercepted, inspected, or sold",
+    "pricing, SLA credits, and support-tier boundaries are per-contract mechanisms that vary by deal and platform; no universal figure exists to assert",
+    "privacy, data-retention, and automatic-renewal obligations are jurisdiction-specific compliance classes that must be verified locally, never assumed"
+  ],
+  "exclusions": [
+    "productizing the Wi-Fi-as-a-service offer, venue-type targeting, per-AP/per-site subscription architecture, and positioning against one-time installers - the offer-and-venues KB owns that territory",
+    "RF site surveys, AP placement, SSID/VLAN segmentation design, hardware platform selection, captive-portal build and disclosure text, installation, cabling, validation testing, and documentation handoff - the design-and-deployment KB owns that territory; this KB consumes its handoff package and may trigger a redesign engagement but never performs one",
+    "interception or deep inspection of guest traffic content and any sale of user data - prohibited by the business's privacy boundary, not merely out of scope",
+    "asserting invented uptime percentages, credit amounts, or price points as fact - availability targets, remedies, and tier prices are described only as mechanisms or contract terms",
+    "personalized legal or financial advice on SLA contracts, auto-renewal clauses, or data-retention duties - obligation classes are named and flagged for verification in the operator's jurisdiction",
+    "spectrum, wiring, and building-code constraints treated as assumptions - they are site-specific facts that a survey establishes, and recurring problems rooted in them route back to a design engagement"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What must be verified before a freshly installed site is accepted into managed operations, and why is a performance baseline captured at intake?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "OPS_INTAKE_BASELINE names the handoff-package checks, device enrollment, and the baseline snapshot that later alerting and SLA math compare against",
+      "covered_by": ["OPS_INTAKE_BASELINE"]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What may the monitoring stack observe on a guest network, and what must it never collect, share, or sell?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "GUEST_PRIVACY_OPERATIONS draws the telemetry-only line, retention and access-audit discipline, and the routing of lawful-request classes to counsel; MONITORING_STACK_DESIGN shows the stack collecting health telemetry rather than traffic content",
+      "covered_by": ["GUEST_PRIVACY_OPERATIONS", "MONITORING_STACK_DESIGN"]
+    },
+    {
+      "id": "CQ_03",
+      "question": "Where does the provider's responsibility end and the ISP's or customer's begin, and how does that boundary shape both outage handling and the SLA?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "DEMARC_RESPONSIBILITY_MAP assigns each failure domain an owner, an escalation route, and an SLA treatment while keeping the one-call posture; SLA_DESIGN_SCOPE carries the matching exclusions",
+      "covered_by": ["DEMARC_RESPONSIBILITY_MAP", "SLA_DESIGN_SCOPE"]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What should be monitored per venue type, and how are alert thresholds tuned so every page stays actionable?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "MONITORING_STACK_DESIGN defines venue-specific health checks including a vendor-cloud-independent probe, and ALERT_POLICY_TUNING covers baselined thresholds, cascade deduplication, flap suppression, and business-hours severity",
+      "covered_by": ["MONITORING_STACK_DESIGN", "ALERT_POLICY_TUNING"]
+    },
+    {
+      "id": "CQ_05",
+      "question": "When a site goes dark, what is the ordered triage path and what justifies rolling a truck?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "OUTAGE_TRIAGE_RUNBOOK gives the scope-power-WAN-inward diagnostic order, the change-history correlation step, the remote-hands option, and the impact-versus-commitment truck-roll rule",
+      "covered_by": ["OUTAGE_TRIAGE_RUNBOOK"]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What does proactive maintenance cover between incidents, and how are firmware updates rolled out across managed sites without breaking POS-serving networks - including when a critical vulnerability is disclosed?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "PROACTIVE_MAINTENANCE_CALENDAR lists the recurring hygiene tasks, FIRMWARE_HYGIENE_PROGRAM gives the classify-canary-window-verify-rollback sequence, and SECURITY_VULN_RESPONSE distinguishes the emergency path with interim mitigations and customer notice",
+      "covered_by": ["PROACTIVE_MAINTENANCE_CALENDAR", "FIRMWARE_HYGIENE_PROGRAM", "SECURITY_VULN_RESPONSE"]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is configuration drift detected and controlled when customer staff and third-party vendors can physically touch the network?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "CONFIG_CHANGE_CONTROL defines change authority per role, the change log, drift audits against documentation, rogue-device alerting, and the backfill window for emergency changes",
+      "covered_by": ["CONFIG_CHANGE_CONTROL"]
+    },
+    {
+      "id": "CQ_08",
+      "question": "What makes an SLA keepable rather than aspirational, and what belongs in its exclusions and remedy mechanism?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "SLA_DESIGN_SCOPE requires every promise to map to a monitored metric, sets targets from observed achievable performance plus headroom, states fair exclusions, and defines remedies as contract mechanisms rather than invented figures",
+      "covered_by": ["SLA_DESIGN_SCOPE"]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is uptime measured and reported honestly - including monitoring blind spots, partial degradation, and months where the number is bad?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "UPTIME_MEASUREMENT_HONESTY states the disclosed method, the unknown-not-up rule for monitoring gaps, and the publish-the-bad-month discipline; SLA_BREACH_REMEDY covers proactive notification and remedy execution when the number breaches",
+      "covered_by": ["UPTIME_MEASUREMENT_HONESTY", "SLA_BREACH_REMEDY"]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How are support tiers structured, who is allowed to call, and when does an issue escalate to vendor TAC, RMA, or the ISP?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "SUPPORT_TIER_STRUCTURE defines intake channels, front-line versus engineer scope, and per-tier response expectations; VENDOR_ESCALATION_PATHS covers TAC evidence packages, spare-backed RMA, cloud-outage posture, and authorized ISP escalation",
+      "covered_by": ["SUPPORT_TIER_STRUCTURE", "VENDOR_ESCALATION_PATHS"]
+    },
+    {
+      "id": "CQ_11",
+      "question": "What does a periodic report have to show for a restaurant or motel owner to feel the management fee earned its keep?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "VALUE_EVIDENCE_REPORTING requires measured availability with method, incidents resolved before the customer noticed, maintenance performed, capacity trends, and plain language with aggregate-only analytics",
+      "covered_by": ["VALUE_EVIDENCE_REPORTING"]
+    },
+    {
+      "id": "CQ_12",
+      "question": "Which signals mark a management subscription at churn risk, how does per-site cost-to-serve shape the response, and what does an honest renewal look like?",
+      "must_be_answerable_from": ["nodes", "iteration_protocol"],
+      "acceptance_condition": "CHURN_SIGNAL_WATCH maps each disengagement signal to an intervention, SUPPORT_COST_TO_SERVE separates remediation from re-pricing responses to noisy sites, and RENEWAL_INTEGRITY covers term visibility, disclosed auto-renewal, and evidence-based right-sizing",
+      "covered_by": ["CHURN_SIGNAL_WATCH", "SUPPORT_COST_TO_SERVE", "RENEWAL_INTEGRITY"]
+    },
+    {
+      "id": "CQ_13",
+      "question": "What happens to the service, the data, and the equipment when the venue changes owners mid-term?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "SITE_OWNERSHIP_TRANSITION covers contract assignment versus termination, credential rotation and data separation between owners, equipment title resolution, and re-onboarding the new owner as a fresh intake",
+      "covered_by": ["SITE_OWNERSHIP_TRANSITION"]
+    },
+    {
+      "id": "CQ_14",
+      "question": "When is it right to propose additional sites or adjacent services such as cameras and VoIP, and when must the pitch wait?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "MULTI_SITE_EXPANSION grounds the pitch in operational evidence and keeps per-site survey discipline, and ADJACENT_SERVICE_EXPANSION gates any cross-sell on core-service health, needs-based discovery, and a design-review trigger for added network load",
+      "covered_by": ["MULTI_SITE_EXPANSION", "ADJACENT_SERVICE_EXPANSION"]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "demarcation point (demarc)",
+      "definition": "The agreed boundary where the ISP's circuit responsibility ends and the managed network begins; the provider manages from the customer edge inward and coordinates - but does not own - failures on the far side."
+    },
+    {
+      "term": "truck roll",
+      "definition": "Dispatching a technician to the site; the most expensive unit of support work, justified only when remote triage and remote hands are exhausted or the contract's restore commitment demands it."
+    },
+    {
+      "term": "flap suppression",
+      "definition": "Alert-policy logic that stops a device oscillating between up and down (a nightly power-cycled AP, a marginal PoE run) from paging repeatedly, while keeping the oscillation pattern visible for root-cause work."
+    },
+    {
+      "term": "canary site",
+      "definition": "A deliberately low-risk venue that receives a firmware release first; only after it holds against the baseline does the rollout proceed to revenue-critical sites such as POS-serving restaurants."
+    },
+    {
+      "term": "maintenance window",
+      "definition": "A customer-agreed, disclosed time slot for disruptive work; downtime inside a properly noticed window is excluded from SLA math, downtime that overruns or skips the notice is not."
+    },
+    {
+      "term": "measured availability",
+      "definition": "The uptime figure computed from monitoring probes under a disclosed method - what counts as down, at what interval, and how partial degradation and monitoring gaps are treated - as opposed to a recalled or asserted number."
+    },
+    {
+      "term": "service credit",
+      "definition": "The contractual remedy mechanism for an SLA breach: how credit accrues against the management fee, how a claim is made, and what the cap is - amounts are per-contract terms, never a universal figure."
+    },
+    {
+      "term": "cost-to-serve",
+      "definition": "The actual operating cost a site consumes - ticket minutes, truck rolls, spares, escalation time - tracked against its fixed subscription so noisy sites surface as remediation or re-pricing candidates instead of silent margin leaks."
+    },
+    {
+      "term": "configuration drift",
+      "definition": "Divergence between the documented network design and the live configuration, accumulated through undocumented changes by staff, vendors, or emergency fixes; detected by scheduled config-versus-record audits."
+    },
+    {
+      "term": "RMA (return merchandise authorization)",
+      "definition": "The vendor process for returning failed hardware; operationally useful only when paired with a spare-unit strategy, because a venue cannot wait on return freight for its access point to come back."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "OPS_INTAKE_BASELINE",
+      "topic": "operations_intake_and_performance_baseline",
+      "definition": "Accept a freshly deployed site from the installation team into managed operations only after verifying the handoff package and capturing a known-good baseline. Intake confirms the as-built documentation matches reality (AP inventory with serials and mount locations, SSID/VLAN map, admin credentials in the vault, ISP circuit and account details, on-site contact list), enrolls every device in the monitoring platform under the correct site and alert profile, and records a dated baseline snapshot - typical client counts by hour, per-AP utilization, WAN latency and packet loss, retry-rate indicators - so that later alerts, SLA arithmetic, and 'it feels slower' complaints are judged against measured normal rather than memory. A site that cannot pass intake goes back to the deployment team with the named gap, because every downstream operation inherits whatever intake accepted.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": ["handoff-package verification", "monitoring enrollment per device", "dated performance baseline capture", "named-gap rejection back to deployment"],
+        "excluded": ["performing installation or validation testing (design-and-deployment KB)", "alert threshold design"]
+      },
+      "pros": [
+        {
+          "claim": "A measured baseline turns vague complaints into comparisons instead of arguments",
+          "example": "a motel's 'Wi-Fi got slow' call resolved by showing evening client counts doubled since intake, pointing at occupancy growth rather than a fault",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Over-rigorous intake delays the first billable month and duplicates validation the deployment team already certified",
+          "example": "re-testing every cable run on a site whose handoff package already carries signed validation results",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "accepting a site with missing admin credentials so the first outage requires factory resets",
+        "capturing the baseline during an unrepresentative week - an off-season motel - so normal traffic later reads as degradation"
+      ],
+      "acceptance_tests": [
+        "the intake checklist is complete: documentation verified against the live site, every device enrolled and reporting, contacts and ISP account details recorded, and a dated baseline snapshot stored"
+      ],
+      "revisit_triggers": [
+        "the monitoring platform is migrated and enrollment must be redone",
+        "a venue remodel or occupancy change invalidates the stored baseline"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.78, "user_value": 0.8,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.4, "confidence": 0.74, "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.86, "evidence_confidence": 0.66,
+        "failure_rate": 0.15, "downside_weight": 0.45,
+        "uncertainty_interval": [0.2, 0.46],
+        "update_signal": "the handoff-package contract with the deployment team or the monitoring platform changes what intake must verify"
+      }
+    },
+    {
+      "id": "GUEST_PRIVACY_OPERATIONS",
+      "topic": "guest_network_privacy_and_data_stewardship",
+      "definition": "Bind the whole operating practice to a privacy boundary: the provider monitors device- and network-health telemetry - AP status, client counts, signal quality, aggregate bandwidth - and never intercepts, inspects, or sells the content of guest traffic. Captive-portal data collected at the venue's request is handled strictly per the disclosed terms (the portal build and disclosure text belong to the design KB; this node owns the operating discipline): retention windows are set and actually enforced, access to connection logs is role-restricted and audited, and analytics shared with the venue stay aggregate. Marketing-data requests are honored only within what the portal disclosure covered, and lawful-request classes - subpoena-type demands for connection records - are routed to counsel because retention and disclosure obligations vary by jurisdiction and must be verified, never assumed.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_02"],
+      "scope_boundary": {
+        "included": ["telemetry-only monitoring rule", "retention-window enforcement", "role-restricted audited log access", "aggregate-only venue analytics", "lawful-request routing to counsel"],
+        "excluded": ["captive-portal construction and disclosure wording (design-and-deployment KB)", "traffic-content inspection or data sale under any framing"]
+      },
+      "pros": [
+        {
+          "claim": "A bright-line telemetry-only rule keeps the subscription defensible, auditable, and sellable on trust",
+          "example": "answering a restaurant owner's ad-targeting request with aggregate footfall counts instead of individual browsing histories preserves both legality and the relationship",
+          "weight": 0.85
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Refusing data monetization forgoes revenue that some competitors chase",
+          "example": "declining a portal-data resale scheme a marketing vendor pitched to a motel account, and losing the vendor's referral goodwill with it",
+          "weight": 0.48
+        }
+      ],
+      "failure_modes": [
+        "enabling content inspection to debug a throughput complaint and leaving it running afterward",
+        "handing raw connection logs to a venue owner curious about what a specific guest was doing"
+      ],
+      "acceptance_tests": [
+        "monitoring collects only the telemetry classes named in the data-handling policy, log access carries a role-restricted audit trail, and retention windows are demonstrably enforced",
+        "every data request from a venue is answered within the portal's disclosed terms or refused with the reason recorded"
+      ],
+      "revisit_triggers": [
+        "a privacy regulation or platform telemetry capability changes what may be collected or kept",
+        "a venue requests a new data use not covered by the existing disclosure"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.72, "user_value": 0.88,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.92, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.7, "confidence": 0.76, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.9, "evidence_confidence": 0.7,
+        "failure_rate": 0.1, "downside_weight": 0.75,
+        "uncertainty_interval": [0.15, 0.4],
+        "update_signal": "a change in privacy law, platform telemetry scope, or portal disclosure terms redraws what operations may collect, keep, or share"
+      }
+    },
+    {
+      "id": "DEMARC_RESPONSIBILITY_MAP",
+      "topic": "responsibility_demarcation_and_one_call_posture",
+      "definition": "Fix, per site, exactly which failure domains the provider owns and which it only coordinates: the provider manages from the customer edge inward - router or gateway, switches, PoE, access points, controller configuration - while the ISP circuit, building power, and customer-owned devices sit outside the demarc but firmly inside the customer's perception of 'the Wi-Fi'. The map assigns each domain an owner, an escalation route, and an SLA treatment, and it preserves the one-call posture the subscription is sold on: the provider answers every call, diagnoses which side of the demarc failed, and drives the ISP or electrician escalation on the customer's behalf, without absorbing liability for infrastructure it does not control.",
+      "group": "frame",
+      "dependencies": ["OPS_INTAKE_BASELINE"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": ["per-site responsibility matrix", "owner and escalation route per failure domain", "SLA treatment per domain", "one-call coordination posture"],
+        "excluded": ["ISP contract terms and circuit performance guarantees", "selling the offer's support promise (offer-and-venues KB)"]
+      },
+      "pros": [
+        {
+          "claim": "Pre-agreed demarc lines end outage blame disputes before they start",
+          "example": "a dinner-hour ISP outage at a restaurant handled as a coordinated carrier escalation with dated evidence instead of an SLA-credit fight",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Hard demarc lines frustrate a customer who bought 'Wi-Fi that just works' if coordination feels like deflection",
+          "example": "an owner hearing 'that is your ISP' as evasion unless the provider visibly opens and drives the carrier ticket",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "sales-era language promising coverage of failures outside the demarc that operations must then dishonor",
+        "no ISP account authorization on file, so the provider cannot even open a carrier ticket for the customer"
+      ],
+      "acceptance_tests": [
+        "each site has a responsibility matrix naming the owner, escalation route, and SLA treatment for every failure domain, acknowledged by the customer"
+      ],
+      "revisit_triggers": [
+        "the site changes ISP or adds customer-owned network equipment",
+        "an SLA renegotiation moves a domain across the boundary"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.8, "user_value": 0.78,
+        "technical_complexity": 0.42, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5, "confidence": 0.72, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.84, "evidence_confidence": 0.66,
+        "failure_rate": 0.16, "downside_weight": 0.55,
+        "uncertainty_interval": [0.2, 0.48],
+        "update_signal": "an ISP change, new customer-owned equipment, or a renegotiated SLA moves a failure domain across the demarc"
+      }
+    },
+    {
+      "id": "MONITORING_STACK_DESIGN",
+      "topic": "remote_monitoring_stack_and_health_definition",
+      "definition": "Decide what 'healthy' means for each venue and instrument exactly that: cloud-controller telemetry (AP up/down, client counts, channel utilization, WAN state), synthetic checks that exercise the paths customers actually feel (gateway reachability, DNS resolution, captive-portal response), and at least one independent heartbeat that survives a controller-cloud outage. Health definitions differ by venue: a restaurant's POS-VLAN reachability outranks guest bandwidth; a motel cares about floor-by-floor coverage holding through the check-in surge; an office cares about call quality on the operations SSID. The design also writes down monitoring's own blind spots - what it cannot see and when - so uptime arithmetic can later distinguish 'site down' from 'visibility down'.",
+      "group": "monitoring",
+      "dependencies": ["OPS_INTAKE_BASELINE", "GUEST_PRIVACY_OPERATIONS"],
+      "competency_question_refs": ["CQ_02", "CQ_04"],
+      "scope_boundary": {
+        "included": ["per-venue health definition", "controller telemetry, synthetic checks, independent heartbeat", "declared monitoring blind spots"],
+        "excluded": ["traffic-content collection", "network design changes the checks might suggest (design-and-deployment KB)"]
+      },
+      "pros": [
+        {
+          "claim": "Venue-specific health checks catch what the customer feels before the phone rings",
+          "example": "a captive-portal synthetic failing at a motel just before the afternoon check-in surge, fixed before the front desk noticed",
+          "weight": 0.83
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Every added check raises noise potential and platform cost across the whole fleet",
+          "example": "per-AP utilization alerts on a twenty-AP property drowning the one page that mattered that week",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "monitoring only gateway ping while POS-VLAN routing silently broke and the restaurant could not take cards",
+        "relying solely on the vendor cloud so a controller outage reads as fleet-wide downtime that never happened"
+      ],
+      "acceptance_tests": [
+        "each site's monitoring profile lists its checks, thresholds, and venue-specific health definition, and includes at least one probe independent of the vendor cloud"
+      ],
+      "revisit_triggers": [
+        "the platform changes its telemetry or API surface",
+        "the venue's use changes - a new POS system, an event space added - redefining what healthy means"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.84, "user_value": 0.82,
+        "technical_complexity": 0.62, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.45, "confidence": 0.7, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88, "evidence_confidence": 0.64,
+        "failure_rate": 0.18, "downside_weight": 0.5,
+        "uncertainty_interval": [0.22, 0.52],
+        "update_signal": "a telemetry, API, or venue-use change alters what can or should be watched at a site"
+      }
+    },
+    {
+      "id": "ALERT_POLICY_TUNING",
+      "topic": "alert_thresholds_deduplication_and_paging_discipline",
+      "definition": "Convert raw telemetry into pages a small operations team can actually answer. Thresholds are set against the intake baseline rather than vendor defaults; cascade deduplication folds a gateway drop and its thirty downstream AP alarms into one incident; flap suppression quiets known oscillations - the AP a cleaning crew unplugs nightly - while keeping the pattern visible for root-cause work; and severity is classified by business impact and venue hours, so a POS-VLAN failure during restaurant service pages immediately while a single guest AP at a closed office waits for morning. The alert budget is treated as a scarce resource: every recurring non-actionable page is a defect to be fixed at its source or in policy, because alert fatigue is how real outages get slept through.",
+      "group": "monitoring",
+      "dependencies": ["MONITORING_STACK_DESIGN"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["baseline-derived thresholds", "cascade deduplication", "flap suppression with pattern retention", "impact- and hours-aware severity and paging"],
+        "excluded": ["which metrics exist to alert on (monitoring stack design)", "the triage steps a page kicks off"]
+      },
+      "pros": [
+        {
+          "claim": "A disciplined alert budget keeps the one page that matters loud",
+          "example": "after deduplication and flap suppression, a two-person team reliably answering the restaurant POS-VLAN page within its committed window",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Aggressive suppression can bury a slow-burn failure inside a muted pattern",
+          "example": "a marginal PoE run suppressed as a known flapper while it degraded toward full port failure",
+          "weight": 0.64
+        }
+      ],
+      "failure_modes": [
+        "shipping vendor-default thresholds fleet-wide so every site pages differently against the same reality",
+        "paging the on-call for events nobody acts on until real pages get ignored"
+      ],
+      "acceptance_tests": [
+        "test alerts route to the right person per severity and venue hours, cascades collapse to one incident, and suppressed flaps remain queryable as patterns"
+      ],
+      "revisit_triggers": [
+        "a repeated false or missed page traces to a threshold or suppression rule",
+        "a site's baseline shifts enough that thresholds must be re-derived"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.76, "user_value": 0.78,
+        "technical_complexity": 0.6, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.3, "confidence": 0.64, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.82, "evidence_confidence": 0.6,
+        "failure_rate": 0.24, "downside_weight": 0.5,
+        "uncertainty_interval": [0.26, 0.58],
+        "update_signal": "false-page or missed-page incidents, or a baseline shift, show the thresholds and suppression rules no longer fit"
+      }
+    },
+    {
+      "id": "OUTAGE_TRIAGE_RUNBOOK",
+      "topic": "outage_triage_order_and_truck_roll_decision",
+      "definition": "The ordered, remote-first diagnostic path for a site or segment going dark: confirm scope (whole site, one AP, one SSID or VLAN), check power and environment signals (everything offline at once suggests power, not networking), test the WAN circuit from the gateway, then walk inward - gateway, switch and PoE, AP, SSID, client - and correlate with change history, because an outage that begins minutes after a firmware push or config change names its own suspect. Remote hands come next: front-desk staff power-cycling a labeled device under phone guidance resolves a large share of hard-down events. The truck-roll decision weighs business impact, the contract's restore commitment, and what remote options remain - rolled too early it burns margin, rolled too late it burns the relationship. Every incident closes with cause, fix, and duration recorded: the raw material of SLA arithmetic and value reporting.",
+      "group": "monitoring",
+      "dependencies": ["ALERT_POLICY_TUNING", "DEMARC_RESPONSIBILITY_MAP"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["scope-power-WAN-inward diagnostic order", "change-history correlation", "remote-hands scripts", "truck-roll decision rule", "incident closure record"],
+        "excluded": ["carrier-side circuit repair (coordinated via escalation paths)", "redesigning chronic-failure sites (routes to a design engagement)"]
+      },
+      "pros": [
+        {
+          "claim": "A fixed diagnostic order prevents expensive guessing under pressure",
+          "example": "a motel full-site outage traced in minutes to building power via the everything-down pattern, sparing a wasted evening truck roll",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Runbook discipline can slow the rare incident that pattern-matches wrongly",
+          "example": "a dual failure - ISP flap plus a dying switch - masquerading as a single upstream fault through the early steps",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "skipping the change-history check and hunting hardware for what a config push broke",
+        "rolling a truck for what a labeled-device power cycle would have fixed"
+      ],
+      "acceptance_tests": [
+        "the runbook covers power, ISP, gateway, switch/PoE, AP, and client branches with remote-first steps, a remote-hands script, and an explicit truck-roll rule",
+        "closed incidents carry cause, fix, and duration"
+      ],
+      "revisit_triggers": [
+        "an incident class the runbook misroutes appears more than once",
+        "the demarc map or support commitments change the escalation order"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.8, "user_value": 0.86,
+        "technical_complexity": 0.58, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.35, "confidence": 0.7, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.64,
+        "failure_rate": 0.2, "downside_weight": 0.55,
+        "uncertainty_interval": [0.22, 0.52],
+        "update_signal": "misrouted incidents or changed commitments show the diagnostic order or truck-roll rule needs rework"
+      }
+    },
+    {
+      "id": "PROACTIVE_MAINTENANCE_CALENDAR",
+      "topic": "scheduled_preventive_maintenance_and_capacity_review",
+      "definition": "The recurring hygiene that prevents incidents instead of reacting to them: scheduled configuration backups with periodic restore drills, channel and transmit-power re-optimization when the RF neighborhood shifts (a new tenant's APs bleeding through the wall), capacity-trend review against the intake baseline (client growth, peak-hour saturation creeping toward the ceiling), hardware age and end-of-life tracking that turns refresh into a planned conversation, unused-SSID and stale-credential audits, and site-record refresh of contacts and ISP details. The calendar's boundary is structural: when recurring capacity or coverage failure points at the design itself, the correct move is a re-survey and redesign engagement - which belongs to the design KB - not another round of silent parameter nudging.",
+      "group": "maintenance",
+      "dependencies": ["MONITORING_STACK_DESIGN"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["backup and restore drills", "RF re-optimization within the existing design", "capacity and EOL trend review", "credential and SSID audits"],
+        "excluded": ["re-survey and structural redesign (design-and-deployment KB)", "firmware rollout mechanics (its own program)"]
+      },
+      "pros": [
+        {
+          "claim": "Scheduled hygiene converts weekend emergencies into weekday routine",
+          "example": "a restore drill exposing a corrupt config backup months before the switch failure that would have needed it",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Maintenance hours are invisible to the customer and easy to cut when margins tighten",
+          "example": "skipping two quarters of capacity review on a growing office until the saturation complaint arrived as an emergency",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "treating chronic capacity failure with endless parameter tweaks when the honest answer is a redesign engagement",
+        "backups that were never restore-tested proving useless during an actual failure"
+      ],
+      "acceptance_tests": [
+        "each site shows a dated maintenance history: backups verified by drill, capacity trend reviewed against baseline, EOL register current"
+      ],
+      "revisit_triggers": [
+        "capacity trend crosses the review threshold at a site",
+        "the RF neighborhood changes - new tenant networks, venue remodel"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.76, "user_value": 0.74,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.66, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.3, "confidence": 0.7, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.78, "evidence_confidence": 0.64,
+        "failure_rate": 0.18, "downside_weight": 0.42,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "capacity trends, EOL notices, or RF-environment shifts change what the calendar must cover at a site"
+      }
+    },
+    {
+      "id": "FIRMWARE_HYGIENE_PROGRAM",
+      "topic": "staged_firmware_rollout_and_maintenance_windows",
+      "definition": "Keep the fleet's firmware current without turning updates into the outages they exist to prevent. Releases are classified - security fix, stable feature release, early-adopter build - and staged: canary sites first (deliberately low-risk venues), then the fleet, with POS-serving networks never auto-upgraded blind. Maintenance windows are honestly agreed per venue - after close for a restaurant, a genuinely low-occupancy window confirmed with the motel rather than assumed - and disclosed, because a noticed window is excluded from SLA downtime while a silent one is not. Post-update health is verified against the intake baseline before a rollout advances, and a tested rollback path stands ready. Cloud-platform auto-upgrade defaults are consciously configured, never left as shipped.",
+      "group": "maintenance",
+      "dependencies": ["PROACTIVE_MAINTENANCE_CALENDAR", "CONFIG_CHANGE_CONTROL"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["release classification", "canary-then-fleet staging", "customer-agreed disclosed windows", "post-update baseline verification", "tested rollback"],
+        "excluded": ["emergency response to disclosed vulnerabilities (its own path)", "hardware platform selection (design-and-deployment KB)"]
+      },
+      "pros": [
+        {
+          "claim": "Canary staging converts a bad release from a fleet event into a one-site event",
+          "example": "a firmware build that broke band steering caught at a low-risk office canary before it ever touched a restaurant POS network",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Staged discipline keeps the tail of the fleet on older firmware longer",
+          "example": "the last motels in the rollout ring still exposed for weeks to a bug the canaries had already cleared",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "platform auto-upgrade left at shipped defaults pushing an untested build to every site overnight",
+        "a maintenance window assumed rather than agreed, taking guest Wi-Fi down mid-event at a full venue"
+      ],
+      "acceptance_tests": [
+        "every rollout shows its classification, canary result against baseline, per-venue agreed window, and a rollback path exercised at least once on the platform",
+        "no POS-serving network receives an unattended automatic upgrade"
+      ],
+      "revisit_triggers": [
+        "a canary or fleet site fails post-update verification",
+        "the vendor changes release cadence, support policy, or auto-upgrade behavior"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.74, "user_value": 0.76,
+        "technical_complexity": 0.66, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6, "confidence": 0.66, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84, "evidence_confidence": 0.62,
+        "failure_rate": 0.22, "downside_weight": 0.62,
+        "uncertainty_interval": [0.24, 0.56],
+        "update_signal": "a failed rollout, a vendor cadence change, or a new device class alters how staging and windows must run"
+      }
+    },
+    {
+      "id": "SECURITY_VULN_RESPONSE",
+      "topic": "vulnerability_disclosure_emergency_response",
+      "definition": "When a vulnerability is disclosed for deployed router, AP, or controller software, run a path distinct from routine hygiene: assess severity and exploitability against the actual fleet - is the management interface exposed, is the vulnerable service even enabled at these sites - and decide between the emergency window and the next scheduled rollout on that evidence. Where no patch exists yet, apply interim mitigations: disable the affected feature, tighten management-plane ACLs, isolate the exposed service. Affected customers are notified in plain language proportionate to real risk - informing without fear-selling is the discipline. Emergency changes execute with rollback ready and are backfilled into the change record. End-of-life hardware carrying an unpatchable flaw becomes a documented refresh conversation with the customer, never a silently accepted risk.",
+      "group": "maintenance",
+      "dependencies": ["FIRMWARE_HYGIENE_PROGRAM"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["fleet-specific severity assessment", "emergency-versus-scheduled decision", "interim mitigations", "proportionate customer notice", "EOL refresh escalation"],
+        "excluded": ["routine release staging (firmware hygiene)", "penetration testing or security services sold as products (adjacent-service territory)"]
+      },
+      "pros": [
+        {
+          "claim": "Fleet-specific exploitability assessment spends emergency effort only where the exposure is real",
+          "example": "a management-interface flaw judged low urgency across a fleet whose management plane is VPN-only, patched in the normal window instead of overnight",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The emergency path burns unplanned hours and goodwill each time it fires",
+          "example": "two overnight emergency windows in one quarter leaving the on-call engineer and two motel owners equally frayed",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "treating every advisory as routine and leaving an actively exploited flaw unpatched through a scheduled cycle",
+        "notifying customers with alarm language that triggers panic and support flood rather than informed consent to a window"
+      ],
+      "acceptance_tests": [
+        "each advisory shows a dated fleet-exposure assessment and disposition (emergency, scheduled, mitigated, or not-applicable) with rollback noted for any emergency change",
+        "customer notices state the risk, the action, and the window without exaggeration"
+      ],
+      "revisit_triggers": [
+        "exploitation status of a known flaw changes",
+        "the fleet gains a device class with a different exposure profile"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.72, "user_value": 0.8,
+        "technical_complexity": 0.68, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.74,
+        "irreversibility": 0.62, "confidence": 0.62, "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.74, "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.86, "evidence_confidence": 0.6,
+        "failure_rate": 0.22, "downside_weight": 0.68,
+        "uncertainty_interval": [0.26, 0.6],
+        "update_signal": "a new advisory, a change in exploitation status, or a fleet composition change alters the exposure calculus"
+      }
+    },
+    {
+      "id": "CONFIG_CHANGE_CONTROL",
+      "topic": "configuration_change_control_and_drift_detection",
+      "definition": "Control who may change what on a managed network and detect when the live configuration diverges from the record. Change authority is explicit per role: customer staff do not re-cable the rack, POS and other third-party vendors coordinate through the provider rather than around it. Every change is logged - who, what, why, when - and scheduled drift audits compare running configs against the documented design, because drift accumulates through exactly the changes nobody wrote down. Topology surprises alert in near-real time: a new DHCP server answering on a managed VLAN, an unknown device on the management network - the classic rogue router a vendor plugs in 'just to test'. Emergency fixes are legitimate, but they are backfilled into the change record within a defined window instead of surviving as tribal knowledge.",
+      "group": "maintenance",
+      "dependencies": ["OPS_INTAKE_BASELINE"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": ["role-scoped change authority", "who-what-why-when change log", "config-versus-record drift audits", "rogue-device and rogue-DHCP alerting", "emergency-change backfill window"],
+        "excluded": ["the original as-built documentation (deployment handoff)", "disciplining customer staff (the venue's management, informed by the provider)"]
+      },
+      "pros": [
+        {
+          "claim": "A trustworthy change record makes the change-history check the fastest triage step there is",
+          "example": "a guest-VLAN outage matched in one query to the previous evening's logged ACL change and reverted in minutes",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Heavy change process on a five-minute fix teaches engineers to work around the process",
+          "example": "a transmit-power tweak left unlogged because the form was slower than the fix, seeding the next drift audit finding",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "a POS vendor's rogue router NATing the POS VLAN for weeks because nothing alerted on new DHCP",
+        "drift audits skipped until the documentation is fiction and every incident starts from archaeology"
+      ],
+      "acceptance_tests": [
+        "every managed-site change in the audit window appears in the log with who-what-why-when, drift audits run on schedule with findings dispositioned, and rogue-DHCP alerts fire in test"
+      ],
+      "revisit_triggers": [
+        "a drift audit finds unlogged changes or an unknown device",
+        "a third party gains or loses authorized access to a site"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.72, "user_value": 0.7,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.45, "confidence": 0.68, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8, "evidence_confidence": 0.62,
+        "failure_rate": 0.2, "downside_weight": 0.5,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "audit findings, new third-party access, or a platform change to config APIs alter how control and drift detection must work"
+      }
+    },
+    {
+      "id": "SLA_DESIGN_SCOPE",
+      "topic": "sla_promise_scope_and_remedy_mechanism",
+      "definition": "Design the SLA as a set of promises the monitoring can prove and the team can keep, not as marketing copy. Choose the measured object first - network availability at the gateway, AP availability, response times by severity class - and the measurement method before any number, then set the target from observed achievable performance plus honest headroom: each further nine of availability multiplies the cost to deliver it, so ambition is priced into tiers as a mechanism rather than given away in prose. Exclusions are explicit and fair: ISP circuit failures (coordinated on the customer's behalf, not covered), building power, customer tampering, properly noticed maintenance windows, force majeure. Remedies are defined as mechanism - how service credit accrues against the fee, how a claim is made, where the cap sits - per the contract, never as invented universal figures. Response commitments separate acknowledge, diagnose, and restore, because conflating them writes a promise no small team can keep.",
+      "group": "sla",
+      "dependencies": ["MONITORING_STACK_DESIGN", "DEMARC_RESPONSIBILITY_MAP"],
+      "competency_question_refs": ["CQ_03", "CQ_08"],
+      "scope_boundary": {
+        "included": ["measured-object and method selection", "target-from-evidence discipline", "explicit fair exclusions", "credit mechanism definition", "acknowledge/diagnose/restore separation"],
+        "excluded": ["subscription price points (offer-and-venues KB; amounts are per-contract)", "the uptime measurement practice itself (its own node)"]
+      },
+      "pros": [
+        {
+          "claim": "An SLA whose every clause maps to a monitored metric is enforceable by both sides and feared by neither",
+          "example": "a motel renewal where the owner checked two years of gateway-availability reports against the promised band and re-signed without negotiation",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Honest SLAs read weaker than competitors' aspirational ones in a bake-off",
+          "example": "losing a bid to an installer promising blanket always-on coverage in language no monitoring anywhere could verify",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "promising an availability class the site's single uplink physically cannot deliver",
+        "an exclusions list so aggressive the SLA excludes every outage that could actually occur, reading as bad faith at claim time"
+      ],
+      "acceptance_tests": [
+        "every SLA promise names its metric, measurement method, and exclusions, and each response commitment separates acknowledge, diagnose, and restore",
+        "the remedy clause defines accrual, claim path, and cap as mechanisms without asserting universal amounts"
+      ],
+      "revisit_triggers": [
+        "measured performance across a term diverges from the promised band in either direction",
+        "the demarc map, monitoring stack, or venue infrastructure changes what can be promised"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.86, "user_value": 0.8,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.88, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.65, "confidence": 0.68, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9, "evidence_confidence": 0.64,
+        "failure_rate": 0.16, "downside_weight": 0.68,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "term-long measurement evidence or an infrastructure change shows the promised band needs restating"
+      }
+    },
+    {
+      "id": "UPTIME_MEASUREMENT_HONESTY",
+      "topic": "honest_availability_measurement_and_reporting",
+      "definition": "Measure availability from monitoring data and report it the way an auditor would accept. The method is stated and stable: which probe, at what interval, what counts as down. Partial degradation - half the APs up, guest SSID fine but POS VLAN dark - is counted per defined rules, not per convenience. Monitoring gaps are the discipline's sharpest edge: when the monitoring itself was blind, that window is reported as unknown, never silently rolled into uptime, because a number derived from no data is a fabrication wearing a decimal point. Measured downtime is reconciled against customer-perceived incidents so the report never claims a clean month the front desk knows was not. And the number is published even when it is bad, with what was done about it - the operator who shades uptime converts a technical service into a trust liability that no future good month repairs.",
+      "group": "sla",
+      "dependencies": ["SLA_DESIGN_SCOPE"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["disclosed stable measurement method", "partial-degradation counting rules", "unknown-not-up treatment of monitoring gaps", "reconciliation with perceived incidents", "publish-the-bad-month discipline"],
+        "excluded": ["the SLA promise design itself", "the customer-facing report format (value reporting)"]
+      },
+      "pros": [
+        {
+          "claim": "An honestly measured number survives customer scrutiny that a flattering one cannot",
+          "example": "an owner cross-checking a report against their own outage notes, finding both listed, and renewing on the spot",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Strict unknown-not-up accounting can understate genuinely good service when monitoring was flaky",
+          "example": "a clean month reported with an unknown window because the probe host lost power, prompting an awkward but honest footnote",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "counting a vendor-cloud visibility outage as one hundred percent uptime because no down-event was recorded",
+        "quietly redefining the measurement method in the month it would have shown a breach"
+      ],
+      "acceptance_tests": [
+        "each availability figure traces to probe data under the disclosed method, monitoring-blind windows appear as unknown, and any method change is announced prospectively, never retroactively",
+        "reported figures reconcile against the incident log with discrepancies explained"
+      ],
+      "revisit_triggers": [
+        "a monitoring blind spot is discovered after reports already went out",
+        "the measurement method or probe infrastructure changes"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.8, "user_value": 0.84,
+        "technical_complexity": 0.52, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55, "confidence": 0.7, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.88, "evidence_confidence": 0.66,
+        "failure_rate": 0.14, "downside_weight": 0.66,
+        "uncertainty_interval": [0.18, 0.46],
+        "update_signal": "a discovered blind spot, method change, or reconciliation failure requires restating how availability is computed"
+      }
+    },
+    {
+      "id": "SLA_BREACH_REMEDY",
+      "topic": "sla_breach_handling_and_remedy_execution",
+      "definition": "When the measured number breaches the promise, the handling determines whether the account destabilizes or deepens. Notify proactively before the customer claims - a breach the provider reports on itself is a trust asset; one the customer catches first is an indictment of the reporting. Deliver a plain-language root-cause account with a timeline an owner can follow. Apply the contract's remedy mechanism without making the customer fight for it: credit accrual per the agreed terms, claim friction removed. Disputed causes are adjudicated against the demarc map and dated evidence rather than volume of complaint. Then convert the breach into system change - a retuned alert, an added probe, a hardware refresh proposal - because a credit that buys no improvement just prices future failures.",
+      "group": "sla",
+      "dependencies": ["UPTIME_MEASUREMENT_HONESTY"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["proactive breach notification", "plain-language root-cause account", "frictionless remedy execution per contract", "demarc-based dispute adjudication", "breach-to-improvement conversion"],
+        "excluded": ["the remedy amounts themselves (per-contract mechanism)", "litigation posture (counsel territory)"]
+      },
+      "pros": [
+        {
+          "claim": "Self-reported breaches with automatic remedies convert failures into credibility",
+          "example": "a restaurant owner receiving the breach notice, credit, and fix plan in one message before they had noticed the overnight outage",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Proactive crediting costs real money in months the customer might never have claimed",
+          "example": "crediting a motel for an overnight breach that predated any guest complaint, straining a thin-margin quarter",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "waiting for the customer to claim, betting they will not notice",
+        "issuing the credit but skipping the root-cause fix so the same breach recurs next quarter"
+      ],
+      "acceptance_tests": [
+        "every measured breach shows a proactive notice date, a root-cause account, the applied remedy per contract, and a named follow-up change"
+      ],
+      "revisit_triggers": [
+        "the same root cause produces a second breach",
+        "a dispute exposes ambiguity in the demarc map or exclusions"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.78, "user_value": 0.82,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.76, "cross_topic_coupling": 0.74,
+        "irreversibility": 0.5, "confidence": 0.68, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8, "evidence_confidence": 0.62,
+        "failure_rate": 0.18, "downside_weight": 0.58,
+        "uncertainty_interval": [0.22, 0.52],
+        "update_signal": "a recurring root cause or a remedy dispute shows the breach-handling path or contract language needs revision"
+      }
+    },
+    {
+      "id": "SUPPORT_TIER_STRUCTURE",
+      "topic": "support_tier_design_and_intake_channels",
+      "definition": "Structure support so the right problems reach the right skill at predictable cost. Intake is bounded: the owner, managers, and named staff may open tickets - guests never call the provider; the venue fronts guest issues using scripts and labeled equipment the provider supplies, which turns a motel front desk into a competent first responder. The front line resolves password and portal questions, scripted power cycles, and status checks; network engineers take VLAN, RF, and routing work; and each tier carries response expectations aligned to the SLA's severity classes so the support floor never quietly writes checks the SLA did not. The tier design is also the venue's training artifact: what to try first, what to report, which device label to read over the phone.",
+      "group": "support",
+      "dependencies": ["DEMARC_RESPONSIBILITY_MAP"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["bounded intake channels", "front-line versus engineer scope split", "tier response expectations aligned to SLA severities", "venue-facing scripts and labeling"],
+        "excluded": ["vendor and carrier escalation lanes (their own node)", "support-tier pricing (per-contract mechanism, offer territory)"]
+      },
+      "pros": [
+        {
+          "claim": "Bounded intake with venue scripts keeps guest noise out while real issues arrive pre-triaged",
+          "example": "a front desk resolving the nightly guest password question from the script, while its one real call of the month arrived with the failing AP's label already read",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Channel discipline can delay a real outage report that arrives through the wrong door",
+          "example": "a bartender's Instagram message about dead Wi-Fi sitting unseen because the owner - the authorized channel - was on vacation",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "letting guests reach the provider directly until the ticket queue is indistinguishable from a hotel review page",
+        "front-line staff attempting VLAN changes beyond their tier and compounding the outage"
+      ],
+      "acceptance_tests": [
+        "each site names its authorized reporters, holds current scripts and labeled equipment, and each tier's response expectation matches the SLA severity table"
+      ],
+      "revisit_triggers": [
+        "tickets recur that the front line should have resolved or should never have touched",
+        "SLA severity classes are renegotiated"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.78, "user_value": 0.84,
+        "technical_complexity": 0.48, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.35, "confidence": 0.72, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82, "evidence_confidence": 0.66,
+        "failure_rate": 0.16, "downside_weight": 0.48,
+        "uncertainty_interval": [0.2, 0.48],
+        "update_signal": "recurring misrouted tickets or renegotiated severities show the tier boundaries need redrawing"
+      }
+    },
+    {
+      "id": "VENDOR_ESCALATION_PATHS",
+      "topic": "vendor_tac_rma_and_isp_escalation_management",
+      "definition": "Manage the escalation lanes that run beyond the provider's own bench. Hardware RMA is paired with a spare-unit strategy - a failed AP is swapped from stock the same day and the RMA replenishes the shelf, because no venue waits on return freight. Vendor TAC engagement leads with an evidence package - logs, configs, captures, reproduction steps - since a well-evidenced ticket skips the scripted first tier. Platform cloud outages get a practiced posture: when the management plane is down but sites still pass traffic, customers are told exactly that, accurately, before dashboards spook anyone into reporting downtime that is not happening. ISP escalation runs on the customer's standing authorization, with carrier ticket numbers and timelines documented - the same records that later prove an SLA exclusion applied.",
+      "group": "support",
+      "dependencies": ["SUPPORT_TIER_STRUCTURE"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["spare-backed RMA workflow", "evidence-led TAC engagement", "management-plane-outage communication posture", "authorized documented ISP escalation"],
+        "excluded": ["local triage before escalation (runbook)", "choosing the hardware vendor (design-and-deployment KB)"]
+      },
+      "pros": [
+        {
+          "claim": "Spare-backed RMA collapses hardware repair time from freight-weeks to a same-day swap",
+          "example": "a dead lobby AP at a motel swapped from the van's spare bin within hours while the RMA unit shipped at leisure",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Spares inventory and escalation bookkeeping are pure overhead until the day they are not",
+          "example": "capital sitting in a shelf of spare APs across two hardware generations to cover a fleet that rarely fails",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "no ISP authorization on file, so a circuit outage stalls at a carrier agent who may not speak to the provider",
+        "escalating to TAC with 'it is broken' and losing days to the scripted tier the evidence package would have skipped"
+      ],
+      "acceptance_tests": [
+        "spare coverage exists per deployed hardware generation, TAC tickets carry evidence packages, ISP authorizations are on file per site, and every escalation shows its external ticket number and timeline"
+      ],
+      "revisit_triggers": [
+        "a hardware generation enters or leaves the fleet, changing spare requirements",
+        "a vendor or carrier changes its support process or the platform's outage behavior changes"
+      ],
+      "base": {
+        "criticality": 0.74, "business_value": 0.7, "user_value": 0.76,
+        "technical_complexity": 0.52, "risk_if_wrong": 0.64, "cross_topic_coupling": 0.7,
+        "irreversibility": 0.3, "confidence": 0.66, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.74, "evidence_confidence": 0.6,
+        "failure_rate": 0.2, "downside_weight": 0.45,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "fleet hardware changes or vendor/carrier process changes alter spare needs and escalation mechanics"
+      }
+    },
+    {
+      "id": "SUPPORT_COST_TO_SERVE",
+      "topic": "per_site_cost_to_serve_and_margin_health",
+      "definition": "Track what each site actually costs to operate - ticket volume and minutes, truck rolls, spares consumed, escalation hours - against its subscription tier, because a management fee is a fixed price sold against a variable cost. Noisy sites are identified and classified by cause: hostile RF environment, aging hardware, a design under-scoped for how the venue grew, or customer behavior like staff unplugging gear. The honest responses are root-cause remediation, scope correction through a design engagement, or re-pricing at renewal - never silent service degradation, which breaches the support commitment while pretending not to. Portfolio-level patterns - cost per site by venue type, by hardware generation - feed back into how tiers are structured as a mechanism, without ever asserting universal price figures.",
+      "group": "support",
+      "dependencies": ["SUPPORT_TIER_STRUCTURE"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["per-site cost tracking against tier", "noisy-site cause classification", "remediate/re-scope/re-price decision", "portfolio cost patterns as tier-design input"],
+        "excluded": ["setting subscription prices (offer-and-venues KB; per-contract mechanism)", "delivering the design engagement a re-scope triggers"]
+      },
+      "pros": [
+        {
+          "claim": "Knowing which sites bleed margin turns renewal pricing from guesswork into evidence",
+          "example": "a beachfront restaurant whose salt-corroded outdoor APs generated triple the fleet's average truck rolls, re-priced at renewal with the incident record on the table",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Cost-first thinking can quietly ration service to exactly the accounts most likely to churn loudly",
+          "example": "deferring a noisy site's remediation to protect quarter margin, then losing the account and its two sister locations together",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "not measuring per-site cost at all, so the portfolio's profitable sites subsidize the bleeders invisibly",
+        "responding to a noisy site by slowing responses instead of fixing, re-scoping, or re-pricing"
+      ],
+      "acceptance_tests": [
+        "each site shows a cost-to-serve record against its tier, and every noisy site carries a cause classification and a chosen response path"
+      ],
+      "revisit_triggers": [
+        "a site's cost trend crosses its tier's viability line",
+        "portfolio patterns shift with a new venue type or hardware generation"
+      ],
+      "base": {
+        "criticality": 0.76, "business_value": 0.84, "user_value": 0.64,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.68, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.3, "confidence": 0.62, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.78, "evidence_confidence": 0.58,
+        "failure_rate": 0.22, "downside_weight": 0.5,
+        "uncertainty_interval": [0.26, 0.58],
+        "update_signal": "cost trends or portfolio shifts move sites across the remediate/re-scope/re-price decision line"
+      }
+    },
+    {
+      "id": "VALUE_EVIDENCE_REPORTING",
+      "topic": "periodic_value_reporting_for_nontechnical_owners",
+      "definition": "Produce the periodic report that makes an invisible service visible to the owner of a restaurant, motel, or shop - the person who pays the fee precisely so they never have to think about Wi-Fi. It shows measured availability with its method, incidents caught and resolved (above all the ones fixed before anyone at the venue noticed - the strongest possible argument for the subscription), maintenance performed (firmware currency, backups tested, capacity reviewed), trends that matter to the business (client growth approaching a limit), and plain-language recommendations with what each would cost as a scope conversation, not a surprise invoice. It is written for a business owner, not an engineer; it is honest about failures and what changed because of them; and its analytics are aggregate only - footfall counts and peak hours, never anything profiling an individual guest.",
+      "group": "retention",
+      "dependencies": ["UPTIME_MEASUREMENT_HONESTY", "GUEST_PRIVACY_OPERATIONS"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["owner-readable periodic report", "prevented-incident evidence", "maintenance and trend summary", "aggregate-only analytics", "honest failure accounting"],
+        "excluded": ["the underlying availability computation (measurement honesty)", "guest-level analytics under any framing"]
+      },
+      "pros": [
+        {
+          "claim": "Reports that surface invisible prevented incidents are the single best churn antidote at renewal time",
+          "example": "a motel owner re-signing after reading that a failing switch was swapped during a Tuesday lull, three weeks before it would have taken out a sold-out weekend",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A report nobody reads costs effort and can even signal that the service is skippable",
+          "example": "six unopened monthly reports at a retail account read at renewal as six months of silence rather than six months of service",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "an engineer-grade report of RSSI histograms that tells a restaurant owner nothing and gets deleted unread",
+        "omitting the month's failure from the report and having the owner's own memory contradict the document"
+      ],
+      "acceptance_tests": [
+        "each report shows measured availability with method, incidents including prevented ones, maintenance performed, and business-relevant trends, in language a non-technical owner can act on",
+        "no report element profiles an individual guest"
+      ],
+      "revisit_triggers": [
+        "reports go unread at an account for consecutive cycles",
+        "an owner questions a figure the report cannot trace"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.84, "user_value": 0.8,
+        "technical_complexity": 0.42, "risk_if_wrong": 0.7, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.3, "confidence": 0.72, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84, "evidence_confidence": 0.66,
+        "failure_rate": 0.15, "downside_weight": 0.45,
+        "uncertainty_interval": [0.2, 0.46],
+        "update_signal": "reader engagement or owner questions show the report's content or form is not landing"
+      }
+    },
+    {
+      "id": "CHURN_SIGNAL_WATCH",
+      "topic": "subscription_churn_signal_detection",
+      "definition": "Watch for the signals that a management subscription is quietly dying, because managed-service churn rarely announces itself - it accumulates. The register tracks: unread reports and unanswered check-ins; late or disputed payments; a new manager or IT-savvy relative who did not choose you; venue ownership-change rumors; a POS or ISP vendor courting the account with bundled 'free Wi-Fi management'; ticket silence following a badly handled incident (which is resignation, not satisfaction); and a renewal date approaching with no recent value contact. Each signal maps to a named intervention - a call, a visit, an executive review, a remediation plan - so at-risk accounts become a worked list with owners and dates rather than a renewal-week surprise.",
+      "group": "retention",
+      "dependencies": ["VALUE_EVIDENCE_REPORTING", "SUPPORT_COST_TO_SERVE"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["disengagement and competitive-threat signals", "signal-to-intervention mapping", "worked at-risk register with owners and dates"],
+        "excluded": ["the renewal transaction itself", "win-back of already-cancelled accounts (a sales motion outside this KB)"]
+      },
+      "pros": [
+        {
+          "claim": "A worked churn register converts renewal-week surprises into quarter-early interventions",
+          "example": "the unread-reports flag on a retail account triggering a walk-in visit that surfaced a POS vendor's bundled pitch while there was still time to answer it",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Signal-chasing can misread ordinary quietness as risk and over-touch a happy account",
+          "example": "three check-in calls in a month annoying a satisfied office manager whose only signal was being busy",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "treating ticket silence as satisfaction when it followed a badly handled outage",
+        "no register at all, so the first churn signal anyone reads is the cancellation notice"
+      ],
+      "acceptance_tests": [
+        "every account shows its current signal state, and each flagged account carries a named intervention with an owner and a date"
+      ],
+      "revisit_triggers": [
+        "an account churns showing signals the register had not flagged",
+        "a new competitive pattern - a bundler entering the territory - needs a new signal class"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.86, "user_value": 0.7,
+        "technical_complexity": 0.48, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.35, "confidence": 0.62, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.82, "evidence_confidence": 0.58,
+        "failure_rate": 0.24, "downside_weight": 0.52,
+        "uncertainty_interval": [0.26, 0.58],
+        "update_signal": "a churn event the register missed, or a new competitive threat class, shows the signal set needs extension"
+      }
+    },
+    {
+      "id": "RENEWAL_INTEGRITY",
+      "topic": "honest_renewal_and_term_practice",
+      "definition": "Run renewals so the customer re-chooses the service rather than gets trapped by it. The term calendar is visible and worked in advance - renewal contact happens while there is still time to fix whatever would make the customer hesitate. Auto-renewal is used only with the disclosure the contract and applicable automatic-renewal statutes require; those statutes are a consumer- and commercial-contract compliance class that varies by jurisdiction and must be verified locally, not assumed. The tier is right-sized at renewal using the site's actual incident and cost history - including down-tiering when the evidence says the customer is over-buying, because the down-tier that costs revenue this year buys the reference and the renewal after. Price changes are explained by mechanism - hardware aging, usage growth, scope change - not sprung. A renewal won by evidence survives the competitor's bid; one won by inertia churns at the first one.",
+      "group": "retention",
+      "dependencies": ["CHURN_SIGNAL_WATCH", "SLA_DESIGN_SCOPE"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["worked term calendar", "disclosed auto-renewal per applicable statute class", "evidence-based tier right-sizing including down-tiering", "mechanism-explained price changes"],
+        "excluded": ["initial subscription pricing architecture (offer-and-venues KB)", "legal review of renewal clauses (counsel, flagged not performed)"]
+      },
+      "pros": [
+        {
+          "claim": "Evidence-based renewals survive competitive bids that inertia-based ones lose",
+          "example": "a restaurant owner declining a cheaper bundler after re-reading a year of incident reports showing what the fee had quietly prevented",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Honest right-sizing and disclosed terms sacrifice short-term revenue that silent evergreen clauses would have kept",
+          "example": "down-tiering an over-bought office account at renewal and watching the monthly figure drop by a third",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "an undisclosed evergreen clause discovered by the customer's new bookkeeper, detonating trust across every account they talk to",
+        "first renewal contact happening after the customer has already taken the competitor's meeting"
+      ],
+      "acceptance_tests": [
+        "every renewal shows advance contact dated before the decision window, disclosure records for any auto-renewal, and a tier decision traceable to the site's incident and cost history"
+      ],
+      "revisit_triggers": [
+        "an auto-renewal statute or contract-law requirement changes in an operating jurisdiction",
+        "renewal outcomes shift - win rate dropping signals the evidence base or the practice is slipping"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.88, "user_value": 0.78,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.6, "confidence": 0.7, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.64,
+        "failure_rate": 0.16, "downside_weight": 0.6,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "a statute change, a renewal-outcome shift, or a disclosure dispute forces the renewal practice to be restated"
+      }
+    },
+    {
+      "id": "SITE_OWNERSHIP_TRANSITION",
+      "topic": "venue_ownership_change_and_service_continuity",
+      "definition": "When the venue changes hands - the restaurant sells, the motel rebrands, the office suite turns over - run a deliberate transition instead of discovering the change on a bounced invoice. Determine contract status first: does the agreement assign to the buyer, or terminate and require a fresh signature. Separate the parties' data: the prior owner's portal data, reports, and history do not automatically transfer; credentials rotate at close. Resolve equipment title per the contract - provider-owned gear does not convey in an asset sale just because it is bolted to the ceiling. Then re-onboard the new owner as a fresh intake: walkthrough, contacts, expectations, tier fit for how the new operation will actually run. Handled well, a transition is a retention save and a fresh term with a motivated owner; ignored, it is orphaned equipment, unpaid months, and a quiet exit.",
+      "group": "retention",
+      "dependencies": ["CONFIG_CHANGE_CONTROL", "RENEWAL_INTEGRITY"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": ["assignment-versus-termination determination", "inter-owner data separation and credential rotation", "equipment title resolution", "fresh-intake re-onboarding of the buyer"],
+        "excluded": ["legal interpretation of the sale (counsel, flagged not performed)", "prospecting unrelated new owners (a sales motion outside this KB)"]
+      },
+      "pros": [
+        {
+          "claim": "A worked transition converts an ownership change from a churn event into a fresh term",
+          "example": "a motel buyer inheriting a walkthrough, a clean credential set, and a tier proposal on day two, signing before any competitor knew the property had sold",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Transition effort is speculative - the buyer may bring their own provider regardless",
+          "example": "a restaurant buyer whose franchise group mandated its own network stack, taking the re-onboarding work to zero",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "learning of the sale from a bounced invoice after the equipment already conveyed in the asset purchase",
+        "leaving the prior owner's credentials and portal data live for the buyer to browse"
+      ],
+      "acceptance_tests": [
+        "each detected transition shows a contract-status determination, a credential-rotation and data-separation record, an equipment-title resolution, and a fresh intake for the new owner"
+      ],
+      "revisit_triggers": [
+        "an ownership change is detected at any account",
+        "a transition outcome exposes a gap in the contract's assignment or title language"
+      ],
+      "base": {
+        "criticality": 0.72, "business_value": 0.74, "user_value": 0.7,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.68, "cross_topic_coupling": 0.68,
+        "irreversibility": 0.55, "confidence": 0.62, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.72, "evidence_confidence": 0.58,
+        "failure_rate": 0.2, "downside_weight": 0.55,
+        "uncertainty_interval": [0.26, 0.56],
+        "update_signal": "a transition event or a contract-language gap changes how ownership changes must be handled"
+      }
+    },
+    {
+      "id": "MULTI_SITE_EXPANSION",
+      "topic": "same_customer_additional_site_expansion",
+      "definition": "Grow proven accounts to their other locations, where the sales case is the operating record itself: the incident history, the report archive, the renewals already survived. A site template distilled from the incumbent deployment pattern - naming conventions, VLAN scheme, monitoring profile, spare strategy - makes each added site cheaper and faster to onboard than the first, which is the mechanism by which per-site economics improve with scale (shared monitoring, shared spares, shared runbooks), never an asserted discount figure. Multi-location owners get cross-site dashboards and consolidated reporting - one owner, one view, several sites. The discipline that survives the enthusiasm: every added site is surveyed as its own facts - spectrum, wiring, and code constraints are site-specific - so the template standardizes operations, never the assumption that building two is building one.",
+      "group": "growth",
+      "dependencies": ["VALUE_EVIDENCE_REPORTING"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": ["operating-record-based expansion case", "operational site template", "cross-site dashboards and consolidated reporting", "per-site survey discipline"],
+        "excluded": ["performing the new site's survey and design (design-and-deployment KB)", "venue-type targeting of net-new customers (offer-and-venues KB)"]
+      },
+      "pros": [
+        {
+          "claim": "Expansion inside a proven account costs a fraction of acquiring a stranger",
+          "example": "a restaurant group adding its second and third locations on the strength of the first location's report archive, with no competitive bid ever requested",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Template confidence can smuggle site assumptions past survey discipline",
+          "example": "assuming the second motel's wiring matched the first's and discovering un-cabled wings on installation day",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "pitching expansion while the first site's service record is mediocre, converting one at-risk account into a lost group",
+        "skipping the survey because the template 'covers it' and inheriting a site the design never fit"
+      ],
+      "acceptance_tests": [
+        "each expansion proposal cites the incumbent site's operating record, and each added site shows its own survey and a template-based onboarding that passed intake"
+      ],
+      "revisit_triggers": [
+        "the template drifts from what recent sites actually needed",
+        "a multi-site owner's reporting or dashboard needs change"
+      ],
+      "base": {
+        "criticality": 0.74, "business_value": 0.86, "user_value": 0.72,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.62, "cross_topic_coupling": 0.74,
+        "irreversibility": 0.35, "confidence": 0.66, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.78, "evidence_confidence": 0.6,
+        "failure_rate": 0.18, "downside_weight": 0.42,
+        "uncertainty_interval": [0.24, 0.52],
+        "update_signal": "template drift or changed multi-site owner needs alter how expansion onboarding runs"
+      }
+    },
+    {
+      "id": "ADJACENT_SERVICE_EXPANSION",
+      "topic": "adjacent_service_expansion_cameras_voip",
+      "definition": "Layer adjacent recurring services - cameras with cloud video, VoIP, connectivity brokerage - onto the trusted-operator position only when the core service has earned the right to ask. The qualification gates are hard: no open SLA breaches, no unresolved complaints, no active churn intervention at the account. The discovery is needs-based - the owner raised shrinkage concerns, the phone system is actually failing - never fear-based; manufacturing anxiety to sell a camera is the same ethical breach as fear-selling alarms. The engineering honesty: every adjacent service adds load and changes segmentation needs on the network that carries it, so each proposal triggers a design-review gate - the review and any redesign belong to the design KB - rather than silently piling services onto a network scoped before they existed. Each adjacent service also imports its own disclosure and privacy obligations - cameras above all - which are named and flagged for jurisdiction-specific verification, never assumed.",
+      "group": "growth",
+      "dependencies": ["VALUE_EVIDENCE_REPORTING", "GUEST_PRIVACY_OPERATIONS"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": ["core-health qualification gates", "needs-based discovery", "design-review trigger for added load and segmentation", "per-service disclosure and privacy flagging"],
+        "excluded": ["designing and delivering the adjacent service itself", "fear-based selling under any framing", "invented bundle price figures"]
+      },
+      "pros": [
+        {
+          "claim": "The trusted-operator position makes adjacent services a warm conversation instead of a cold pitch",
+          "example": "a motel owner asking - unprompted - whether the provider also does cameras, after a year of clean uptime reports",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Each adjacent service dilutes operational focus and imports a new failure surface onto the same relationship",
+          "example": "a botched VoIP cutover at a flagship restaurant putting the healthy Wi-Fi subscription's renewal at risk with it",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "cross-selling into an account with an open breach and accelerating exactly the churn it meant to prevent",
+        "adding cameras and VoIP to a network scoped before either existed, without the design review, degrading everything at once"
+      ],
+      "acceptance_tests": [
+        "every adjacent-service proposal shows the account passing the health gates, a documented needs basis, a triggered design review for network impact, and the named disclosure obligations of the new service"
+      ],
+      "revisit_triggers": [
+        "an account's health state changes while a proposal is open",
+        "a new adjacent service class with different privacy obligations enters the catalog"
+      ],
+      "base": {
+        "criticality": 0.72, "business_value": 0.84, "user_value": 0.7,
+        "technical_complexity": 0.52, "risk_if_wrong": 0.7, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.4, "confidence": 0.62, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.76, "evidence_confidence": 0.58,
+        "failure_rate": 0.2, "downside_weight": 0.5,
+        "uncertainty_interval": [0.26, 0.58],
+        "update_signal": "account-health changes or a new service class alter what the expansion gates must check"
+      }
+    }
+  ],

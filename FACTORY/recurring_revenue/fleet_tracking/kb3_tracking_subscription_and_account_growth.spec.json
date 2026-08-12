@@ -1,0 +1,2272 @@
+{
+  "domain": "tracking_subscription_and_fleet_account_growth",
+  "domain_label": "Tracking Subscriptions & Fleet-Account Growth",
+  "purpose": "How a GPS/fleet-tracking reseller keeps and grows the recurring side of the business after installation: managing per-unit subscription margin as a mechanism computed from the operator's own invoices, keeping installed devices healthy and their data credible, holding billing, platform seats, and contract terms in reconciled order, reading fleet-account churn signals months before renewal, and expanding inside accounts with more vehicles, assets, dashcams, and modules only through lawful, disclosure-current, evidence-grounded motions.",
+  "assumptions": [
+    "no observed dataset supplied; all scores are heuristic priors",
+    "the operator is a small GPS/fleet-tracking reseller running an installed base of tracked units across SMB fleet accounts (trades, delivery, trucking, equipment rental) on a third-party tracking platform whose seats the reseller pays for wholesale",
+    "units enter this KB already installed, verified per unit, and on billing - the installation and onboarding handoff is complete before any node here fires",
+    "accounts were originally sold under employer authorization with driver disclosure completed at intake; this KB is responsible for keeping that state current, not creating it",
+    "every dollar amount, rate, margin, or percentage in this KB is a mechanism (how the number comes to exist and how to compute it from the operator's own ledger and platform invoice) or a qualitative band, never an asserted market fact"
+  ],
+  "exclusions": [
+    "fleet segment targeting, prospect qualification, reseller-versus-white-label channel economics, and new-logo offer and pricing design - the market-and-economics KB owns that territory",
+    "device selection per use case, physical installation, concealment-versus-serviceability trade-offs, initial platform configuration of geofences, alerts, and reports, initial driver-disclosure onboarding, and per-unit verification testing at install - the installation-and-onboarding KB owns that territory; this KB begins after a unit is installed, verified, and billing",
+    "covert tracking of private individuals, or any tracking outside owner or employer-authorized vehicles and assets - such requests are refused and documented, never managed as business",
+    "asserting jurisdiction-specific ELD, hours-of-service, or telematics-privacy rules as settled fact - obligation classes are named and flagged with a verify-current-rules-in-your-jurisdiction note instead",
+    "invented per-unit prices, margins, churn rates, benchmark comparisons, or account multiples stated as fact - all economics appear as mechanisms computed from the operator's own numbers or as qualitative bands",
+    "personalized financial, legal, tax, or insurance advice to the operator or to the operator's customers"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What does one tracked unit actually earn and cost each month in my book, and where does per-unit margin silently leak?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "UNIT_MRR_LEDGER defines the per-unit revenue and cost line structure as a mechanism from the operator's own price sheet and platform invoice, PLAN_TIER_MODULE_MAP shows how tier mix moves the margin, and SEAT_COST_RECONCILIATION names the leak mechanisms (orphan seats, ghost units, mid-cycle wholesale changes)",
+      "covered_by": ["UNIT_MRR_LEDGER", "PLAN_TIER_MODULE_MAP", "SEAT_COST_RECONCILIATION"]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How do I keep an installed base honest - which units are silent, mis-assigned, or reporting implausible data - before the customer notices?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "DEVICE_HEALTH_TELEMETRY gives the exception-list method with per-device-class silence windows and failure signatures, and DATA_QUALITY_AUDIT gives the assignment, plausibility, and geofence-currency checks that certify which data may be cited",
+      "covered_by": ["DEVICE_HEALTH_TELEMETRY", "DATA_QUALITY_AUDIT"]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How do I know whether the humans at a fleet account still use the platform, and what does usage decay predict?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "USAGE_ENGAGEMENT_TELEMETRY defines engagement scoring across logins, report consumption, and alert response, counts passive consumption channels, and names usage decay as the earliest churn precursor",
+      "covered_by": ["USAGE_ENGAGEMENT_TELEMETRY"]
+    },
+    {
+      "id": "CQ_04",
+      "question": "When a unit goes dead, what is the cheapest path back to reporting, and when is a technician visit actually justified?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "FIELD_SERVICE_TRIAGE lays out the remote-first ladder (remote diagnostics, guided self-check, mail-swap, truck roll last) with batching rules, and SUPPORT_LOAD_ECONOMICS supplies the per-path cost mechanism that justifies or blocks the visit",
+      "covered_by": ["FIELD_SERVICE_TRIAGE", "SUPPORT_LOAD_ECONOMICS"]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How do I plan for hardware failure batches and cellular network sunsets without eating the whole swap cost at once?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "RMA_SWAP_AND_SUNSET_PLANNING covers spare pools, advance replacement, batch-defect detection, and sunset campaigns amortized across renewal cycles, and CONTRACT_TERM_REGISTER supplies the renewal dates the campaign is scheduled against",
+      "covered_by": ["RMA_SWAP_AND_SUNSET_PLANNING", "CONTRACT_TERM_REGISTER"]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What keeps support cost per unit from eating the subscription margin as the installed base grows?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "SUPPORT_LOAD_ECONOMICS gives the tickets-per-hundred-units mechanism with cause tagging and below-water account detection, and ALERT_RETUNE_CYCLE shows how killing alert noise removes a major upstream ticket driver",
+      "covered_by": ["SUPPORT_LOAD_ECONOMICS", "ALERT_RETUNE_CYCLE"]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do billing, dunning, and suspension work on fleet accounts without torching relationships that could be kept?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "BILLING_HYGIENE_DUNNING defines invoice-to-ledger reconciliation before send, a published dunning ladder, and suspension design that separates report access from recovery-relevant function",
+      "covered_by": ["BILLING_HYGIENE_DUNNING"]
+    },
+    {
+      "id": "CQ_08",
+      "question": "What must the contract register capture so a renewal never arrives as a surprise and subsidized hardware is never stranded?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "CONTRACT_TERM_REGISTER lists term, notice window, auto-renew status, co-terming rule, and the subsidy-recovery balance mechanism, and derives the renewal calendar worked backward from notice windows",
+      "covered_by": ["CONTRACT_TERM_REGISTER"]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How do I run a renewal conversation grounded in the account's own recorded value, without inventing a single savings figure?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "RENEWAL_PLAYBOOK gives the pre-window preparation, fix-before-ask discipline, and mechanism-explained repricing; ACCOUNT_HEALTH_REVIEW supplies the health brief and value-event log; DATA_QUALITY_AUDIT certifies which data the recap may cite",
+      "covered_by": ["RENEWAL_PLAYBOOK", "ACCOUNT_HEALTH_REVIEW", "DATA_QUALITY_AUDIT"]
+    },
+    {
+      "id": "CQ_10",
+      "question": "Where is the expansion whitespace in each account, and what must be true before I propose dashcams, asset trackers, or new modules?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "ACCOUNT_WHITESPACE_MAP inventories tracked-versus-total with readiness states, EXPANSION_MOTION requires the health gate and the lawful-use gate before any ask, LAWFUL_USE_STANDING_GUARD defines the authorization and disclosure preconditions, and REGULATORY_DRIFT_WATCH forces jurisdiction verification for recording-capable device classes",
+      "covered_by": ["ACCOUNT_WHITESPACE_MAP", "EXPANSION_MOTION", "LAWFUL_USE_STANDING_GUARD", "REGULATORY_DRIFT_WATCH"]
+    },
+    {
+      "id": "CQ_11",
+      "question": "Which churn signals actually precede fleet-account losses, and how do I decide save, restructure, or release?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "CHURN_SIGNAL_WATCH catalogs the trade's signals (engagement decay, champion departure, payment slowdown, fleet downsizing, repeat tickets) with watch-tier routing, and SAVE_AND_WINBACK_RULES matches the save tool to the diagnosed driver with concessions bounded by support-cost tier",
+      "covered_by": ["CHURN_SIGNAL_WATCH", "SAVE_AND_WINBACK_RULES"]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How does fleet composition change - vehicles bought, sold, wrecked, trackers moved - stay synchronized with billing, platform seats, and disclosure?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "FLEET_TURNOVER_SYNC defines the turnover intake path, transfer and deactivation procedures that update ledger, seat, invoice, and authorization scope together, and SEAT_COST_RECONCILIATION proves the sync worked via the three-way count",
+      "covered_by": ["FLEET_TURNOVER_SYNC", "SEAT_COST_RECONCILIATION"]
+    },
+    {
+      "id": "CQ_13",
+      "question": "What book-level view tells me whether the recurring base is growing healthily, and what do I fix first when it is not?",
+      "must_be_answerable_from": ["nodes", "workflow"],
+      "acceptance_condition": "BOOK_MRR_GATE defines the movement ledger with unit, account, and cause attribution, the growth-quality overlay from support tiers, and the decision pass that assigns owners to the next period's fixes",
+      "covered_by": ["BOOK_MRR_GATE"]
+    },
+    {
+      "id": "CQ_14",
+      "question": "Which account requests must be refused outright during the account lifecycle, even at the cost of the account?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "LAWFUL_USE_STANDING_GUARD names the refusal classes (tracking private individuals, suppressing disclosure, units outside authorization scope) with documentation of each refusal, and EXPANSION_MOTION and SAVE_AND_WINBACK_RULES show the guard binding growth and retention pressure alike",
+      "covered_by": ["LAWFUL_USE_STANDING_GUARD", "EXPANSION_MOTION", "SAVE_AND_WINBACK_RULES"]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "per-unit MRR",
+      "definition": "The monthly recurring revenue attached to one active tracked unit - its retail subscription line for a given plan tier and modules; summed over active units it is the book, and its margin is the retail line minus the wholesale platform seat cost minus allocated support overhead, always computed from the operator's own numbers."
+    },
+    {
+      "term": "orphan seat",
+      "definition": "A platform seat the reseller keeps paying wholesale for although no customer is billed against it any longer - typically left behind when a vehicle was sold or a unit died and the deactivation never reached the platform; the classic silent margin leak."
+    },
+    {
+      "term": "ghost unit",
+      "definition": "A unit still billed to a customer although the device has been dead or removed for months; when discovered by the customer it converts into a multi-month credit demand and lasting distrust of every future invoice."
+    },
+    {
+      "term": "silent unit",
+      "definition": "A tracker that stopped reporting without any alarm - unplugged OBD device, cut power, drained asset-tracker battery, dead cellular coverage, or a sold vehicle; surfaced by exception lists ranked on last-report age rather than by customer complaints."
+    },
+    {
+      "term": "seat reconciliation",
+      "definition": "The monthly three-way comparison of seats the platform bills the reseller, units the reseller bills customers, and devices actually alive on vehicles; per-unit margin only exists after the three counts agree or every delta is explained."
+    },
+    {
+      "term": "dunning ladder",
+      "definition": "The published escalation sequence for overdue accounts - reminder, personal contact, service restriction, suspension - with each rung's timing stated in the terms so collection is predictable rather than improvised per account."
+    },
+    {
+      "term": "co-terming",
+      "definition": "Aligning the subscription end date of units added mid-term with the account's master renewal date, so the account renews as one decision on one date instead of fragmenting into per-unit anniversaries."
+    },
+    {
+      "term": "network sunset",
+      "definition": "A cellular carrier retiring a network generation on a published date, which permanently kills every tracker built on that modem class and forces a fleet-wide hardware swap campaign - best amortized across renewal cycles rather than absorbed as one emergency."
+    },
+    {
+      "term": "zombie account",
+      "definition": "An account whose devices report perfectly while no human logs in or reads the reports; it renews only until someone reviews the invoice, which is why engagement telemetry, not device health, is the leading churn indicator."
+    },
+    {
+      "term": "truck roll",
+      "definition": "Dispatching a technician to a vehicle or yard - the most expensive support action per incident, capable of consuming months of one unit's subscription margin, and therefore reserved for the last rung of the remote-first triage ladder."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "UNIT_MRR_LEDGER",
+      "topic": "per_unit_recurring_revenue_ledger",
+      "definition": "Maintain the ledger that treats every installed, billing tracker as one recurring line item: which vehicle or asset it rides on, which customer account owns it, which plan tier and modules it carries, its activation date, its contract-term linkage, the retail subscription billed to the customer, and the wholesale platform seat cost the reseller pays beneath it. Per-unit margin is a mechanism - retail line minus wholesale seat cost minus an allocated slice of support and billing overhead - computed from the operator's own price sheet and platform invoice, never quoted as an industry figure. The ledger is the substrate every other motion reads: health monitoring maps device to line, billing maps line to invoice, renewal maps lines to terms, and the book gate sums movements across them.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": [
+          "unit-level revenue and cost line structure",
+          "activation and deactivation states per unit",
+          "plan and module tagging per unit",
+          "margin-as-mechanism computation from the operator's own invoices"
+        ],
+        "excluded": [
+          "setting new-logo prices and offer design",
+          "the platform's own invoice format",
+          "install and verification records from onboarding"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A unit-level ledger makes every MRR movement attributable - each dollar of growth or shrinkage traces to a named unit on a named account",
+          "example": "a five-unit contraction showing as five identified deactivated vans on one landscaping account instead of an unexplained revenue dip",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Unit-level bookkeeping is real overhead at scale and drifts from reality the moment field changes go unrecorded",
+          "example": "a tracker moved from a sold pickup to its replacement still ledgered against the old VIN three months later",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "running the book on account-level totals so churn and expansion can never be attributed to units",
+        "letting activation dates diverge from billing start dates so proration disputes multiply"
+      ],
+      "acceptance_tests": [
+        "every active device on the platform maps to exactly one ledger line carrying plan tier, retail line, wholesale seat cost, and contract linkage"
+      ],
+      "revisit_triggers": [
+        "the platform changes its seat or licensing structure",
+        "the operator adds a new device class or module family to the book"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.74,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.14,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.2, 0.46],
+        "update_signal": "the platform's seat billing structure or the operator's own plan sheet changes shape"
+      }
+    },
+    {
+      "id": "LAWFUL_USE_STANDING_GUARD",
+      "topic": "ongoing_lawful_tracking_and_disclosure_guard",
+      "definition": "Keep the lawful-tracking boundary enforced for the life of the account, not just at the sale: tracking stays confined to vehicles and assets the customer owns or controls as an employer, employee disclosure remains current as drivers, vehicles, and device classes change, and requests that drift toward covert tracking of private individuals - a tracker for a spouse's personal car, an employee's own vehicle without disclosure, a unit the drivers must not know about - are refused and documented regardless of the MRR at stake. The guard runs at known trigger points: fleet turnover events, expansion asks, save conversations, and any request to suppress or delay disclosure.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_14", "CQ_10"],
+      "scope_boundary": {
+        "included": [
+          "authorization-scope register per account",
+          "disclosure currency checks at turnover and expansion",
+          "refusal classes with documentation of each refusal",
+          "escalation when a customer self-activates units outside scope"
+        ],
+        "excluded": [
+          "the initial driver-disclosure onboarding session",
+          "adjudicating the customer's internal HR disputes",
+          "legal advice on a specific dispute - refer to counsel"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Refusing bright-line requests early costs one unit of MRR and avoids the account-and-reputation loss of a covert-tracking incident",
+          "example": "declining to activate a tracker a customer bought for a former partner's car, and noting the refusal with its trigger on the account record",
+          "weight": 0.9
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The guard adds friction to legitimate growth and can misread lawful edge cases involving mixed personal use",
+          "example": "a take-home company van whose after-hours tracking needs the employer's written personal-use policy, not a reflex refusal",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "treating the intake disclosure as permanent while the driver roster turns over completely",
+        "letting a customer self-activate units on vehicles outside the recorded authorization scope unnoticed"
+      ],
+      "acceptance_tests": [
+        "every account carries a current authorization scope and disclosure status, every refusal is documented with its trigger, and no active unit sits outside the recorded scope"
+      ],
+      "revisit_triggers": [
+        "a customer requests a device class with new privacy stakes such as a driver-facing camera or audio capture",
+        "a turnover event adds vehicles or drivers not covered by the recorded disclosure"
+      ],
+      "base": {
+        "criticality": 0.95,
+        "business_value": 0.78,
+        "user_value": 0.85,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.95,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.85,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.95,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.1,
+        "downside_weight": 0.9,
+        "uncertainty_interval": [0.12, 0.4],
+        "update_signal": "a refusal case, disclosure gap, or new device class exposes a hole in the guard's trigger list"
+      }
+    },
+    {
+      "id": "REGULATORY_DRIFT_WATCH",
+      "topic": "eld_hos_and_telematics_privacy_drift_flags",
+      "definition": "Track which accounts sit in regulated classes - fleets that may fall under ELD and hours-of-service mandates, jurisdictions with telematics or workplace-privacy rules, consent regimes for driver-facing cameras and in-cab audio - as obligation classes with a verification flag, never as asserted specifics. The rules are jurisdiction- and fleet-type-specific and they drift: a fleet crosses an operating threshold, a privacy statute lands, a platform module adds recording. The watch names the class, records why the account is flagged, and forces verification of current rules in the customer's jurisdiction before any renewal commitment or module expansion leans on a compliance claim.",
+      "group": "frame",
+      "dependencies": ["LAWFUL_USE_STANDING_GUARD"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": [
+          "per-account regulated-class flags with reasons",
+          "drift triggers: fleet-type change, jurisdiction change, module change",
+          "verification-before-commitment rule for compliance-touching motions"
+        ],
+        "excluded": [
+          "asserting current ELD or privacy specifics as fact",
+          "compliance consulting or legal advice",
+          "sale-time regulated-class qualification of new prospects"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Flagging obligation classes instead of memorizing rules keeps every compliance-touching motion honest even as regimes change under it",
+          "example": "a renewal note reading that the customer added interstate lanes so ELD applicability must be re-verified, instead of a stale remembered verdict",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Constant verification flags slow decisions and can frustrate customers who want a straight compliance answer",
+          "example": "a trucking owner pressing for a yes-or-no on an ELD module and receiving a verification path plus a counsel referral instead",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "asserting a remembered rule that has since changed and anchoring a renewal commitment on it",
+        "missing that an account's operations drifted into a regulated class mid-term"
+      ],
+      "acceptance_tests": [
+        "every flagged account names the obligation class, the reason for the flag, and the jurisdiction-verification note, and no renewal or expansion artifact asserts a specific current rule"
+      ],
+      "revisit_triggers": [
+        "a customer's operations change fleet type or jurisdiction",
+        "a module with recording or telematics-privacy implications is proposed for any account"
+      ],
+      "base": {
+        "criticality": 0.85,
+        "business_value": 0.7,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.7,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.18,
+        "downside_weight": 0.8,
+        "uncertainty_interval": [0.25, 0.6],
+        "update_signal": "a regulatory change notice lands, or a verification finding contradicts a recorded flag"
+      }
+    },
+    {
+      "id": "DEVICE_HEALTH_TELEMETRY",
+      "topic": "installed_base_device_health_monitoring",
+      "definition": "Watch the whole installed base as an exception list: units ranked by last-report age, GPS fix quality, power events, and battery state, so silent units surface within a defined reporting-gap window instead of being discovered by the customer. Failure signatures differ by device class - an OBD unit going dark usually means unplugged or vehicle sold, a hardwired unit losing power events suggests an ignition-circuit fault, a battery asset tracker declines along a battery curve toward scheduled replacement rather than breaking suddenly. The customer pays monthly for data; a dead unit is a refund conversation waiting to happen and the fastest silent killer of renewal credibility.",
+      "group": "monitoring",
+      "dependencies": ["UNIT_MRR_LEDGER"],
+      "competency_question_refs": ["CQ_02"],
+      "scope_boundary": {
+        "included": [
+          "last-report exception dashboards across the base",
+          "failure signatures per device class",
+          "silence-window thresholds set per check-in cadence",
+          "proactive customer notification of dead units"
+        ],
+        "excluded": [
+          "initial per-unit verification testing at install",
+          "the repair action itself",
+          "platform-wide outage management, which belongs to the vendor"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Catching a silent unit inside the window turns a churn grievance into a proactive service touch the customer remembers at renewal",
+          "example": "calling the fleet manager about a dark unit on a skid steer before its owner discovers the gap during a theft scare",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Exception thresholds tuned too tight flood the operator with false alarms from parked vehicles and coverage dead zones",
+          "example": "a seasonal landscaping trailer flagged dead every winter although it is merely parked inside a metal barn",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "monitoring only what customers complain about, so silence accumulates unseen across the base",
+        "using one silence window across device classes whose check-in cadences differ by an order of magnitude"
+      ],
+      "acceptance_tests": [
+        "the exception list covers every active unit, silence windows are set per device class, and each silent unit has an owner and a next action inside the operator's stated response window"
+      ],
+      "revisit_triggers": [
+        "a device class or firmware cohort changes its reporting behavior",
+        "the silent-unit rate shifts materially after an install-practice change"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.88,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.35,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "silent-unit or false-alarm rates move after a threshold, firmware, or install-practice change"
+      }
+    },
+    {
+      "id": "DATA_QUALITY_AUDIT",
+      "topic": "tracking_data_quality_and_assignment_audit",
+      "definition": "Audit the quality of the data the subscription actually sells, beyond mere device liveness: trackers assigned to the right vehicle names, odometer and engine-hour values plausible against service records, geofences still matching the customer's current yards and job sites, duplicate or retired assets purged, and drivers mapped where driver-level reporting is sold. Quality erodes invisibly through fleet change: a tracker swapped between vehicles keeps its old label, a moved depot leaves geofence alerts firing on an empty lot. Because renewal recaps and expansion arguments are only as honest as this data, the audit ends by certifying which account data is fit to cite in front of the customer.",
+      "group": "monitoring",
+      "dependencies": ["DEVICE_HEALTH_TELEMETRY"],
+      "competency_question_refs": ["CQ_02", "CQ_09"],
+      "scope_boundary": {
+        "included": [
+          "vehicle-assignment correctness checks",
+          "odometer and engine-hour plausibility checks",
+          "geofence currency review",
+          "duplicate and retired-asset purges",
+          "certification of citable account data"
+        ],
+        "excluded": [
+          "initial geofence, alert, and report configuration",
+          "device liveness itself",
+          "the customer's operational data hygiene outside the tracking platform"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Certified-clean data makes every downstream value claim defensible in front of the customer's own staff",
+          "example": "an idle-time trend the fleet manager can reconcile against his dispatch log because every vehicle label is right",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Audits at unit scale are tedious, easy to defer, and over-auditing wastes hours on cosmetic issues no report consumes",
+          "example": "perfecting asset labels for a customer who only ever opens the live-map view",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "a renewal recap built on mislabeled vehicles collapsing when the customer spots a truck he sold last year in the data",
+        "geofence alerts firing on an abandoned yard until the customer learns to ignore every alert"
+      ],
+      "acceptance_tests": [
+        "each account passes the audit checklist - assignment, plausibility, geofence currency, duplicates - on the operator's cadence or carries an open exception with an owner"
+      ],
+      "revisit_triggers": [
+        "a fleet turnover event lands on the account",
+        "an alert-noise complaint or a value-recap dispute traces back to stale data"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.3,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.22, 0.54],
+        "update_signal": "audit exceptions cluster on one cause - turnover, label drift, geofence staleness - prompting a checklist or cadence change"
+      }
+    },
+    {
+      "id": "USAGE_ENGAGEMENT_TELEMETRY",
+      "topic": "platform_usage_and_engagement_tracking",
+      "definition": "Instrument whether humans at the account still consume what the devices produce: login recency by user, scheduled-report opens, alert acknowledgment, mobile-app use by dispatchers, and which features - live map, history replay, maintenance reminders - actually get touched. Devices reporting flawlessly to an audience of zero is the classic zombie account: it renews only until someone reads the invoice. Engagement telemetry converts that invisible decay into a leading indicator months before the renewal window, and identifies the single-user dependency where one departure would orphan the whole platform at the account.",
+      "group": "monitoring",
+      "dependencies": ["UNIT_MRR_LEDGER"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": [
+          "login, report, and alert consumption tracking",
+          "per-account engagement scoring",
+          "single-point-of-engagement risk detection",
+          "feature-adoption view per account"
+        ],
+        "excluded": [
+          "initial user training at onboarding",
+          "the customer's internal management practices",
+          "using usage data to surveil individual drivers beyond the employer's disclosed program"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Usage decay is the earliest reliably observable churn precursor and costs almost nothing to instrument from platform admin views",
+          "example": "spotting that a nine-truck plumbing outfit's dispatcher has not logged in for sixty days while every device stays green",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Raw login counts mislead because some healthy accounts consume value passively through emailed exception reports and never log in",
+          "example": "an owner who reads only the weekly idle-report email being scored as disengaged and pestered into annoyance",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "reading device health as customer engagement and missing the zombie account entirely",
+        "scoring passively-consuming accounts as at-risk and spending retention effort where none is needed"
+      ],
+      "acceptance_tests": [
+        "every account carries an engagement score combining logins, report consumption, and alert response, with passive consumption channels counted before any account is scored disengaged"
+      ],
+      "revisit_triggers": [
+        "churn post-mortems show the engagement score missed or mis-weighted a signal",
+        "the platform changes what usage telemetry its admin views expose"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.8,
+        "user_value": 0.74,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.25,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.2,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [0.24, 0.56],
+        "update_signal": "the correlation between engagement scores and actual renewal outcomes in the operator's own book contradicts the current weighting"
+      }
+    },
+    {
+      "id": "FIELD_SERVICE_TRIAGE",
+      "topic": "dead_unit_triage_and_remote_first_service_ladder",
+      "definition": "Run a remote-first triage ladder for units flagged unhealthy: remote diagnostics and reboot commands from the platform first; then a guided customer self-check - is the device seated, has the vehicle moved, is the fuse intact; then a mail-swap with a pre-provisioned replacement and a return label; and only last a technician visit, because a truck roll is the most expensive support action per incident and can consume months of that unit's subscription margin - a mechanism the operator prices from their own labor and travel cost, never a quoted figure. The ladder also decides batching: a single dead unit waits for the next scheduled visit window, while a cluster at one yard justifies one combined trip.",
+      "group": "support",
+      "dependencies": ["DEVICE_HEALTH_TELEMETRY"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": [
+          "triage ladder order and exit criteria per rung",
+          "guided self-checks per device class",
+          "mail-swap logistics with return capture",
+          "truck-roll batching rules",
+          "per-path cost mechanism from the operator's own labor numbers"
+        ],
+        "excluded": [
+          "new-install workmanship standards",
+          "warranty terms with the hardware vendor",
+          "pricing service plans into the customer offer"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Most dead-unit causes clear at the remote or self-check rung, reserving field labor for genuine hardware faults",
+          "example": "half a fleet's dark OBD units restored by walking a foreman through reseating devices after a round of battery changes",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Pushing self-service too hard on a paying fleet reads as shirking and burns goodwill on accounts that expect full service",
+          "example": "a flagship trucking account asked to fuse-test its own hardwired units souring weeks before its renewal",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "rolling a truck for what a remote reboot command fixes",
+        "sending mail-swaps without capturing the failed unit back for diagnosis and warranty"
+      ],
+      "acceptance_tests": [
+        "every dead-unit ticket shows the ladder rungs attempted in order, and every truck roll records why remote paths were exhausted or deliberately skipped"
+      ],
+      "revisit_triggers": [
+        "the mix of root causes shifts across a firmware or install cohort",
+        "customer-tier expectations change what level of self-service is acceptable"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.66,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.3,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "resolution rates by ladder rung shift, changing where triage effort should concentrate"
+      }
+    },
+    {
+      "id": "RMA_SWAP_AND_SUNSET_PLANNING",
+      "topic": "hardware_failure_warranty_and_network_sunset_planning",
+      "definition": "Manage the hardware layer of the installed base as inventory risk: a spare pool sized to the observed failure pattern of each device class; an advance-replacement flow so a customer's vehicle is not waiting weeks on a vendor RMA cycle; capture and vendor-return of failed units under warranty terms; batch-defect detection so a firmware cohort draining batteries is treated as a campaign, not a stream of unrelated tickets; and planning for cellular network sunsets, which retire an entire modem generation on a date and force fleet-wide swap campaigns best amortized across renewal cycles rather than absorbed as one emergency. Swap economics are mechanisms - hardware cost, vendor credit, labor path, any customer contribution negotiated at renewal - never a quoted standard price.",
+      "group": "support",
+      "dependencies": ["FIELD_SERVICE_TRIAGE"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": [
+          "spare-pool policy per device class",
+          "advance-replacement flow",
+          "warranty capture and vendor RMA handling",
+          "batch-defect and cohort detection",
+          "sunset swap campaigns scheduled against renewal dates"
+        ],
+        "excluded": [
+          "initial device-class selection per use case",
+          "vendor contract negotiation",
+          "pitching the sunset as a new-prospect sales angle"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Sunset campaigns planned against the contract register convert a forced cost into a hardware-refresh renewal story",
+          "example": "spreading modem-generation swaps across a year of renewal windows with loaner units covering early failures",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Spare pools and advance replacements tie up cash in hardware that may be obsolete before it ships",
+          "example": "a shelf of spare units for a model the vendor end-of-lifed before the spares were consumed",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "learning about a network sunset from customer outage calls instead of carrier notices",
+        "replacing batch-defect units one ticket at a time without ever noticing the cohort"
+      ],
+      "acceptance_tests": [
+        "spare-pool levels are set per device class from observed failure patterns, every sunset-affected unit is inventoried with a swap window, and failed units are captured for warranty and cohort analysis"
+      ],
+      "revisit_triggers": [
+        "a carrier sunset announcement or vendor end-of-life notice lands",
+        "a failure-rate step change appears in one hardware or firmware cohort"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.6,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.24,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [0.26, 0.6],
+        "update_signal": "carrier or vendor lifecycle notices, or cohort failure data, change the swap plan"
+      }
+    },
+    {
+      "id": "SUPPORT_LOAD_ECONOMICS",
+      "topic": "support_cost_per_unit_mechanics",
+      "definition": "Treat support cost per unit as the quiet variable that decides whether the subscription book compounds or erodes: the mechanism is tickets per hundred units per month, times minutes per ticket, times loaded labor cost, plus the truck-roll tail - all computed from the operator's own logs, never quoted as an industry norm. The drivers are identifiable and fixable upstream: install-quality cohorts surfacing as repeat power tickets, alert misconfiguration, untrained new staff at the customer, and device classes with high failure signatures. The node's discipline is attribution - every ticket tagged by cause and account - so the operator knows which accounts and cohorts sit below water, feeding save-or-release decisions and pacing expansion.",
+      "group": "support",
+      "dependencies": ["FIELD_SERVICE_TRIAGE"],
+      "competency_question_refs": ["CQ_04", "CQ_06"],
+      "scope_boundary": {
+        "included": [
+          "tickets-per-hundred-units tracking with cause tags",
+          "per-account support-cost tiers",
+          "deflection via self-serve guides and customer-admin training",
+          "below-water account identification"
+        ],
+        "excluded": [
+          "setting support pricing or service levels in the offer",
+          "fixing install workmanship itself - this node only routes the evidence back",
+          "the triage ladder mechanics"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Cause-tagged tickets turn support from a cost blur into an upstream repair list",
+          "example": "discovering one electrical contractor generates a third of all tickets because every new apprentice trips the same misconfigured geofence alarm",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Rigorous tagging is discipline-heavy for a small operator, and sloppy tags are worse than none",
+          "example": "a catch-all device-issue tag hiding that most tickets were actually training questions with a documentation fix",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "averaging support cost across the book and missing that two accounts consume the margin of twenty",
+        "treating rising ticket volume as demand for more staff instead of a symptom to fix upstream"
+      ],
+      "acceptance_tests": [
+        "tickets carry cause and account tags, per-account support tiers exist, and below-water accounts are flagged to the book gate with their evidence"
+      ],
+      "revisit_triggers": [
+        "ticket volume or cause mix shifts across two consecutive cycles",
+        "a new device class or module changes the support surface"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.86,
+        "user_value": 0.7,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.3,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.22, 0.54],
+        "update_signal": "the operator's own ticket logs contradict the assumed cost drivers or the per-account tier boundaries"
+      }
+    },
+    {
+      "id": "ALERT_RETUNE_CYCLE",
+      "topic": "ongoing_alert_noise_retuning",
+      "definition": "Re-tune alerts and reports on a cycle after onboarding, because the configuration that fit the fleet at install decays as the fleet changes: speed thresholds set for city vans misfire when highway routes are added, geofences outlive moved yards, after-hours alerts fire on a newly added night shift. Alert fatigue is a double killer - it generates support tickets and it trains users to ignore the platform, which later reads as usage decay. The cycle reviews firing counts per alert, kills or repairs the top noise sources with the customer in the room, and confirms that the alerts which matter to this fleet's workflow still reach a human who acts on them.",
+      "group": "support",
+      "dependencies": ["USAGE_ENGAGEMENT_TELEMETRY"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": [
+          "firing-count review per alert",
+          "noise-source repair sessions with the customer",
+          "confirmation that actionable alerts reach an owner",
+          "retune cadence tied to fleet-change events"
+        ],
+        "excluded": [
+          "the initial alert and report configuration to the fleet's workflow",
+          "alert behavior the platform does not expose for tuning",
+          "disciplining the customer's staff for ignoring alerts"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Killing the top noise sources measurably restores both alert response and platform trust",
+          "example": "silencing a defunct yard's geofence alarm and watching the fleet manager start answering after-hours-movement alerts again",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Retuning needs customer time, and repeated sessions can feel like the product was never set up right",
+          "example": "a third tuning request in one quarter prompting the owner to ask why this keeps needing adjustment",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "leaving install-time thresholds untouched for years while the fleet's operating pattern changed underneath them",
+        "tuning noise down so far that a genuine theft-movement alert is disabled with the junk"
+      ],
+      "acceptance_tests": [
+        "each account shows a retune record on cadence or after fleet-change events, with firing counts before and after the top noise fixes"
+      ],
+      "revisit_triggers": [
+        "alert-driven tickets spike on an account",
+        "a fleet-change event lands - new routes, moved yards, added shifts - or a real event slips through ignored"
+      ],
+      "base": {
+        "criticality": 0.74,
+        "business_value": 0.72,
+        "user_value": 0.82,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.64,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.25,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.76,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [0.2, 0.52],
+        "update_signal": "firing-count and response data show the current thresholds no longer fit the fleet's operating pattern"
+      }
+    },
+    {
+      "id": "BILLING_HYGIENE_DUNNING",
+      "topic": "subscription_billing_accuracy_and_dunning_ladder",
+      "definition": "Keep the monthly invoice unarguable and the collection path predictable: invoices reconcile line-for-line to active ledger units before they are sent, mid-cycle adds and removals are prorated by a stated rule, plan changes take effect on a stated boundary, and overdue accounts walk a dunning ladder - reminder, personal contact, service restriction, suspension - with each rung's timing published in the terms rather than improvised per account. Suspension mechanics need special care in this trade: cutting tracking on a fleet mid-dispute also cuts theft-recovery capability, so the ladder distinguishes restricting reports and logins from disabling recovery-relevant location function, and never silently deactivates platform seats that are expensive to re-provision.",
+      "group": "commercial",
+      "dependencies": ["UNIT_MRR_LEDGER"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": [
+          "invoice-to-ledger reconciliation before send",
+          "proration and plan-change effective-date rules",
+          "the published dunning ladder with rung timing",
+          "suspension design separating report access from recovery-relevant function"
+        ],
+        "excluded": [
+          "initial payment terms and pricing design",
+          "collections litigation and credit reporting - refer out",
+          "waiving arrears as a retention tactic, which the save rules decide explicitly"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "An invoice that always matches the observable fleet removes the most common trigger of billing disputes and churn-by-annoyance",
+          "example": "a controller spot-checking three VINs against invoice lines, finding all three right, and paying without a phone call",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A rigid ladder can escalate on a good account in a temporary cash pinch and convert a savable situation into an exit",
+          "example": "a seasonal excavation firm suspended in its slow month after three years of flawless payment",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "invoicing for units that were removed from vehicles months earlier",
+        "improvising suspension per account so customers learn the terms are negotiable through delay"
+      ],
+      "acceptance_tests": [
+        "pre-send reconciliation passes with zero unexplained line deltas, and every overdue account sits on a documented ladder rung with its next action dated"
+      ],
+      "revisit_triggers": [
+        "billing-dispute volume ticks upward",
+        "a suspension case exposes a gap between report restriction and recovery-relevant function"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.7,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.16,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [0.18, 0.48],
+        "update_signal": "dispute or involuntary-churn patterns show a ladder rung or proration rule misfiring"
+      }
+    },
+    {
+      "id": "PLAN_TIER_MODULE_MAP",
+      "topic": "plan_tier_and_module_assignment_map",
+      "definition": "Maintain the map of which units carry which plan tier and which paid modules - base track-and-trace, higher-frequency ping plans, dashcam channels, maintenance-module seats, ELD-related modules where lawfully applicable - because tier mix is where per-unit MRR is actually made and lost. The map records each tier's wholesale cost and retail line as the operator's own mechanism, which module entitlements each account actually uses (feeding both whitespace and downgrade honesty), and the upgrade and downgrade mechanics: effective-date boundaries, proration treatment, and whether the platform meters a module per unit, per account, or per user. An entitlement paid for but unused is a downgrade conversation or an adoption repair waiting; either beats the customer discovering it at renewal.",
+      "group": "commercial",
+      "dependencies": ["UNIT_MRR_LEDGER"],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": [
+          "tier and module assignment per unit",
+          "wholesale-versus-retail mechanism per tier",
+          "entitlement-usage view per account",
+          "upgrade and downgrade mechanics"
+        ],
+        "excluded": [
+          "designing the tier catalog and its pricing",
+          "functional setup of modules on the platform",
+          "compliance assertions about regulated modules, which the drift watch flags"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "An accurate tier map turns renewal and expansion pricing into arithmetic on known lines instead of account archaeology",
+          "example": "quoting a dashcam add-on for exactly the eight tractors already on the premium ping plan without re-auditing the account",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Fine-grained tiering multiplies billing states and error surface at small-operator scale",
+          "example": "three tier variants inside one account producing a proration defect every time a vehicle transfers",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "selling a module the customer already pays for on another tier",
+        "leaving units on legacy tiers whose wholesale cost quietly rose above the retail line"
+      ],
+      "acceptance_tests": [
+        "every unit carries a tier and module tag matching both the platform entitlement and the invoice line, with unused entitlements flagged"
+      ],
+      "revisit_triggers": [
+        "the platform repackages its tiers or modules",
+        "the entitlement-usage review shows systematic non-adoption of a paid module"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.84,
+        "user_value": 0.72,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.35,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "platform repackaging or the usage review changes what tiers and modules the map must represent"
+      }
+    },
+    {
+      "id": "SEAT_COST_RECONCILIATION",
+      "topic": "platform_seat_versus_billed_unit_reconciliation",
+      "definition": "Reconcile, on a monthly cycle, three counts that drift apart in the real world: seats the platform bills the reseller (wholesale), units the reseller bills customers (retail), and devices actually alive on vehicles (physical). Every mismatch is a named leak with a mechanism: an orphan seat still costing wholesale after a vehicle was sold; a ghost unit billed to a customer but dead for months - a refund and trust bomb; a seat provisioned for a swap that never got decommissioned; a wholesale price change landing mid-cycle. Per-unit margin only exists after this reconciliation, which is why the inputs are always the operator's own counts and invoices, never assumed rates, and the closed report feeds the book gate with the true recurring cost base.",
+      "group": "commercial",
+      "dependencies": ["PLAN_TIER_MODULE_MAP", "FLEET_TURNOVER_SYNC"],
+      "competency_question_refs": ["CQ_01", "CQ_12"],
+      "scope_boundary": {
+        "included": [
+          "three-way count reconciliation on a monthly cycle",
+          "orphan-seat and ghost-unit detection",
+          "wholesale price-change detection",
+          "leak attribution to cause with close-out actions"
+        ],
+        "excluded": [
+          "negotiating wholesale terms with the platform",
+          "the deactivation policy itself, which turnover sync owns",
+          "customer refund decisions above the operator's stated threshold - owner call"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The monthly reconciliation habitually recovers real margin that silently leaks at unit scale",
+          "example": "finding a dozen orphan seats from last year's fleet downsizing still accruing wholesale cost every month",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Three-way reconciliation is exacting clerical work that small operators skip under load, which is exactly when leaks grow fastest",
+          "example": "deferring reconciliation through a busy install quarter and absorbing months of seats for returned rental equipment",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "paying wholesale indefinitely for seats no customer funds",
+        "discovering ghost units only when the customer demands a multi-month credit"
+      ],
+      "acceptance_tests": [
+        "the monthly report shows zero unexplained deltas across the three counts, and every explained delta carries a cause tag and a close-out action"
+      ],
+      "revisit_triggers": [
+        "the platform changes its seat billing or deactivation semantics",
+        "turnover volume makes the current reconciliation cadence insufficient"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.88,
+        "user_value": 0.62,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.18,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "reconciliation deltas or platform billing changes shift where the leak mechanisms live"
+      }
+    },
+    {
+      "id": "CONTRACT_TERM_REGISTER",
+      "topic": "contract_term_and_renewal_calendar_hygiene",
+      "definition": "Keep a register of every account's contractual skeleton: term start and end, auto-renew and notice-window clauses, the co-terming rule for mid-term unit additions, any hardware subsidy being recovered inside the term with its remaining-balance mechanism, price-adjustment rights, and early-termination mechanics. The register drives a renewal calendar worked backward from notice windows, because a missed window either locks an unwanted auto-renewal - breeding resentful churn later - or lets a term lapse silently to month-to-month, dissolving the recovery of subsidized hardware. Subsidy recovery is a mechanism: hardware cost spread against the term's subscription margin per the operator's own deal sheet, never a standard figure.",
+      "group": "commercial",
+      "dependencies": ["UNIT_MRR_LEDGER"],
+      "competency_question_refs": ["CQ_05", "CQ_08"],
+      "scope_boundary": {
+        "included": [
+          "term, notice-window, and auto-renew registry",
+          "co-terming policy for mid-term additions",
+          "subsidy-recovery balance mechanism per deal",
+          "renewal calendar worked backward from notice windows"
+        ],
+        "excluded": [
+          "designing term lengths and subsidy structures for new deals",
+          "the renewal conversation itself",
+          "enforcing termination fees in a dispute - refer to counsel"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A notice-window calendar makes every renewal a prepared campaign instead of a surprise found in an inbox",
+          "example": "a ninety-day-out flag triggering the health review and recap build for a fifteen-vehicle roofing fleet",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Register discipline decays with every hand-edited amendment and side agreement unless changes are logged at signing",
+          "example": "a verbally extended term nobody wrote down surfacing as a dispute exactly at the register's recorded end date",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "auto-renew lapsing an account into month-to-month with subsidized hardware unrecovered",
+        "co-termed additions inheriting a renewal date nobody communicated to the customer"
+      ],
+      "acceptance_tests": [
+        "every account shows term, notice window, auto-renew status, and subsidy-balance mechanism, and no renewal date sits inside its notice window without an owner and a planned motion"
+      ],
+      "revisit_triggers": [
+        "an amendment or side agreement lands on any account",
+        "a subsidy-recovery balance goes negative against the remaining term"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.84,
+        "user_value": 0.66,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.6,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [0.16, 0.46],
+        "update_signal": "term amendments, missed-window incidents, or subsidy-balance anomalies expose register gaps"
+      }
+    },
+    {
+      "id": "ACCOUNT_HEALTH_REVIEW",
+      "topic": "periodic_account_health_review",
+      "definition": "Run a lightweight periodic review per account - the SMB-fleet cousin of a quarterly business review - assembling device health, data-quality certification, engagement trend, support-ticket profile, and recorded value events (recovered assets, geofence catches, idle-time trends the customer's own data shows) into one health brief with a tier: healthy, watch, or intervene. The brief is the single artifact renewal and expansion both read, which forces its honesty: it cites only audit-certified data, it names problems the operator caused - dead units, noisy alerts - as plainly as customer-side decay, and it ends with the one next action that most changes the account's trajectory.",
+      "group": "relationship",
+      "dependencies": ["DEVICE_HEALTH_TELEMETRY", "USAGE_ENGAGEMENT_TELEMETRY"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": [
+          "health-brief assembly and tier assignment",
+          "value-event log drawn from the account's own data",
+          "operator-fault candor in the brief",
+          "single next-action selection per account"
+        ],
+        "excluded": [
+          "the renewal or expansion conversation itself",
+          "inventing savings the data does not show",
+          "deep financial analysis of the customer's business"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "One recurring brief prevents renewal-time archaeology and makes every account conversation start from shared facts",
+          "example": "opening a renewal with the customer's own two recovered-trailer events and the quarter's dead-unit fix history",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Reviews at book scale compete with billable work and degrade into checkbox exercises when over-templated",
+          "example": "twenty consecutive all-good briefs signaling that the review stopped actually looking",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "briefs that hide operator-caused problems and lose all credibility when the customer knows better",
+        "health tiers assigned by gut feel instead of the assembled evidence"
+      ],
+      "acceptance_tests": [
+        "each account has a brief current on cadence, citing only certified data, carrying a tier with its evidence and one named next action"
+      ],
+      "revisit_triggers": [
+        "an account's tier changes in either direction",
+        "a value event or incident lands that the next brief must carry",
+        "a renewal enters its notice window"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.3,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "assigned health tiers diverge from actual renewal and churn outcomes"
+      }
+    },
+    {
+      "id": "RENEWAL_PLAYBOOK",
+      "topic": "renewal_motion_grounded_in_account_evidence",
+      "definition": "Run renewals as a prepared motion that starts well before the notice window: the health brief supplies the value recap - recovered assets, resolved tickets, usage the customer actually got - expressed in the account's own recorded events, never invented savings; open problems such as dead units or stale geofences are fixed or owned with a dated plan before the ask; price changes are explained by mechanism - wholesale movement, tier mix, hardware refresh at a sunset - rather than asserted; and term options are offered honestly, including month-to-month where lock-in would only manufacture resentment. A renewal earned on demonstrated value renews again; one extracted through an auto-renew technicality churns later with prejudice and takes referrals with it.",
+      "group": "relationship",
+      "dependencies": ["CONTRACT_TERM_REGISTER", "ACCOUNT_HEALTH_REVIEW"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": [
+          "pre-window preparation sequence",
+          "evidence-grounded value recap",
+          "fix-before-ask discipline",
+          "mechanism-explained repricing",
+          "honest term options including month-to-month"
+        ],
+        "excluded": [
+          "new-logo ROI selling",
+          "compliance assertions inside the recap - the drift watch flags those for verification",
+          "win-at-any-price discounting, which the book gate and support economics bound"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Fix-before-ask converts the renewal meeting from a price negotiation into a continuation decision",
+          "example": "replacing two dead units and silencing a noisy alarm the month before the ask, then opening the meeting with exactly that",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Heavy preparation on every renewal over-invests in small stable accounts that would have renewed on a two-line email",
+          "example": "building a full recap deck for a three-unit landscaper already on autopay",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "leading with a discount instead of value and teaching the account to negotiate every year",
+        "citing an efficiency claim the customer's own data does not support and losing the room"
+      ],
+      "acceptance_tests": [
+        "every renewal shows a pre-window preparation record, a recap citing only certified account events, open problems owned with dates, and any price change explained by a named mechanism"
+      ],
+      "revisit_triggers": [
+        "renewal outcomes shift - close rate, concessions demanded, term mix",
+        "a recap dispute traces back to data or claim quality",
+        "wholesale or sunset mechanics change the repricing story"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.9,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.6,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [0.22, 0.54],
+        "update_signal": "renewal outcomes and dispute causes in the operator's own book contradict the playbook's emphasis"
+      }
+    },
+    {
+      "id": "FLEET_TURNOVER_SYNC",
+      "topic": "fleet_composition_change_synchronization",
+      "definition": "Keep the tracked estate synchronized with the customer's actual fleet as vehicles are bought, sold, wrecked, and reassigned: a stated intake path for turnover events - customer notification backstopped by operator detection when a unit goes dark in a sold vehicle; a transfer procedure that moves a tracker to the replacement vehicle with its label, geofence relevance, and driver assignment updated; a deactivation procedure that ends retail billing and the wholesale seat together; and a disclosure check whenever a transfer puts units on vehicles or drivers outside the recorded authorization scope. Unsynced turnover is the single upstream cause behind ghost units, orphan seats, mislabeled data, and invoice disputes - which is why this node feeds reconciliation rather than duplicating it.",
+      "group": "commercial",
+      "dependencies": ["DATA_QUALITY_AUDIT", "LAWFUL_USE_STANDING_GUARD"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": [
+          "turnover-event intake path with detection backstop",
+          "transfer procedure updating label, geofence relevance, and driver assignment",
+          "deactivation that closes billing and platform seat together",
+          "authorization and disclosure check on every transfer"
+        ],
+        "excluded": [
+          "the physical re-installation work",
+          "the reconciliation arithmetic itself",
+          "advising the customer on fleet purchase decisions"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A single turnover procedure closes the root cause of most billing and data-quality leaks in one move",
+          "example": "a sold box truck's tracker transferred to its replacement the same week, with ledger, label, and invoice all moving together",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The procedure depends on customers reporting sales the operator cannot always observe, so detection must backstop notification",
+          "example": "an equipment-rental account that sells attachments at auction without telling anyone until the units go dark",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "billing a customer for a tracker riding in a wrecked vehicle at a salvage yard",
+        "transferring a unit onto a new driver's vehicle with the disclosure never refreshed"
+      ],
+      "acceptance_tests": [
+        "every turnover event shows an intake record and a completed transfer or deactivation, with ledger, platform seat, invoice, and authorization scope updated together"
+      ],
+      "revisit_triggers": [
+        "dark units cluster in a pattern suggesting unreported vehicle sales",
+        "an account's turnover volume outgrows the intake path"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.74,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.22, 0.54],
+        "update_signal": "leak post-mortems repeatedly attribute causes to turnover-intake gaps"
+      }
+    },
+    {
+      "id": "CHURN_SIGNAL_WATCH",
+      "topic": "fleet_account_churn_signal_scoring",
+      "definition": "Score fleet accounts continuously on the churn signals this trade actually exhibits: engagement decay while devices stay green, the champion - fleet manager or dispatcher - leaving, payment behavior slowing, fleet downsizing, unresolved or repeating support tickets, a competitor's name surfacing in conversations, and renewal-adjacent silence. Signals are weighted from the operator's own loss history - a mechanism recalibrated by post-mortems, never a borrowed benchmark - and accounts roll up into watch tiers that route attention: healthy accounts keep the standard cadence, watch accounts get a scheduled human touch, intervene accounts get an owner and a plan before the notice window arrives.",
+      "group": "relationship",
+      "dependencies": ["USAGE_ENGAGEMENT_TELEMETRY", "BILLING_HYGIENE_DUNNING"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": [
+          "signal catalog and account-level scoring",
+          "watch-tier routing with named owners",
+          "champion-change detection",
+          "weight recalibration from loss post-mortems"
+        ],
+        "excluded": [
+          "the save action itself",
+          "manufacturing urgency or fear to re-engage an account",
+          "surveilling the customer beyond ordinary business signals"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Tiered watch converts churn from a renewal-day ambush into a months-early queue of workable problems",
+          "example": "a dispatcher's departure flagged the week it happened, triggering a re-training touch that kept the account",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Signal scoring on a small book overfits, and one noisy signal can flood the watch tier with false positives",
+          "example": "a single slow-payment month during a customer's known seasonal trough tripping a full intervention",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "watching device dashboards while the human relationship decays invisibly",
+        "scoring signals but routing no owner, so watch tiers become a graveyard of unread flags"
+      ],
+      "acceptance_tests": [
+        "every account carries a current tier from the signal scorecard, and every watch or intervene account names an owner and a next dated touch"
+      ],
+      "revisit_triggers": [
+        "a churn post-mortem contradicts the current signal weighting",
+        "the book's composition changes - a new segment or size class enters"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.86,
+        "user_value": 0.72,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.35,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [0.24, 0.58],
+        "update_signal": "post-mortems and save outcomes show which signals actually preceded losses in this book"
+      }
+    },
+    {
+      "id": "SAVE_AND_WINBACK_RULES",
+      "topic": "save_restructure_and_winback_decision_rules",
+      "definition": "Decide save, restructure, or release with rules set before the emergency: diagnose the churn driver first - price, unused value, service failure, fleet shrinkage, ownership change - then match the tool to the driver: adoption help for unused value, a fix-and-make-good for service failure, a downgrade or unit-count reduction for shrinkage, a term restructure for price; and bound every concession by the account's support-cost tier so a save never manufactures a below-water account. The ethics are first-class: no fear-selling - no invented theft statistics to scare a fleet into staying; no concealing that a downgrade exists; no punitive friction on exit - offboarding is clean, data export honored, the door left open, because released accounts that shrink to fit sometimes return grown, and winback timing keys to the competitor's first renewal or service stumble.",
+      "group": "relationship",
+      "dependencies": ["CHURN_SIGNAL_WATCH"],
+      "competency_question_refs": ["CQ_11", "CQ_14"],
+      "scope_boundary": {
+        "included": [
+          "driver-first churn diagnosis",
+          "tool-to-driver matching",
+          "concession bounds from support-cost tiers",
+          "clean-exit offboarding with honored data export",
+          "winback timing and record"
+        ],
+        "excluded": [
+          "dunning mechanics",
+          "fear-based retention tactics - prohibited outright, not merely out of scope",
+          "re-acquisition offers designed for new logos"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Driver-matched saves cost less and hold longer than reflex discounts",
+          "example": "saving a shrinking excavation fleet by cutting to eight units and pausing two, instead of discounting all fourteen",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Rules written for the median case can be too slow for a top account walking over a solvable service failure",
+          "example": "a flagship trucking account needing a same-day make-good while the process asks for a diagnosis form first",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "discounting every threat and training the whole book to threaten",
+        "retaining chronic below-water accounts because releasing feels like failure"
+      ],
+      "acceptance_tests": [
+        "every save case records the diagnosed driver, the matched tool, and the concession's bound against the support tier, and every release shows a completed clean-exit checklist"
+      ],
+      "revisit_triggers": [
+        "save outcomes - hold rate, re-churn - contradict the rules",
+        "a winback signal fires on a released account"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.82,
+        "user_value": 0.76,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.55,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [0.24, 0.56],
+        "update_signal": "hold-rate and re-churn outcomes of past saves reveal which tools actually work for which drivers"
+      }
+    },
+    {
+      "id": "ACCOUNT_WHITESPACE_MAP",
+      "topic": "per_account_expansion_whitespace_inventory",
+      "definition": "Maintain per account an inventory of what is tracked versus what could lawfully be: untracked vehicles visible in the customer's own fleet count, trailers and yellow iron carrying no asset trackers, module gaps that fit the fleet's workflow - dashcams for accounts with incident exposure, the maintenance module where breakdowns drive tickets - and entitlements owned but unused, which are adoption repairs rather than upsell targets. Every whitespace entry carries a readiness state, because whitespace is a fact while an expansion ask is a decision: an account with dead units or a watch tier has its whitespace frozen until health recovers, and every entry notes the authorization and disclosure implication of the device class involved.",
+      "group": "growth",
+      "dependencies": ["PLAN_TIER_MODULE_MAP", "FLEET_TURNOVER_SYNC"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": [
+          "tracked-versus-total inventory by class",
+          "module gap and unused-entitlement view",
+          "readiness state per whitespace entry",
+          "authorization implication note per device class"
+        ],
+        "excluded": [
+          "making the expansion ask itself",
+          "prospect-level whitespace of non-customers",
+          "inflating fleet counts beyond what the customer disclosed"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A standing whitespace map makes expansion a harvest of recorded facts instead of a periodic brainstorm",
+          "example": "knowing at renewal time that eleven of a rental account's thirty attachments carry no asset tracker",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A map maintained without readiness discipline becomes a pushy call list that erodes trust",
+          "example": "pitching dashcams to an account midway through an unresolved dead-unit complaint",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "whitespace built from guessed fleet sizes the customer never disclosed",
+        "treating unused entitlements as upsell targets instead of adoption repairs"
+      ],
+      "acceptance_tests": [
+        "each account's map lists tracked-versus-total by class, module gaps, a readiness state, and the authorization note per entry"
+      ],
+      "revisit_triggers": [
+        "a turnover event changes the fleet's composition",
+        "a value event makes a whitespace entry newly arguable",
+        "a health-tier change flips readiness"
+      ],
+      "base": {
+        "criticality": 0.76,
+        "business_value": 0.84,
+        "user_value": 0.7,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.66,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.3,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [0.2, 0.52],
+        "update_signal": "expansion outcomes show which whitespace classes convert and which asks were premature"
+      }
+    },
+    {
+      "id": "EXPANSION_MOTION",
+      "topic": "in_account_expansion_ask_execution",
+      "definition": "Execute expansion asks - more vehicles, asset trackers on trailers and equipment, dashcams, maintenance or other modules - as evidence-triggered motions: the trigger is an event in the account's own data such as a recovered asset, a new-vehicle purchase, or an incident a dashcam would have settled; the proposal cites that recorded event and prices by the operator's own tier mechanism; added units co-term onto the master renewal date; and installation hands off to the operator's install practice rather than being improvised. Two gates precede every ask: the health gate - no expansion into an account with dead units or a watch tier - and the lawful-use gate - authorization scope covers the new units, and disclosure is refreshed for new device classes, driver-facing cameras above all, where consent and recording rules are jurisdiction-specific and must be verified before proposing, not after installing.",
+      "group": "growth",
+      "dependencies": ["ACCOUNT_WHITESPACE_MAP", "ACCOUNT_HEALTH_REVIEW"],
+      "competency_question_refs": ["CQ_10", "CQ_14"],
+      "scope_boundary": {
+        "included": [
+          "evidence-triggered proposal construction",
+          "co-terming of added units",
+          "the health gate and the lawful-use gate",
+          "verification-first rule for recording-capable device classes"
+        ],
+        "excluded": [
+          "the physical install and configuration",
+          "new-logo selling",
+          "fear-framed pitches - an incident is cited as the customer's own recorded event, never dramatized"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Expansion sold on the account's own recorded event closes without discounting because the evidence belongs to the customer",
+          "example": "covering the remaining trailers after the account's own recovered-trailer event, priced straight from the existing tier map",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Waiting for perfect evidence can idle obvious whitespace for quarters",
+          "example": "an account that bought six vans in January not hearing an ask until a triggering event in June",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "expanding into an account with unresolved dead units and converting goodwill into a bigger grievance",
+        "activating driver-facing cameras before consent rules were verified and disclosure refreshed"
+      ],
+      "acceptance_tests": [
+        "every ask records its triggering account event, both gate checks - health and lawful-use with disclosure - the co-terming treatment, and tier-mechanism pricing"
+      ],
+      "revisit_triggers": [
+        "expansion win rate or post-expansion account health shifts",
+        "a new device class changes the gate checklist",
+        "a jurisdiction verification changes what may be proposed"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.9,
+        "user_value": 0.78,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.55,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.2,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [0.24, 0.56],
+        "update_signal": "expansion outcomes and gate incidents show which triggers and checks actually protect the account"
+      }
+    },
+    {
+      "id": "BOOK_MRR_GATE",
+      "topic": "book_level_mrr_movement_gate",
+      "definition": "Close the loop at book level on a fixed cadence: an MRR movement ledger sorting the period's change into new units, expansion, contraction, and churn - each movement attributed to named units, accounts, and causes rather than reported as a net blur; the support-cost tiers overlaid so growth quality is visible, not just growth; and a decision pass assigning the next period's attention - which watch accounts get owners, which leaks get closed, which cohorts get root-caused, which below-water accounts get restructured or released. The gate's definition of done is attributability: a period closes only when every movement has a cause and every red flag has an owner, and its honesty rule is that book metrics are the operator's own arithmetic, never dressed up against invented industry baselines.",
+      "group": "governance",
+      "dependencies": ["RENEWAL_PLAYBOOK", "EXPANSION_MOTION", "SEAT_COST_RECONCILIATION"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": [
+          "movement ledger with unit, account, and cause attribution",
+          "growth-quality overlay from support tiers",
+          "decision pass assigning owners and actions",
+          "period-close criteria"
+        ],
+        "excluded": [
+          "acquisition strategy behind the new-unit line",
+          "presenting book performance to lenders or investors as advice",
+          "benchmark comparisons asserted as fact"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Cause-attributed movement turns the book from a number that happened into a set of levers with owners",
+          "example": "a flat quarter decomposing into strong expansion masked by one fleet downsizing, which changes the response entirely",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Full attribution discipline at every close is heavy for a solo operator and tempting to skip in good quarters",
+          "example": "a growth quarter closed unattributed, hiding the churn cohort that surfaces the following period",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "managing to net MRR and missing that churn is being papered over by expansion",
+        "closing periods with unexplained movements that compound into an unauditable book"
+      ],
+      "acceptance_tests": [
+        "each period close shows every movement attributed to unit, account, and cause, the growth-quality overlay present, and each flag assigned an owner with a dated action"
+      ],
+      "revisit_triggers": [
+        "attribution reveals a recurring upstream cause - install cohort, turnover intake, alert noise",
+        "the book's shape changes enough to re-weight the decision pass"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.9,
+        "user_value": 0.7,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.86,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [0.18, 0.5],
+        "update_signal": "period-close attributions repeatedly trace to causes the gate's decision pass under-weights"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "LAWFUL_USE_STANDING_GUARD",
+      "to": "REGULATORY_DRIFT_WATCH",
+      "edge_type": "dependency",
+      "why_related": "the drift watch extends the standing lawful-use guard into jurisdiction-specific obligation classes that must be verified rather than asserted",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "UNIT_MRR_LEDGER",
+      "to": "DEVICE_HEALTH_TELEMETRY",
+      "edge_type": "dependency",
+      "why_related": "health monitoring maps each device exception back to the ledger line whose revenue it endangers",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "DEVICE_HEALTH_TELEMETRY",
+      "to": "DATA_QUALITY_AUDIT",
+      "edge_type": "dependency",
+      "why_related": "data quality is only auditable on units that are alive; the audit starts from the health exception list",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "UNIT_MRR_LEDGER",
+      "to": "USAGE_ENGAGEMENT_TELEMETRY",
+      "edge_type": "dependency",
+      "why_related": "engagement is scored per account against the units and entitlements the ledger says the account pays for",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "DEVICE_HEALTH_TELEMETRY",
+      "to": "FIELD_SERVICE_TRIAGE",
+      "edge_type": "dependency",
+      "why_related": "the triage ladder consumes the health exception list as its work queue",
+      "relation_strength": 0.85
+    },
+    {
+      "from": "FIELD_SERVICE_TRIAGE",
+      "to": "RMA_SWAP_AND_SUNSET_PLANNING",
+      "edge_type": "dependency",
+      "why_related": "hardware planning sizes spare pools and detects cohorts from the failed units triage captures back",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "FIELD_SERVICE_TRIAGE",
+      "to": "SUPPORT_LOAD_ECONOMICS",
+      "edge_type": "dependency",
+      "why_related": "support economics prices each triage path and consumes the ticket stream triage generates",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "USAGE_ENGAGEMENT_TELEMETRY",
+      "to": "ALERT_RETUNE_CYCLE",
+      "edge_type": "dependency",
+      "why_related": "declining alert response and logins are what trigger and target a retune session",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "UNIT_MRR_LEDGER",
+      "to": "BILLING_HYGIENE_DUNNING",
+      "edge_type": "dependency",
+      "why_related": "the invoice is reconciled line-for-line against active ledger units before it is sent",
+      "relation_strength": 0.85
+    },
+    {
+      "from": "UNIT_MRR_LEDGER",
+      "to": "PLAN_TIER_MODULE_MAP",
+      "edge_type": "dependency",
+      "why_related": "tier and module tags attach to the ledger's unit lines and refine their revenue and cost mechanisms",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "DATA_QUALITY_AUDIT",
+      "to": "FLEET_TURNOVER_SYNC",
+      "edge_type": "dependency",
+      "why_related": "assignment and label anomalies found by the audit are how unreported turnover is detected",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "LAWFUL_USE_STANDING_GUARD",
+      "to": "FLEET_TURNOVER_SYNC",
+      "edge_type": "dependency",
+      "why_related": "every transfer procedure includes the guard's authorization and disclosure check before a unit moves",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "PLAN_TIER_MODULE_MAP",
+      "to": "SEAT_COST_RECONCILIATION",
+      "edge_type": "dependency",
+      "why_related": "reconciliation compares wholesale seat charges against the tier map's expected cost per unit",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "FLEET_TURNOVER_SYNC",
+      "to": "SEAT_COST_RECONCILIATION",
+      "edge_type": "dependency",
+      "why_related": "completed transfers and deactivations are the ground truth the three-way count is checked against",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "UNIT_MRR_LEDGER",
+      "to": "CONTRACT_TERM_REGISTER",
+      "edge_type": "dependency",
+      "why_related": "each ledger line carries its contract linkage, and the register aggregates those linkages into terms and windows",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "DEVICE_HEALTH_TELEMETRY",
+      "to": "ACCOUNT_HEALTH_REVIEW",
+      "edge_type": "dependency",
+      "why_related": "the health brief opens with device-health status because dead units invalidate every other claim in it",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "USAGE_ENGAGEMENT_TELEMETRY",
+      "to": "ACCOUNT_HEALTH_REVIEW",
+      "edge_type": "dependency",
+      "why_related": "the engagement trend is the brief's second pillar, separating zombie accounts from healthy quiet ones",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "CONTRACT_TERM_REGISTER",
+      "to": "RENEWAL_PLAYBOOK",
+      "edge_type": "dependency",
+      "why_related": "the renewal motion is scheduled backward from the register's notice windows",
+      "relation_strength": 0.85
+    },
+    {
+      "from": "ACCOUNT_HEALTH_REVIEW",
+      "to": "RENEWAL_PLAYBOOK",
+      "edge_type": "dependency",
+      "why_related": "the health brief supplies the value recap and the fix-before-ask problem list the renewal runs on",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "USAGE_ENGAGEMENT_TELEMETRY",
+      "to": "CHURN_SIGNAL_WATCH",
+      "edge_type": "dependency",
+      "why_related": "engagement decay is the heaviest-weighted signal in the churn scorecard",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "BILLING_HYGIENE_DUNNING",
+      "to": "CHURN_SIGNAL_WATCH",
+      "edge_type": "dependency",
+      "why_related": "payment-behavior changes surfaced by the dunning ladder feed the churn scorecard as a signal",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "CHURN_SIGNAL_WATCH",
+      "to": "SAVE_AND_WINBACK_RULES",
+      "edge_type": "dependency",
+      "why_related": "save decisions consume the watch tier and signal history as their diagnosis input",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "PLAN_TIER_MODULE_MAP",
+      "to": "ACCOUNT_WHITESPACE_MAP",
+      "edge_type": "dependency",
+      "why_related": "module gaps and unused entitlements in the tier map are half the whitespace inventory",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "FLEET_TURNOVER_SYNC",
+      "to": "ACCOUNT_WHITESPACE_MAP",
+      "edge_type": "dependency",
+      "why_related": "turnover events reveal untracked additions to the fleet that become whitespace entries",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "ACCOUNT_WHITESPACE_MAP",
+      "to": "EXPANSION_MOTION",
+      "edge_type": "dependency",
+      "why_related": "every expansion ask draws its target and readiness state from the whitespace map",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "ACCOUNT_HEALTH_REVIEW",
+      "to": "EXPANSION_MOTION",
+      "edge_type": "dependency",
+      "why_related": "the health gate that precedes every ask reads the brief's current tier",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "RENEWAL_PLAYBOOK",
+      "to": "BOOK_MRR_GATE",
+      "edge_type": "dependency",
+      "why_related": "renewal outcomes are the retention movements the book ledger attributes and closes",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "EXPANSION_MOTION",
+      "to": "BOOK_MRR_GATE",
+      "edge_type": "dependency",
+      "why_related": "expansion outcomes are the growth movements the book ledger attributes and quality-checks",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "SEAT_COST_RECONCILIATION",
+      "to": "BOOK_MRR_GATE",
+      "edge_type": "dependency",
+      "why_related": "the reconciled cost base is what makes the gate's margin and growth-quality overlay honest",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "EXPANSION_MOTION",
+      "to": "LAWFUL_USE_STANDING_GUARD",
+      "edge_type": "conflict",
+      "why_related": "expansion revenue pressure pushes toward activating units and device classes faster than authorization scope and disclosure can be verified",
+      "resolution_rule": "the guard wins absolutely: no unit or device class activates until authorization scope covers it and disclosure is refreshed, and a request to track private individuals is refused and documented regardless of the deal size",
+      "relation_strength": 0.85,
+      "conflict_probability": 0.4,
+      "expected_rework_cost": 0.6
+    },
+    {
+      "from": "SAVE_AND_WINBACK_RULES",
+      "to": "SUPPORT_LOAD_ECONOMICS",
+      "edge_type": "conflict",
+      "why_related": "deep concessions that save an account can pin it permanently below the support-cost floor",
+      "resolution_rule": "the support-cost tier bounds every concession: an account that cannot be saved above the floor is restructured to fewer units or a lighter tier, or released cleanly - never retained at a loss to avoid admitting the loss",
+      "relation_strength": 0.78,
+      "conflict_probability": 0.4,
+      "expected_rework_cost": 0.5
+    },
+    {
+      "from": "BILLING_HYGIENE_DUNNING",
+      "to": "SAVE_AND_WINBACK_RULES",
+      "edge_type": "conflict",
+      "why_related": "the dunning ladder's scheduled escalation can suspend exactly the account the save motion is trying to keep",
+      "resolution_rule": "the ladder proceeds on its published schedule, but a restructure agreed in a save may reschedule arrears explicitly and in writing - arrears are never waived silently, and suspension of recovery-relevant function on a watch-tier account requires an explicit operator decision first",
+      "relation_strength": 0.74,
+      "conflict_probability": 0.35,
+      "expected_rework_cost": 0.45
+    },
+    {
+      "from": "LAWFUL_USE_STANDING_GUARD",
+      "to": "SAVE_AND_WINBACK_RULES",
+      "edge_type": "constraint",
+      "why_related": "retention conversations run under the same ethics as sales: no fear-selling with invented theft threats, and refusal classes stay refused even when the account threatens to leave",
+      "relation_strength": 0.8,
+      "risk_of_conflict": "a desperate save pitch drifts into dramatized crime risk or quietly accommodates an unlawful tracking request to keep the account"
+    },
+    {
+      "from": "REGULATORY_DRIFT_WATCH",
+      "to": "EXPANSION_MOTION",
+      "edge_type": "constraint",
+      "why_related": "recording-capable device classes and regulated modules may only be proposed after current rules in the customer's jurisdiction are verified",
+      "relation_strength": 0.8,
+      "risk_of_conflict": "a dashcam or ELD-module ask goes out with an asserted compliance claim that verification would have contradicted"
+    },
+    {
+      "from": "DATA_QUALITY_AUDIT",
+      "to": "RENEWAL_PLAYBOOK",
+      "edge_type": "constraint",
+      "why_related": "the renewal recap may cite only data the audit certified, because one mislabeled vehicle in the recap discredits the whole meeting",
+      "relation_strength": 0.78,
+      "risk_of_conflict": "an uncertified idle-time trend collapses in front of the customer and turns a continuation decision into a price negotiation"
+    },
+    {
+      "from": "ALERT_RETUNE_CYCLE",
+      "to": "SUPPORT_LOAD_ECONOMICS",
+      "edge_type": "causal",
+      "why_related": "noisy alerts are a leading generator of tickets, so retuning measurably lowers ticket volume per hundred units",
+      "relation_strength": 0.76,
+      "causal_confidence": 0.75
+    },
+    {
+      "from": "DEVICE_HEALTH_TELEMETRY",
+      "to": "CHURN_SIGNAL_WATCH",
+      "edge_type": "causal",
+      "why_related": "unhandled silent units erode the perceived value of the subscription, and that erosion surfaces months later as churn signals",
+      "relation_strength": 0.76,
+      "causal_confidence": 0.7
+    },
+    {
+      "from": "SUPPORT_LOAD_ECONOMICS",
+      "to": "ALERT_RETUNE_CYCLE",
+      "edge_type": "feedback",
+      "why_related": "cause-tagged ticket analysis identifies which alerts generate the most noise, setting the agenda for the next retune session",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "BOOK_MRR_GATE",
+      "to": "CHURN_SIGNAL_WATCH",
+      "edge_type": "feedback",
+      "why_related": "period-close churn attributions recalibrate the signal weights toward what actually preceded losses in this book",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "RMA_SWAP_AND_SUNSET_PLANNING",
+      "to": "RENEWAL_PLAYBOOK",
+      "edge_type": "sequence",
+      "why_related": "sunset swap campaigns are scheduled so the hardware-refresh conversation lands inside the renewal window, letting one meeting settle both",
+      "relation_strength": 0.72
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "retention_revenue_vs_lawful_use",
+      "description": "MRR pressure - keeping an account, closing an expansion - pulls toward accommodating tracking requests that authorization scope, disclosure, or the covert-tracking bright line prohibit.",
+      "poles": ["keep and grow the recurring revenue", "hold the lawful-use and disclosure boundary"],
+      "resolution_hint": "the boundary is absolute: refuse and document out-of-scope requests, and treat disclosure refresh as a precondition of every activation, not a follow-up task",
+      "affected_nodes": ["LAWFUL_USE_STANDING_GUARD", "EXPANSION_MOTION", "SAVE_AND_WINBACK_RULES"]
+    },
+    {
+      "name": "save_depth_vs_support_economics",
+      "description": "Concessions deep enough to save a threatened account can pin it below the support-cost floor, converting saved MRR into a permanent loss.",
+      "poles": ["save every account at whatever concession it takes", "hold the per-account economics floor"],
+      "resolution_hint": "bound every concession by the account's support-cost tier; below the floor the options are restructure or clean release, not discount",
+      "affected_nodes": ["SAVE_AND_WINBACK_RULES", "SUPPORT_LOAD_ECONOMICS", "BOOK_MRR_GATE"]
+    },
+    {
+      "name": "billing_firmness_vs_relationship",
+      "description": "A published dunning ladder must escalate predictably, yet mechanical escalation on a good account in a seasonal trough converts a collectible into a churn.",
+      "poles": ["enforce the ladder identically for everyone", "flex the ladder for account context"],
+      "resolution_hint": "keep rung timing published and non-negotiable, but route watch-tier and long-tenured accounts through a human contact rung before any suspension of recovery-relevant function",
+      "affected_nodes": ["BILLING_HYGIENE_DUNNING", "CHURN_SIGNAL_WATCH", "SAVE_AND_WINBACK_RULES"]
+    },
+    {
+      "name": "alert_coverage_vs_alert_fatigue",
+      "description": "Every additional alert promises coverage of one more risk, while the accumulated noise trains users to ignore all alerts, including the theft alert that mattered.",
+      "poles": ["alert on everything that could matter", "alert only on what a human will act on"],
+      "resolution_hint": "review firing counts on cadence, kill or repair the top noise sources with the customer present, and protect a small set of always-actionable alerts",
+      "affected_nodes": ["ALERT_RETUNE_CYCLE", "USAGE_ENGAGEMENT_TELEMETRY", "SUPPORT_LOAD_ECONOMICS"]
+    },
+    {
+      "name": "truck_roll_vs_remote_resolution",
+      "description": "A technician visit fixes almost anything but can consume months of one unit's subscription margin, while remote paths are cheap but stall on genuine hardware faults.",
+      "poles": ["dispatch a technician for certainty", "exhaust remote and mail-swap paths first"],
+      "resolution_hint": "climb the ladder in order, batch visits by yard, and let the account's service tier - not the loudest caller - decide when to skip rungs",
+      "affected_nodes": ["FIELD_SERVICE_TRIAGE", "SUPPORT_LOAD_ECONOMICS", "RMA_SWAP_AND_SUNSET_PLANNING"]
+    },
+    {
+      "name": "monitoring_effort_vs_silent_decay",
+      "description": "Proactive health and quality monitoring consumes unbilled hours every week, while skipping it lets dead units and stale data accumulate into renewal-time grievances.",
+      "poles": ["minimize unbilled monitoring overhead", "invest monitoring effort ahead of complaints"],
+      "resolution_hint": "automate the exception lists so human time goes only to true exceptions, and treat every customer-discovered dead unit as a monitoring failure to root-cause",
+      "affected_nodes": ["DEVICE_HEALTH_TELEMETRY", "DATA_QUALITY_AUDIT", "ACCOUNT_HEALTH_REVIEW"]
+    },
+    {
+      "name": "contract_lock_vs_earned_renewal",
+      "description": "Long auto-renewing terms protect MRR and subsidy recovery, yet renewals extracted through a notice-window technicality breed resentment that churns hard at the first opening.",
+      "poles": ["rely on term lock-in and auto-renewal", "rely on demonstrated value at every renewal"],
+      "resolution_hint": "use terms to protect hardware subsidy recovery, but run every renewal as if the lock did not exist - fix-before-ask and an evidence recap either way",
+      "affected_nodes": ["CONTRACT_TERM_REGISTER", "RENEWAL_PLAYBOOK"]
+    },
+    {
+      "name": "expansion_push_vs_account_readiness",
+      "description": "Visible whitespace begs to be sold, but an ask landing on an account with dead units, a watch tier, or stale disclosure converts growth pressure into churn pressure.",
+      "poles": ["harvest whitespace as soon as it is visible", "expand only into healthy, disclosure-current accounts"],
+      "resolution_hint": "freeze whitespace readiness whenever the health or lawful-use gate fails, and let recorded account events - not quota pressure - trigger the ask",
+      "affected_nodes": ["EXPANSION_MOTION", "ACCOUNT_WHITESPACE_MAP", "ACCOUNT_HEALTH_REVIEW"]
+    },
+    {
+      "name": "hardware_refresh_timing_vs_cash",
+      "description": "Swapping sunset-doomed or aging units early costs hardware cash now, while waiting risks a mass failure event that lands as an emergency at the worst accounts simultaneously.",
+      "poles": ["defer swaps to preserve cash", "amortize swaps early across renewal cycles"],
+      "resolution_hint": "inventory sunset exposure the day a carrier notice lands and spread swap campaigns across the renewal calendar, holding loaners for early failures",
+      "affected_nodes": ["RMA_SWAP_AND_SUNSET_PLANNING", "CONTRACT_TERM_REGISTER", "RENEWAL_PLAYBOOK"]
+    },
+    {
+      "name": "reconciliation_rigor_vs_admin_load",
+      "description": "Monthly three-way seat reconciliation and unit-level bookkeeping stop margin leaks, but the clerical load competes with installs and support at small-operator scale.",
+      "poles": ["reconcile everything monthly without exception", "accept periodic drift to protect field time"],
+      "resolution_hint": "keep the monthly cycle sacred but scope it to deltas since last close; a skipped month is scheduled debt, never silently forgiven",
+      "affected_nodes": ["SEAT_COST_RECONCILIATION", "UNIT_MRR_LEDGER", "FLEET_TURNOVER_SYNC"]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "A customer asks to add a tracker to an employee's personal vehicle, or to a family member's car, framed as a small favor inside a good account",
+      "trigger": "an add-unit request whose target vehicle is outside the employer's authorization scope",
+      "affected_nodes": ["LAWFUL_USE_STANDING_GUARD", "EXPANSION_MOTION"],
+      "mitigation": "refuse, explain the owner-or-employer-authorized boundary and the disclosure requirement, document the refusal with its trigger, and offer the lawful alternative of tracking only company-owned assets",
+      "severity": "high"
+    },
+    {
+      "description": "A cellular carrier announces a network-generation sunset that will kill a large slice of the installed base on a published date",
+      "trigger": "a carrier or vendor lifecycle notice naming modem classes present in the book",
+      "affected_nodes": ["RMA_SWAP_AND_SUNSET_PLANNING", "CONTRACT_TERM_REGISTER", "RENEWAL_PLAYBOOK"],
+      "mitigation": "inventory affected units immediately, spread swap campaigns across the renewal calendar with loaners for early failures, and fold the hardware refresh into each renewal conversation as a mechanism-explained change",
+      "severity": "high"
+    },
+    {
+      "description": "A fleet account sells a third of its vehicles in a downturn and asks to shed the corresponding subscriptions mid-term",
+      "trigger": "a fleet downsizing event colliding with contracted unit counts",
+      "affected_nodes": ["FLEET_TURNOVER_SYNC", "SAVE_AND_WINBACK_RULES", "CONTRACT_TERM_REGISTER", "CHURN_SIGNAL_WATCH"],
+      "mitigation": "treat it as a restructure case, not a breach fight: deactivate seats promptly so leaks do not compound, restructure the term to the surviving fleet with any subsidy balance handled explicitly, and record the account as a shrink-to-fit watch case with winback potential",
+      "severity": "high"
+    },
+    {
+      "description": "Devices report perfectly for months while no human at the account logs in or opens a report",
+      "trigger": "engagement telemetry showing zero consumption against green device health",
+      "affected_nodes": ["USAGE_ENGAGEMENT_TELEMETRY", "CHURN_SIGNAL_WATCH", "ACCOUNT_HEALTH_REVIEW"],
+      "mitigation": "classify as a zombie account, schedule a re-onboarding touch that reconnects the platform to a live workflow need, and do not let the account reach its renewal window in that state",
+      "severity": "high"
+    },
+    {
+      "description": "The fleet manager who championed the system and ran the platform leaves the customer",
+      "trigger": "champion departure detected via bounced contact, changed signatures, or the customer's own announcement",
+      "affected_nodes": ["CHURN_SIGNAL_WATCH", "ACCOUNT_HEALTH_REVIEW", "USAGE_ENGAGEMENT_TELEMETRY"],
+      "mitigation": "flag the account the week it happens, offer successor training as a standard service touch, and rebuild a second engagement contact so the platform is never one person deep again",
+      "severity": "medium"
+    },
+    {
+      "description": "An OBD unit shows a repeating pattern of power-loss events that looks like a driver unplugging it",
+      "trigger": "power-event telemetry with gaps correlated to one vehicle's shifts",
+      "affected_nodes": ["DEVICE_HEALTH_TELEMETRY", "LAWFUL_USE_STANDING_GUARD", "FIELD_SERVICE_TRIAGE"],
+      "mitigation": "report the data gap factually to the employer as a device-continuity issue, verify disclosure was actually made to that driver before anything else, and leave workforce discipline entirely to the employer",
+      "severity": "medium"
+    },
+    {
+      "description": "The platform vendor raises wholesale seat pricing effective mid-term while customer retail prices are locked to contract",
+      "trigger": "a wholesale price-change notice landing inside active customer terms",
+      "affected_nodes": ["SEAT_COST_RECONCILIATION", "CONTRACT_TERM_REGISTER", "RENEWAL_PLAYBOOK"],
+      "mitigation": "quantify the margin compression from the operator's own numbers, honor locked terms to their end, and reprice at each renewal with the wholesale movement explained as a mechanism rather than smuggled in",
+      "severity": "high"
+    },
+    {
+      "description": "A customer disputes the invoice claiming they are being billed for more units than they operate",
+      "trigger": "an invoice dispute naming specific vehicles or counts",
+      "affected_nodes": ["BILLING_HYGIENE_DUNNING", "SEAT_COST_RECONCILIATION", "FLEET_TURNOVER_SYNC"],
+      "mitigation": "freeze dunning escalation on the disputed amount, reconcile the three counts for that account line by line, credit genuine ghost units without argument, and close the turnover-intake gap that created them",
+      "severity": "medium"
+    },
+    {
+      "description": "Battery asset trackers ping on schedule but report stale or drifting positions from inside metal yards and equipment stacks",
+      "trigger": "plausibility checks showing motionless assets with jittering coordinates or last-known-fix flags",
+      "affected_nodes": ["DATA_QUALITY_AUDIT", "DEVICE_HEALTH_TELEMETRY"],
+      "mitigation": "distinguish fix quality from device health in the audit, mark affected assets with a location-confidence note before any report cites them, and route persistent cases toward re-siting or antenna guidance from the install practice",
+      "severity": "medium"
+    },
+    {
+      "description": "A customer requests driver-facing dashcams with audio, and the consent and recording rules for in-cab capture in their jurisdiction are unclear",
+      "trigger": "an expansion ask involving a recording-capable device class",
+      "affected_nodes": ["EXPANSION_MOTION", "REGULATORY_DRIFT_WATCH", "LAWFUL_USE_STANDING_GUARD"],
+      "mitigation": "pause the proposal until current in-cab recording and consent rules are verified in the customer's jurisdiction, require refreshed driver disclosure covering cameras and audio explicitly, and configure only what the verification supports",
+      "severity": "high"
+    },
+    {
+      "description": "An account deep in arrears asks for continued location access during dunning because a vehicle was just stolen",
+      "trigger": "a theft-recovery request colliding with a suspension rung of the dunning ladder",
+      "affected_nodes": ["BILLING_HYGIENE_DUNNING", "SAVE_AND_WINBACK_RULES"],
+      "mitigation": "keep recovery-relevant location function available during the incident regardless of ladder position, document the accommodation, and resume the published ladder once the incident closes - the arrears remain owed",
+      "severity": "medium"
+    },
+    {
+      "description": "A customer's operations cross into a fleet class that may carry ELD or hours-of-service obligations mid-contract, and they ask the reseller to make them compliant",
+      "trigger": "an operational change - interstate lanes, vehicle weight class, for-hire status - flagged during a review or expansion conversation",
+      "affected_nodes": ["REGULATORY_DRIFT_WATCH", "PLAN_TIER_MODULE_MAP", "EXPANSION_MOTION"],
+      "mitigation": "flag the obligation class, state plainly that applicability must be verified with current rules in their jurisdiction and their counsel or regulator guidance, and scope any module sale to what the verification concludes rather than promising compliance",
+      "severity": "high"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "Stand up the per-unit MRR ledger",
+      "node_ref": "UNIT_MRR_LEDGER",
+      "description": "Enumerate every active device as one line with plan tier, retail line, wholesale seat cost, activation date, and contract linkage",
+      "artifact": "unit ledger",
+      "gate": "every active platform device maps to exactly one ledger line with all revenue and cost fields populated"
+    },
+    {
+      "action": "Write the lawful-use standing guard into account procedures",
+      "node_ref": "LAWFUL_USE_STANDING_GUARD",
+      "description": "Record each account's authorization scope and disclosure status, define the refusal classes, and wire the guard's checks into turnover, expansion, and save procedures",
+      "artifact": "authorization and disclosure register with refusal protocol",
+      "gate": "every account carries current scope and disclosure entries, and the refusal classes with documentation steps are written"
+    },
+    {
+      "action": "Flag regulated classes across the book",
+      "node_ref": "REGULATORY_DRIFT_WATCH",
+      "description": "Mark each account that may sit in an ELD, hours-of-service, or telematics-privacy obligation class, with the reason and the verification note",
+      "artifact": "per-account regulated-class flag list",
+      "gate": "every flag names its obligation class and reason, and no artifact asserts a jurisdiction-specific rule as fact"
+    },
+    {
+      "action": "Configure device-health monitoring across the base",
+      "node_ref": "DEVICE_HEALTH_TELEMETRY",
+      "description": "Build the exception list ranked by last-report age with silence windows per device class and failure signatures noted",
+      "artifact": "health exception dashboard",
+      "gate": "silent units surface within their class's silence window and each carries an owner and next action"
+    },
+    {
+      "action": "Run the data-quality audit cycle",
+      "node_ref": "DATA_QUALITY_AUDIT",
+      "description": "Check assignment correctness, odometer plausibility, geofence currency, and duplicates per account, and certify which data may be cited",
+      "artifact": "data-quality certification report",
+      "gate": "every account passes the checklist on cadence or carries an open exception with an owner"
+    },
+    {
+      "action": "Instrument platform usage and engagement",
+      "node_ref": "USAGE_ENGAGEMENT_TELEMETRY",
+      "description": "Score each account on logins, report consumption, and alert response, counting passive channels, and mark single-point-of-engagement risks",
+      "artifact": "engagement scorecard",
+      "gate": "every account has a current engagement score with passive consumption counted before any account is marked disengaged"
+    },
+    {
+      "action": "Establish the remote-first triage ladder and hardware flows",
+      "node_ref": "FIELD_SERVICE_TRIAGE",
+      "description": "Define the ladder rungs with exit criteria, mail-swap logistics with return capture, truck-roll batching, and the per-path cost mechanism",
+      "artifact": "triage ladder and swap-flow procedure",
+      "gate": "every dead-unit path is priced from the operator's own labor numbers and the ladder order with skip criteria is written"
+    },
+    {
+      "action": "Build the contract register and renewal calendar",
+      "node_ref": "CONTRACT_TERM_REGISTER",
+      "description": "Register term dates, notice windows, auto-renew clauses, co-terming policy, and subsidy-recovery balances, then derive the calendar backward from notice windows",
+      "artifact": "contract register with renewal calendar",
+      "gate": "no renewal date sits inside its notice window without an owner and a planned motion"
+    },
+    {
+      "action": "Close the monthly seat reconciliation",
+      "node_ref": "SEAT_COST_RECONCILIATION",
+      "description": "Reconcile platform-billed seats, customer-billed units, and physically alive devices, attributing every delta to a cause",
+      "artifact": "monthly three-way reconciliation report",
+      "gate": "zero unexplained deltas remain and every explained delta carries a cause tag and close-out action"
+    },
+    {
+      "action": "Run the account health review cadence",
+      "node_ref": "ACCOUNT_HEALTH_REVIEW",
+      "description": "Assemble device health, engagement, ticket profile, and value events into a tiered brief with one next action per account",
+      "artifact": "account health brief",
+      "gate": "each brief cites only certified data and carries a tier with evidence and a named next action"
+    },
+    {
+      "action": "Execute renewals as prepared motions",
+      "node_ref": "RENEWAL_PLAYBOOK",
+      "description": "Prepare before the notice window: fix or own open problems, build the evidence recap, explain any repricing by mechanism, and offer honest term options",
+      "artifact": "renewal brief with value recap",
+      "gate": "the recap cites only recorded account events, open problems carry dated ownership, and no invented savings figure appears"
+    },
+    {
+      "action": "Close the book-level MRR gate each period",
+      "node_ref": "BOOK_MRR_GATE",
+      "description": "Attribute every movement to unit, account, and cause, overlay support-cost tiers for growth quality, and assign owners to next-period fixes",
+      "artifact": "MRR movement ledger with decision pass",
+      "gate": "the period closes only when every movement has a cause and every red flag has an owner with a dated action"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "The lawful-use and disclosure guard dominates every retention and expansion motion",
+      "rationale": "one covert-tracking incident destroys more trust and exposure than any single account is worth",
+      "trigger": "any add-unit, transfer, save, or device-class request touching authorization scope or disclosure",
+      "action": "block the activation until scope and disclosure are verified current, and refuse and document requests in the covert-tracking classes"
+    },
+    {
+      "rule": "Jurisdiction verification dominates any compliance-touching claim or module sale",
+      "rationale": "ELD, hours-of-service, and telematics-privacy rules are jurisdiction- and fleet-type-specific and drift under the book",
+      "trigger": "a renewal, expansion, or support answer that would lean on a compliance statement",
+      "action": "name the obligation class, flag verification of current rules in the customer's jurisdiction, and scope commitments to what verification concludes"
+    },
+    {
+      "rule": "Data-quality certification dominates every value claim made to a customer",
+      "rationale": "one mislabeled vehicle or stale geofence cited in a recap discredits every other number in the meeting",
+      "trigger": "building any recap, health brief, or expansion proposal that cites account data",
+      "action": "cite only audit-certified data, and fix or exclude uncertified items before the artifact leaves the shop"
+    },
+    {
+      "rule": "The support-cost floor dominates save depth",
+      "rationale": "a saved account held below its support cost converts retention into a compounding loss the book gate must later unwind",
+      "trigger": "any concession under consideration in a save or renewal negotiation",
+      "action": "bound the concession by the account's support-cost tier; below the floor, restructure or release cleanly"
+    },
+    {
+      "rule": "Device health dominates growth attention inside an account",
+      "rationale": "expanding into an account with dead units converts goodwill into a larger grievance and poisons the reference",
+      "trigger": "an expansion ask queued for an account with open health exceptions or a watch tier",
+      "action": "freeze the ask, fix the health exceptions first, and let the fix itself open the growth conversation"
+    },
+    {
+      "rule": "Mechanism honesty dominates persuasion in every commercial artifact",
+      "rationale": "invented per-unit figures and dressed-up benchmarks are the exact failure the content rules prohibit and customers eventually audit",
+      "trigger": "any price, margin, savings, or comparison statement being drafted",
+      "action": "state the mechanism and compute from the operator's or the customer's own recorded numbers, or state plainly that the number is unknown"
+    },
+    {
+      "rule": "Notice windows dominate scheduling across the book",
+      "rationale": "a missed window either locks an unwanted auto-renewal or strands subsidized hardware in a lapsed term",
+      "trigger": "any period's work planning while renewal dates approach",
+      "action": "schedule renewal preparation backward from each notice window ahead of discretionary work"
+    },
+    {
+      "rule": "Reconciled counts dominate dunning escalation",
+      "rationale": "escalating collection on an invoice the ledger cannot defend converts a billing defect into lost trust and a churn",
+      "trigger": "an overdue account whose invoice is disputed on unit counts",
+      "action": "freeze escalation on the disputed amount, reconcile the three counts for that account, credit genuine errors, then resume the published ladder"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Stand up the unit ledger before configuring monitoring, billing, or contracts on top of it",
+      "prevents": "re-keying every device, invoice line, and term linkage after the fact because movements could not be attributed to units"
+    },
+    {
+      "rule": "Record authorization scope and disclosure status per account before processing any turnover or expansion event",
+      "prevents": "unwinding unlawfully added units and re-running disclosure under pressure after activation"
+    },
+    {
+      "rule": "Certify data quality before building any renewal recap or expansion proposal",
+      "prevents": "rebuilding a collapsed recap after the customer spots a sold truck or stale geofence in the evidence"
+    },
+    {
+      "rule": "Reconcile the three counts before invoices are sent, not after disputes arrive",
+      "prevents": "credit memos, ghost-unit refunds, and the per-account audits a public dispute forces"
+    },
+    {
+      "rule": "Build the renewal calendar from notice windows before the first renewal approaches",
+      "prevents": "emergency renewal scrambles and auto-renew lock-ins that must be renegotiated under resentment"
+    },
+    {
+      "rule": "Retune alerts before adding new users, vehicles, or modules to an account",
+      "prevents": "training a larger audience to ignore the platform and then re-running adoption from a deeper hole"
+    },
+    {
+      "rule": "Inventory sunset and end-of-life exposure the day a lifecycle notice lands, before failures start",
+      "prevents": "an emergency truck-roll wave replacing units account by account at full cost during outages"
+    },
+    {
+      "rule": "Diagnose the churn driver before designing any save offer",
+      "prevents": "blanket discounts that fix nothing, re-churn after the concession, and a book trained to threaten"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "the silent-unit rate rises above the operator's watch threshold",
+      "action": "run a health triage sweep, root-cause by device class and install cohort, and route the finding to hardware planning or back to the install practice",
+      "nodes": ["DEVICE_HEALTH_TELEMETRY", "FIELD_SERVICE_TRIAGE", "RMA_SWAP_AND_SUNSET_PLANNING"],
+      "priority": 1
+    },
+    {
+      "trigger": "usage decay appears on an account whose devices are healthy",
+      "action": "schedule an account health review, retune the noisiest alerts, and reconnect the platform to a live workflow need before the renewal window",
+      "nodes": ["USAGE_ENGAGEMENT_TELEMETRY", "ALERT_RETUNE_CYCLE", "ACCOUNT_HEALTH_REVIEW"],
+      "priority": 1
+    },
+    {
+      "trigger": "the platform changes wholesale pricing, seat semantics, or tier packaging",
+      "action": "re-run the per-unit margin mechanism across the ledger, update the tier map, and stage repricing into upcoming renewal windows with the mechanism explained",
+      "nodes": ["SEAT_COST_RECONCILIATION", "UNIT_MRR_LEDGER", "PLAN_TIER_MODULE_MAP", "RENEWAL_PLAYBOOK"],
+      "priority": 1
+    },
+    {
+      "trigger": "an account churns",
+      "action": "post-mortem the signal history against the scorecard, recalibrate signal weights, and feed the lesson into the next period's decision pass",
+      "nodes": ["CHURN_SIGNAL_WATCH", "BOOK_MRR_GATE"],
+      "priority": 2
+    },
+    {
+      "trigger": "a carrier sunset or vendor end-of-life notice lands",
+      "action": "inventory affected units, build the swap campaign against the renewal calendar, and reserve loaners for early failures",
+      "nodes": ["RMA_SWAP_AND_SUNSET_PLANNING", "CONTRACT_TERM_REGISTER"],
+      "priority": 1
+    },
+    {
+      "trigger": "a regulatory change is flagged for a fleet class present in the book",
+      "action": "flag affected accounts, verify current rules in each jurisdiction before any commitment, and adjust module guidance and pending proposals to the verification",
+      "nodes": ["REGULATORY_DRIFT_WATCH", "EXPANSION_MOTION", "PLAN_TIER_MODULE_MAP"],
+      "priority": 2
+    },
+    {
+      "trigger": "ticket volume per hundred units trends upward across two cycles",
+      "action": "mine the cause tags for the top drivers and fix upstream - alert retunes, self-serve guides, or evidence routed to the install practice",
+      "nodes": ["SUPPORT_LOAD_ECONOMICS", "ALERT_RETUNE_CYCLE"],
+      "priority": 2
+    }
+  ],
+  "priority_rationale": "The ledger and the lawful-use guard come first because every monitoring, billing, and growth motion reads the unit lines and runs inside the authorization boundary; monitoring of devices, data, and engagement precedes the commercial layer because invoices, recaps, and asks are only as honest as the telemetry beneath them; contract, reconciliation, and turnover hygiene precede renewal and expansion because those motions execute against registered terms and reconciled counts; and the churn watch, save rules, and book gate close the loop last, converting outcomes back into recalibrated signals and next-period priorities.",
+  "eval_objective": "verify_core_properties_of_tracking_subscription_and_fleet_account_growth_kb"
+}

@@ -1,0 +1,2108 @@
+{
+  "domain": "tracker_installation_and_platform_onboarding",
+  "domain_label": "Tracker Installation & Platform Onboarding",
+  "purpose": "How an installing GPS-tracking reseller converts a signed fleet deal into a fully working, lawful and disclosed deployment: selecting OBD, hardwired or battery asset devices per unit, designing installs that balance concealment against serviceability, provisioning the platform account with geofences, alerts and reports shaped to the fleet's actual workflow, onboarding drivers with the required disclosure, and proving every unit works before acceptance starts the subscription clock.",
+  "assumptions": [
+    "no observed dataset supplied; all scores are heuristic priors",
+    "this is an own-install vertical: the reseller who installs the tracker also operates the monthly subscription afterward, so every install and configuration choice is judged by whether the unit stays supportable and the account stays adopted for years, not by whether the install day ends on time",
+    "all tracking deployed here is owner- or employer-authorized and disclosed to affected drivers; requests to covertly track private individuals are refused at intake, before any device is quoted",
+    "ELD/hours-of-service mandates and telematics- or employee-privacy rules vary by jurisdiction and fleet type, so this KB names obligation classes and flags verify-current-rules-in-your-jurisdiction instead of asserting local specifics",
+    "hardware costs, subscription rates and install times appear only as mechanisms and qualitative bands computed from each deal's own facts, never as invented figures stated as fact",
+    "the fleet, its parking pattern and its cellular environment are as found at intake; a material fleet change (new vehicle classes, new territory, new take-home policy) re-opens the affected decisions"
+  ],
+  "exclusions": [
+    "which fleets to target, platform-reseller versus white-label economics, hardware-plus-subscription offer design and ROI-based selling - that is KB1 (Fleet-Tracking Market & Reseller Economics) territory; this KB receives a signed deal with a unit list and hands back nothing about pricing",
+    "running the recurring service after acceptance - per-unit MRR management, device-health and data-quality monitoring in operation, renewals and contract hygiene, in-account expansion (more vehicles, assets, dashcams, maintenance modules), churn signals and support economics at unit scale - that is KB3 (Tracking Subscriptions & Fleet-Account Growth) territory; this KB delivers it a verified fleet, a documentation pack and a trained admin",
+    "covert tracking of private individuals in any form - a spouse's, ex-partner's or acquaintance's vehicle, or an employee's personal car - such requests are refused at intake, not merely descoped",
+    "hiding tracking from the fleet's own employees: concealment decisions here defend against thieves and tampering, never against the disclosed workforce",
+    "jurisdiction-specific legal advice on ELD/hours-of-service, employee monitoring consent, or telematics data privacy - obligation classes are named and flagged verify-locally, never asserted as the local rule",
+    "stated per-unit hardware prices, monthly subscription figures or per-install labor quotes - economics appear only as mechanisms and qualitative bands",
+    "vehicle repair, diagnostics work and electrical trades beyond what the tracker install itself requires; dashcam and video-telematics systems except as an expansion opportunity noted for KB3"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What must the intake survey capture about a fleet before any tracking hardware is ordered?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "INSTALL_INTAKE_SURVEY lists the per-unit facts (type, power, port, parking pattern, duty cycle) and the fleet-level facts (who dispatches, who reads reports, which questions the owner wants answered) that downstream decisions read from",
+      "covered_by": ["INSTALL_INTAKE_SURVEY"]
+    },
+    {
+      "id": "CQ_02",
+      "question": "When is a tracking job lawful to take, and how is a covert-tracking request recognized and refused?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "LAWFUL_USE_GATE states the owner/employer-authorization test, the driver-disclosure requirement, the refusal line for tracking private individuals, and the screening questions that unmask a fleet-shaped covert request",
+      "covered_by": ["LAWFUL_USE_GATE"]
+    },
+    {
+      "id": "CQ_03",
+      "question": "Which regulation classes can touch a fleet-tracking rollout, and how are they handled without giving legal advice?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "REGULATORY_FLAG_MAP names the ELD/hours-of-service and telematics/employee-privacy obligation classes, states that a GPS tracker is not an ELD absent named certification, and routes every specific to verify-current-rules-in-jurisdiction",
+      "covered_by": ["REGULATORY_FLAG_MAP"]
+    },
+    {
+      "id": "CQ_04",
+      "question": "Which device class - OBD plug-in, hardwired, or battery asset tracker - fits each unit class in a mixed fleet, and what disqualifies a class?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "USE_CASE_DEVICE_MATRIX gives the per-class mapping with reasons, and OBD_DEVICE_SELECTION and ASSET_TRACKER_SELECTION supply the disqualifiers (occupied or non-standard ports, unplug exposure, no vehicle power, battery-life budget)",
+      "covered_by": ["USE_CASE_DEVICE_MATRIX", "OBD_DEVICE_SELECTION", "ASSET_TRACKER_SELECTION"]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How is a hardwired install designed on a modern vehicle, including power, ignition sensing and mounting?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "HARDWIRED_INSTALL_DESIGN covers constant-power and ignition-source discovery on multiplexed vehicles, virtual-ignition fallbacks, fused tap points, and mounting that preserves GPS sky view while avoiding airbag and CAN circuits",
+      "covered_by": ["HARDWIRED_INSTALL_DESIGN", "INSTALL_WORKMANSHIP_STANDARD"]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How deep should a tracker be concealed, and against whom is concealment legitimate?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "CONCEALMENT_SERVICEABILITY_TRADEOFF states the shallowest-mount-that-meets-documented-risk rule, the service and antenna costs of hiding, and the boundary that concealment targets thieves and tamperers, never the disclosed workforce",
+      "covered_by": ["CONCEALMENT_SERVICEABILITY_TRADEOFF", "LAWFUL_USE_GATE"]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is cellular coverage risk assessed for a fleet's operating area, and what does out-of-coverage buffering do to the data the customer sees?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "NETWORK_COVERAGE_CHECK describes per-area carrier qualification, store-and-forward buffering and its teleporting-track artifact, network-sunset exposure, and why coverage is checked before a SKU is committed fleet-wide",
+      "covered_by": ["NETWORK_COVERAGE_CHECK"]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How should the platform account, groups, naming and user roles be structured to mirror how the fleet actually runs?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "PLATFORM_ACCOUNT_PROVISIONING covers group hierarchy matching crews or branches, a naming convention fixed before first pairing, least-privilege roles per job function, and account-wide time zone and business-hours settings",
+      "covered_by": ["PLATFORM_ACCOUNT_PROVISIONING"]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How are geofences, alerts and reports configured to the fleet's workflow without creating sprawl or alert fatigue?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "GEOFENCE_ARCHITECTURE ties every fence to a consuming report or alert, ALERT_TUNING requires a named acting recipient per alert and start-few-tune-up thresholds, and REPORT_WORKFLOW_MAPPING maps each scheduled report to a real fleet decision and decision-maker",
+      "covered_by": ["GEOFENCE_ARCHITECTURE", "ALERT_TUNING", "REPORT_WORKFLOW_MAPPING"]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How is driver disclosure and onboarding run so the rollout does not produce sabotage, grievances or turnover?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "DRIVER_DISCLOSURE_ONBOARDING specifies the written policy content, signed acknowledgment before go-live, honest framing of purposes, a dispute path, and union or works-council consultation flagged for jurisdiction verification",
+      "covered_by": ["DRIVER_DISCLOSURE_ONBOARDING"]
+    },
+    {
+      "id": "CQ_11",
+      "question": "What must the per-unit verification test prove before the installer leaves the vehicle?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "PER_UNIT_VERIFICATION_TEST requires live position at the install location, identity match against the pairing manifest, ignition events where supported, a coherent test-drive track, and one live-fired key alert, recorded per unit",
+      "covered_by": ["PER_UNIT_VERIFICATION_TEST"]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How is a non-reporting unit triaged at install time, and when does diagnosis stop in favor of a swap?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "TROUBLE_TRIAGE_AT_INSTALL gives the power / GPS / cellular three-bucket split with field discriminators, the human unplug bucket, and the one-attempt-per-bucket-then-swap policy",
+      "covered_by": ["TROUBLE_TRIAGE_AT_INSTALL"]
+    },
+    {
+      "id": "CQ_13",
+      "question": "What do the documentation pack and the fleet acceptance gate contain before the account is handed to recurring operations?",
+      "must_be_answerable_from": ["nodes", "workflow"],
+      "acceptance_condition": "INSTALL_DOCUMENTATION_PACK lists the per-unit record (device ID, SIM, asset identity, photographed mount and tap points, verification result) and FLEETWIDE_ACCEPTANCE_GATE lists the sign-off conditions including the intake questions demonstrated answered on live data",
+      "covered_by": ["INSTALL_DOCUMENTATION_PACK", "FLEETWIDE_ACCEPTANCE_GATE"]
+    },
+    {
+      "id": "CQ_14",
+      "question": "How is install day planned so vehicle downtime stays acceptable and absent vehicles do not collapse the batch?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "INSTALL_SCHEDULING_LOGISTICS covers batching by yard and device class, realistic per-class bay times, pre-staged activated and labeled devices, and the fallback plan for vehicles missing from the yard",
+      "covered_by": ["INSTALL_SCHEDULING_LOGISTICS", "DEVICE_ACTIVATION_PAIRING"]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "OBD-II port",
+      "definition": "The standardized diagnostic connector in light vehicles that plug-in trackers draw power and (sometimes) vehicle data from; heavy trucks use different connectors, commonly a 9-pin round deutsch style on J1939 wiring, so a consumer OBD-II tracker does not simply plug into a highway tractor."
+    },
+    {
+      "term": "hardwired tracker",
+      "definition": "A tracker installed on a three-wire scheme - constant battery power, an ignition-state sense, and ground - mounted out of casual reach; slower to install than a plug-in but permanent, tamper-resistant and invisible to the port."
+    },
+    {
+      "term": "battery asset tracker",
+      "definition": "A self-powered tracker for unpowered assets (trailers, containers, compressors, attachments) that reports on a sparse schedule to stretch a non-rechargeable battery across years; its whole design is a budget of fixes-per-day against battery life."
+    },
+    {
+      "term": "ping rate / update interval",
+      "definition": "How often a device reports a position; faster pings give finer tracks and quicker alerts but spend battery on asset trackers and data allowance everywhere, so the rate is chosen per use case, not maximized."
+    },
+    {
+      "term": "virtual ignition",
+      "definition": "Detecting engine on/off without a clean switched wire, using voltage-threshold sensing (charging voltage rise) or accelerometer motion; the standard fallback on modern multiplexed vehicles where a 'switched' circuit may stay live or wake on its own."
+    },
+    {
+      "term": "geofence",
+      "definition": "A virtual boundary drawn in the platform - radius or polygon - whose entry and exit events feed alerts and visit reports; useful exactly in proportion to whether some report or alert consumes it."
+    },
+    {
+      "term": "store-and-forward buffering",
+      "definition": "Device behavior out of cellular coverage: positions are logged internally and uploaded in a burst when coverage returns, which makes the track appear to jump or teleport; a data artifact to explain to the fleet admin, not a device fault."
+    },
+    {
+      "term": "pairing manifest",
+      "definition": "The single-source-of-truth table binding each device ID and SIM to one asset's VIN or serial, its human-readable unit name, and its odometer or hour-meter baseline; every label on install day is printed from it."
+    },
+    {
+      "term": "alert fatigue",
+      "definition": "The condition where over-alerting trains recipients to delete or mute everything, including the alert that mattered; the design counter is that every configured alert has a named recipient who will act on it."
+    },
+    {
+      "term": "ELD (electronic logging device)",
+      "definition": "A regulated device class that records driving hours for fleets subject to hours-of-service mandates; a distinct certification regime from ordinary GPS tracking, so no tracker is presented as an ELD unless the specific device-and-platform combination is verifiably certified in the customer's jurisdiction."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "INSTALL_INTAKE_SURVEY",
+      "topic": "fleet_and_workflow_intake_survey",
+      "definition": "Capture, before any hardware is ordered, the facts every downstream choice reads from: a unit-by-unit fleet list (year, make and model or equipment type, VIN or serial, powered versus unpowered, diagnostic-port type on trucks), duty cycles and the overnight parking pattern (yard-parked, take-home, scattered across job sites), who dispatches and who will read reports, the operational questions the owner actually wants answered (where were my crews, whose hours do I bill, which trailer sits idle), and the physical realities of install day (yard hours, bay or parking-lot work, which units rotate through town). One intake sheet feeds the device matrix, the platform structure, the schedule and the disclosure rollout; a vehicle count scribbled on a quote feeds none of them.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": ["per-unit fleet list with power and port facts", "parking pattern and duty cycle", "the owner's target questions and report readers", "install-day physical constraints"],
+        "excluded": ["selling or re-scoping the deal (KB1)", "device selection itself", "platform configuration"]
+      },
+      "pros": [
+        {
+          "claim": "A per-unit intake sheet turns 'track my trucks' into a buildable plan before money is spent on the wrong hardware",
+          "example": "intake reveals that half an excavation outfit's 'trucks' are unpowered tilt trailers, changing the order from OBD plugs to battery asset trackers before anything ships",
+          "weight": 0.85
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A thorough intake costs owner time before any visible progress, which strains small-fleet patience",
+          "example": "a three-crew plumbing outfit balks at listing VINs and overnight parking when they expected trackers in the mail the same week",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "ordering devices off a vehicle count instead of a unit list and eating the exchange",
+        "missing take-home vehicles that change the disclosure and off-hours privacy posture",
+        "assuming every unit parks in one yard when crews scatter trucks across home driveways"
+      ],
+      "acceptance_tests": [
+        "every unit on the order carries type, power source, port type where relevant, parking pattern and duty notes, and the owner's target questions are written down with a named reader per question"
+      ],
+      "revisit_triggers": [
+        "units are added, sold or re-assigned after intake",
+        "the fleet's dispatch, billing or take-home policy changes",
+        "an install or onboarding decision is traced to a fact intake failed to capture"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.35,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.18, 0.42],
+        "update_signal": "a downstream rework is traced to a missing or wrong intake fact, or a fleet type appears that the sheet's fields do not describe"
+      }
+    },
+    {
+      "id": "LAWFUL_USE_GATE",
+      "topic": "lawful_authorized_tracking_boundary",
+      "definition": "Enforce the bright line every job passes before quoting or installing: trackers go only on vehicles and assets the customer owns or controls as employer or lessor, employees who drive tracked vehicles are told, and requests to covertly track a private individual - a spouse, an ex-partner, a 'friend just checking' on someone's car - are refused at intake regardless of the revenue attached. The gate also sets the posture for gray requests: a take-home company vehicle can be tracked but pulls in off-hours privacy questions that must be disclosed and jurisdiction-checked, and 'do not tell the drivers' converts a legitimate fleet job into a covert-surveillance request this business does not perform. Staff carry a short, practiced refusal script so the line holds under sales pressure and sympathy stories alike.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_02", "CQ_06"],
+      "scope_boundary": {
+        "included": ["ownership/employer-authorization test per asset", "driver-notification requirement", "refusal line and script for covert-individual requests", "gray-case posture for take-home vehicles"],
+        "excluded": ["the disclosure rollout mechanics (DRIVER_DISCLOSURE_ONBOARDING)", "jurisdiction-specific legal conclusions - flagged for verification"]
+      },
+      "pros": [
+        {
+          "claim": "A stated refusal line keeps the business from becoming an instrument of stalking and out of the legal exposure covert tracking carries",
+          "example": "a walk-in wanting a magnetic tracker 'for my wife's car' gets a calm scripted refusal instead of an improvised maybe from whoever answers the counter",
+          "weight": 0.9
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The gate costs real revenue and produces awkward conversations with customers who feel entitled to a yes",
+          "example": "a fleet owner walks after being told his drivers must be notified before the trackers go live",
+          "weight": 0.45
+        }
+      ],
+      "failure_modes": [
+        "treating 'it is my company truck' as ending the inquiry when the request is really about following one person off-hours",
+        "letting an urgent install skip the authorization question",
+        "counter staff without the script improvising exceptions for sympathetic stories"
+      ],
+      "acceptance_tests": [
+        "ownership or employer/lessor authority is confirmed per asset before quote, every driver-notification obligation is identified, and refused covert requests are logged with the script used"
+      ],
+      "revisit_triggers": [
+        "a customer's story changes between quote and install day",
+        "an installed account asks for driver visibility or disclosure to be quietly turned off",
+        "guidance on employee-tracking consent changes in a served jurisdiction"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.72,
+        "user_value": 0.78,
+        "technical_complexity": 0.3,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.72,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.08,
+        "downside_weight": 0.9,
+        "uncertainty_interval": [0.1, 0.3],
+        "update_signal": "a refused or slipped-through case shows the screening questions missing a disguise pattern, or regulator guidance redraws the employee-tracking line"
+      }
+    },
+    {
+      "id": "REGULATORY_FLAG_MAP",
+      "topic": "eld_hos_and_telematics_privacy_flagging",
+      "definition": "Maintain the map of regulation classes that can touch a tracking rollout, without playing counsel: ELD/hours-of-service mandates that bind certain commercial fleet and vehicle classes but not others; telematics- and employee-privacy rules that vary by jurisdiction (consent and notification requirements, off-hours limits, union or works-council consultation duties); and data-retention questions the fleet may face. The discipline is classify-and-flag: identify which classes plausibly apply to this fleet's type, size and operating territory, state plainly that a GPS tracker is not an ELD unless the specific device-and-platform combination is certified for that mandate, and route every 'does the law require or allow X here' to verification of current rules in the customer's jurisdiction before anything is promised in writing.",
+      "group": "frame",
+      "dependencies": ["INSTALL_INTAKE_SURVEY", "LAWFUL_USE_GATE"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": ["obligation-class identification per fleet type and territory", "the GPS-is-not-an-ELD boundary", "verify-locally flagging discipline"],
+        "excluded": ["asserting any jurisdiction's current rule as fact", "compliance consulting as a service line", "the driver-disclosure rollout itself"]
+      },
+      "pros": [
+        {
+          "claim": "Naming the obligation class early keeps the sale honest and the install out of compliance trouble it cannot see",
+          "example": "catching that a mixed fleet's two heavy trucks may sit under hours-of-service rules the light-duty vans do not, before the customer assumes one system covers all compliance",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Flag-and-verify adds friction and can read as evasive to a customer who wants a straight yes",
+          "example": "an owner irritated that 'can I ditch paper logs with this' earns 'that depends on certification and your fleet class - verify before relying on it'",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "selling ordinary GPS tracking as ELD or hours-of-service compliance",
+        "assuming one jurisdiction's employee-notification rule travels to the next",
+        "missing fleet-type boundaries (rented equipment, cross-border lanes) that change which classes apply"
+      ],
+      "acceptance_tests": [
+        "each engagement lists the regulation classes plausibly in play, every class carries a verify-current-rules-in-jurisdiction flag rather than an asserted specific, and no compliance capability is claimed without named certification"
+      ],
+      "revisit_triggers": [
+        "the fleet's type, territory or vehicle mix changes",
+        "a mandate or privacy rule relevant to a served fleet class is reported changed"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.7,
+        "user_value": 0.72,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.6,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.55,
+        "failure_rate": 0.18,
+        "downside_weight": 0.8,
+        "uncertainty_interval": [0.25, 0.55],
+        "update_signal": "a compliance question from a live deal falls outside the mapped classes, or a served jurisdiction's telematics rules are reported revised"
+      }
+    },
+    {
+      "id": "USE_CASE_DEVICE_MATRIX",
+      "topic": "use_case_to_device_class_mapping",
+      "definition": "Decide, per unit class in the fleet, which device family does the job and record the reason: OBD plug-ins for light vehicles where install speed, self-install or easy transfer matter and the port is free; hardwired units where permanence, tamper resistance, true ignition state or an out-of-reach mount matter, and for heavy trucks whose diagnostic connectors and electrics are not consumer OBD-II; battery asset trackers for unpowered trailers, containers and equipment, trading ping rate against a multi-year battery; wired asset trackers where the equipment has its own power. The written reason per class matters because the wrong family is the most expensive early mistake in this trade: it surfaces as a fleet-wide re-order and re-install, not as a settings change.",
+      "group": "core",
+      "dependencies": ["INSTALL_INTAKE_SURVEY"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["per-unit-class device family decision with recorded reason", "mixed-fleet handling", "the cost asymmetry of a wrong family choice"],
+        "excluded": ["specific SKU procurement and vendor negotiation", "install technique per family (its own nodes)", "subscription tier decisions (KB1/KB3)"]
+      },
+      "pros": [
+        {
+          "claim": "Mapping device class to use case per unit prevents the one-device-fits-all order that mixed fleets punish",
+          "example": "a rental yard gets battery asset trackers on tilt trailers, hardwired units in the dually pickups and nothing OBD, because every OBD port in the yard is used by the shop's scan tool weekly",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A per-class matrix multiplies SKUs to stock, train on and support",
+          "example": "carrying three device families for one twelve-unit landscaping fleet means three install procedures and three failure profiles for the same monthly revenue",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "shipping OBD plug-ins to a fleet of heavy tractors with 9-pin connectors",
+        "putting powered trackers on assets that sit unpowered for months and die reporting nothing",
+        "choosing by hardware margin instead of by use case and eating the re-install"
+      ],
+      "acceptance_tests": [
+        "every unit class in the fleet maps to exactly one device family with a written reason, and no class is mapped to a family its power source or connector cannot support"
+      ],
+      "revisit_triggers": [
+        "triage finds a repeated failure class tied to one family choice",
+        "the fleet adds a unit class the matrix has not mapped",
+        "a device family's network generation faces sunset in the operating area"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.65,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.16,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [0.2, 0.45],
+        "update_signal": "a family-level misfit shows up in triage or early operations, or a new device family (solar asset units, dual-mode) changes the available choices"
+      }
+    },
+    {
+      "id": "OBD_DEVICE_SELECTION",
+      "topic": "obd_plugin_fit_and_limits",
+      "definition": "Qualify OBD plug-and-play trackers for the subset of the fleet they genuinely fit: light vehicles with a standard OBD-II port, customers who value fast install, self-install or easy transfer between vehicles, and pilots that must show value before the fleet commits to hardwiring. The expertise lives in the limits: the port is occupied (colliding with insurance dongles and the shop's scan tool), the device is visible and takes one second to unplug - so its security posture rests on disclosure plus unplug alerting, not on hiding; some vehicles cut or keep port power in ways that change reporting behavior; and heavy trucks are not OBD-II, their 9-pin deutsch-style connectors need an adapter harness or a hardwired unit instead.",
+      "group": "core",
+      "dependencies": ["USE_CASE_DEVICE_MATRIX"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["OBD fit qualification per vehicle", "port-conflict and unplug-exposure assessment", "heavy-truck connector disqualification", "pilot and self-install use"],
+        "excluded": ["hardwire design (its own node)", "reading or interpreting vehicle diagnostic data as a service"]
+      },
+      "pros": [
+        {
+          "claim": "Minutes-per-unit install and clean self-install make OBD the lowest-friction entry for light fleets and pilots",
+          "example": "a courier fleet self-installs twenty units mailed with one-page instructions, and the reseller verifies them remotely the same afternoon",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "One-second removal makes the OBD unit the first casualty of a resentful rollout or a driver with something to hide",
+          "example": "the van whose tracker goes offline every Friday afternoon turns out to have a driver who unplugs it before side jobs",
+          "weight": 0.68
+        }
+      ],
+      "failure_modes": [
+        "shipping OBD units to trucks whose ports are non-standard or already occupied",
+        "relying on concealment for a device that sits in plain sight under the column",
+        "skipping unplug alerting and losing the only tamper defense the family has"
+      ],
+      "acceptance_tests": [
+        "every OBD-assigned vehicle has a confirmed free standard port, and unplug or power-loss alerting is configured for the family before go-live"
+      ],
+      "revisit_triggers": [
+        "unplug events cluster on specific vehicles or shifts",
+        "the customer's shop reports port conflicts with diagnostic work"
+      ],
+      "base": {
+        "criticality": 0.66,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.58,
+        "irreversibility": 0.3,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.2,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [0.2, 0.4],
+        "update_signal": "field unplug rates or port-conflict reports shift the family's fit boundary, or vehicle makers change port power behavior in common fleet models"
+      }
+    },
+    {
+      "id": "HARDWIRED_INSTALL_DESIGN",
+      "topic": "three_wire_hardwire_design",
+      "definition": "Design the hardwired install per vehicle model before touching the first unit: find constant battery power and a true ignition-state source - increasingly non-trivial on multiplexed vehicles where a nominally switched circuit stays live or wakes on its own, which is when voltage-threshold or accelerometer-based virtual ignition takes over; choose a fused tap point over a bare splice; pick a mount that balances GPS sky view, distance from electrical noise, and the concealment decision; and stay clear of airbag circuits, CAN wiring an installer has no business splicing, and anything that invites a warranty dispute with the customer's dealer. The design is written once per vehicle model in the fleet and reused across the batch, so the first truck of each model is the slow, careful one.",
+      "group": "core",
+      "dependencies": ["USE_CASE_DEVICE_MATRIX"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["per-model power, ignition and ground plan", "virtual-ignition fallback choice", "mount location balancing antenna, noise and concealment", "no-go zones (airbag, CAN)"],
+        "excluded": ["the workmanship execution standard (its own node)", "OBD and battery-asset families", "general auto-electrical repair"]
+      },
+      "pros": [
+        {
+          "claim": "A per-model design sheet turns a fleet hardwire batch into repetition instead of twenty explorations",
+          "example": "after one careful hour on the first of nine identical service vans, the remaining eight each take a fraction of that using the same tap points and mount",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Modern vehicle electronics keep invalidating yesterday's ignition-wire knowledge",
+          "example": "a current-year pickup's 'ignition' circuit wakes for telematics updates at 3am, logging ghost trips until the design flips to voltage-sense virtual ignition",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "tapping a circuit that wakes randomly and generating ghost ignition events",
+        "an unfused tap that later shorts and takes a vehicle circuit with it",
+        "mounting under enough steel that the GPS fix degrades to uselessness"
+      ],
+      "acceptance_tests": [
+        "each vehicle model in the batch has a written design naming power, ignition (real or virtual), ground, mount location and fuse protection, proven on the first unit of that model before the batch proceeds"
+      ],
+      "revisit_triggers": [
+        "ghost trips or missed ignition events appear on a designed model",
+        "a new vehicle model enters the fleet without a design sheet"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.74,
+        "user_value": 0.7,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.55,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [0.22, 0.48],
+        "update_signal": "a designed model shows ignition-sense or power faults in verification, or vehicle-electronics changes invalidate a standard tap point"
+      }
+    },
+    {
+      "id": "ASSET_TRACKER_SELECTION",
+      "topic": "battery_asset_tracker_configuration",
+      "definition": "Select and configure trackers for unpowered assets - trailers, containers, compressors, attachments, machines that sit for weeks: set the ping schedule as a spent budget (a few fixes a day buys years of battery; every extra fix and every cold month draws it down), specify a faster in-motion rate and a recovery mode that ramps reporting when the asset moves outside expectation, choose mounting that gives the antenna sky view on a steel machine while surviving pressure washing and branch strikes, and match motion-wake sensitivity to how the asset actually moves so a rail-yard bump does not burn a month of battery in false wakes. Where the asset has its own power (reefer units, some heavy equipment), a wired asset tracker removes the battery budget entirely and is preferred.",
+      "group": "core",
+      "dependencies": ["USE_CASE_DEVICE_MATRIX"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["ping-budget design against battery life", "recovery-mode and motion-wake configuration", "mounting for sky view and abuse survival", "wired-versus-battery asset choice"],
+        "excluded": ["powered-vehicle families", "theft investigation and recovery operations after a loss (KB3 operations)"]
+      },
+      "pros": [
+        {
+          "claim": "A sparse-ping asset tracker finally makes the unpowered majority of many fleets visible at all",
+          "example": "a rental yard learns which of its forty tilt trailers have not moved in ninety days, an answer no powered-vehicle system could give",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Sparse pings mean the platform's picture of an asset is hours or a day old, which surprises customers trained by live vehicle maps",
+          "example": "an owner watching a stolen trailer's dot expects live pursuit and gets a last-known fix from 6am plus a recovery-mode wait",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "configuring vehicle-style ping rates and killing the battery inside months",
+        "mounting under a steel deck so the unit works on the bench and fails in the field",
+        "motion-wake set so sensitive that yard handling drains the battery in false alarms"
+      ],
+      "acceptance_tests": [
+        "each asset class has a written ping schedule with an expected battery-life band, and the mount spec names sky-view orientation and abuse protection"
+      ],
+      "revisit_triggers": [
+        "battery drain runs ahead of the design band",
+        "the customer's recovery expectations conflict with the configured schedule"
+      ],
+      "base": {
+        "criticality": 0.76,
+        "business_value": 0.78,
+        "user_value": 0.76,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.6,
+        "irreversibility": 0.5,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.83,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "observed battery life diverges from the configured band, or a customer's loss event shows the recovery mode mismatched to their expectation"
+      }
+    },
+    {
+      "id": "NETWORK_COVERAGE_CHECK",
+      "topic": "cellular_coverage_and_buffering_qualification",
+      "definition": "Qualify the cellular reality the fleet will live in before a SKU is committed fleet-wide: which carriers actually hold in the yards, rural job sites, underground garages and cross-border lanes the intake mapped; what the chosen device does out of coverage - store-and-forward buffering that later uploads a burst of stale fixes, making tracks appear to teleport unless the admin has been told to expect it; whether the device generation rides a network technology facing sunset in the operating region, which converts a working fleet into paperweights on a carrier's schedule, not the reseller's; and roaming and SIM policy for fleets that cross borders. Coverage failures masquerade as device failures, and at fleet scale that misdiagnosis burns trust faster than any single bad unit.",
+      "group": "core",
+      "dependencies": ["INSTALL_INTAKE_SURVEY"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": ["per-operating-area carrier qualification", "buffering behavior and its data artifacts", "network-sunset exposure of a device generation", "cross-border SIM and roaming posture"],
+        "excluded": ["negotiating carrier contracts", "platform data-plan pricing (mechanism territory, KB1/KB3)", "in-operation data-quality monitoring (KB3)"]
+      },
+      "pros": [
+        {
+          "claim": "Checking coverage per operating area before committing hardware prevents the fleet-wide swap that a sunset or dead-zone discovery forces later",
+          "example": "a logging fleet's laydown yards sit in a coverage hole one carrier's map admits and another's does not; the SIM choice follows the honest map, not the cheaper plan",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Carrier coverage maps flatter themselves, so real qualification needs field checks that cost time",
+          "example": "a map shows solid coverage at a quarry whose pit floor gets nothing; only the site walk with a test unit finds it",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "committing a single-carrier SKU fleet-wide off a marketing coverage map",
+        "not warning the admin about buffering, so the first teleporting track becomes a support crisis of confidence",
+        "selling remaining stock of a device generation into a region where its network is being retired"
+      ],
+      "acceptance_tests": [
+        "each operating area on the intake sheet has a coverage note naming carrier(s) qualified, known dead zones, and the buffering behavior to expect, and no committed SKU rides a network flagged for sunset in that region"
+      ],
+      "revisit_triggers": [
+        "buffered or missing tracks cluster in an area marked as covered",
+        "a carrier announces a technology sunset touching deployed device generations"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.76,
+        "user_value": 0.74,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.66,
+        "irreversibility": 0.6,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.18,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [0.25, 0.5],
+        "update_signal": "field data contradicts a qualified area's coverage note, or a sunset announcement or new roaming policy touches the deployed base"
+      }
+    },
+    {
+      "id": "CONCEALMENT_SERVICEABILITY_TRADEOFF",
+      "topic": "mounting_concealment_vs_serviceability",
+      "definition": "Decide, per install class, how hidden the device should be - and against whom. Concealment defends high-value assets against theft-ring removal and defeats casual tampering, but every layer of hiding costs service time later (a panel teardown per battery swap or fault call), risks burying the GPS antenna under metal, and never legitimately means hiding tracking from the fleet's own disclosed drivers: the workforce knows the vehicles are tracked even where a unit's exact mounting spot is not advertised. The working rule is the shallowest mount that meets the documented tamper and theft risk for that asset class, with the exact location photographed into the install record so future service is a five-minute panel pop instead of archaeology.",
+      "group": "core",
+      "dependencies": ["HARDWIRED_INSTALL_DESIGN", "LAWFUL_USE_GATE"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["per-class concealment depth decision against documented risk", "service-cost and antenna consequences of hiding", "the thieves-not-workforce boundary"],
+        "excluded": ["covert tracking of any person (refused at LAWFUL_USE_GATE)", "the electrical design itself", "theft-recovery operations after a loss"]
+      },
+      "pros": [
+        {
+          "claim": "Concealment calibrated to documented risk protects exactly the assets thieves actually strip",
+          "example": "a skid steer that works unattended lots gets its tracker buried behind the boom harness where a thief with a knife and five minutes will not find it, while the yard pickups keep serviceable under-dash mounts",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Every hidden mount is a future labor bill and a triage handicap",
+          "example": "a battery swap that should take minutes takes an hour of interior panel work because the original installer hid the unit deep and photographed nothing",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "hiding so deep the antenna loses sky view and the unit reports garbage",
+        "defaulting every install to maximum concealment because it feels professional",
+        "letting a customer reframe concealment as hiding the program from drivers"
+      ],
+      "acceptance_tests": [
+        "each install class records a concealment depth with the documented risk that justifies it, and every concealed mount has a location photo in the install record"
+      ],
+      "revisit_triggers": [
+        "a tamper or theft event defeats the chosen depth",
+        "service calls on a class run long because of its concealment choice"
+      ],
+      "base": {
+        "criticality": 0.7,
+        "business_value": 0.68,
+        "user_value": 0.66,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.66,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.45,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.25, 0.5],
+        "update_signal": "tamper/theft outcomes or service-time data show a class's concealment depth miscalibrated in either direction"
+      }
+    },
+    {
+      "id": "INSTALL_WORKMANSHIP_STANDARD",
+      "topic": "install_workmanship_and_electrical_standards",
+      "definition": "Hold every install to fixed standards that do not flex with the schedule: every power tap fused (inline fuse or a proper fuse-tap, never insulation-displacement taps on circuits that matter), wiring loomed and dressed so it cannot chafe, drop into pedal travel, or announce itself as a rattle; no contact with airbag, safety-restraint or CAN circuits; connectors weatherproofed on assets that live outdoors; adhesives and mounts rated for dash heat and equipment vibration; and a photo of the finished mount and tap points taken before panels close. The standard exists because the failure it prevents - an electrical fault the customer attributes to the tracker installer, sometimes correctly - costs more in warranty labor and reputation than every minute the standard adds across a batch.",
+      "group": "core",
+      "dependencies": ["HARDWIRED_INSTALL_DESIGN", "ASSET_TRACKER_SELECTION"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["fusing, dressing, routing and weatherproofing standards", "no-go circuits", "the close-panels photo requirement"],
+        "excluded": ["per-model design decisions (HARDWIRED_INSTALL_DESIGN)", "general vehicle electrical repair", "the verification protocol itself"]
+      },
+      "pros": [
+        {
+          "claim": "A non-negotiable workmanship floor makes install quality independent of which tech and which schedule pressure",
+          "example": "two years on, a service call finds every unit in the fleet fused and loomed the same way, so the fault hunt starts from a known baseline instead of twenty personal styles",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The standard's minutes-per-unit are real and tempting to shave on a big batch",
+          "example": "loom, fuse and photo add measurable time across thirty vans, and a crew behind schedule will quietly drop the photo first",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "an unfused tap shorting and taking out a vehicle circuit with the customer's trust",
+        "wiring dressed into pedal travel or an airbag path",
+        "panels closed with no photo, converting every future service call into exploration"
+      ],
+      "acceptance_tests": [
+        "spot-check of any completed unit finds fused taps, loomed and secured wiring clear of no-go zones, weatherproofing on exposed connectors, and a stored photo of mount and tap points"
+      ],
+      "revisit_triggers": [
+        "verification or service finds a workmanship deviation pattern",
+        "a new vehicle or asset class needs a standard the checklist lacks"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.76,
+        "user_value": 0.72,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.6,
+        "irreversibility": 0.62,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.14,
+        "downside_weight": 0.72,
+        "uncertainty_interval": [0.18, 0.4],
+        "update_signal": "an electrical fault traces to an install, or a deviation pattern appears in spot checks"
+      }
+    },
+    {
+      "id": "INSTALL_SCHEDULING_LOGISTICS",
+      "topic": "install_day_batching_and_downtime_control",
+      "definition": "Plan install days around the fleet's operating reality, because downtime is the customer's cost center: batch by yard and by device class; book windows when vehicles are actually parked (nights, weekends, early mornings - whatever the parking pattern from intake says); set realistic per-unit bay times by class (an OBD unit in minutes, a hardwire in the better part of an hour, assets varying with access); stage devices pre-activated, labeled per the pairing manifest and sorted per vehicle before crews arrive; and hold a fallback for the certainty that some listed vehicles will be absent - on a job, in the shop, or sold last month. A rollout that idles revenue vehicles teaches the customer the tracker costs money before it has saved any.",
+      "group": "core",
+      "dependencies": ["INSTALL_INTAKE_SURVEY", "USE_CASE_DEVICE_MATRIX"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": ["batching by yard and class", "window selection from the parking pattern", "bay-time budgeting", "pre-staged labeled devices", "absent-vehicle fallback"],
+        "excluded": ["the workmanship and verification content of each install", "quoting install labor to the customer (mechanism territory, KB1)"]
+      },
+      "pros": [
+        {
+          "claim": "Batching by parking window converts installs from fleet disruption into invisible overhead",
+          "example": "an HVAC fleet is done across two Saturday mornings in its own yard, and no crew loses a billable hour",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Off-hours batching concentrates risk into windows with no slack",
+          "example": "one sick installer on the only Saturday the yard is full pushes the rollout a full week",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "scheduling against the vehicle list instead of the parking reality and finding half the yard empty",
+        "unstaged devices activated one at a time in the yard while trucks queue",
+        "no fallback when vehicles are absent, so the batch collapses instead of shrinking"
+      ],
+      "acceptance_tests": [
+        "the install plan names windows tied to the parking pattern, per-class bay-time budgets, a staging manifest, and a written fallback for absent vehicles"
+      ],
+      "revisit_triggers": [
+        "actual bay times run over budget by class",
+        "absent-vehicle rates break the batch plan twice running"
+      ],
+      "base": {
+        "criticality": 0.68,
+        "business_value": 0.74,
+        "user_value": 0.78,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.58,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.3,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.22,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [0.2, 0.45],
+        "update_signal": "bay-time actuals or absent-vehicle rates from completed batches move the planning constants"
+      }
+    },
+    {
+      "id": "PLATFORM_ACCOUNT_PROVISIONING",
+      "topic": "platform_account_structure_and_roles",
+      "definition": "Build the platform account to mirror how the fleet actually runs before the first unit reports in: groups that match crews, branches or contracts so a supervisor sees their trucks and not everyone's; a naming convention fixed once, using the unit numbers the crew already shouts across the yard rather than VIN tails no human recognizes; user roles at least-privilege - dispatch sees live maps, payroll pulls reports, the owner sees everything, and nobody holds admin who does not need it; and account-wide time zone, odometer units and business-hours settings correct from day one, because every alert and report inherits them. Role design also carries the lawful-use posture into daily operation: access is scoped to legitimate business use, and a login whose pattern is one person watching one driver after hours is a misuse the structure should make visible rather than easy.",
+      "group": "core",
+      "dependencies": ["INSTALL_INTAKE_SURVEY"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": ["group hierarchy from the fleet's org", "naming convention fixed before first pairing", "least-privilege role assignment", "account-wide time and unit settings"],
+        "excluded": ["geofence, alert and report content (their own nodes)", "platform vendor selection (KB1)", "ongoing user administration after handoff (KB3)"]
+      },
+      "pros": [
+        {
+          "claim": "An account skeleton that mirrors the org makes every later screen self-explanatory to the fleet",
+          "example": "the north-branch dispatcher logs in for the first time and sees exactly the fourteen trucks she dispatches, named the way she already names them",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Structure built from an org chart nobody updated fossilizes fast",
+          "example": "two crews merge in the spring and every group, alert route and scheduled report still reflects the winter org until someone rebuilds them",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "pairing units into a flat unstructured account and renaming everything after reports have shipped",
+        "everyone-is-admin provisioning that makes misuse and accidents equally easy",
+        "wrong account time zone silently skewing every after-hours alert and timecard report"
+      ],
+      "acceptance_tests": [
+        "before first pairing: groups mirror the fleet's stated org, the naming convention is written, each user holds the least role their job needs, and time zone and business hours are verified against intake"
+      ],
+      "revisit_triggers": [
+        "the fleet reorganizes crews, branches or contracts",
+        "a report reader cannot see, or can wrongly see, units outside their scope",
+        "access-pattern review suggests off-purpose individual monitoring"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.76,
+        "user_value": 0.8,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.2, 0.42],
+        "update_signal": "an org change, a visibility complaint, or a misuse signal shows the structure diverging from the fleet's reality"
+      }
+    },
+    {
+      "id": "DEVICE_ACTIVATION_PAIRING",
+      "topic": "activation_and_device_to_asset_pairing",
+      "definition": "Activate each device and bind it to the right asset before it reaches the vehicle: SIM and platform service confirmed live on the bench, device ID recorded against the unit's VIN or serial and its human name from the naming convention, odometer or hour-meter baseline entered where the platform supports it, and the pairing manifest treated as the single source of truth on install day - the box the installer carries is labeled with the vehicle it belongs to, printed from the manifest, not from memory. Mis-pairing is the quiet catastrophe of onboarding: every alert, report and timecard that follows attributes one vehicle's behavior to another, and it surfaces weeks later through an angry customer's payroll dispute instead of through the installer.",
+      "group": "core",
+      "dependencies": ["PLATFORM_ACCOUNT_PROVISIONING", "INSTALL_SCHEDULING_LOGISTICS"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": ["bench activation before install day", "device-to-asset binding with VIN/serial and human name", "odometer/hour baselines", "manifest-printed labeling"],
+        "excluded": ["the physical install", "SIM plan economics", "renaming schemes after go-live (prevented, not managed)"]
+      },
+      "pros": [
+        {
+          "claim": "Bench-activated, manifest-labeled devices make install day a matching exercise instead of a provisioning exercise",
+          "example": "each van's box carries its unit number and the installer's only pairing duty is to confirm the label matches the vehicle in the bay",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Bench activation spends subscription and battery clock before the fleet benefits",
+          "example": "thirty units activated Monday for a Saturday install run their first week of service life sitting in a bin",
+          "weight": 0.42
+        }
+      ],
+      "failure_modes": [
+        "two boxes swapped in the yard, discovered a month later in a payroll dispute",
+        "activation attempted in the yard over one bar of signal while trucks queue",
+        "no odometer baseline entered, so maintenance-adjacent reports start from fiction"
+      ],
+      "acceptance_tests": [
+        "every device is confirmed reporting on the bench before install day, and the manifest binds device ID, SIM, VIN/serial, human name and baseline with no duplicates in any column"
+      ],
+      "revisit_triggers": [
+        "a verification identity check fails against the manifest",
+        "units are re-assigned between vehicles after go-live",
+        "the platform's pairing or naming model changes"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.78,
+        "user_value": 0.76,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.12,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [0.15, 0.38],
+        "update_signal": "an identity mismatch found at verification or in operation, or a manifest process gap that let a duplicate through"
+      }
+    },
+    {
+      "id": "GEOFENCE_ARCHITECTURE",
+      "topic": "geofence_design_for_fleet_workflow",
+      "definition": "Design geofences as an encoding of the fleet's operational geography, not as decoration: the yard or yards first, because after-hours movement alerts and first-out/last-in visibility hang on them; then the recurring job sites and customer locations that billing or dispatch actually asks about; polygons where a radius would swallow the neighbors (the supply house across the street from a bar deserves a tight boundary); names that read in the fleet's own language so reports need no translation; and deliberate pruning - every fence no alert or report consumes is maintenance debt that rots the account. One-off sites get short-lived fences or none. The architecture serves the questions intake recorded, not the maximum the platform allows.",
+      "group": "core",
+      "dependencies": ["PLATFORM_ACCOUNT_PROVISIONING"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["yard fences as the alert backbone", "recurring-site fences tied to consuming reports", "polygon-versus-radius choice", "naming and pruning discipline"],
+        "excluded": ["the alerts and reports that consume fences (their own nodes)", "route planning and dispatch optimization products"]
+      },
+      "pros": [
+        {
+          "claim": "A small set of consumed, well-named fences turns raw tracks into answers the fleet recognizes",
+          "example": "the visit report reads 'Riverside jobsite 41 minutes' instead of a coordinate pair, and the office stops calling drivers to ask where they were",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Geofence sprawl accumulates silently until the account is unmaintainable",
+          "example": "eighteen months of one-off jobsite fences nobody deleted turn the fence list into an archaeology layer no report consumes",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "a yard radius so generous the after-hours alert never fires because the truck 'never leaves'",
+        "fences named by whoever drew them, unreadable in reports",
+        "building a fence per historical jobsite because the import tool made it easy"
+      ],
+      "acceptance_tests": [
+        "every configured fence names a consuming alert or report, yard fences are polygon-verified against the actual property line, and names follow the account convention"
+      ],
+      "revisit_triggers": [
+        "the fleet gains or loses a yard or a recurring site",
+        "a fence-consuming report is retired"
+      ],
+      "base": {
+        "criticality": 0.66,
+        "business_value": 0.7,
+        "user_value": 0.76,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.64,
+        "irreversibility": 0.3,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.2,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [0.2, 0.45],
+        "update_signal": "fence-consumption review finds orphans, or a geography change (new yard, lost contract) invalidates the set"
+      }
+    },
+    {
+      "id": "ALERT_TUNING",
+      "topic": "alert_selection_thresholds_and_routing",
+      "definition": "Configure alerts under one rule: every alert has a named recipient who will act on it, or it does not exist. The backbone set for a typical fleet: after-hours movement from the yard fence routed to whoever genuinely answers at 2am (that is a theft signal, not a morning email); tamper, unplug and power-loss alerts - the OBD family's only real defense; low-battery warnings on asset trackers routed to whoever schedules battery swaps; and the driver-behavior family (speeding, harsh events, excessive idle) only at thresholds and volumes the fleet's management will actually work, because a speeding alert on every few miles over trains everyone to delete the folder unread. Behavior alerting also stays inside the disclosed program - alerts monitor what drivers were told is monitored. Start with few alerts and tune upward from observed events in the first weeks; never start from everything-on and hope to prune.",
+      "group": "core",
+      "dependencies": ["GEOFENCE_ARCHITECTURE"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["named-recipient rule", "the backbone alert set and routing", "threshold discipline for behavior alerts", "start-few-tune-up sequencing"],
+        "excluded": ["scheduled reports (REPORT_WORKFLOW_MAPPING)", "coaching or disciplining drivers (the fleet's business)", "in-operation alert health monitoring (KB3)"]
+      },
+      "pros": [
+        {
+          "claim": "A small owned alert set gets acted on, which is the only thing an alert is for",
+          "example": "the 2am yard-exit alert goes to the owner's phone and the one time it fires in earnest, the trailer is recovered because someone actually woke up",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Tuning to avoid fatigue means some real events go unalerted by design",
+          "example": "a modest speeding threshold means the van doing a little over the limit daily never pings anyone, and the owner learns of the habit from a complaint instead",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "everything-on defaults burying the one alert that mattered",
+        "alerts routed to a shared inbox nobody owns",
+        "behavior alerting expanded beyond what drivers were told is monitored"
+      ],
+      "acceptance_tests": [
+        "every configured alert names its recipient and the action expected, after-hours and tamper alerts are live-tested once, and behavior alerts match the disclosed policy"
+      ],
+      "revisit_triggers": [
+        "the week-one review finds a flooded or silent alert channel",
+        "a real event fails to alert or reaches someone who could not act",
+        "the disclosed policy changes what may be monitored"
+      ],
+      "base": {
+        "criticality": 0.78,
+        "business_value": 0.76,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.3,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.22, 0.48],
+        "update_signal": "fired-alert outcomes from the first weeks (acted on, ignored, missed) move thresholds and routing"
+      }
+    },
+    {
+      "id": "REPORT_WORKFLOW_MAPPING",
+      "topic": "reports_mapped_to_fleet_decisions",
+      "definition": "Configure the small set of scheduled reports that answer the questions intake recorded, each delivered to the person who makes that decision: start/stop or timecard-style reports to whoever reconciles hours; idle and utilization summaries to whoever owns fuel or fleet-size decisions; geofence visit history to whoever proves service calls or bills time on site; an after-hours summary to the owner. The craft is subtraction - a fleet that receives ten reports reads none - and translation: names, units and groupings in the fleet's own vocabulary. Reports that back invoicing or payroll disputes are flagged evidence-grade: their credibility rests on verified pairing and correct account time settings, which is why they ship only after per-unit verification passes, and why a report contradicted by a paper timesheet triggers a data check before a confrontation.",
+      "group": "core",
+      "dependencies": ["PLATFORM_ACCOUNT_PROVISIONING"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["decision-to-report mapping with named readers", "subtraction discipline", "evidence-grade flagging and its prerequisites"],
+        "excluded": ["alert configuration", "building custom analytics beyond the platform's reports", "payroll or billing adjudication itself"]
+      },
+      "pros": [
+        {
+          "claim": "One report per real decision, to its decision-maker, is what converts tracking data into money the customer can point at",
+          "example": "the Friday hours report goes straight to the bookkeeper who reconciles timesheets, and the owner stops paying for hours no truck ever drove",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Lean reporting leaves platform capability visibly unused, which some buyers read as underdelivery",
+          "example": "an owner who saw a demo of thirty report types asks why he only receives three, and the answer 'because you would read none of the others' has to be sold",
+          "weight": 0.48
+        }
+      ],
+      "failure_modes": [
+        "shipping the platform's default report pack and calling onboarding done",
+        "reports delivered to whoever signed the contract instead of whoever makes the decision",
+        "an evidence-grade report shipped before verification, poisoning the first payroll reconciliation"
+      ],
+      "acceptance_tests": [
+        "every scheduled report names the intake question it answers and its reader, evidence-grade reports are gated behind verification, and no report ships without a named reader"
+      ],
+      "revisit_triggers": [
+        "a scheduled report goes unopened for consecutive cycles",
+        "a payroll or billing dispute questions a report's accuracy"
+      ],
+      "base": {
+        "criticality": 0.72,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.66,
+        "irreversibility": 0.3,
+        "confidence": 0.75,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [0.2, 0.45],
+        "update_signal": "read/unread patterns and dispute outcomes show which reports earn their place and which mislead"
+      }
+    },
+    {
+      "id": "DRIVER_DISCLOSURE_ONBOARDING",
+      "topic": "driver_disclosure_and_workforce_onboarding",
+      "definition": "Run the workforce side of go-live as deliberately as the hardware side: a written tracking policy in plain language - what is collected, when, who sees it, what it is used for and what it is not used for; a signed acknowledgment from every affected driver before their unit goes live; a short session that frames the system honestly (billing proof, theft recovery, dispatch efficiency, defense against false claims - not a gotcha machine) with room for questions and pushback; and a named path for disputes about what the data shows. Where the workforce is unionized or a works council exists, consultation happens per that agreement before rollout - flagged for jurisdiction verification, since consultation duties differ. Disclosure done well is also operationally selfish: undisclosed or badly-framed rollouts come back as mysteriously unplugged devices, grievances and resignations, and the cheapest anti-sabotage measure this trade has is honesty.",
+      "group": "core",
+      "dependencies": ["LAWFUL_USE_GATE", "REGULATORY_FLAG_MAP"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["policy content and plain-language standard", "signed acknowledgment before go-live", "honest-framing session and dispute path", "union/works-council consultation flag"],
+        "excluded": ["the fleet's internal discipline decisions", "jurisdiction-specific consent law conclusions (flagged, not asserted)", "the lawfulness gate itself"]
+      },
+      "pros": [
+        {
+          "claim": "Disclosure-first rollouts protect the driver relationship the fleet depends on and the hardware the reseller just installed",
+          "example": "a delivery fleet's drivers, told plainly the data settles disputed overtime in their favor too, stop treating the tracker as the enemy - and the unplug rate that plagued a competitor's covert-style rollout never appears",
+          "weight": 0.88
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Honest disclosure surfaces workforce conflict at rollout instead of letting it fester quietly",
+          "example": "two senior techs threaten to quit in the disclosure meeting itself, and the owner has to resolve in one week a trust question that covert rollouts defer for months",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "devices live before drivers are told, discovered via a dispatcher's slip",
+        "a policy that promises 'safety only' while management quietly reads location history for discipline",
+        "skipping union or works-council consultation where an agreement requires it"
+      ],
+      "acceptance_tests": [
+        "every affected driver has a signed acknowledgment dated before their unit went live, the policy states uses and non-uses in plain language, and any applicable collective-consultation step is documented or explicitly cleared"
+      ],
+      "revisit_triggers": [
+        "monitoring scope changes (new alert types, dashcams, off-hours visibility)",
+        "a grievance or dispute cites the policy",
+        "new hires join tracked vehicles"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.74,
+        "user_value": 0.8,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.68,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.83,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.14,
+        "downside_weight": 0.82,
+        "uncertainty_interval": [0.15, 0.4],
+        "update_signal": "a grievance, sabotage cluster or consultation finding shows the disclosure process or policy content falling short"
+      }
+    },
+    {
+      "id": "ADMIN_TRAINING_HANDOFF",
+      "topic": "fleet_admin_training_and_adoption",
+      "definition": "Train the people who will live in the platform, sized to their actual day rather than to the feature list: the dispatcher's five-minute morning screen, the payroll clerk's weekly report pull, the owner's exception habit - look when an alert says look, not as a hobby; plus the small self-service set that prevents support calls (rename a unit, adjust a geofence, correctly silence an alert whose cause is fixed). The first week runs co-piloted: a scheduled fifteen-minute review of what alerts fired and what the reports said, which is exactly where mis-tuned thresholds, unread reports and wrong recipients surface while they are still cheap to fix. The measurable enemy is the account that logs in during week one and never again - installation is what the customer paid for, but adoption is what the subscription renews on.",
+      "group": "core",
+      "dependencies": ["ALERT_TUNING", "REPORT_WORKFLOW_MAPPING"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": ["role-sized training per user", "self-service basics", "the co-piloted first week and its review", "adoption as the handoff measure"],
+        "excluded": ["long-run account health and renewal management (KB3)", "training the fleet's drivers (disclosure covers their part)", "platform feature development"]
+      },
+      "pros": [
+        {
+          "claim": "Role-sized training plus a co-piloted first week converts an installed system into a used one",
+          "example": "the week-one review catches that the idle report goes to a manager who cannot read it on his phone; one recipient change later, it is acted on weekly",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Training and the first-week cadence are unbilled hours concentrated at the least profitable moment of the account",
+          "example": "three training sessions and two review calls land in the same month as the install labor, all against the first month's subscription",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "feature-tour training that impresses in the room and transfers nothing",
+        "no named admin on the fleet side, so the account is orphaned at handoff",
+        "skipping the week-one review and letting mis-tuned alerts calcify into ignore-everything habits"
+      ],
+      "acceptance_tests": [
+        "each platform user demonstrates their own routine unprompted, a named fleet-side admin exists, and the week-one review happened with its findings applied"
+      ],
+      "revisit_triggers": [
+        "login or report-read activity drops toward zero",
+        "the trained admin leaves the fleet"
+      ],
+      "base": {
+        "criticality": 0.76,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.38,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.35,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.83,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.24,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "adoption telemetry (logins, report reads, alert responses) in the first month shows whether training landed"
+      }
+    },
+    {
+      "id": "PER_UNIT_VERIFICATION_TEST",
+      "topic": "per_unit_field_verification_protocol",
+      "definition": "Prove each unit works before its vehicle returns to service, and record the pass per unit: device online and showing a live position at the actual install location, not remembered from the bench an hour earlier; identity confirmed against the pairing manifest - the map pin moves when this vehicle moves; ignition-on and ignition-off events observed where the device class supports them; a short test drive producing a coherent track with sane speed and odometer movement; and the unit's key alert - unplug, tamper or movement, per class - fired once as a live end-to-end test that it reaches its recipient. The protocol exists because the alternative is discovering failures across a dispersed fleet after install day, where every fix costs a truck-chase to a job site instead of thirty seconds in the bay.",
+      "group": "verification",
+      "dependencies": ["DEVICE_ACTIVATION_PAIRING", "INSTALL_WORKMANSHIP_STANDARD"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["live position at install location", "manifest identity check", "ignition-event observation", "test-drive track coherence", "one live alert round-trip"],
+        "excluded": ["fault diagnosis when a check fails (TROUBLE_TRIAGE_AT_INSTALL)", "long-run data-quality monitoring (KB3)"]
+      },
+      "pros": [
+        {
+          "claim": "Per-unit field verification catches at the bay, for seconds, what would otherwise cost a site visit per failure",
+          "example": "the test drive shows unit 12's pin parked while the truck moves - a bench-tested device whose antenna sits under the one bracket that blocks it - fixed in five minutes instead of found next week forty miles away",
+          "weight": 0.88
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Full verification adds nontrivial minutes per unit, which multiplies painfully across a large batch",
+          "example": "on a thirty-van Saturday the test drives alone consume an installer-hour block the schedule must genuinely contain rather than wish away",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "bench-verified being treated as field-verified",
+        "skipping the identity check because the label 'must be' right",
+        "the alert round-trip untested until the first real theft finds the routing broken"
+      ],
+      "acceptance_tests": [
+        "a per-unit record shows live position at install location, manifest identity match, ignition events where supported, a coherent test-drive track, and one delivered key alert, before the vehicle returned to service"
+      ],
+      "revisit_triggers": [
+        "any unit's verification record is missing or failed at acceptance review",
+        "an in-operation fault appears on a unit that passed, questioning the protocol's coverage"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.12,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [0.15, 0.35],
+        "update_signal": "an escaped defect class (something operations catches that verification did not) adds a check to the protocol"
+      }
+    },
+    {
+      "id": "TROUBLE_TRIAGE_AT_INSTALL",
+      "topic": "no_report_first_fix_triage",
+      "definition": "Diagnose non-reporting units at install time with the three-bucket split before swapping anything: no power (blown or wrong tap, dead port, loose connector), no GPS (buried antenna, steel overhead, the works-on-the-bench mount), no cellular (coverage hole, SIM or activation fault) - each with a fast field discriminator: LED codes, the platform's last-contact versus last-fix timestamps (contact without fix means cellular fine, GPS blind; neither means power or cellular), a meter on the tap, and the move-to-open-sky test. Include the human bucket: a disclosed-but-resentful driver's unplugged OBD unit is not a hardware fault and is handled through the fleet's management, not through a device swap. A swap policy bounds the time cost: one fix attempt per bucket, then swap the unit, label the pulled one for bench diagnosis, and never leave a vehicle unverified because the diagnosis got interesting.",
+      "group": "verification",
+      "dependencies": ["PER_UNIT_VERIFICATION_TEST", "NETWORK_COVERAGE_CHECK"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["power/GPS/cellular bucket split with discriminators", "the human unplug bucket", "one-attempt-then-swap policy", "labeling pulled units for bench work"],
+        "excluded": ["in-operation device-health monitoring and RMA economics (KB3)", "vehicle electrical repair beyond the tracker's own circuit"]
+      },
+      "pros": [
+        {
+          "claim": "The bucket split with discriminators keeps triage minutes-long and prevents the classic wrong fix",
+          "example": "last-contact fresh but last-fix stale says the 'dead' unit is a GPS-blind mount, so the fix is moving it a hand-width, not swapping hardware or blaming the carrier",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The hard swap policy sacrifices root-cause knowledge in the field for schedule",
+          "example": "a unit that would have revealed a bad firmware batch gets swapped and binned in the yard's rhythm, and the pattern is only visible weeks later at the bench",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "swap-first triage that ships the same fault back out in a new box",
+        "treating driver unplugs as hardware failures and burning swaps on a management problem",
+        "diagnosing a coverage hole as a batch of bad devices"
+      ],
+      "acceptance_tests": [
+        "every non-reporting unit at install carries a triage record naming its bucket and discriminator evidence, and no vehicle left unverified due to open triage"
+      ],
+      "revisit_triggers": [
+        "a failure bucket's rate spikes across a batch",
+        "bench diagnosis of pulled units contradicts field bucket calls"
+      ],
+      "base": {
+        "criticality": 0.74,
+        "business_value": 0.7,
+        "user_value": 0.68,
+        "technical_complexity": 0.56,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.64,
+        "irreversibility": 0.3,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.83,
+        "prior_importance": 0.76,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [0.22, 0.48],
+        "update_signal": "bench-versus-field bucket disagreement rates, or a new failure class the three buckets do not cover"
+      }
+    },
+    {
+      "id": "INSTALL_DOCUMENTATION_PACK",
+      "topic": "per_unit_install_record_and_handoff_pack",
+      "definition": "Assemble the per-unit record that makes every later touch cheap: device ID and SIM, asset identity (VIN or serial plus human name), install date and installer, device class and configuration notes, mount location and fuse-tap points photographed before the panels closed, and the verification result with its date. Rolled up across the fleet with the account structure, disclosure records and exception list, the pack becomes the handoff artifact recurring operations inherits: it is the difference between 'unit 14 stopped reporting' meaning a five-minute panel pop by any tech, and meaning a teardown expedition that only the original installer - who left last spring - could have shortened.",
+      "group": "verification",
+      "dependencies": ["INSTALL_WORKMANSHIP_STANDARD", "DEVICE_ACTIVATION_PAIRING"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": ["per-unit record fields", "mount and tap-point photos", "fleet-level rollup as the operations handoff"],
+        "excluded": ["operating on the records afterward (KB3)", "customer-facing manuals and marketing collateral"]
+      },
+      "pros": [
+        {
+          "claim": "Photographed mounts and tap points convert future service from exploration into procedure",
+          "example": "a tech who has never seen the truck opens the record, sees the unit behind the left kick panel tapped at fuse F23, and finishes the swap inside the customer's coffee break",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Documentation is the first casualty of a running-late install day and its absence is invisible until needed",
+          "example": "the batch's last five vans have no photos because the crew was chasing daylight, and nobody notices until a warranty call eighteen months later",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "records living in an installer's phone gallery instead of the account file",
+        "photos taken after panels closed, showing nothing useful",
+        "the rollup never delivered, so operations re-derives fleet facts by calling the customer"
+      ],
+      "acceptance_tests": [
+        "a randomly sampled unit's record contains all fields including pre-close photos and verification result, and the fleet rollup is filed where operations reads it"
+      ],
+      "revisit_triggers": [
+        "a service call finds a record missing or wrong",
+        "operations requests fields the pack does not carry"
+      ],
+      "base": {
+        "criticality": 0.72,
+        "business_value": 0.72,
+        "user_value": 0.66,
+        "technical_complexity": 0.3,
+        "risk_if_wrong": 0.66,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.83,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.76,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [0.18, 0.42],
+        "update_signal": "service-call friction traced to missing record fields, or an operations request that extends the pack's schema"
+      }
+    },
+    {
+      "id": "FLEETWIDE_ACCEPTANCE_GATE",
+      "topic": "fleet_commissioning_and_acceptance",
+      "definition": "Close onboarding with an explicit fleet-level acceptance instead of a fade-out: every unit verified or on a dated exception list with a fix plan; disclosure acknowledgments complete; the admin trained with the week-one review scheduled; the documentation pack delivered; and - the step that sells the renewal before the first invoice - each of the owner's intake questions demonstrated answered on their own live data, walking them through 'whose hours bill' on last Tuesday's actual tracks. A signature closes the gate, starts the subscription clock, and hands the account to recurring operations. The gate defends both sides: the customer knows exactly what done meant, and the reseller holds an artifact that separates install defects from the later service issues KB3 will manage.",
+      "group": "verification",
+      "dependencies": ["PER_UNIT_VERIFICATION_TEST", "ADMIN_TRAINING_HANDOFF", "DRIVER_DISCLOSURE_ONBOARDING", "INSTALL_DOCUMENTATION_PACK"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": ["acceptance conditions and exception list", "intake-questions-answered demonstration on live data", "signature, subscription start and operations handoff"],
+        "excluded": ["everything after handoff - renewals, expansion, churn management (KB3)", "re-negotiating scope or price at signature (KB1)"]
+      },
+      "pros": [
+        {
+          "claim": "A demonstrated-on-your-own-data acceptance converts the customer's leap of faith into observed value at the exact moment the subscription begins",
+          "example": "the owner watches his own Tuesday data settle a job-hours question he has argued about for years, and the monthly fee stops being an expense in his mind before the first invoice lands",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A formal gate hands the customer a lever to withhold acceptance over items outside the install's scope",
+          "example": "signature stalls for three weeks over a feature request the platform never promised, while the unbilled subscription clock question festers",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "the fade-out non-ending, where nobody can later say when onboarding ended and support began",
+        "accepting with an exception list that has no dates or owners and therefore never shrinks",
+        "skipping the live-data demonstration and leaving the value undemonstrated until renewal"
+      ],
+      "acceptance_tests": [
+        "the signed acceptance lists all-units-verified-or-excepted with dates and owners, disclosure and training confirmations, pack delivery, and the intake questions demonstrated on live data"
+      ],
+      "revisit_triggers": [
+        "an exception list item passes its fix date",
+        "operations disputes whether an early fault predates acceptance",
+        "the acceptance demonstration fails on any intake question"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.86,
+        "user_value": 0.8,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.15,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [0.18, 0.42],
+        "update_signal": "acceptance disputes or handoff friction reveal a missing gate condition, or operations' early-fault data shows the gate passing defects"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "INSTALL_INTAKE_SURVEY",
+      "to": "USE_CASE_DEVICE_MATRIX",
+      "edge_type": "dependency",
+      "why_related": "the device matrix maps unit classes the intake sheet enumerated; without per-unit power and port facts there is nothing to map",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "INSTALL_INTAKE_SURVEY",
+      "to": "PLATFORM_ACCOUNT_PROVISIONING",
+      "edge_type": "dependency",
+      "why_related": "groups, naming and roles are built from the org, readers and unit names intake recorded",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "INSTALL_INTAKE_SURVEY",
+      "to": "NETWORK_COVERAGE_CHECK",
+      "edge_type": "dependency",
+      "why_related": "coverage is qualified per operating area, and the operating areas come from intake's yards, sites and lanes",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "LAWFUL_USE_GATE",
+      "to": "DRIVER_DISCLOSURE_ONBOARDING",
+      "edge_type": "dependency",
+      "why_related": "the disclosure rollout operationalizes the notification obligation the lawful-use gate established for this fleet",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "REGULATORY_FLAG_MAP",
+      "to": "DRIVER_DISCLOSURE_ONBOARDING",
+      "edge_type": "dependency",
+      "why_related": "consultation and consent steps in the disclosure plan follow the obligation classes the map flagged for this fleet type and territory",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "USE_CASE_DEVICE_MATRIX",
+      "to": "OBD_DEVICE_SELECTION",
+      "edge_type": "dependency",
+      "why_related": "OBD qualification details the plug-in branch of the family decision the matrix made per unit class",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "USE_CASE_DEVICE_MATRIX",
+      "to": "HARDWIRED_INSTALL_DESIGN",
+      "edge_type": "dependency",
+      "why_related": "hardwire design work begins only for the unit classes the matrix assigned to the hardwired family",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "USE_CASE_DEVICE_MATRIX",
+      "to": "ASSET_TRACKER_SELECTION",
+      "edge_type": "dependency",
+      "why_related": "asset-tracker configuration serves the unpowered classes the matrix identified from intake's power facts",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "HARDWIRED_INSTALL_DESIGN",
+      "to": "CONCEALMENT_SERVICEABILITY_TRADEOFF",
+      "edge_type": "dependency",
+      "why_related": "concealment depth is chosen among the mount options the per-model design established as electrically and antenna-wise viable",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "HARDWIRED_INSTALL_DESIGN",
+      "to": "INSTALL_WORKMANSHIP_STANDARD",
+      "edge_type": "dependency",
+      "why_related": "the workmanship standard executes the tap points and routes the per-model design specified",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "PLATFORM_ACCOUNT_PROVISIONING",
+      "to": "GEOFENCE_ARCHITECTURE",
+      "edge_type": "dependency",
+      "why_related": "fences are drawn inside the account's group structure and naming convention, which must exist first",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "GEOFENCE_ARCHITECTURE",
+      "to": "ALERT_TUNING",
+      "edge_type": "dependency",
+      "why_related": "the backbone after-hours and site alerts consume yard and site fences; alert design starts from which fences exist",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "PLATFORM_ACCOUNT_PROVISIONING",
+      "to": "REPORT_WORKFLOW_MAPPING",
+      "edge_type": "dependency",
+      "why_related": "reports group and name units per the account structure; readers get scoped by the role design",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "DEVICE_ACTIVATION_PAIRING",
+      "to": "PER_UNIT_VERIFICATION_TEST",
+      "edge_type": "dependency",
+      "why_related": "the verification identity check tests the field install against the pairing manifest, which must exist and be authoritative first",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "INSTALL_WORKMANSHIP_STANDARD",
+      "to": "PER_UNIT_VERIFICATION_TEST",
+      "edge_type": "dependency",
+      "why_related": "verification proves the physical install the standard governed; a unit cannot pass verification before it is installed to standard",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "PER_UNIT_VERIFICATION_TEST",
+      "to": "FLEETWIDE_ACCEPTANCE_GATE",
+      "edge_type": "dependency",
+      "why_related": "fleet acceptance aggregates per-unit verification passes; the gate's first condition is built from these records",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "ADMIN_TRAINING_HANDOFF",
+      "to": "FLEETWIDE_ACCEPTANCE_GATE",
+      "edge_type": "dependency",
+      "why_related": "acceptance requires a trained named admin and a scheduled week-one review, which training produces",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "INSTALL_DOCUMENTATION_PACK",
+      "to": "FLEETWIDE_ACCEPTANCE_GATE",
+      "edge_type": "dependency",
+      "why_related": "pack delivery is an acceptance condition; the gate cannot close on undocumented installs",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "LAWFUL_USE_GATE",
+      "to": "CONCEALMENT_SERVICEABILITY_TRADEOFF",
+      "edge_type": "constraint",
+      "why_related": "concealment may target thieves and tamperers only; hiding the program from the disclosed workforce is outside the lawful posture no matter the mounting logic",
+      "relation_strength": 0.74,
+      "risk_of_conflict": "a customer reframes anti-theft concealment as keeping drivers in the dark"
+    },
+    {
+      "from": "LAWFUL_USE_GATE",
+      "to": "PLATFORM_ACCOUNT_PROVISIONING",
+      "edge_type": "constraint",
+      "why_related": "role and access design must scope visibility to legitimate business use, so the account structure cannot enable covert individual monitoring the gate refused",
+      "relation_strength": 0.7,
+      "risk_of_conflict": "an owner demands a private login to watch one employee outside the disclosed program"
+    },
+    {
+      "from": "REGULATORY_FLAG_MAP",
+      "to": "ALERT_TUNING",
+      "edge_type": "constraint",
+      "why_related": "driver-behavior alerting sits under jurisdiction-specific employee-monitoring classes, so behavior alerts stay within flagged-and-disclosed bounds pending verification",
+      "relation_strength": 0.68,
+      "risk_of_conflict": "behavior alerting expands past what the jurisdictional check and the disclosed policy cover"
+    },
+    {
+      "from": "REGULATORY_FLAG_MAP",
+      "to": "REPORT_WORKFLOW_MAPPING",
+      "edge_type": "constraint",
+      "why_related": "no report may be framed as hours-of-service or ELD compliance output unless the device-platform certification for that mandate is verified",
+      "relation_strength": 0.7,
+      "risk_of_conflict": "a timecard-style report drifts into being sold as a compliance log"
+    },
+    {
+      "from": "NETWORK_COVERAGE_CHECK",
+      "to": "ASSET_TRACKER_SELECTION",
+      "edge_type": "constraint",
+      "why_related": "asset trackers live where assets sit - laydown yards, rural sites - so the coverage qualification bounds which device generations and carriers the asset classes may use",
+      "relation_strength": 0.72,
+      "risk_of_conflict": "an otherwise ideal asset device rides a network absent exactly where the assets park"
+    },
+    {
+      "from": "CONCEALMENT_SERVICEABILITY_TRADEOFF",
+      "to": "TROUBLE_TRIAGE_AT_INSTALL",
+      "edge_type": "conflict",
+      "why_related": "every layer of concealment slows the physical half of triage and every future service touch",
+      "resolution_rule": "serviceability wins absent a documented tamper or theft risk for that asset class; where concealment is justified, the photographed mount record must cap triage cost, and a concealed mount without its photo is a standards violation",
+      "relation_strength": 0.72,
+      "signed_tension": -0.5,
+      "expected_rework_cost": 0.45
+    },
+    {
+      "from": "INSTALL_SCHEDULING_LOGISTICS",
+      "to": "INSTALL_WORKMANSHIP_STANDARD",
+      "edge_type": "conflict",
+      "why_related": "batch throughput pressure pushes crews to shave exactly the fusing, dressing and photo minutes the standard mandates",
+      "resolution_rule": "the workmanship standard wins unconditionally; the batch shrinks or gains a day, and any unit that skipped the standard is reopened and brought to it before verification",
+      "relation_strength": 0.76,
+      "signed_tension": -0.55,
+      "expected_rework_cost": 0.5
+    },
+    {
+      "from": "INSTALL_SCHEDULING_LOGISTICS",
+      "to": "PER_UNIT_VERIFICATION_TEST",
+      "edge_type": "conflict",
+      "why_related": "the schedule's worst hour is exactly when skipping test drives and alert round-trips looks cheapest",
+      "resolution_rule": "no vehicle returns to service unverified; if the window closes, the remaining units carry to the fallback window rather than leaving as unverified installs",
+      "relation_strength": 0.74,
+      "signed_tension": -0.5,
+      "expected_rework_cost": 0.55
+    },
+    {
+      "from": "OBD_DEVICE_SELECTION",
+      "to": "HARDWIRED_INSTALL_DESIGN",
+      "edge_type": "conflict",
+      "why_related": "the families compete for the same light vehicles: OBD's speed and self-install against hardwire's permanence, ignition truth and tamper resistance",
+      "resolution_rule": "hardwired wins where unplug exposure, port conflicts, heavy-truck connectors or ignition-truth requirements exist; OBD wins for pilots, self-install customers and high-churn rental vehicles, and then mandatory unplug alerting is part of the choice",
+      "relation_strength": 0.7,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.5
+    },
+    {
+      "from": "DRIVER_DISCLOSURE_ONBOARDING",
+      "to": "TROUBLE_TRIAGE_AT_INSTALL",
+      "edge_type": "causal",
+      "why_related": "a badly-run disclosure produces the resentful-unplug failure class that triage must then separate from genuine hardware faults",
+      "relation_strength": 0.66,
+      "causal_confidence": 0.72
+    },
+    {
+      "from": "ALERT_TUNING",
+      "to": "ADMIN_TRAINING_HANDOFF",
+      "edge_type": "causal",
+      "why_related": "an over-alerted first week trains the admin to ignore the platform, and no amount of later training recovers an audience taught that alerts mean nothing",
+      "relation_strength": 0.7,
+      "causal_confidence": 0.74
+    },
+    {
+      "from": "INSTALL_DOCUMENTATION_PACK",
+      "to": "TROUBLE_TRIAGE_AT_INSTALL",
+      "edge_type": "causal",
+      "why_related": "photographed mounts and tap points convert the physical half of any later no-report call from teardown into a short procedure",
+      "relation_strength": 0.68,
+      "causal_confidence": 0.75
+    },
+    {
+      "from": "NETWORK_COVERAGE_CHECK",
+      "to": "TROUBLE_TRIAGE_AT_INSTALL",
+      "edge_type": "causal",
+      "why_related": "known dead zones and expected buffering pre-classify a whole family of no-report symptoms, keeping them out of the hardware buckets",
+      "relation_strength": 0.7,
+      "causal_confidence": 0.76
+    },
+    {
+      "from": "INSTALL_INTAKE_SURVEY",
+      "to": "INSTALL_SCHEDULING_LOGISTICS",
+      "edge_type": "sequence",
+      "why_related": "batch windows are chosen from the parking pattern and yard hours intake recorded, so scheduling follows intake in build order",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "INSTALL_SCHEDULING_LOGISTICS",
+      "to": "DEVICE_ACTIVATION_PAIRING",
+      "edge_type": "sequence",
+      "why_related": "staging happens against the schedule: bench-activated, manifest-labeled boxes are sorted per vehicle before crews arrive at the yard",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "DRIVER_DISCLOSURE_ONBOARDING",
+      "to": "DEVICE_ACTIVATION_PAIRING",
+      "edge_type": "sequence",
+      "why_related": "drivers are notified before their units go live, so acknowledgment collection precedes activation going hot in the fleet",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "PER_UNIT_VERIFICATION_TEST",
+      "to": "TROUBLE_TRIAGE_AT_INSTALL",
+      "edge_type": "sequence",
+      "why_related": "verification failures route straight into triage while the installer and vehicle are still in the same place",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "TROUBLE_TRIAGE_AT_INSTALL",
+      "to": "FLEETWIDE_ACCEPTANCE_GATE",
+      "edge_type": "sequence",
+      "why_related": "triage outcomes either clear units for acceptance or populate the dated exception list the gate requires",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "PER_UNIT_VERIFICATION_TEST",
+      "to": "INSTALL_WORKMANSHIP_STANDARD",
+      "edge_type": "feedback",
+      "why_related": "recurring verification failures rewrite the standard - a mount spot that keeps burying GPS gets banned, a tap that keeps blowing gets a new fuse spec",
+      "relation_strength": 0.68
+    },
+    {
+      "from": "ADMIN_TRAINING_HANDOFF",
+      "to": "ALERT_TUNING",
+      "edge_type": "feedback",
+      "why_related": "the week-one co-review returns fired-alert reality - flooded, silent, misrouted - to the thresholds and recipients",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "FLEETWIDE_ACCEPTANCE_GATE",
+      "to": "INSTALL_INTAKE_SURVEY",
+      "edge_type": "feedback",
+      "why_related": "acceptance misses and demonstration failures reveal intake blind spots that update the survey template for the next fleet",
+      "relation_strength": 0.62
+    },
+    {
+      "from": "GEOFENCE_ARCHITECTURE",
+      "to": "REPORT_WORKFLOW_MAPPING",
+      "edge_type": "similarity",
+      "why_related": "both translate the fleet's operational geography and questions into platform configuration, and both fail the same way - by sprawl that nobody consumes",
+      "relation_strength": 0.6
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "concealment_vs_serviceability",
+      "description": "Hiding a tracker deep resists theft-ring removal and tampering but buys a panel teardown per future service touch and risks burying the antenna; a shallow mount services in minutes but strips easier.",
+      "poles": ["conceal against tamper and theft", "mount shallow for service and antenna"],
+      "resolution_hint": "shallowest mount meeting the documented risk for that asset class, photo in the record either way; concealment never targets the disclosed workforce",
+      "affected_nodes": ["CONCEALMENT_SERVICEABILITY_TRADEOFF", "INSTALL_WORKMANSHIP_STANDARD", "TROUBLE_TRIAGE_AT_INSTALL"]
+    },
+    {
+      "name": "install_throughput_vs_workmanship",
+      "description": "Batch-day economics reward speed per unit while the workmanship floor - fusing, dressing, photos - costs exactly the minutes speed wants back.",
+      "poles": ["maximize units per window", "hold the workmanship floor"],
+      "resolution_hint": "the floor is non-negotiable; adjust batch size and windows, and treat over-budget bay times as a planning signal, not a corner to cut",
+      "affected_nodes": ["INSTALL_SCHEDULING_LOGISTICS", "INSTALL_WORKMANSHIP_STANDARD", "PER_UNIT_VERIFICATION_TEST"]
+    },
+    {
+      "name": "plugin_simplicity_vs_hardwired_permanence",
+      "description": "OBD plug-ins install in minutes and self-install by mail, but sit visible, occupy the port and unplug in a second; hardwiring is permanent and tamper-resistant but costs bay time per unit and per-model design work.",
+      "poles": ["OBD speed and self-install", "hardwired permanence and ignition truth"],
+      "resolution_hint": "decide per unit class from unplug exposure, port conflicts, connector type and pilot-versus-committed status; OBD choices carry mandatory unplug alerting",
+      "affected_nodes": ["OBD_DEVICE_SELECTION", "HARDWIRED_INSTALL_DESIGN", "USE_CASE_DEVICE_MATRIX"]
+    },
+    {
+      "name": "ping_rate_vs_battery_budget",
+      "description": "Faster asset-tracker pings give fresher positions and quicker recovery but every extra daily fix and cold month draws down a battery meant to last years.",
+      "poles": ["fresh positions and fast recovery", "multi-year battery life"],
+      "resolution_hint": "set the sparse baseline from the inventory question the customer actually asked, and spend battery on in-motion and recovery modes rather than on idle-day pings",
+      "affected_nodes": ["ASSET_TRACKER_SELECTION", "NETWORK_COVERAGE_CHECK"]
+    },
+    {
+      "name": "alert_coverage_vs_alert_fatigue",
+      "description": "Every additional alert type promises another caught event, and every one past the fleet's acting capacity trains recipients to ignore the channel entirely.",
+      "poles": ["alert on everything that could matter", "alert only where someone will act"],
+      "resolution_hint": "named recipient and expected action per alert; start few, tune upward from observed events in the co-piloted first weeks",
+      "affected_nodes": ["ALERT_TUNING", "ADMIN_TRAINING_HANDOFF"]
+    },
+    {
+      "name": "management_visibility_vs_driver_trust",
+      "description": "Richer behavior monitoring serves safety and cost management but reads as surveillance to the workforce, and resentment converts directly into unplugs, grievances and turnover.",
+      "poles": ["maximum management visibility", "workforce trust and retention"],
+      "resolution_hint": "monitor what the disclosed policy states and no more, frame uses honestly including the ones that protect drivers, and treat unplug clusters as a trust signal before a discipline signal",
+      "affected_nodes": ["DRIVER_DISCLOSURE_ONBOARDING", "ALERT_TUNING", "LAWFUL_USE_GATE"]
+    },
+    {
+      "name": "config_richness_vs_admin_capacity",
+      "description": "Fences, alerts and reports are nearly free to create and each one is maintenance debt against a fleet admin with minutes per day; a rich config the admin abandons is worth less than a thin one they use.",
+      "poles": ["configure everything the platform offers", "configure what the fleet will maintain"],
+      "resolution_hint": "every artifact names its consumer; unconsumed config is pruned at the week-one review, not defended",
+      "affected_nodes": ["GEOFENCE_ARCHITECTURE", "REPORT_WORKFLOW_MAPPING", "ADMIN_TRAINING_HANDOFF"]
+    },
+    {
+      "name": "fleet_standardization_vs_per_unit_fit",
+      "description": "One device family and one install pattern across the fleet simplifies stock, training and support, but mixed fleets - vans plus tractors plus tilt trailers - genuinely need different families per class.",
+      "poles": ["standardize on one family", "fit the family per unit class"],
+      "resolution_hint": "standardize within unit class, never across power-source boundaries; the matrix records the reason so support knows why the fleet carries three families",
+      "affected_nodes": ["USE_CASE_DEVICE_MATRIX", "INSTALL_SCHEDULING_LOGISTICS"]
+    },
+    {
+      "name": "go_live_speed_vs_verified_handoff",
+      "description": "The customer and the sales side want trucks tracking this week; verification, disclosure acknowledgment, training and documentation all sit between install and honest acceptance.",
+      "poles": ["get them tracking now", "hand off only what is verified, disclosed and documented"],
+      "resolution_hint": "compress by parallelizing (disclosure and provisioning run before install day), never by dropping gate conditions; an eager customer is walked through the gate, not around it",
+      "affected_nodes": ["FLEETWIDE_ACCEPTANCE_GATE", "PER_UNIT_VERIFICATION_TEST", "DRIVER_DISCLOSURE_ONBOARDING"]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "A heavy tractor's diagnostic connector is a 9-pin round deutsch style, not OBD-II, and the shipped plug-in trackers do not fit",
+      "trigger": "OBD-family devices meet a heavy-truck or older-vehicle connector",
+      "affected_nodes": ["USE_CASE_DEVICE_MATRIX", "OBD_DEVICE_SELECTION"],
+      "mitigation": "catch port type at intake; heavy classes get adapter harnesses specified in advance or go hardwired, and the matrix records the connector reason",
+      "severity": "medium"
+    },
+    {
+      "description": "One van's tracker goes offline every Friday afternoon and returns Monday; the device is fine, the driver unplugs it for weekend side work",
+      "trigger": "a pattern of offline windows correlated with one vehicle's shifts",
+      "affected_nodes": ["OBD_DEVICE_SELECTION", "TROUBLE_TRIAGE_AT_INSTALL", "DRIVER_DISCLOSURE_ONBOARDING"],
+      "mitigation": "unplug alerting plus the triage human bucket route it to the fleet's management as a policy matter, not a hardware swap; disclosure policy already told drivers unplugging is visible",
+      "severity": "medium"
+    },
+    {
+      "description": "A current-model pickup has no clean switched circuit; the tapped 'ignition' wire wakes at night for software updates, logging ghost trips",
+      "trigger": "multiplexed vehicle electronics defeat wire-based ignition sensing",
+      "affected_nodes": ["HARDWIRED_INSTALL_DESIGN", "PER_UNIT_VERIFICATION_TEST"],
+      "mitigation": "flip the model's design sheet to voltage-threshold or accelerometer virtual ignition and re-verify ignition events on the first unit before the batch proceeds",
+      "severity": "high"
+    },
+    {
+      "description": "An asset tracker mounted under a trailer's steel deck passed its bench test but reports no fixes in the field",
+      "trigger": "a mount position blocks GPS sky view on a metal asset",
+      "affected_nodes": ["ASSET_TRACKER_SELECTION", "INSTALL_WORKMANSHIP_STANDARD", "PER_UNIT_VERIFICATION_TEST"],
+      "mitigation": "verification at the install location catches it same-day; remount per the sky-view spec and ban the position in the standard",
+      "severity": "high"
+    },
+    {
+      "description": "Several vehicles are take-home: employees commute in them, so tracking runs through evenings and weekends at their homes",
+      "trigger": "the parking-pattern question at intake reveals take-home units",
+      "affected_nodes": ["LAWFUL_USE_GATE", "REGULATORY_FLAG_MAP", "DRIVER_DISCLOSURE_ONBOARDING"],
+      "mitigation": "surface off-hours visibility explicitly in the disclosed policy, flag jurisdictional off-hours monitoring rules for verification, and configure business-hours-scoped views where the platform supports them",
+      "severity": "high"
+    },
+    {
+      "description": "A retail walk-in wants a tracker installed on a car 'for my spouse - do not tell them'",
+      "trigger": "a covert-individual tracking request reaches the counter dressed as a normal sale",
+      "affected_nodes": ["LAWFUL_USE_GATE"],
+      "mitigation": "the refusal script runs: no install without owner/authorized-operator standing and disclosure where required; the request is declined and logged",
+      "severity": "high"
+    },
+    {
+      "description": "The fleet's drivers are unionized and the collective agreement has a monitoring-technology consultation clause nobody mentioned at signing",
+      "trigger": "union or works-council status surfaces after the deal is signed",
+      "affected_nodes": ["DRIVER_DISCLOSURE_ONBOARDING", "REGULATORY_FLAG_MAP"],
+      "mitigation": "pause go-live for the consultation step, flag the jurisdiction- and agreement-specific duties for verification, and keep installed units dark until the process clears",
+      "severity": "high"
+    },
+    {
+      "description": "Trucks running a remote highway lane vanish from the map for hours, then their tracks arrive at once and appear to teleport",
+      "trigger": "store-and-forward buffering in a known coverage hole",
+      "affected_nodes": ["NETWORK_COVERAGE_CHECK", "TROUBLE_TRIAGE_AT_INSTALL", "ADMIN_TRAINING_HANDOFF"],
+      "mitigation": "the coverage note pre-classifies the lane, admin training explains the artifact before the first occurrence, and triage rules out device fault by the last-contact/last-fix pattern",
+      "severity": "medium"
+    },
+    {
+      "description": "A rental fleet swaps attachments and small assets between carrier machines weekly, and utilization reports start crediting hours to the wrong asset",
+      "trigger": "asset identity churn breaks the device-to-asset binding",
+      "affected_nodes": ["DEVICE_ACTIVATION_PAIRING", "PER_UNIT_VERIFICATION_TEST"],
+      "mitigation": "trackers bind to the tracked asset itself, not to whatever carries it; the manifest is updated as part of the swap procedure and identity is re-verified after each re-binding",
+      "severity": "medium"
+    },
+    {
+      "description": "Install Saturday opens with a third of the listed vehicles absent - two on overnight jobs, one in the body shop, one sold last month",
+      "trigger": "the yard on install day does not match the intake vehicle list",
+      "affected_nodes": ["INSTALL_SCHEDULING_LOGISTICS", "INSTALL_INTAKE_SURVEY"],
+      "mitigation": "the fallback plan installs what is present, schedules a sweep window for stragglers, and the sold vehicle triggers a unit-list correction before its device is wasted",
+      "severity": "medium"
+    },
+    {
+      "description": "A van's aftermarket LED bar was tapped into the same circuit as the tracker; its short blows the shared fuse and the tracker dies with it weeks later",
+      "trigger": "other aftermarket electrical work shares or disturbs the tracker's circuit",
+      "affected_nodes": ["INSTALL_WORKMANSHIP_STANDARD", "TROUBLE_TRIAGE_AT_INSTALL"],
+      "mitigation": "the standard demands a dedicated fused tap; triage's power bucket plus the tap-point photo find the shared-circuit violation fast and the fix isolates the tracker",
+      "severity": "medium"
+    },
+    {
+      "description": "A fleet owner asks for the trackers to be hidden from his own drivers 'so we catch them at it'",
+      "trigger": "a concealment request aimed at the workforce rather than at thieves",
+      "affected_nodes": ["LAWFUL_USE_GATE", "CONCEALMENT_SERVICEABILITY_TRADEOFF", "DRIVER_DISCLOSURE_ONBOARDING"],
+      "mitigation": "decline the covert framing and convert to a disclosed program: the deterrence the owner wants comes from drivers knowing, and the refusal script explains that a covert employee program is a job this business does not do",
+      "severity": "high"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "Run the fleet intake survey",
+      "node_ref": "INSTALL_INTAKE_SURVEY",
+      "description": "Capture the per-unit list with power and port facts, parking pattern, duty cycles, report readers and the owner's target questions",
+      "artifact": "fleet intake sheet",
+      "gate": "every unit has type, power, port where relevant and parking notes; every target question names its reader"
+    },
+    {
+      "action": "Pass the lawful-use gate and map regulatory flags",
+      "node_ref": "LAWFUL_USE_GATE",
+      "description": "Confirm owner/employer authorization per asset, identify notification duties, refuse covert requests, and list the ELD/HOS and privacy classes flagged verify-locally",
+      "artifact": "authorization and obligation-class checklist",
+      "gate": "authorization confirmed per asset, no covert scope survives, every flagged class carries a verify-in-jurisdiction note"
+    },
+    {
+      "action": "Build the device matrix",
+      "node_ref": "USE_CASE_DEVICE_MATRIX",
+      "description": "Map every unit class to OBD, hardwired or asset-tracker family with a written reason",
+      "artifact": "per-class device plan",
+      "gate": "no unit class unmapped, no family assigned against its power or connector facts"
+    },
+    {
+      "action": "Qualify network coverage per operating area",
+      "node_ref": "NETWORK_COVERAGE_CHECK",
+      "description": "Verify carrier reality in yards, sites and lanes, note dead zones and buffering behavior, screen for network sunsets",
+      "artifact": "coverage notes per operating area",
+      "gate": "every operating area has a note; no committed SKU rides a sunset-flagged network in-region"
+    },
+    {
+      "action": "Provision the platform account skeleton",
+      "node_ref": "PLATFORM_ACCOUNT_PROVISIONING",
+      "description": "Create groups mirroring the org, fix the naming convention, assign least-privilege roles, verify time zone and business hours",
+      "artifact": "provisioned account with role map",
+      "gate": "structure matches intake's org, naming convention written, roles least-privilege, time settings verified"
+    },
+    {
+      "action": "Run driver disclosure before go-live",
+      "node_ref": "DRIVER_DISCLOSURE_ONBOARDING",
+      "description": "Deliver the plain-language policy, hold the framing session, collect signed acknowledgments, clear any union/works-council consultation",
+      "artifact": "signed acknowledgment set and policy on file",
+      "gate": "every affected driver acknowledged before their unit goes live; consultation documented or explicitly not applicable"
+    },
+    {
+      "action": "Stage, activate and pair devices",
+      "node_ref": "DEVICE_ACTIVATION_PAIRING",
+      "description": "Bench-activate every device, build the pairing manifest binding device to asset and name, print labels, sort boxes per vehicle",
+      "artifact": "pairing manifest and labeled staged devices",
+      "gate": "all devices reporting on the bench; manifest has no duplicate device, SIM, asset or name entries"
+    },
+    {
+      "action": "Install to the workmanship standard",
+      "node_ref": "INSTALL_WORKMANSHIP_STANDARD",
+      "description": "Execute per-model designs with fused taps, dressed wiring, no-go-zone clearance, weatherproofing, and pre-close photos",
+      "artifact": "per-unit install records with photos",
+      "gate": "spot-checked units meet the standard; every record carries mount and tap photos taken before panels closed"
+    },
+    {
+      "action": "Verify every unit in the field",
+      "node_ref": "PER_UNIT_VERIFICATION_TEST",
+      "description": "Confirm live position, manifest identity, ignition events, test-drive track coherence and one live alert round-trip per unit",
+      "artifact": "per-unit verification log",
+      "gate": "no vehicle returns to service without a recorded pass or a triage entry"
+    },
+    {
+      "action": "Triage and clear non-reporting units",
+      "node_ref": "TROUBLE_TRIAGE_AT_INSTALL",
+      "description": "Bucket failures as power, GPS, cellular or human; one fix attempt per bucket then swap; label pulled units for the bench",
+      "artifact": "triage log with bucket evidence",
+      "gate": "every failure carries a bucket and discriminator evidence; no unresolved unit left off the exception list"
+    },
+    {
+      "action": "Configure geofences, alerts and reports to the workflow, then train the admin",
+      "node_ref": "ADMIN_TRAINING_HANDOFF",
+      "description": "Draw consumed fences, tune the backbone alert set with named recipients, schedule decision-mapped reports, then run role-sized training and book the week-one review",
+      "artifact": "configured account plus training record",
+      "gate": "every fence, alert and report names its consumer; each user demonstrates their routine; week-one review scheduled"
+    },
+    {
+      "action": "Close the fleet acceptance gate",
+      "node_ref": "FLEETWIDE_ACCEPTANCE_GATE",
+      "description": "Aggregate verification passes and exceptions, confirm disclosure and training, deliver the documentation pack, demonstrate the intake questions on live data, obtain signature",
+      "artifact": "signed acceptance with exception list and delivered pack",
+      "gate": "all conditions met or dated-and-owned on the exception list; subscription clock and operations handoff start at signature"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "The lawful-use gate dominates every install, configuration and revenue consideration",
+      "rationale": "a single covert-tracking job outweighs any deal size in legal exposure and in what the business becomes",
+      "trigger": "any request to track without authorization or disclosure, however framed",
+      "action": "refuse per the script, log the refusal, and decline adjacent workarounds such as hidden-from-drivers mounting"
+    },
+    {
+      "rule": "Serviceability dominates concealment absent documented risk",
+      "rationale": "hidden mounts are a permanent labor tax on every future touch, so hiding must be bought with a reason",
+      "trigger": "a mount decision tends toward deep concealment by default or by customer vibe",
+      "action": "hold the shallowest mount meeting the documented tamper/theft risk for that class, and photograph whatever depth is chosen"
+    },
+    {
+      "rule": "The workmanship standard dominates schedule pressure",
+      "rationale": "an electrical fault attributed to the installer costs more than any batch delay",
+      "trigger": "bay-time overruns tempt the crew to skip fusing, dressing or photos",
+      "action": "shrink the batch or add a window; reopen and re-do any unit found below standard before verification"
+    },
+    {
+      "rule": "Per-unit verification dominates go-live pressure",
+      "rationale": "an unverified fleet disperses to job sites and converts every latent defect into a truck-chase",
+      "trigger": "the customer or the schedule pushes to skip test drives or alert round-trips",
+      "action": "no vehicle returns to service unverified; the remainder moves to the fallback window"
+    },
+    {
+      "rule": "The pairing manifest dominates memory, labels' vibes and 'it must be that van'",
+      "rationale": "identity errors poison every downstream report and surface as customer-facing disputes weeks later",
+      "trigger": "any doubt about which device sits in which vehicle",
+      "action": "re-verify identity against the manifest by moving the vehicle; never guess or patch the platform name to fit"
+    },
+    {
+      "rule": "The regulatory verification flag dominates sales claims",
+      "rationale": "a compliance promise the certification does not back transfers the customer's regulatory risk onto the reseller",
+      "trigger": "a sale or configuration drifts toward presenting tracking as ELD/HOS compliance",
+      "action": "state the GPS-is-not-an-ELD boundary, name the obligation class, and require verified certification before any compliance language ships"
+    },
+    {
+      "rule": "Disclosure-before-go-live dominates rollout convenience",
+      "rationale": "an undisclosed rollout breaches the lawful posture and manufactures the sabotage triage will chase for months",
+      "trigger": "install day arrives before acknowledgments are collected",
+      "action": "install hardware if scheduled, but units stay dark until the disclosure record completes"
+    },
+    {
+      "rule": "The fleet's actual workflow dominates platform defaults",
+      "rationale": "default config answers nobody's question and rots into an unused account, which is where churn begins",
+      "trigger": "onboarding tends toward shipping the default report pack and everything-on alerts",
+      "action": "configure only artifacts that name an intake question and a consumer; prune the rest"
+    },
+    {
+      "rule": "A named acting recipient dominates alert completeness",
+      "rationale": "an alert nobody owns is negative value - it buries the alert someone does own",
+      "trigger": "an alert is proposed 'to be safe' without an owner or expected action",
+      "action": "do not configure it; record the decision so the week-one review can revisit with evidence"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Complete the per-unit intake sheet before ordering any hardware",
+      "prevents": "family-level device misfits that surface as fleet-wide re-orders and re-installs"
+    },
+    {
+      "rule": "Qualify coverage in the fleet's actual operating areas before committing a SKU fleet-wide",
+      "prevents": "a coverage-hole or network-sunset discovery forcing a full hardware swap after deployment"
+    },
+    {
+      "rule": "Fix the naming convention and account structure before the first device is paired",
+      "prevents": "mass renaming and re-grouping after reports have shipped with the wrong names in them"
+    },
+    {
+      "rule": "Bench-activate and manifest-label every device before install day",
+      "prevents": "yard-side provisioning queues, box swaps, and pairing errors discovered in payroll disputes"
+    },
+    {
+      "rule": "Collect driver acknowledgments before units go live",
+      "prevents": "the resentment-driven unplug and grievance wave that a surprise rollout manufactures"
+    },
+    {
+      "rule": "Prove the per-model hardwire design on the first unit of each model before running the batch",
+      "prevents": "repeating a ghost-ignition or bad-tap mistake across every identical vehicle in the fleet"
+    },
+    {
+      "rule": "Photograph mounts and tap points before panels close",
+      "prevents": "teardown expeditions on every future service call and warranty dispute"
+    },
+    {
+      "rule": "Verify each unit before its vehicle returns to service",
+      "prevents": "chasing dispersed vehicles across job sites to fix what the bay would have caught in seconds"
+    },
+    {
+      "rule": "Tune alerts with the admin in the co-piloted first week",
+      "prevents": "alert-fatigue habits that calcify into an ignored account and a rescue re-onboarding at renewal time"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "a unit fails field verification",
+      "action": "route to triage while installer and vehicle are co-located, bucket the fault, fix or swap, re-verify",
+      "nodes": ["PER_UNIT_VERIFICATION_TEST", "TROUBLE_TRIAGE_AT_INSTALL"],
+      "priority": 1
+    },
+    {
+      "trigger": "a failure class repeats across units - same model ghost trips, same SKU no-fix, same mount position blind",
+      "action": "stop the batch, update the device matrix or the model design sheet or the workmanship standard, re-verify affected units",
+      "nodes": ["USE_CASE_DEVICE_MATRIX", "HARDWIRED_INSTALL_DESIGN", "INSTALL_WORKMANSHIP_STANDARD"],
+      "priority": 1
+    },
+    {
+      "trigger": "the week-one review finds flooded, silent or misrouted alerts, or unread reports",
+      "action": "retune thresholds, recipients and the report set against observed behavior; prune unconsumed config",
+      "nodes": ["ALERT_TUNING", "REPORT_WORKFLOW_MAPPING", "ADMIN_TRAINING_HANDOFF"],
+      "priority": 1
+    },
+    {
+      "trigger": "driver pushback, a grievance, or an unplug cluster after rollout",
+      "action": "re-run the disclosure conversation with the policy on the table, check monitoring scope against what was disclosed, and flag any jurisdictional question for verification",
+      "nodes": ["DRIVER_DISCLOSURE_ONBOARDING", "REGULATORY_FLAG_MAP", "LAWFUL_USE_GATE"],
+      "priority": 1
+    },
+    {
+      "trigger": "buffered, missing or teleporting tracks cluster in an area marked covered",
+      "action": "re-walk the coverage qualification for that area, correct the notes, and brief the admin on the artifact before it becomes a confidence crisis",
+      "nodes": ["NETWORK_COVERAGE_CHECK", "ADMIN_TRAINING_HANDOFF"],
+      "priority": 2
+    },
+    {
+      "trigger": "the fleet changes - vehicles added or sold, a new yard, crews reorganized, take-home policy introduced",
+      "action": "re-open intake for the delta, update matrix, account structure, fences and disclosure as affected, and run the per-unit pipeline for new units",
+      "nodes": ["INSTALL_INTAKE_SURVEY", "PLATFORM_ACCOUNT_PROVISIONING", "GEOFENCE_ARCHITECTURE", "DEVICE_ACTIVATION_PAIRING"],
+      "priority": 2
+    },
+    {
+      "trigger": "an acceptance exception passes its fix date or operations disputes an early fault's origin",
+      "action": "escalate the exception with its verification and triage records, resolve ownership, and close or re-date the item with the customer",
+      "nodes": ["FLEETWIDE_ACCEPTANCE_GATE", "INSTALL_DOCUMENTATION_PACK"],
+      "priority": 2
+    }
+  ],
+  "priority_rationale": "The frame nodes - intake, the lawful-use gate and the regulatory flag map - come first because every device, install and configuration choice reads from what the fleet is, what may lawfully be tracked, and which obligation classes are in play; device-family and coverage decisions precede physical install design because a family misfit is a re-order while a design fix is an afternoon; platform structure, pairing and disclosure precede install day so the yard work is matching and mounting rather than provisioning and improvising; and verification, triage, documentation and the acceptance gate close the sequence because they convert finished installs into a proven, disclosed, documented fleet that recurring operations can inherit without re-deriving it.",
+  "eval_objective": "verify_core_properties_of_tracker_installation_and_platform_onboarding_kb"
+}
