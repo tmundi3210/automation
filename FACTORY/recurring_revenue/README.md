@@ -44,10 +44,10 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 8 | `web_hosting` | Website & Hosting Reseller | 2 | 3/3 | pass | ✅ |
 | 9 | `cloud_reseller` | Business Email & Cloud Reseller | 2 | 3/3 | pass | ✅ |
 | 10 | `managed_cyber` | Managed Cybersecurity Services | 2 | 3/3 | pass | ✅ |
-| 11 | `life_insurance` | Life Insurance Agent | 3 | — | — | — |
-| 12 | `pc_insurance` | P&C Insurance Agent | 3 | — | — | — |
-| 13 | `medicare_agent` | Health / Medicare Insurance Agent | 3 | — | — | — |
-| 14 | `medical_alert` | Medical Alert Systems | 3 | — | — | — |
+| 11 | `life_insurance` | Life Insurance Agent | 3 | 3/3 | pass | ✅ |
+| 12 | `pc_insurance` | P&C Insurance Agent | 3 | 3/3 | pass | ✅ |
+| 13 | `medicare_agent` | Health / Medicare Insurance Agent | 3 | 3/3 | pass | ✅ |
+| 14 | `medical_alert` | Medical Alert Systems | 3 | 3/3 | pass | ✅ |
 | 15 | `home_warranty` | Home Warranty / Service Plan Sales | 3 | — | — | — |
 | 16 | `payroll_services` | Payroll Service / Referral | 4 | — | — | — |
 | 17 | `bookkeeping_sub` | Subscription Bookkeeping | 4 | — | — | — |
