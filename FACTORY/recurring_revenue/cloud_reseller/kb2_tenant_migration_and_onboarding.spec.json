@@ -1,0 +1,2149 @@
+{
+  "domain": "tenant_migration_and_onboarding",
+  "domain_label": "Tenant Setup, Migration & Onboarding",
+  "purpose": "A bounded method by which an independent business-email and cloud reseller moves a small business from its existing mail and file estate into a correctly architected, security-baselined tenant: deciding the documented authorization and least-privilege access model, the tenant and identity layout whose creation-time choices cannot be undone, the domain and DNS control plus mail-authentication design that keeps mail delivering, the migration method and the honest data-scope and fidelity statement it implies, the timed cutover with a proven rollback position, and the user communication, training, stabilization, as-built documentation and acceptance that end the project cleanly without interrupting the client's business or exceeding the access the client granted.",
+
+  "assumptions": [
+    "no observed dataset supplied; all scores are heuristic priors",
+    "the operator is a small independent reseller delivering a business suite (Microsoft 365, Google Workspace or a comparable platform) to small businesses, typically single-tenant engagements from a handful to a few dozen seats",
+    "administrative access to a client tenant is granted by the client in writing, exercised under least privilege, and revocable by the client at any time; the client owns the tenant, its domains and its data throughout",
+    "vendor plan capabilities, feature names, retention windows, enforcement defaults and delegated-administration mechanisms change over time, so every mechanism described here must be re-verified against the vendor's current documentation for the client's specific plan at build time",
+    "privacy, records-retention and sector-specific obligations vary by jurisdiction and industry; this KB names obligation classes only and assumes the operator verifies current rules in their own jurisdiction",
+    "the content is educational operating knowledge for the reseller and not personalized legal, tax, insurance or compliance advice for any client"
+  ],
+
+  "exclusions": [
+    "how indirect-reseller and partner (CSP-class) programs work, who bills whom, margin as a mechanism, support obligations to the program, anchor-suite choice, SMB segment selection, the trusted-IT-operator wedge, and ethical right-sizing of the license mix at the point of sale - that is the reseller-programs-and-targeting KB",
+    "monthly seat and license administration, true-ups, the ongoing support model and its boundaries, recurring security-posture reviews, renewal management, need-driven expansion paths and churn prevention - that is the subscription-management-and-expansion KB",
+    "quoting specific prices, per-seat rates, margins, setup fees or account multiples; commercial figures are treated as mechanisms whose current terms must be verified against the live partner program and the client's own quote",
+    "asserting specific statutory, regulatory or contractual requirements; obligation classes are named and current rules must be verified in the operator's jurisdiction",
+    "personalized legal, tax, insurance or financial advice to a client, which belongs with the client's own professionals",
+    "fear-based promotion of licenses, tiers or add-ons the client does not need, and any recommendation not traceable to an observed finding in that client's own environment",
+    "accessing, reading, retaining or repurposing client mail or files beyond the documented authorization and the least-privilege scope a specific task requires",
+    "enterprise-scale identity engineering (directory federation, elaborate conditional-access architectures) and full endpoint-management build-outs beyond the small-business baseline"
+  ],
+
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "Before touching a client's mail system, what authorization, access model and data-handling limits must exist, and how are they recorded?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "ENGAGEMENT_AUTHORIZATION names the authorizing officer, approved requesters, in-scope systems and the revocable delegated-access model, and LEAST_PRIVILEGE_DATA_HANDLING states the per-task role scoping, credential lifecycle and content-access rule",
+      "covered_by": ["ENGAGEMENT_AUTHORIZATION", "LEAST_PRIVILEGE_DATA_HANDLING"]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What has to be inventoried in the client's current environment before a migration can be scoped, scheduled or promised?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "SOURCE_ENVIRONMENT_DISCOVERY specifies the mailbox census with sizes and types, the permission map, aliases and lists, every device and application that sends as the domain, client devices, file locations and credential holders, gathered from consoles rather than memory",
+      "covered_by": ["SOURCE_ENVIRONMENT_DISCOVERY"]
+    },
+    {
+      "id": "CQ_03",
+      "question": "Who actually controls the domain and its DNS, and what must be proven about that control before a cutover date is promised?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "DOMAIN_AND_DNS_CONTROL gives the registrant, registrar and DNS-host custody check, the zone export with per-record ownership, the proven test change, the TTL reduction plan, and the recovery path when a third party holds the domain",
+      "covered_by": ["DOMAIN_AND_DNS_CONTROL"]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How is the tenant and its identity model laid out so that the decisions which cannot be reversed later are made correctly the first time?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "TENANT_AND_IDENTITY_ARCHITECTURE separates creation-time fixed choices from changeable ones and defines UPN alignment, per-human accounts versus shared and resource mailboxes, group-driven membership and licensing, the naming standard, and the cloud-only versus directory-sync decision",
+      "covered_by": ["TENANT_AND_IDENTITY_ARCHITECTURE"]
+    },
+    {
+      "id": "CQ_05",
+      "question": "What security baseline ships with every tenant, and how are administrative identities separated and multi-factor enforced without locking anyone - including the client - out?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "ADMIN_SEPARATION_AND_BREAKGLASS defines separate admin identities, the client-held credential and the alerted break-glass account, MFA_ENFORCEMENT_BASELINE gives the method choice, enrolment order, enforcement date, legacy-authentication closure and exception register, and TENANT_SECURITY_BASELINE lists the repeatable hardening set with its deviation register",
+      "covered_by": ["ADMIN_SEPARATION_AND_BREAKGLASS", "MFA_ENFORCEMENT_BASELINE", "TENANT_SECURITY_BASELINE"]
+    },
+    {
+      "id": "CQ_06",
+      "question": "If a user, an administrator or an attacker deletes something, what is actually recoverable, from where, and for how long?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "BACKUP_AND_RETENTION_DESIGN maps each loss scenario to a native or add-on recovery path with an owner and a time limit, states the deleted-account data window as a vendor-verified mechanism, and produces a recoverability statement the client has acknowledged",
+      "covered_by": ["BACKUP_AND_RETENTION_DESIGN"]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is mail authentication and device or application mail flow designed so the domain keeps delivering after cutover and cannot be trivially spoofed?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "MAIL_AUTHENTICATION_AND_FLOW consolidates authorization for every enumerated sender, enables and publishes signing, ramps policy from monitoring first, and assigns a relay or authentication method to each device and application",
+      "covered_by": ["MAIL_AUTHENTICATION_AND_FLOW"]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How is the migration method chosen, and what data actually moves at what fidelity?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"],
+      "acceptance_condition": "MIGRATION_METHOD_SELECTION scores the candidate method families against source capability, volume, measured throughput and interruption tolerance and records the decision, and DATA_SCOPE_AND_FIDELITY gives the per-data-class in-or-out decision, the fidelity note and the manual rebuild list",
+      "covered_by": ["MIGRATION_METHOD_SELECTION", "DATA_SCOPE_AND_FIDELITY"]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How do shared files and collaboration data move without breaking permissions or drowning the client's laptops and connection in sync traffic?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "FILE_AND_COLLABORATION_MIGRATION defines the shared-versus-personal destination layout, permission mapping onto groups, path and character remediation, the archive-versus-migrate decision, selective sync rollout and the count-and-access reconciliation",
+      "covered_by": ["FILE_AND_COLLABORATION_MIGRATION"]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How is the cutover sequenced, rehearsed and verified so the business does not lose mail?",
+      "must_be_answerable_from": ["nodes", "workflow"],
+      "acceptance_condition": "PILOT_MIGRATION measures real throughput and fidelity on a representative cohort, CUTOVER_RUNBOOK sets the timed sequence with owners, business-calendar constraints and a point of no return, and CUTOVER_EXECUTION_VERIFY proves delivery by two-way test per user, per shared mailbox and per sending device",
+      "covered_by": ["PILOT_MIGRATION", "CUTOVER_RUNBOOK", "CUTOVER_EXECUTION_VERIFY"]
+    },
+    {
+      "id": "CQ_11",
+      "question": "What is the way back if the cutover goes wrong, and when is the old system finally safe to switch off?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "ROLLBACK_AND_COEXISTENCE classifies what is reversible and what is not, defines the read-only source retention period and its access path, and gates decommission on acceptance, reconciliation, a client-held export and written approval",
+      "covered_by": ["ROLLBACK_AND_COEXISTENCE"]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How are the client's people prepared, set up, taught and supported through the change so the switch does not become a ticket flood?",
+      "must_be_answerable_from": ["nodes", "iteration_protocol"],
+      "acceptance_condition": "USER_CHANGE_COMMUNICATION defines the message cadence, per-user action list and client-side sender, USER_ONBOARDING_TRAINING defines the per-user setup checklist and the narrow high-frequency curriculum, and HYPERCARE_TRIAGE defines the issue taxonomy, impact-first triage and the stated window with an explicit end",
+      "covered_by": ["USER_CHANGE_COMMUNICATION", "USER_ONBOARDING_TRAINING", "HYPERCARE_TRIAGE"]
+    },
+    {
+      "id": "CQ_13",
+      "question": "Onboarding always exposes security and licensing gaps - how are they raised without fear-selling licenses the client does not need?",
+      "must_be_answerable_from": ["nodes", "dominance_rules"],
+      "acceptance_condition": "SCOPE_DISCIPLINE_NO_FEAR_UPSELL requires a neutral findings register tied to observed evidence and materiality, a plain statement of what the current subscription already includes, a split between fixes that block safe delivery and matters for the scheduled review, and recorded declines",
+      "covered_by": ["SCOPE_DISCIPLINE_NO_FEAR_UPSELL"]
+    },
+    {
+      "id": "CQ_14",
+      "question": "What documentation must exist at handover, and what acceptance gate ends the project and starts the recurring relationship?",
+      "must_be_answerable_from": ["nodes", "workflow"],
+      "acceptance_condition": "AS_BUILT_DOCUMENTATION lists the delivered-environment pack including credential custody and record ownership held by the client, and HANDOVER_ACCEPTANCE states the dated acceptance conditions, the proven client credential, the decommission decision and the project-to-service boundary",
+      "covered_by": ["AS_BUILT_DOCUMENTATION", "HANDOVER_ACCEPTANCE"]
+    }
+  ],
+
+  "glossary": [
+    {
+      "term": "tenant",
+      "definition": "The client's own isolated instance of the cloud suite - its identities, mailboxes, groups, files and policy settings. It belongs to the client even when a reseller administers it, and a number of its attributes are fixed at creation and can only be changed by building a new one."
+    },
+    {
+      "term": "delegated administration",
+      "definition": "An access model in which the client grants a partner administrative rights over their tenant through the vendor's partner relationship rather than by handing over a password; current partner (CSP-class) programs scope those rights by role and duration and let the client revoke them. The mechanism and its naming change between vendor programs and must be verified against the current program documentation."
+    },
+    {
+      "term": "break-glass account",
+      "definition": "A rarely used emergency administrator account held by the client, deliberately excluded from the policies that could block its sign-in, kept out of daily use and alerted on, so that a policy mistake, a lost second factor or a dispute with the supplier can never lock a business out of its own tenant."
+    },
+    {
+      "term": "MX cutover",
+      "definition": "The moment inbound delivery is redirected from the old system to the new one by changing the domain's mail-exchange records; because resolvers cache records for the length of the record's time-to-live, mail may arrive at both systems until the previous value expires everywhere."
+    },
+    {
+      "term": "autodiscover",
+      "definition": "The mechanism by which a mail client finds the correct server settings for an address, typically through specific DNS records or a vendor endpoint. When it still points at the old system, clients keep reconnecting to the wrong place after a cutover even though delivery itself is correct."
+    },
+    {
+      "term": "mail authentication triad (SPF, DKIM, DMARC)",
+      "definition": "SPF publishes which systems may send for a domain, DKIM signs outbound mail so a receiver can verify it, and DMARC tells receivers what to do when neither passes while reporting who is sending as the domain. All three live in DNS and are only as good as the sender inventory behind them."
+    },
+    {
+      "term": "coexistence (dual delivery)",
+      "definition": "A transitional state in which both the old and the new system can still receive or hold mail for the domain, used to move users in waves or to keep a retrieval path open after cutover. It is deliberately temporary, because a split estate fragments threads and confuses users."
+    },
+    {
+      "term": "migration fidelity",
+      "definition": "How faithfully each data class survives the move - mail, folder structure, calendars, contacts, delegate and send-as permissions, rules, categories and archives. Fidelity is a property of the chosen method and tool, so it cannot honestly be promised independently of them."
+    },
+    {
+      "term": "shared mailbox",
+      "definition": "A mailbox for a role or function (an enquiries or accounts address) that several named people open with their own accounts and granted permissions, instead of everyone signing in to one generic account with one shared password. The distinction matters for security, for auditing and often for how the seat is licensed."
+    },
+    {
+      "term": "hypercare window",
+      "definition": "The explicitly time-boxed period straight after cutover in which the delivery team expects, triages and logs a wave of small issues. It has a stated start, end and scope precisely so that stabilization does not quietly become unlimited free support."
+    }
+  ],
+
+  "nodes": [
+    {
+      "id": "ENGAGEMENT_AUTHORIZATION",
+      "topic": "written_authorization_and_admin_scope",
+      "definition": "Before any credential is issued or any record is changed, establish in writing who at the client may grant administrative access, what that access covers, and which named people may request changes to accounts and data. For a reseller this is a fiduciary-grade step rather than paperwork: a global-administrator credential in a business email tenant can read every director's mail, so the engagement must name the authorizing officer (usually the owner or a director), record the scope of systems, domains and mailboxes covered, list the approved requesters, and state the client's ownership of the tenant and its data from the first day. It also fixes the access model itself - delegated administration granted through the vendor's partner relationship and revocable by the client, rather than a personal password read out over the phone - together with the term of that access and how it ends.",
+      "group": "authorization",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": [
+          "named authorizing officer and approved-requester list",
+          "written scope of domains, systems and mailboxes covered",
+          "delegated, revocable access model rather than shared passwords",
+          "client ownership of the tenant and its data recorded from day one",
+          "the term of the access and how it is ended"
+        ],
+        "excluded": [
+          "partner-program enrolment and margin terms, which belong to the programs KB",
+          "the ongoing support scope and escalation ladder that follows handover",
+          "drafting the client's contracts, which is work for their own counsel"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A named authorizing officer plus an approved-requester list turns a request to open somebody else's mailbox from a judgement call into a documented procedure",
+          "example": "a manager phones asking for a departed colleague's mail to be forwarded to him; the request is routed to the authorizing officer and the written approval is filed with the change",
+          "weight": 0.87
+        },
+        {
+          "claim": "Recording client ownership and a revocable access model at the start removes the lock-in suspicion that poisons reseller relationships later",
+          "example": "the owner can see in the engagement record exactly how to revoke the reseller's delegated access without losing their own tenant",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Insisting on written authorization slows the first hours of an engagement and can read as bureaucratic to a ten-person firm that just wants its email fixed",
+          "example": "an owner who wants work started on a Friday afternoon has to be walked through a scope and access record before a single mailbox is touched",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "starting work on a verbal go-ahead and having no record when an access decision is later disputed",
+        "accepting the owner's personal password instead of establishing a delegated, revocable relationship",
+        "leaving the reseller as the only party holding tenant ownership, which is both a continuity risk and a commercial trap for the client"
+      ],
+      "acceptance_tests": [
+        "an authorization record exists naming the authorizing officer, the approved requesters, the in-scope domains and systems, and the access model, dated before the first administrative action",
+        "the client can state where tenant ownership sits and how to revoke the reseller's access without external help"
+      ],
+      "revisit_triggers": [
+        "the authorizing officer or an approved requester leaves the client",
+        "the engagement expands to a new domain, entity or system not named in the record"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.7, "user_value": 0.72,
+        "technical_complexity": 0.3, "risk_if_wrong": 0.88, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55, "confidence": 0.78, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.86, "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.9, "evidence_confidence": 0.7,
+        "failure_rate": 0.16, "downside_weight": 0.72,
+        "uncertainty_interval": [0.2, 0.42],
+        "update_signal": "an access dispute, or a request arriving that the existing authorization record does not clearly cover"
+      }
+    },
+    {
+      "id": "LEAST_PRIVILEGE_DATA_HANDLING",
+      "topic": "client_content_custody_and_least_privilege",
+      "definition": "Govern how client mail and files are actually touched during the project: which administrative role is used for which task, how migration service accounts and application consents are created and revoked, where staged data such as exported archive files or migration-tool copies lives, how it is encrypted and destroyed, and what content a technician may open at all. The working principle is that access is taken at the narrowest role that completes the task and for the shortest time - a migration account with mailbox-move rights rather than standing global administration, an export drive that is encrypted and wiped after acceptance, and a rule that mailbox content is opened only to reproduce a specific reported fault, with that access logged. The unit equally defines what the reseller never does: read, retain, index or repurpose client mail, or move client data through a personal account or an undisclosed third-party tool.",
+      "group": "authorization",
+      "dependencies": ["ENGAGEMENT_AUTHORIZATION"],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": [
+          "role selection per task with time-boxing",
+          "migration service-account and application-consent lifecycle including revocation",
+          "encryption and recorded destruction of staged exports",
+          "the content-access rule and its logging",
+          "disclosure to the client of every tool that touches their data"
+        ],
+        "excluded": [
+          "naming specific statutory data-protection duties, which vary and must be verified in your jurisdiction",
+          "the client's own internal data-retention policy decisions",
+          "ongoing alert monitoring and access review after handover, which is recurring-service work"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Task-scoped, time-boxed roles mean a compromised migration tool or a technician's mistake cannot reach the whole tenant",
+          "example": "the migration application's consent is revoked the day the final delta pass finishes rather than sitting in the tenant for years",
+          "weight": 0.83
+        },
+        {
+          "claim": "A written content-access rule protects both sides when a client later asks what the reseller could see",
+          "example": "a logged, single-mailbox access to reproduce a reported missing-folder fault, with the reason recorded against the ticket",
+          "weight": 0.76
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Least privilege slows troubleshooting, because the technician who needs to inspect a delegate permission has to escalate a role rather than already holding it",
+          "example": "a permissions fault takes an extra hour on a cutover night because the standing role was deliberately not global administrator",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "exported archive files left unencrypted on a technician's laptop or in a personal cloud account",
+        "migration service accounts and application consents that are never revoked after the project ends",
+        "opening a mailbox out of curiosity, which no log will excuse and no client will forgive"
+      ],
+      "acceptance_tests": [
+        "every credential, service account and application consent created for the migration appears on a register with an owner and a revocation date, and each is revoked or explicitly renewed at acceptance",
+        "staged exports are encrypted, their location is recorded, and their destruction after acceptance is evidenced"
+      ],
+      "revisit_triggers": [
+        "a new migration tool or sub-processor is introduced mid-project",
+        "a content-access request arrives that the authorization record does not cover"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.6, "user_value": 0.7,
+        "technical_complexity": 0.42, "risk_if_wrong": 0.9, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.6, "confidence": 0.72, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.88, "evidence_confidence": 0.66,
+        "failure_rate": 0.2, "downside_weight": 0.8,
+        "uncertainty_interval": [0.24, 0.5],
+        "update_signal": "a security incident, a client access audit, or a change in a migration tool's access model"
+      }
+    },
+    {
+      "id": "SOURCE_ENVIRONMENT_DISCOVERY",
+      "topic": "pre_migration_source_inventory",
+      "definition": "Build the inventory every later decision rests on. That means the mail platform in use and its plan or version, the mailbox census with per-mailbox size and item count, which mailboxes are real humans and which are shared, role or resource addresses, aliases and distribution lists, delegate and send-as permissions, server-side rules and external forwards, archives and desktop archive files that users treat as their real filing system, where documents actually live (a file server, a sync service, personal drives), every device and application that sends mail as the domain from the copier to the invoicing package to the appointment-reminder service, the mail clients and mobile devices staff use, and who holds each relevant credential. The inventory is taken from admin consoles and exports rather than from what the owner remembers, because the gap between the two is precisely where migration failures live.",
+      "group": "discovery",
+      "dependencies": ["ENGAGEMENT_AUTHORIZATION"],
+      "competency_question_refs": ["CQ_02"],
+      "scope_boundary": {
+        "included": [
+          "mailbox census with size, item count and mailbox type",
+          "permission, delegate, alias and distribution-list map",
+          "every device and application that sends as the domain, with an owner for each",
+          "client devices, mail clients and mobile estate",
+          "file-storage locations and desktop archive files",
+          "credential holders for each source system"
+        ],
+        "excluded": [
+          "pricing the engagement and choosing the license mix, which belong to the programs KB",
+          "tracking the same inventory as it drifts after handover, which is recurring-service work",
+          "the migration method itself, which this inventory feeds"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A console export of mailbox sizes and item counts turns a guess about the migration window into an estimate the client can plan a working week around",
+          "example": "discovering that two of twelve mailboxes hold most of the data changes the wave plan before any date is promised",
+          "weight": 0.88
+        },
+        {
+          "claim": "Asking what else sends mail as the domain surfaces the systems that fail silently after cutover",
+          "example": "the accounts package that emails invoices through an old relay is found during discovery instead of when a customer says the invoice never arrived",
+          "weight": 0.85
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Thorough discovery costs unbilled hours before the client has committed, and some environments only reveal their surprises under migration load",
+          "example": "an undocumented appointment-reminder integration that only becomes visible when reminders stop going out after cutover",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "counting employees instead of mailboxes and missing every shared and resource mailbox",
+        "trusting the owner's headcount over the source console export",
+        "never asking what else sends mail as the domain, which guarantees a post-cutover surprise"
+      ],
+      "acceptance_tests": [
+        "a mailbox census exists with per-mailbox size, item count and type, reconciled against the source console rather than against headcount",
+        "a list of every device and application that sends as the domain exists, each with a named owner and its current sending method"
+      ],
+      "revisit_triggers": [
+        "a mailbox, alias or sending application appears that is not on the inventory",
+        "the client acquires, merges or spins out an entity mid-project"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.8, "user_value": 0.78,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.4, "confidence": 0.72, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9, "evidence_confidence": 0.7,
+        "failure_rate": 0.24, "downside_weight": 0.65,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "a post-cutover incident traced to an item that was absent from the inventory"
+      }
+    },
+    {
+      "id": "DOMAIN_AND_DNS_CONTROL",
+      "topic": "domain_ownership_and_dns_authority",
+      "definition": "Establish, before any date is promised, that the client can genuinely control the DNS zone their email depends on: who is the registrant of record, who holds the registrar login, whether DNS is served at the registrar or delegated to a web host or another provider, whether registrar lock and auto-renew are on, when the registration expires, and how fast a change can actually be applied by whoever holds that console. The unit includes exporting the current zone and labelling every record keep, change or retire, identifying the records that must not be disturbed such as a website address record or a third-party verification entry, lowering the time-to-live on the records that will change far enough ahead of the window, and resolving the ordinary small-business situation in which a former web developer or a dissolved agency still holds the domain. Without proven control there is no cutover date, only an aspiration.",
+      "group": "foundations",
+      "dependencies": ["SOURCE_ENVIRONMENT_DISCOVERY"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": [
+          "registrant, registrar and DNS-host custody check",
+          "zone export with each record labelled keep, change or retire and an owner named",
+          "a proven test change by the party who will perform the cutover",
+          "time-to-live reduction planned ahead of the window",
+          "expiry, lock and auto-renew check, and the recovery path when a third party holds control"
+        ],
+        "excluded": [
+          "choosing or rebranding the domain name",
+          "website hosting and site content beyond the records mail depends on",
+          "routine DNS changes after handover, which are recurring-service work"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Proving DNS control in the first week converts the riskiest external dependency into a scheduled task instead of a cutover-night discovery",
+          "example": "finding immediately that a former web developer holds the registrar login, so recovery starts weeks before any date is offered",
+          "weight": 0.9
+        },
+        {
+          "claim": "A labelled zone export stops the cutover from collaterally breaking things that share the domain",
+          "example": "the record that verifies the client's payment provider is marked keep and survives the mail changes untouched",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The recovery path when a third party holds the domain can take weeks and sits outside the reseller's control, stalling an otherwise ready project",
+          "example": "waiting on a registrar transfer while the client's staff ask daily when the new email starts",
+          "weight": 0.68
+        }
+      ],
+      "failure_modes": [
+        "promising a cutover date before confirming who can change the mail records",
+        "letting a web host overwrite the zone during an unrelated website change",
+        "leaving the time-to-live reduction until the day of the cutover, so the old value still governs caches"
+      ],
+      "acceptance_tests": [
+        "a zone export exists with every record labelled keep, change or retire and the console that serves it named with its holder",
+        "a test record has been added and removed successfully by the party who will perform the cutover, and time-to-live values on the records to be changed have been lowered ahead of the window"
+      ],
+      "revisit_triggers": [
+        "the client changes registrar, web host or web developer",
+        "a record in the zone changes without a matching change record"
+      ],
+      "base": {
+        "criticality": 0.92, "business_value": 0.78, "user_value": 0.8,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.9, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.62, "confidence": 0.75, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.85, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.92, "evidence_confidence": 0.7,
+        "failure_rate": 0.2, "downside_weight": 0.75,
+        "uncertainty_interval": [0.2, 0.46],
+        "update_signal": "a failed or delayed record change, or a registrar or hosting change on the client side"
+      }
+    },
+    {
+      "id": "TENANT_AND_IDENTITY_ARCHITECTURE",
+      "topic": "tenant_layout_and_identity_model",
+      "definition": "Lay out the tenant and its identity model in the order that respects what cannot be undone. Some tenant attributes are fixed when the tenant is created and can only be changed by building a new one, so the initial name, the region or data-location class and the primary domain are chosen knowingly and checked against the vendor's current documentation rather than assumed. The client's real domain is verified and made primary before the first account exists, so that sign-in names match the addresses people actually hand out. The account model then settles: one licensed account per human, role addresses as shared mailboxes rather than generic logins shared by three people, rooms and equipment as resource accounts, groups that drive both membership and license assignment, and a naming standard that will still read sensibly at three times the headcount. Finally the identity source is decided deliberately - for most small businesses cloud-only is simpler and cheaper than synchronizing an ageing on-premises directory, and that decision should be made rather than inherited.",
+      "group": "architecture",
+      "dependencies": ["SOURCE_ENVIRONMENT_DISCOVERY"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": [
+          "creation-time choices that cannot be changed later, verified against current vendor documentation",
+          "domain verification and sign-in-name alignment with the primary address",
+          "per-human accounts, shared mailboxes for roles, resource accounts for rooms and equipment",
+          "group-driven membership and license assignment",
+          "naming standard for users, groups and shared mailboxes",
+          "the cloud-only versus directory-synchronized decision"
+        ],
+        "excluded": [
+          "which license SKUs are bought and what they cost or earn, which belongs to the programs KB",
+          "ongoing seat administration and true-ups after handover",
+          "the security policies layered on top of this model"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Settling sign-in names and the naming standard before the first account exists prevents a rename campaign that would break logins, permissions and every saved profile",
+          "example": "catching that the client wants first-name addresses before fifteen accounts have been created in an initial-plus-surname pattern",
+          "weight": 0.88
+        },
+        {
+          "claim": "Group-driven membership and licensing makes later joiner and leaver work a single action instead of a checklist nobody follows",
+          "example": "a new bookkeeper joins one group and receives the licence, the shared mailbox access and the finance library in one step",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A clean model collides with entrenched habits, and imposing it during a migration adds change the users did not ask for",
+          "example": "converting a generic office login used by three staff into a shared mailbox forces three personal accounts and new habits at the worst possible moment",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "creating accounts before the client's domain is verified, so every sign-in name carries the vendor's default domain",
+        "replicating shared logins because the client asked for them, which destroys auditability from day one",
+        "no naming standard, so groups and shared mailboxes become unreadable within a year"
+      ],
+      "acceptance_tests": [
+        "the client's domain is verified and primary before the first user account is created, and every account's sign-in name matches its primary address",
+        "a written account model lists each human account, shared mailbox, resource account and group with its purpose, its members and its naming pattern"
+      ],
+      "revisit_triggers": [
+        "the client adds a second trading domain or a new legal entity",
+        "headcount or structure changes enough that the group and naming model no longer sorts cleanly"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.75, "user_value": 0.8,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.8, "confidence": 0.7, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.86, "evidence_confidence": 0.66,
+        "failure_rate": 0.22, "downside_weight": 0.7,
+        "uncertainty_interval": [0.26, 0.55],
+        "update_signal": "a rename, domain addition or restructure the current model cannot absorb without rework"
+      }
+    },
+    {
+      "id": "ADMIN_SEPARATION_AND_BREAKGLASS",
+      "topic": "admin_identity_separation_and_emergency_access",
+      "definition": "Separate administrative power from daily work, and make sure nobody - including the reseller - can lock the client out of their own tenant. Day-to-day mailboxes do not carry global administrative rights; administrative work is done from a distinct account; the reseller works through a delegated relationship the client can revoke; and the client always holds at least one global-administrator credential of their own, stored where the owner can reach it without the reseller. A break-glass account is created with a long unique credential, excluded from the enforcement policies that could block it, kept out of daily use and alerted on so that any sign-in raises a flag. The reasoning is blunt: the accounts with the most power are exactly the ones attackers pursue, and a reseller holding the only administrative credential is a single point of failure the client never knowingly agreed to.",
+      "group": "security_baseline",
+      "dependencies": ["TENANT_AND_IDENTITY_ARCHITECTURE", "LEAST_PRIVILEGE_DATA_HANDLING"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": [
+          "a separate administrative identity per administrator, distinct from their mailbox account",
+          "at least one client-held global-administrator credential and its custody arrangement",
+          "break-glass account creation, policy exclusion, storage and sign-in alerting",
+          "delegated reseller access that is scoped, time-bound and revocable",
+          "role assignment by least privilege rather than by convenience"
+        ],
+        "excluded": [
+          "the multi-factor method and enforcement mechanics, which are their own unit",
+          "periodic privileged-access reviews on the recurring cadence after handover",
+          "the client's internal decision about who should be an administrator"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A client-held administrative credential plus an alerted break-glass account means neither a compromised supplier nor a lost phone can strand the business",
+          "example": "the owner can still reach the tenant on a Sunday when the reseller's own account is suspended during an incident",
+          "weight": 0.88
+        },
+        {
+          "claim": "Administering from an account that receives no mail removes the most common path from a phishing click to tenant-wide compromise",
+          "example": "a phishing message lands in the technician's ordinary mailbox, which holds no administrative rights at all",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Extra administrative identities and an emergency account are more credentials to secure, and an unmonitored break-glass account is itself a liability",
+          "example": "a break-glass credential ends up on a note under the owner's keyboard because nobody agreed where it should live",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "the reseller holding the only global-administrator credential, which is simultaneously a lock-in and a continuity risk",
+        "creating a break-glass account and never configuring an alert on its use",
+        "administering the tenant from the same account that reads mail and clicks links"
+      ],
+      "acceptance_tests": [
+        "at least one global-administrator credential is held by a named client officer and the reseller's access is delegated and demonstrably revocable",
+        "a break-glass account exists, is excluded from the policies that could block sign-in, is absent from daily use, and raises an alert to a monitored destination when used"
+      ],
+      "revisit_triggers": [
+        "an administrator joins or leaves either the client or the reseller",
+        "the vendor changes how delegated administration or role assignment works"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.66, "user_value": 0.72,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.88, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5, "confidence": 0.74, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.88, "evidence_confidence": 0.68,
+        "failure_rate": 0.2, "downside_weight": 0.78,
+        "uncertainty_interval": [0.22, 0.48],
+        "update_signal": "a lockout event, a vendor change to delegated administration, or an administrator change on either side"
+      }
+    },
+    {
+      "id": "MFA_ENFORCEMENT_BASELINE",
+      "topic": "multifactor_enforcement_and_legacy_authentication",
+      "definition": "Take the tenant from multi-factor being available to multi-factor being enforced with the legacy sign-in paths closed, in a sequence that locks nobody out mid-project. The work is: choose a method the client's staff can realistically use, favouring an authenticator application or a hardware key over text messages and documenting a fallback for the one employee without a suitable phone; enrol administrators first; run a registration window with an enforcement date the users have been told about in advance; block or tightly scope the older authentication protocols that bypass a second factor; and verify enforcement afterwards from sign-in data rather than assuming the switch worked. Because vendors keep changing defaults, enforcement surfaces and which protocols are being retired, the current mechanism must be checked against the vendor's live documentation for the client's plan at build time instead of from memory.",
+      "group": "security_baseline",
+      "dependencies": ["ADMIN_SEPARATION_AND_BREAKGLASS"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": [
+          "method selection with a documented fallback for users without a suitable phone",
+          "administrator-first enrolment order and a dated registration window",
+          "closure or scoping of legacy authentication paths",
+          "an exception register with owner, reason and expiry for each entry",
+          "post-enforcement verification from sign-in data"
+        ],
+        "excluded": [
+          "advanced conditional-access design that requires a higher licensing tier, which is a scheduled-review decision and must never be fear-sold during a cutover",
+          "the client's password policy for systems outside the tenant",
+          "identity-provider federation, which is outside the small-business baseline"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Enforcing at the tenant with a scheduled registration window turns multi-factor from an argument with each user into a dated project step",
+          "example": "administrators enrol in week one, staff enrol during the pilot, and enforcement flips on the announced date with the exception register already agreed",
+          "weight": 0.9
+        },
+        {
+          "claim": "Closing the legacy authentication paths removes the bypass that makes enforcement cosmetic",
+          "example": "sign-in data after the enforcement date shows no successful legacy protocol sign-ins for in-scope accounts",
+          "weight": 0.85
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Enforcement breaks everything that authenticated with a stored password - old handsets, scanners and small applications - and those breakages are reported as the new email being broken",
+          "example": "a warehouse tablet running an old mail client stops sending the morning stock report the night enforcement is switched on",
+          "weight": 0.72
+        }
+      ],
+      "failure_modes": [
+        "enabling enforcement before the break-glass exclusion exists, so a policy error locks out the tenant",
+        "granting a permanent exception to the owner, who is the most targeted account in the business",
+        "assuming legacy protocols are off because the vendor announced a retirement, without checking this tenant"
+      ],
+      "acceptance_tests": [
+        "every enabled account either has a registered second factor or an entry in the exception register carrying an owner, a reason and an expiry date",
+        "sign-in data after the enforcement date shows no successful legacy-authentication sign-ins for in-scope accounts, and the break-glass exclusion is confirmed still in place"
+      ],
+      "revisit_triggers": [
+        "the vendor changes enforcement defaults or retires an authentication path",
+        "an exception passes its expiry date, or a lockout is reported"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.7, "user_value": 0.76,
+        "technical_complexity": 0.58, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.42, "confidence": 0.72, "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9, "evidence_confidence": 0.64,
+        "failure_rate": 0.26, "downside_weight": 0.76,
+        "uncertainty_interval": [0.28, 0.56],
+        "update_signal": "vendor documentation showing a changed enforcement mechanism or a retired protocol, or a lockout or bypass incident in a delivered tenant"
+      }
+    },
+    {
+      "id": "TENANT_SECURITY_BASELINE",
+      "topic": "repeatable_tenant_hardening_baseline",
+      "definition": "The written, repeatable set of tenant settings applied to every client so that a secure default is a product rather than an act of memory: anti-phishing and anti-spam handling including impersonation protection for the owner and the finance addresses, external-sender marking, restriction of automatic forwarding to outside addresses, mailbox audit logging switched on, calendar and file sharing defaults set deliberately instead of left wide, alerting on suspicious sign-ins and on new inbox rules routed to an address a human actually reads, and limits on users granting third-party applications access to their mailbox. Each deviation for a particular client is written down with a reason, an owner and a date. The baseline is expressed as capability classes rather than as exact toggle names because those names, their locations and their defaults differ between vendors, plans and releases and must be re-checked against current vendor documentation whenever the baseline is applied.",
+      "group": "security_baseline",
+      "dependencies": ["MFA_ENFORCEMENT_BASELINE", "TENANT_AND_IDENTITY_ARCHITECTURE"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": [
+          "the standard hardening set stated as capability classes",
+          "per-client deviation register with reason, owner and date",
+          "alert destinations and the named human who reads them",
+          "third-party application consent limits and external sharing defaults",
+          "recording which baseline version was applied to this tenant"
+        ],
+        "excluded": [
+          "paid add-on security tooling and the decision to buy it, which is a scheduled-review matter and never a cutover-day upsell",
+          "endpoint and device management, which is an expansion path in the recurring KB",
+          "incident response after handover"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "One baseline applied to every tenant makes the delivered environment predictable, checkable and quick to hand to a second technician",
+          "example": "any client tenant can be walked against the same list, so a missing audit setting is a five-minute find rather than an archaeology exercise",
+          "weight": 0.86
+        },
+        {
+          "claim": "Restricting automatic external forwarding closes the quiet exfiltration path that follows most mailbox compromises",
+          "example": "an attacker who obtains a password cannot silently copy the finance mailbox to an outside address without tripping the restriction",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A fixed baseline collides with real workflows that depend on the very things it restricts, and every exception erodes the standard",
+          "example": "a bookkeeper's automatic forward to an external accountant breaks, and the exception has to be scoped, justified and recorded rather than simply granted",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "applying settings from memory, so every tenant differs subtly and none can be audited",
+        "granting silent exceptions under cutover pressure that are never recorded",
+        "routing alerts to an address nobody reads, which is worse than not alerting at all"
+      ],
+      "acceptance_tests": [
+        "the tenant has been walked item by item against the written baseline and every deviation is recorded with a reason, an owner and a date",
+        "a test alert reaches its monitored destination and the person who receives it can say what they would do with it"
+      ],
+      "revisit_triggers": [
+        "the vendor changes a default or introduces a new capability class within the baseline's scope",
+        "an incident or near miss shows the baseline missed a whole class of risk"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.72, "user_value": 0.74,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.35, "confidence": 0.72, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.84, "evidence_confidence": 0.66,
+        "failure_rate": 0.24, "downside_weight": 0.62,
+        "uncertainty_interval": [0.26, 0.52],
+        "update_signal": "a vendor default change, a new capability class, or an incident revealing a gap the baseline did not cover"
+      }
+    },
+    {
+      "id": "BACKUP_AND_RETENTION_DESIGN",
+      "topic": "recoverability_design_and_retention_limits",
+      "definition": "Decide and write down what can actually be recovered, from where and for how long, before the client needs it. The suite's own recycle bins, retention settings and hold features cover some loss classes and not others, their windows differ by plan and change over time, and data belonging to a deleted account in particular disappears on a vendor-defined schedule that has to be checked rather than assumed. The unit enumerates the loss scenarios this client is genuinely exposed to - a user emptying a folder and the bin, an account deleted at offboarding, ransomware encrypting synchronized files, a compromised mailbox wiped by an intruder - maps each to a native capability or to an add-on, judges whether a third-party backup is warranted by that exposure rather than by sales pressure, and defines how a restore would actually be performed and by whom. The output is a recoverability statement the client has read and acknowledged, replacing the assumption that anything in the cloud is automatically backed up.",
+      "group": "security_baseline",
+      "dependencies": ["TENANT_SECURITY_BASELINE"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": [
+          "enumerated loss scenarios mapped to a native or add-on recovery path",
+          "the deleted-account data window as a vendor-verified mechanism, plus the export step in offboarding",
+          "retention and hold settings applied to this tenant",
+          "a restore procedure with a named owner and a proven test restore",
+          "a plain statement of what is not recoverable at all"
+        ],
+        "excluded": [
+          "quoting backup product prices or margins, which are commercial matters for the other KBs",
+          "promoting a backup add-on on fear rather than an identified exposure",
+          "the ongoing restore-test cadence, which is a recurring-service commitment"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A written recoverability statement replaces a dangerous assumption with a decision the client actually made and can be held to",
+          "example": "the client reads that an offboarded account's data disappears on a vendor schedule and agrees to add a mailbox export step to the leaver checklist",
+          "weight": 0.88
+        },
+        {
+          "claim": "Testing one real restore during the project proves the recovery path exists rather than merely describing it",
+          "example": "a deliberately deleted test document is recovered end to end and the steps are captured in the documentation pack",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Backup adds a recurring cost the smallest clients resent until the day they need it, and honest framing sometimes means recommending no add-on at all",
+          "example": "a four-person firm with little unique file data is told the native features plus an export step are proportionate, which forgoes an add-on sale",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "assuming the vendor keeps everything indefinitely because it is in the cloud",
+        "deleting an offboarded account before its data has been exported and its window has been checked",
+        "protecting mail while leaving the collaboration files that the same business depends on uncovered"
+      ],
+      "acceptance_tests": [
+        "each identified loss scenario has a named recovery path, an owner and a stated time limit, and the client has acknowledged the recoverability statement in writing",
+        "at least one restore has been performed successfully in the delivered tenant rather than only described"
+      ],
+      "revisit_triggers": [
+        "the vendor changes a retention window or what a plan includes",
+        "the client's data profile changes materially, for instance by taking on records with a longer obligation class"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.78, "user_value": 0.8,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.7, "confidence": 0.66, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86, "evidence_confidence": 0.6,
+        "failure_rate": 0.26, "downside_weight": 0.82,
+        "uncertainty_interval": [0.3, 0.6],
+        "update_signal": "a real restore attempt that succeeded or failed, or a vendor change to a retention window or plan capability"
+      }
+    },
+    {
+      "id": "MAIL_AUTHENTICATION_AND_FLOW",
+      "topic": "sender_authorization_signing_and_policy_ramp",
+      "definition": "Design the domain's sending story so that mail still arrives after the cutover and cannot be trivially forged. Every system that sends as the domain - the new tenant, the website contact form, the customer-relationship tool, the invoicing package, the marketing platform, the copier that emails scans, the appointment-reminder service - is enumerated from discovery and then either authorized in a single consolidated sender-authorization record, moved to a subdomain of its own, or re-pointed to authenticate through the tenant. Outbound signing is enabled and published for the domain, and reporting policy is introduced in monitoring mode first so the reports reveal who is genuinely sending before anything is tightened toward quarantine or rejection. Sequence is the whole discipline here: publishing a strict policy before the sender inventory is complete silently kills legitimate mail from the systems nobody remembered.",
+      "group": "mail_integrity",
+      "dependencies": ["DOMAIN_AND_DNS_CONTROL", "SOURCE_ENVIRONMENT_DISCOVERY"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": [
+          "a single consolidated authorization record covering every enumerated sender, within the protocol's lookup limits",
+          "outbound signing enabled and published",
+          "monitor-first policy ramp with report review before any tightening",
+          "a relay or authentication method assigned to each device and application",
+          "subdomain strategy for bulk or third-party senders"
+        ],
+        "excluded": [
+          "marketing deliverability strategy and list hygiene",
+          "website hosting records beyond those mail depends on",
+          "ongoing report monitoring after handover, which is recurring-service work"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A monitor-first ramp reveals the forgotten senders while a policy change can still be adjusted rather than after it has bounced them",
+          "example": "reports show the accounting package still sending as the domain through a provider nobody listed, caught weeks before any enforcement",
+          "weight": 0.88
+        },
+        {
+          "claim": "Consolidating authorization into one valid record removes the silent invalidation that multiple or over-long records cause",
+          "example": "two competing authorization records left by a previous supplier are merged into one that resolves within the lookup limit",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The full ramp takes weeks of report reading that a fixed setup fee does not obviously pay for, and tightening early causes exactly the outage it was meant to prevent",
+          "example": "a client who wants everything finished this week pressing for a strict policy on day two, before the inventory is closed",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "leaving multiple authorization records, or a lookup chain too long to evaluate, so nothing is actually authorized",
+        "moving to a strict policy before the sender inventory is complete",
+        "leaving the copier relaying unauthenticated and discovering it only when scans stop arriving"
+      ],
+      "acceptance_tests": [
+        "a single valid authorization record covers every enumerated sender and resolves within the protocol's lookup limits, and outbound signing verifies on a test message from the tenant",
+        "policy has run in monitoring mode long enough for reports to show only known senders before any tightening is proposed"
+      ],
+      "revisit_triggers": [
+        "a new application or device begins sending as the domain",
+        "reports show an unrecognized source or an authentication failure rate above the agreed threshold"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.74, "user_value": 0.78,
+        "technical_complexity": 0.68, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.45, "confidence": 0.68, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.62,
+        "failure_rate": 0.3, "downside_weight": 0.7,
+        "uncertainty_interval": [0.3, 0.58],
+        "update_signal": "aggregate reports revealing unknown senders, or a delivery failure traced to authentication"
+      }
+    },
+    {
+      "id": "MIGRATION_METHOD_SELECTION",
+      "topic": "migration_path_choice_and_window_sizing",
+      "definition": "Choose how the data actually moves, given what the source platform supports and how much interruption this business can absorb. The families are: a single-event cutover in which everything moves and the records switch in one window, which is cheapest and fits small mailbox counts; a staged or wave migration in which users move in batches with coexistence in between, which becomes necessary as volume or seat count outgrows a single window; a longer coexistence arrangement in which both systems deliver during a transition, which is the heaviest to build and is justified only for larger or highly interruption-sensitive clients; and file-level or protocol-level transfer using export and import or a third-party migration tool where no native path exists. Each candidate is scored against source-platform capability, total volume and per-mailbox size, throughput measured in the pilot, the fidelity it preserves, the freeze the client can tolerate, and what it costs to build. The chosen path is written down with its reasoning, because it determines the runbook, the communication and the rollback position that follow.",
+      "group": "migration_planning",
+      "dependencies": ["SOURCE_ENVIRONMENT_DISCOVERY", "TENANT_AND_IDENTITY_ARCHITECTURE"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": [
+          "candidate method families and the prerequisites each imposes",
+          "volume, throughput and window sizing",
+          "the client's interruption tolerance as an explicit input",
+          "tool selection and the access model that tool requires",
+          "the written decision with its reasoning"
+        ],
+        "excluded": [
+          "the fidelity of individual data classes, decided in its own unit",
+          "executing the cutover itself",
+          "how the setup fee is quoted, which belongs to the programs KB"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Matching method to volume and interruption tolerance avoids both the over-engineered coexistence build and the weekend cutover that runs into Tuesday",
+          "example": "a firm whose two largest mailboxes dominate the data is moved in waves so the ten small mailboxes are live on Monday morning",
+          "weight": 0.86
+        },
+        {
+          "claim": "Writing the decision down keeps the runbook, the client communication and the rollback position consistent with one another",
+          "example": "the recorded choice of a wave migration explains why the records change only after the final wave rather than on night one",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The method has to be chosen before throughput is truly known, and source platforms impose limits that only appear under load",
+          "example": "a source provider that throttles concurrent connections turns a one-night plan into three nights",
+          "weight": 0.68
+        }
+      ],
+      "failure_modes": [
+        "choosing a single-event cutover because it is cheapest, without checking that the volume fits the window",
+        "selecting a migration tool whose access model the tenant's own security baseline forbids",
+        "not recording why the method was chosen, so the runbook quietly contradicts it"
+      ],
+      "acceptance_tests": [
+        "the selected method is recorded together with the source-platform capability, the volume, the estimated or measured throughput and the interruption tolerance it was chosen against",
+        "the source and destination access the chosen tool needs has been proven on a real account before any window is scheduled"
+      ],
+      "revisit_triggers": [
+        "pilot throughput differs materially from the planning estimate",
+        "the source platform changes its export capability or imposes new limits"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.8, "user_value": 0.76,
+        "technical_complexity": 0.7, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55, "confidence": 0.66, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.6,
+        "failure_rate": 0.3, "downside_weight": 0.68,
+        "uncertainty_interval": [0.32, 0.62],
+        "update_signal": "measured pilot throughput, or a source-platform capability change that invalidates the chosen path"
+      }
+    },
+    {
+      "id": "DATA_SCOPE_AND_FIDELITY",
+      "topic": "what_moves_and_at_what_fidelity",
+      "definition": "Decide in writing, with the client, exactly which data classes move and how faithfully each will arrive, because the gap between we moved your email and what a user finds on Monday morning is the most common source of migration disputes. Mail and folder structure, calendars, contacts, shared mailboxes, distribution lists, room bookings, delegate and send-as permissions, server-side rules, categories, signatures, archives and desktop archive files, and everything older than a chosen archive date each need an explicit in-or-out decision and an honest fidelity note: some methods carry folders but not rules, some carry mail but not calendar sharing, and permission and delegation maps very often have to be rebuilt by hand at the destination. The output is a short fidelity statement the client acknowledges, the users are told about in advance, and a manual rebuild list with an owner for everything the tool cannot carry.",
+      "group": "migration_planning",
+      "dependencies": ["MIGRATION_METHOD_SELECTION"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": [
+          "a per-data-class in-or-out decision",
+          "a fidelity note per class and the resulting manual rebuild list with owners",
+          "the archive cut-off decision and how older material is preserved",
+          "desktop archive file discovery and handling",
+          "the client-facing statement of what will not move"
+        ],
+        "excluded": [
+          "the transfer mechanism itself",
+          "file-share and collaboration content, handled in its own unit",
+          "retention policy design at the destination, handled in the recoverability unit"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "An acknowledged fidelity statement converts Monday-morning surprises into expectations that were set weeks earlier",
+          "example": "users are told in advance that client-side rules must be recreated, and a short how-to is included in the training pack",
+          "weight": 0.88
+        },
+        {
+          "claim": "A manual rebuild list with owners gets delegate and send-as permissions restored inside the window instead of during the first busy morning",
+          "example": "the two directors' assistants have their delegate access rebuilt and tested before the office opens",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Every honest exclusion invites a negotiation that can expand scope, and some clients read the fidelity note as evidence the supplier is not competent",
+          "example": "a client insisting that fifteen years of nested folders and every rule must arrive identically, which changes both method and price",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "promising that everything moves because it sounds better than the truth",
+        "missing desktop archive files that users consider their real filing system",
+        "having no manual rebuild list, so missing delegate permissions are discovered by the people who need them most"
+      ],
+      "acceptance_tests": [
+        "every data class carries a documented in-or-out decision and a fidelity note, and the client has acknowledged the statement of what will not move",
+        "the manual rebuild list exists with an owner per item and is scheduled inside the cutover plan rather than left to goodwill"
+      ],
+      "revisit_triggers": [
+        "a data class nobody scoped, such as a desktop archive or a shared calendar, is discovered",
+        "the migration method changes, since fidelity is a property of the method"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.78, "user_value": 0.86,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45, "confidence": 0.7, "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84, "evidence_confidence": 0.64,
+        "failure_rate": 0.26, "downside_weight": 0.66,
+        "uncertainty_interval": [0.28, 0.54],
+        "update_signal": "a post-cutover complaint about data the client assumed was in scope, or a change of migration method"
+      }
+    },
+    {
+      "id": "FILE_AND_COLLABORATION_MIGRATION",
+      "topic": "file_share_and_document_estate_migration",
+      "definition": "Move the shared files as deliberately as the mail, because a file server or a sprawl of personal drives is where small-business collaboration actually lives. The work covers deciding what belongs in a team library versus each user's personal storage, mapping existing share permissions onto groups instead of recreating hundreds of individual grants, handling the mechanical hazards - paths that are too long, characters the destination rejects, files locked open by an application, enormous media archives, versions and checked-out documents - deciding what is archived rather than migrated, and rolling the sync client out with selective sync so no laptop is asked to pull down the entire estate over a small office connection. The judgement call is how much cleanup to do in flight: migration is the only moment a client will ever tolerate a conversation about their folder structure, and every hour spent restructuring is an hour the mail cutover does not get.",
+      "group": "migration_planning",
+      "dependencies": ["DATA_SCOPE_AND_FIDELITY", "TENANT_AND_IDENTITY_ARCHITECTURE"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": [
+          "destination layout for shared versus personal content",
+          "permission mapping onto groups rather than individuals",
+          "path, character, lock and size remediation before transfer",
+          "the archive-versus-migrate decision for old material",
+          "sync client rollout with selective sync and bandwidth awareness",
+          "count, size and access reconciliation after transfer"
+        ],
+        "excluded": [
+          "mailbox data, handled elsewhere",
+          "records-management consulting beyond the destination layout",
+          "ongoing storage growth and add-on storage decisions after handover"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Mapping permissions onto groups during the move leaves the client with an access model they can maintain, instead of thousands of individual grants nobody dares touch",
+          "example": "the finance folder becomes a group-permissioned library, so a new bookkeeper gains access by joining one group",
+          "weight": 0.84
+        },
+        {
+          "claim": "Selective sync decided up front protects the office connection and the laptops on the first morning",
+          "example": "the archive library is left online-only rather than pulled down onto every device at nine o'clock on Monday",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "File migrations expose years of accumulated mess, and the cleanup conversation can consume the schedule the mail cutover needs",
+          "example": "discovering three overlapping copies of the same project tree the week before the cutover window",
+          "weight": 0.7
+        }
+      ],
+      "failure_modes": [
+        "syncing an entire large estate to every laptop and saturating the client's connection on the first morning",
+        "recreating per-user permissions one by one instead of mapping them onto groups",
+        "migrating while users keep editing the source, so the newest versions are the ones left behind"
+      ],
+      "acceptance_tests": [
+        "source and destination file counts and total size reconcile within an agreed tolerance, with every exception listed and explained",
+        "a sample of users can open, edit and save the files they need at the destination, and the sync client is configured not to pull unnecessary content"
+      ],
+      "revisit_triggers": [
+        "users keep saving into the old share after cutover",
+        "storage growth or sync complaints suggest the layout or the selective-sync choice was wrong"
+      ],
+      "base": {
+        "criticality": 0.76, "business_value": 0.72, "user_value": 0.8,
+        "technical_complexity": 0.72, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.7,
+        "irreversibility": 0.5, "confidence": 0.64, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.78, "evidence_confidence": 0.6,
+        "failure_rate": 0.32, "downside_weight": 0.6,
+        "uncertainty_interval": [0.32, 0.62],
+        "update_signal": "reconciliation gaps, or user behaviour showing the old share is still in daily use"
+      }
+    },
+    {
+      "id": "PILOT_MIGRATION",
+      "topic": "pilot_wave_and_throughput_measurement",
+      "definition": "Move a small, deliberately representative group before committing to the production window: the owner or the internal champion, one very large mailbox, one shared mailbox, one user with delegate permissions, and one user on the most awkward device in the building. The pilot is not a demonstration, it is the measurement that turns assumptions into numbers - real per-mailbox throughput, whether the migration tool's access model survives the security baseline that was just applied, whether permissions and calendars genuinely carry, how long a device and profile rebuild takes per person, and which support questions arrive first. Its outputs are a revised window estimate, a corrected fidelity note, an updated per-user setup script for the technician, and an explicit decision to proceed, to re-plan, or to change method.",
+      "group": "migration_execution",
+      "dependencies": ["DATA_SCOPE_AND_FIDELITY", "MFA_ENFORCEMENT_BASELINE"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": [
+          "representative cohort selection including a heavy, a shared and a delegated case",
+          "measured throughput and per-user setup time",
+          "fidelity verification against the acknowledged statement",
+          "an issue log whose fixes are folded back into the runbook",
+          "an explicit proceed, re-plan or change-method decision"
+        ],
+        "excluded": [
+          "the full production migration",
+          "the client's acceptance of the finished project",
+          "producing the training material, although the pilot informs it"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A pilot turns a promised window from an estimate into a measured projection and surfaces the unglamorous blockers while there is still time to act",
+          "example": "learning that each device needs a profile rebuild taking far longer than assumed, which re-sizes the whole onboarding day",
+          "weight": 0.9
+        },
+        {
+          "claim": "Piloting the awkward cases proves whether the security baseline and the migration tool can coexist before the whole business depends on it",
+          "example": "the tool's access request is rejected by the new tenant baseline during the pilot rather than at midnight on cutover night",
+          "weight": 0.85
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The pilot consumes part of a fixed setup fee, and pilot users live in a split state where some mail is in the old system and some in the new",
+          "example": "a champion who has to check two places for a week and says so loudly if the reason was never explained",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "piloting only easy mailboxes, so the measurement flatters the plan",
+        "not folding pilot fixes back into the runbook, so the same problems recur at scale",
+        "letting the pilot drift into an indefinite half-migrated state with no decision"
+      ],
+      "acceptance_tests": [
+        "the pilot cohort includes at least one very large mailbox, one shared mailbox and one delegated-permission case, and measured throughput and per-user setup time are recorded",
+        "every pilot issue is either fixed in the runbook or explicitly accepted with a reason before the production window is scheduled"
+      ],
+      "revisit_triggers": [
+        "measured throughput or setup time diverges from the plan beyond the agreed tolerance",
+        "a fidelity gap appears that the acknowledged statement did not cover"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.74, "user_value": 0.72,
+        "technical_complexity": 0.6, "risk_if_wrong": 0.76, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.3, "confidence": 0.7, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.82, "evidence_confidence": 0.66,
+        "failure_rate": 0.24, "downside_weight": 0.55,
+        "uncertainty_interval": [0.26, 0.52],
+        "update_signal": "pilot measurements that contradict the planning assumptions"
+      }
+    },
+    {
+      "id": "CUTOVER_RUNBOOK",
+      "topic": "timed_cutover_plan_and_rollback_point",
+      "definition": "Write the cutover as a timed sequence with owners, checkpoints and a stated point of no return, then schedule it against the client's business calendar rather than the reseller's. The runbook names the pre-stage synchronization and its completion criterion, confirms the time-to-live reduction already applied, states the freeze instruction given to users, fixes the exact order of record changes, specifies the delta pass, lists the per-user device steps, sets the verification checks that must pass before the window can close, names who is on call and how the client reaches that person, and defines what would trigger a rollback. Scheduling is part of the plan, not an afterthought: payroll runs, month-end, a tax deadline, a seasonal peak, a trade show or the single day the bookkeeper is in all determine when a cutover must not happen. A runbook that lives only in the technician's head is not a plan - the test is whether a second person could execute it.",
+      "group": "cutover",
+      "dependencies": ["PILOT_MIGRATION", "MAIL_AUTHENTICATION_AND_FLOW"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": [
+          "timed step sequence with owners, durations and pass criteria",
+          "pre-stage and delta-pass criteria",
+          "user freeze instruction and its duration",
+          "record-change order and the point of no return",
+          "business-calendar scheduling constraints confirmed in writing",
+          "on-call contact, escalation path and rollback trigger"
+        ],
+        "excluded": [
+          "execution and verification themselves",
+          "the content of user training",
+          "the recurring change-management process that applies after handover"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A written runbook lets a second technician run or finish the cutover and turns the rollback decision into a criterion rather than a panic",
+          "example": "the rule that records change only after the delta pass completes stops a well-meaning shortcut at midnight",
+          "weight": 0.88
+        },
+        {
+          "claim": "Scheduling against the client's calendar prevents the outage that costs the most",
+          "example": "the window is moved off payroll week once the bookkeeper's cycle is checked with the authorizing officer",
+          "weight": 0.85
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Building the runbook takes hours the client never sees, and an over-detailed plan can lull the operator into following steps instead of watching what is actually happening",
+          "example": "an evening spent planning a five-mailbox move that then runs in under an hour",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "scheduling the cutover onto payroll day, month-end or a seasonal peak",
+        "leaving no defined point of no return, so rollback becomes a judgement call under pressure",
+        "having no owner for the client-side communication step, so users learn about the change as it happens"
+      ],
+      "acceptance_tests": [
+        "the runbook lists each step with an owner, a duration and a pass criterion, and names both the point of no return and the rollback trigger",
+        "the scheduled window has been checked against the client's payroll, month-end and seasonal calendar and confirmed in writing by the authorizing officer"
+      ],
+      "revisit_triggers": [
+        "the business calendar changes or the window slips",
+        "a pilot finding or a method change alters the step sequence"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.76, "user_value": 0.78,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.5, "confidence": 0.72, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.88, "evidence_confidence": 0.66,
+        "failure_rate": 0.24, "downside_weight": 0.72,
+        "uncertainty_interval": [0.26, 0.52],
+        "update_signal": "a cutover that deviated from its plan, or a scheduling conflict discovered too late"
+      }
+    },
+    {
+      "id": "USER_CHANGE_COMMUNICATION",
+      "topic": "pre_cutover_user_communication",
+      "definition": "Prepare the client's people for a change to the tool they use most, on a schedule and in the client's own voice. The pack is small and concrete: what is changing and when, what each person must do and by when such as registering a second factor and knowing their new sign-in, what will look different on the first morning, what will not move and what to do about it, who to ask for help and how to reach them during the window, and a plain admission that the first days will produce small annoyances which get fixed quickly. It goes out on a cadence - an announcement, a reminder before the window, a note on the day and a note the morning after - signed by the owner or the internal champion rather than by an unfamiliar supplier address, because staff act on messages from their own management and ignore messages from vendors.",
+      "group": "onboarding",
+      "dependencies": ["CUTOVER_RUNBOOK", "DATA_SCOPE_AND_FIDELITY"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": [
+          "announcement, reminder, day-of and morning-after messages",
+          "a per-user action list with deadlines",
+          "the internal champion and the client-side signer of each message",
+          "the help route during and immediately after the window",
+          "honest expectation-setting about small disruptions"
+        ],
+        "excluded": [
+          "hands-on training content and its delivery",
+          "the ongoing support model and its response commitments",
+          "communication to the client's own customers, unless it was explicitly scoped"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Messages sent by the owner or champion actually get acted on, which is why second-factor registration completes before the window instead of during it",
+          "example": "a reminder from the owner two days out lifts enrolment from a handful of staff to nearly everyone",
+          "weight": 0.85
+        },
+        {
+          "claim": "Naming a single help route stops every question landing on the owner's phone during the busiest hour",
+          "example": "staff are told to message the champion first, who batches the genuine faults to the technician",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Communication is the first thing dropped when a project runs late, and over-communicating can create anxiety in a small office",
+          "example": "a detailed technical notice that leaves five staff convinced they are about to lose their email",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "sending nothing until the day of the cutover",
+        "writing in supplier jargon that staff cannot act on",
+        "naming no human to ask, so everyone calls the owner"
+      ],
+      "acceptance_tests": [
+        "the announcement, reminder and day-of messages have gone out from a client-side sender, and each names the required actions, the dates and the help route",
+        "second-factor registration and any other per-user prerequisite are confirmed complete before the window opens"
+      ],
+      "revisit_triggers": [
+        "the cutover date moves",
+        "prerequisite completion such as second-factor registration stalls below the agreed threshold"
+      ],
+      "base": {
+        "criticality": 0.74, "business_value": 0.68, "user_value": 0.86,
+        "technical_complexity": 0.28, "risk_if_wrong": 0.7, "cross_topic_coupling": 0.7,
+        "irreversibility": 0.25, "confidence": 0.76, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.76, "evidence_confidence": 0.68,
+        "failure_rate": 0.24, "downside_weight": 0.5,
+        "uncertainty_interval": [0.2, 0.44],
+        "update_signal": "cutover-day ticket volume traceable to a message that was never sent or never read"
+      }
+    },
+    {
+      "id": "CUTOVER_EXECUTION_VERIFY",
+      "topic": "cutover_execution_and_mail_flow_verification",
+      "definition": "Execute the runbook and then prove by test, not by tool report, that mail flows. Inside the window that means completing the delta pass, changing the records in the planned order, watching propagation from more than one vantage point rather than from the technician's own resolver, and then verifying: send and receive against an external address in both directions, test a reply to a message that was in flight during the switch, confirm that client auto-configuration points at the new service, re-point or re-authenticate the copier and every application relay, re-add mobile profiles, and check that each shared mailbox and each delegate permission genuinely opens for the person who needs it. Every check is ticked per user and per system rather than sampled in aggregate, because the migration reported success and the office manager can send from the shared address are entirely different claims.",
+      "group": "cutover",
+      "dependencies": ["CUTOVER_RUNBOOK", "USER_CHANGE_COMMUNICATION"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": [
+          "delta pass completion and the ordered record change",
+          "propagation checks from multiple vantage points",
+          "two-way external mail tests including an in-flight reply",
+          "auto-configuration and profile verification",
+          "device and application relay re-point and test message",
+          "per-user and per-shared-mailbox verification ticks"
+        ],
+        "excluded": [
+          "the plan that ordered these steps",
+          "the training that follows",
+          "long-tail issue handling in the stabilization window"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Per-user verification catches the one mailbox that silently failed, before its owner finds it on Monday",
+          "example": "a shared mailbox that migrated but whose send-as permission did not carry is found and fixed inside the window",
+          "weight": 0.9
+        },
+        {
+          "claim": "Testing every sending device closes the failure class that nobody notices until a customer complains",
+          "example": "the copier delivers a test scan through its new authenticated path before the technician leaves the site",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Verification lengthens the window and needs client-side participation at inconvenient hours, which small businesses resist",
+          "example": "asking the office manager to test the shared mailbox at nine on a Sunday evening",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "trusting the migration tool's success report instead of testing delivery",
+        "declaring the window closed before external mail has been tested in both directions",
+        "forgetting the devices and applications that send as the domain"
+      ],
+      "acceptance_tests": [
+        "external send and receive tests pass in both directions for a sampled set of users plus every shared mailbox, and each device or application that sends as the domain has delivered a test message after the change",
+        "every migrated user has an individually ticked verification line rather than an aggregate pass"
+      ],
+      "revisit_triggers": [
+        "any verification line fails or is skipped to save time",
+        "delivery complaints arrive in the days after the window"
+      ],
+      "base": {
+        "criticality": 0.92, "business_value": 0.78, "user_value": 0.88,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.9, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6, "confidence": 0.72, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.86, "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9, "evidence_confidence": 0.68,
+        "failure_rate": 0.22, "downside_weight": 0.8,
+        "uncertainty_interval": [0.24, 0.5],
+        "update_signal": "a post-window delivery failure that the verification checklist should have caught"
+      }
+    },
+    {
+      "id": "ROLLBACK_AND_COEXISTENCE",
+      "topic": "rollback_position_and_source_decommission",
+      "definition": "Keep a way back, and decide deliberately when to give it up. Before the window, classify what is genuinely reversible - record changes can be reverted, subject to cache expiry - and what is not, such as a deleted source mailbox, a re-provisioned server or a cancelled source subscription. Keep the source system alive and reachable in a read-only or reduced state for a defined period after cutover so anything missed can still be retrieved, and where the method supports it arrange dual delivery or forwarding so nothing addressed to the old system is lost. The coexistence period then has an end: a decommission gate requiring acceptance, a completed reconciliation, an export of the source data held by the client, and written approval before the old system is cancelled or wiped. Cancelling the source subscription the day after cutover to save one month of fees is the classic way to turn a recoverable problem into a permanent loss.",
+      "group": "cutover",
+      "dependencies": ["CUTOVER_RUNBOOK"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": [
+          "reversible versus irreversible classification with time limits",
+          "the source read-only retention period and who can reach it",
+          "dual delivery or forwarding where the method supports it",
+          "the decommission gate and its conditions",
+          "custody of the final source export"
+        ],
+        "excluded": [
+          "the ongoing backup design for the new tenant",
+          "the client's contractual termination terms with the source provider",
+          "renewal administration of the new subscription"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A live read-only source turns a missing folder from an incident into a retrieval",
+          "example": "a user finds a two-year-old thread missing three weeks after cutover and it is pulled from the still-reachable source",
+          "weight": 0.88
+        },
+        {
+          "claim": "A written decommission gate stops the irreversible step from being taken casually to save a month's subscription",
+          "example": "the old server is only wiped after acceptance, reconciliation and a client-held export are all evidenced",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Keeping the old system paid and reachable costs money and lets users keep working in it, fragmenting mail across two systems",
+          "example": "a partner who never switched clients keeps replying from the old account, so half the thread is invisible to everyone else",
+          "weight": 0.7
+        }
+      ],
+      "failure_modes": [
+        "cancelling the source subscription immediately to save a month's fee",
+        "setting no end to coexistence, so the client pays for two systems indefinitely",
+        "wiping a server before the client actually holds an export of what was on it"
+      ],
+      "acceptance_tests": [
+        "the rollback position is written down stating what is reversible, by whom and within what time, and the source remains reachable for the agreed period",
+        "the source is decommissioned only after acceptance, reconciliation, a client-held export and written approval, each evidenced"
+      ],
+      "revisit_triggers": [
+        "a retrieval request arrives near the end of the coexistence period",
+        "mail is observed still arriving into the source system"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.7, "user_value": 0.8,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.88, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.9, "confidence": 0.7, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86, "evidence_confidence": 0.62,
+        "failure_rate": 0.22, "downside_weight": 0.88,
+        "uncertainty_interval": [0.28, 0.56],
+        "update_signal": "a retrieval that failed because the source had already been decommissioned"
+      }
+    },
+    {
+      "id": "USER_ONBOARDING_TRAINING",
+      "topic": "user_setup_and_first_week_training",
+      "definition": "Get every person working in the new environment and teach the handful of things that otherwise generate most of the support load. Per user that means the mail profile on desktop and mobile, second-factor enrolment confirmed rather than assumed, the signature restored, shared mailboxes and calendars visible, delegate access working, files reachable through the sync client, and scanning or printing to mail still functioning. The teaching is deliberately narrow: how to find mail by searching rather than by folder archaeology, how to send from a shared address, how to share a calendar, how to recover a deleted item, how to read the external-sender warning and what to do with a suspicious message, and where documents now live. It is delivered as short sessions or floor-walking rather than a lecture, leaves a one-page reference behind, and is aimed at the tasks this business actually performs rather than at a tour of features.",
+      "group": "onboarding",
+      "dependencies": ["CUTOVER_EXECUTION_VERIFY"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": [
+          "a per-user setup checklist covering desktop, mobile, shared access, files and scanning",
+          "confirmed second-factor enrolment per user",
+          "the narrow high-frequency curriculum",
+          "a one-page reference left with the client",
+          "the champion's role as the first person staff ask"
+        ],
+        "excluded": [
+          "ongoing user training as a recurring commercial service",
+          "training on applications unrelated to the suite",
+          "stabilization triage, which follows this unit"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Teaching five high-frequency tasks removes most of the tickets a migration would otherwise generate in its first month",
+          "example": "ten minutes on searching and on sending from the shared address prevents the two most common calls",
+          "weight": 0.86
+        },
+        {
+          "claim": "A completed per-user checklist makes the exceptions visible by name instead of hiding them in an average",
+          "example": "the two field staff who were never set up appear as open lines rather than as a surprise the following week",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Training time sits inside a fixed setup fee and scales with headcount, so it is the first thing squeezed when a project runs long",
+          "example": "a twenty-user client where the planned training day quietly shrinks to two hours of floor-walking",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "handing out a sign-in and calling it onboarding",
+        "training only the people who happen to be in the office, leaving part-time and field staff untouched",
+        "teaching features rather than the tasks these people actually do every day"
+      ],
+      "acceptance_tests": [
+        "every user has a completed setup checklist covering desktop, mobile, shared access and files, with exceptions listed by name and scheduled",
+        "the high-frequency task list has been demonstrated to each group and a one-page reference has been left with the client"
+      ],
+      "revisit_triggers": [
+        "the same question recurs repeatedly during the stabilization window",
+        "a group of users was missed, or new staff joined after the training"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.72, "user_value": 0.9,
+        "technical_complexity": 0.35, "risk_if_wrong": 0.7, "cross_topic_coupling": 0.74,
+        "irreversibility": 0.25, "confidence": 0.74, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.8, "evidence_confidence": 0.68,
+        "failure_rate": 0.26, "downside_weight": 0.5,
+        "uncertainty_interval": [0.22, 0.46],
+        "update_signal": "the ticket mix in the first weeks showing which tasks the training failed to cover"
+      }
+    },
+    {
+      "id": "HYPERCARE_TRIAGE",
+      "topic": "post_cutover_stabilization_window",
+      "definition": "Run a defined, time-boxed period after cutover in which issues are expected, triaged quickly and used as evidence. The predictable classes are a device still pointed at the old server, a cached credential prompting endlessly, a missing folder that turns out to be an unmigrated archive, a delegate or send-as permission that did not carry, a rule that no longer runs, a distribution list whose members were never recreated, an application that has quietly stopped sending, and a user who is still working in the old system. Each is triaged by business impact rather than by arrival order, with anything that stops mail flowing taking precedence over cosmetic complaints. The window has a stated start, a stated end and a stated scope, and closing it is a deliberate, communicated act that hands the account into the recurring support arrangement rather than a silent drift into unlimited free help.",
+      "group": "stabilization",
+      "dependencies": ["CUTOVER_EXECUTION_VERIFY", "USER_ONBOARDING_TRAINING"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": [
+          "the expected issue taxonomy with a first-response action per class",
+          "triage ordered by business impact, mail-flow failures first",
+          "a running issue log that feeds documentation and training updates",
+          "the stated window length and its communicated end",
+          "the handoff conversation into the recurring arrangement"
+        ],
+        "excluded": [
+          "the recurring support model, its response commitments and its pricing",
+          "permanent monitoring of the tenant",
+          "new work requested during the window, which is change rather than defect"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A named window with a taxonomy makes the messy week after cutover a managed process instead of an open-ended obligation",
+          "example": "three permission faults and two device faults on day one are cleared in a morning because they were expected and already scripted",
+          "weight": 0.86
+        },
+        {
+          "claim": "Logging every issue turns the first week into evidence that improves the next migration",
+          "example": "the recurring missing-archive class leads to an explicit archive question being added to the discovery inventory",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Stabilization is intense unbilled work at exactly the moment the project fee is exhausted, and every quiet extension teaches the client to expect free support",
+          "example": "a window that slides from one week into a month because nobody ever said it had ended",
+          "weight": 0.7
+        }
+      ],
+      "failure_modes": [
+        "never declaring the window closed, so migration support becomes permanent free support",
+        "handling issues in arrival order, so a whole-office mail-flow fault waits behind a signature request",
+        "fixing issues without recording them, which loses the evidence that should update the runbook"
+      ],
+      "acceptance_tests": [
+        "the window's start, end and scope were stated to the client in writing before cutover, and its closure was confirmed in writing afterwards",
+        "every logged issue carries a class, a resolution and a note on whether the runbook, the documentation or the training needs updating"
+      ],
+      "revisit_triggers": [
+        "the issue arrival rate is still rising as the window's stated end approaches",
+        "the same issue class recurs after the window has closed"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.76, "user_value": 0.84,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.3, "confidence": 0.7, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.8, "evidence_confidence": 0.64,
+        "failure_rate": 0.3, "downside_weight": 0.55,
+        "uncertainty_interval": [0.26, 0.52],
+        "update_signal": "the issue log's composition and arrival curve across several completed migrations"
+      }
+    },
+    {
+      "id": "SCOPE_DISCIPLINE_NO_FEAR_UPSELL",
+      "topic": "findings_disclosure_without_fear_selling",
+      "definition": "Handle the security and licensing gaps that discovery inevitably exposes in a way that serves the client rather than the invoice. Onboarding is the moment of greatest client anxiety and greatest information asymmetry - the reseller has just seen the mailbox with no second factor, the password three people share, the file share open to everyone - and that is exactly why fear framing works here and is therefore ruled out. The practice is to record every finding in a neutral register stating what was observed, what could follow from it and how material it is for this particular business; to say plainly which mitigations are already included in what the client pays for today; to split what must be fixed now because it blocks safe delivery from what is worth reviewing later; to recommend nothing that is not tied to an observed finding; and to defer non-urgent expansion to the scheduled review instead of closing it while the client is under cutover stress. When a client declines, the decline is recorded with its date and reason and the relationship carries on.",
+      "group": "ethics_boundary",
+      "dependencies": ["SOURCE_ENVIRONMENT_DISCOVERY", "TENANT_SECURITY_BASELINE", "BACKUP_AND_RETENTION_DESIGN"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": [
+          "a neutral findings register tied to observed evidence with a materiality judgement",
+          "a plain statement of which mitigations the current subscription already includes",
+          "the split between fixes that block safe delivery and matters for the scheduled review",
+          "recorded declines with date and stated reason",
+          "deferral of non-urgent expansion to the scheduled review"
+        ],
+        "excluded": [
+          "the expansion catalogue, its pricing and the review cadence, which belong to the recurring KB",
+          "license-mix right-sizing at the point of sale, which belongs to the programs KB",
+          "anything amounting to personalized legal, insurance or financial advice, which belongs with the client's own professionals"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A neutral register with materiality lets the client make a real decision and makes the reseller's advice worth trusting for years",
+          "example": "recording that the owner's mailbox had no second factor, that it is high materiality, and that the fix is already included in the subscription they pay for rather than being an add-on",
+          "weight": 0.9
+        },
+        {
+          "claim": "Recording declines stops the same recommendation being re-litigated annually and protects both sides if the risk later materializes",
+          "example": "a declined backup add-on is logged with the client's stated reason and revisited only when the business changes",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Declining to fear-sell forgoes revenue a less scrupulous competitor will take, and some clients only act under pressure",
+          "example": "a client defers a warranted backup add-on precisely because it was presented as a considered option rather than an emergency",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "presenting a generic threat narrative instead of what was actually observed in this tenant",
+        "bundling an unneeded higher tier into the migration quote because the moment is commercially convenient",
+        "never recording declines, so the client feels pressured every year by the same conversation"
+      ],
+      "acceptance_tests": [
+        "every recommendation in the handover pack cites an observed finding in this client's own environment and states whether the mitigation is already included in the current subscription",
+        "declined recommendations are recorded with a date and the client's stated reason, and no recommendation relies on a threat framing unsupported by an observed finding"
+      ],
+      "revisit_triggers": [
+        "a declined finding's materiality changes because the business changed",
+        "a finding class appears that the register does not yet describe"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.66, "user_value": 0.86,
+        "technical_complexity": 0.25, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.74,
+        "irreversibility": 0.45, "confidence": 0.74, "node_conflict_pressure": 0.7,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.84, "evidence_confidence": 0.66,
+        "failure_rate": 0.22, "downside_weight": 0.72,
+        "uncertainty_interval": [0.24, 0.5],
+        "update_signal": "a client complaint about pressure selling, or a declined finding that later caused real harm"
+      }
+    },
+    {
+      "id": "AS_BUILT_DOCUMENTATION",
+      "topic": "delivered_environment_documentation",
+      "definition": "Produce the document that describes the environment as actually delivered, in a form the client owns and a second technician could work from: the tenant identifier and sign-in domain, every domain with its records and the console that serves them and who holds that console, the account and group model with how licences are assigned, every shared and resource mailbox with who has access, the security baseline applied together with each recorded deviation, the mail authentication records and the list of authorized senders, the recoverability decisions and the restore path, third-party applications and the permissions they hold, the credential custody map showing what the client holds and what the reseller holds and how to revoke it, and the migration record with its fidelity statement. It is written as the environment is built rather than reconstructed from memory afterwards, and a copy lives with the client rather than only inside the reseller's own systems.",
+      "group": "handover",
+      "dependencies": ["TENANT_SECURITY_BASELINE", "BACKUP_AND_RETENTION_DESIGN", "MAIL_AUTHENTICATION_AND_FLOW", "CUTOVER_EXECUTION_VERIFY"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": [
+          "tenant, domains, records and console custody",
+          "account, group and licence-assignment model with shared and resource mailboxes",
+          "baseline applied and every deviation",
+          "mail authentication records and the authorized sender list",
+          "recoverability decisions and the restore path",
+          "third-party application permissions",
+          "credential custody and how to revoke each one",
+          "the migration record and its fidelity statement"
+        ],
+        "excluded": [
+          "the reseller's internal pricing, margin or partner-program detail",
+          "the running change log maintained after handover",
+          "the client's own internal policies and procedures"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "An as-built pack held by the client removes the lock-in that makes clients resent their supplier, and lets a second technician answer a question without the original engineer",
+          "example": "a holiday-week records question is answered from the pack in minutes instead of waiting for the one person who remembers",
+          "weight": 0.88
+        },
+        {
+          "claim": "Documenting credential custody, not just settings, gives the client the part they actually need in a crisis",
+          "example": "the owner can see exactly which credential they hold, where it is stored and how to revoke the reseller's access",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Documentation is invisible to the client until the day they need it, and it decays the first time somebody makes a change without updating it",
+          "example": "a record changed during an urgent fix that the pack never reflects, so the next technician works from a false map",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "writing it at the end from memory, so it is wrong in exactly the details that matter",
+        "keeping it only inside the reseller's systems, which quietly recreates lock-in",
+        "documenting settings while omitting credential custody"
+      ],
+      "acceptance_tests": [
+        "the pack covers tenant, domains and records with console custody, the account and group model, the baseline and its deviations, mail authentication and authorized senders, recoverability and restore, third-party application permissions, and credential custody, and the client holds their own copy",
+        "a technician who did not build the environment can locate and change a named record and identify who holds each administrative credential using only the pack"
+      ],
+      "revisit_triggers": [
+        "any configuration change made during the project or the stabilization window",
+        "a handover question the pack could not answer"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.74, "user_value": 0.8,
+        "technical_complexity": 0.35, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.4, "confidence": 0.74, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.82, "evidence_confidence": 0.68,
+        "failure_rate": 0.28, "downside_weight": 0.6,
+        "uncertainty_interval": [0.24, 0.5],
+        "update_signal": "a question during handover or later support that the pack failed to answer"
+      }
+    },
+    {
+      "id": "HANDOVER_ACCEPTANCE",
+      "topic": "acceptance_gate_and_transition_to_service",
+      "definition": "Close the project with an explicit acceptance event rather than letting it fade into open-ended support. The gate has conditions: the verification checklist is complete, the stabilization window has closed, the as-built pack has been delivered and walked through, credential custody has been confirmed by the client actually signing in with the credential they hold, the recoverability statement has been acknowledged, the findings register including its declines has been reviewed, the decision about decommissioning the source system has been made in writing, and the boundary between project work and the recurring service has been stated so both sides know what is billable from tomorrow. Acceptance is the moment the client's ownership of their own environment becomes a demonstrated fact rather than a claim, and it is the clean hand-off point into the subscription and support relationship that follows.",
+      "group": "handover",
+      "dependencies": ["AS_BUILT_DOCUMENTATION", "HYPERCARE_TRIAGE", "ROLLBACK_AND_COEXISTENCE", "SCOPE_DISCIPLINE_NO_FEAR_UPSELL"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": [
+          "the dated acceptance checklist and who signed for the client",
+          "credential custody proven by the client using their own credential",
+          "a walkthrough of the documentation pack",
+          "acknowledgement of the recoverability statement and review of the findings register",
+          "the written source-decommission decision",
+          "the stated boundary between project work and the recurring service"
+        ],
+        "excluded": [
+          "the recurring service's scope, cadence and commercial terms",
+          "renewal and true-up administration",
+          "any new project work, which is scoped and priced separately"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A dated acceptance with a proven client credential ends the project cleanly and proves the client owns what they paid for",
+          "example": "the owner signs in with their own administrative credential during the handover meeting, so ownership is demonstrated rather than asserted",
+          "weight": 0.9
+        },
+        {
+          "claim": "Stating the project-to-service boundary at acceptance prevents the slow bleed of unbilled work that follows an unclear ending",
+          "example": "both sides leave the meeting knowing that new user setups from next week are service work rather than project work",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Pushing for formal acceptance can feel like chasing a signature while small items remain open, and a rigid gate can stall on something trivial",
+          "example": "acceptance delayed a fortnight over one user's mobile profile while the rest of the business works happily",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "having no acceptance event at all, so the project never ends and support expectations are set by accident",
+        "accepting while the source system is already gone and something is still missing",
+        "handing over documentation without confirming the client can actually use the credentials it describes"
+      ],
+      "acceptance_tests": [
+        "a dated acceptance record lists each condition met, names who signed for the client, and states the project-to-service boundary",
+        "the client has demonstrably used the administrative credential they hold, and the source-decommission decision is recorded in writing"
+      ],
+      "revisit_triggers": [
+        "an open item is discovered after acceptance",
+        "the client disputes what was in scope for the project"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.82, "user_value": 0.8,
+        "technical_complexity": 0.3, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55, "confidence": 0.74, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.84, "evidence_confidence": 0.66,
+        "failure_rate": 0.22, "downside_weight": 0.62,
+        "uncertainty_interval": [0.24, 0.48],
+        "update_signal": "a post-acceptance dispute, or an item found still open after sign-off"
+      }
+    }
+  ],
+
+  "edges": [
+    { "from": "ENGAGEMENT_AUTHORIZATION", "to": "SOURCE_ENVIRONMENT_DISCOVERY", "edge_type": "dependency",
+      "why_related": "discovery reads consoles and exports that only documented, authorized access makes lawful and defensible", "relation_strength": 0.86 },
+    { "from": "ENGAGEMENT_AUTHORIZATION", "to": "LEAST_PRIVILEGE_DATA_HANDLING", "edge_type": "dependency",
+      "why_related": "the handling rules operate inside the scope the authorization record defines, and cannot be narrower or broader than it", "relation_strength": 0.84 },
+    { "from": "SOURCE_ENVIRONMENT_DISCOVERY", "to": "DOMAIN_AND_DNS_CONTROL", "edge_type": "dependency",
+      "why_related": "discovery names the domains, the registrar and the DNS host whose custody then has to be proven", "relation_strength": 0.8 },
+    { "from": "SOURCE_ENVIRONMENT_DISCOVERY", "to": "TENANT_AND_IDENTITY_ARCHITECTURE", "edge_type": "dependency",
+      "why_related": "the account model is designed from the real mailbox census, role addresses and permission map rather than from headcount", "relation_strength": 0.84 },
+    { "from": "LEAST_PRIVILEGE_DATA_HANDLING", "to": "ADMIN_SEPARATION_AND_BREAKGLASS", "edge_type": "dependency",
+      "why_related": "separating administrative identities is how least privilege is actually implemented inside the tenant", "relation_strength": 0.82 },
+    { "from": "TENANT_AND_IDENTITY_ARCHITECTURE", "to": "ADMIN_SEPARATION_AND_BREAKGLASS", "edge_type": "dependency",
+      "why_related": "administrative and break-glass accounts are created within the naming and account model the architecture fixes", "relation_strength": 0.8 },
+    { "from": "ADMIN_SEPARATION_AND_BREAKGLASS", "to": "MFA_ENFORCEMENT_BASELINE", "edge_type": "dependency",
+      "why_related": "enforcement can only be switched on safely once separate admin identities and an excluded break-glass account exist", "relation_strength": 0.88 },
+    { "from": "MFA_ENFORCEMENT_BASELINE", "to": "TENANT_SECURITY_BASELINE", "edge_type": "dependency",
+      "why_related": "the wider hardening set assumes a second factor is already enforced and legacy sign-in paths are closed", "relation_strength": 0.82 },
+    { "from": "TENANT_SECURITY_BASELINE", "to": "BACKUP_AND_RETENTION_DESIGN", "edge_type": "dependency",
+      "why_related": "recoverability is designed against the residual loss scenarios the baseline does not already prevent", "relation_strength": 0.78 },
+    { "from": "DOMAIN_AND_DNS_CONTROL", "to": "MAIL_AUTHENTICATION_AND_FLOW", "edge_type": "dependency",
+      "why_related": "authorization, signing and policy records can only be published by whoever demonstrably controls the zone", "relation_strength": 0.9 },
+    { "from": "MIGRATION_METHOD_SELECTION", "to": "DATA_SCOPE_AND_FIDELITY", "edge_type": "dependency",
+      "why_related": "fidelity is a property of the chosen method and tool, so the scope statement is written after the method is fixed", "relation_strength": 0.86 },
+    { "from": "DATA_SCOPE_AND_FIDELITY", "to": "PILOT_MIGRATION", "edge_type": "dependency",
+      "why_related": "the pilot tests the fidelity claims the scope statement makes before the whole business relies on them", "relation_strength": 0.82 },
+    { "from": "MFA_ENFORCEMENT_BASELINE", "to": "PILOT_MIGRATION", "edge_type": "dependency",
+      "why_related": "the pilot must run against the hardened tenant so that any conflict between the tool and enforcement appears early", "relation_strength": 0.78 },
+    { "from": "PILOT_MIGRATION", "to": "CUTOVER_RUNBOOK", "edge_type": "dependency",
+      "why_related": "the runbook's timings, step order and per-user steps come from what the pilot actually measured", "relation_strength": 0.86 },
+    { "from": "MAIL_AUTHENTICATION_AND_FLOW", "to": "CUTOVER_RUNBOOK", "edge_type": "dependency",
+      "why_related": "the runbook's record-change order and device re-point steps are drawn from the sender and authentication design", "relation_strength": 0.8 },
+    { "from": "CUTOVER_RUNBOOK", "to": "USER_CHANGE_COMMUNICATION", "edge_type": "dependency",
+      "why_related": "what users are told to do and when comes straight out of the runbook's freeze window and per-user steps", "relation_strength": 0.8 },
+    { "from": "CUTOVER_RUNBOOK", "to": "CUTOVER_EXECUTION_VERIFY", "edge_type": "dependency",
+      "why_related": "execution is the runbook performed, and its verification checks are the runbook's pass criteria", "relation_strength": 0.9 },
+    { "from": "CUTOVER_RUNBOOK", "to": "ROLLBACK_AND_COEXISTENCE", "edge_type": "dependency",
+      "why_related": "the rollback trigger and point of no return defined in the runbook are what make a way back meaningful", "relation_strength": 0.84 },
+    { "from": "CUTOVER_EXECUTION_VERIFY", "to": "USER_ONBOARDING_TRAINING", "edge_type": "dependency",
+      "why_related": "users are set up and taught on an environment that has already been proven to send and receive", "relation_strength": 0.82 },
+    { "from": "CUTOVER_EXECUTION_VERIFY", "to": "HYPERCARE_TRIAGE", "edge_type": "dependency",
+      "why_related": "the stabilization window starts from the verification result and inherits its open lines", "relation_strength": 0.8 },
+    { "from": "CUTOVER_EXECUTION_VERIFY", "to": "AS_BUILT_DOCUMENTATION", "edge_type": "dependency",
+      "why_related": "the pack records the environment as verified after cutover, not as designed before it", "relation_strength": 0.78 },
+    { "from": "AS_BUILT_DOCUMENTATION", "to": "HANDOVER_ACCEPTANCE", "edge_type": "dependency",
+      "why_related": "acceptance requires a delivered, walked-through pack the client holds", "relation_strength": 0.86 },
+
+    { "from": "LEAST_PRIVILEGE_DATA_HANDLING", "to": "PILOT_MIGRATION", "edge_type": "constraint",
+      "why_related": "the migration tool's access model, its service account and where staged data lands are all bounded by the least-privilege rules", "relation_strength": 0.78 },
+    { "from": "TENANT_SECURITY_BASELINE", "to": "MIGRATION_METHOD_SELECTION", "edge_type": "constraint",
+      "why_related": "a method that depends on an authentication path or consent the baseline forbids is not available, whatever its cost advantage", "relation_strength": 0.76 },
+    { "from": "DOMAIN_AND_DNS_CONTROL", "to": "CUTOVER_RUNBOOK", "edge_type": "constraint",
+      "why_related": "no window may be scheduled until control of the zone has been proven and time-to-live reduction has been applied", "relation_strength": 0.88 },
+    { "from": "SCOPE_DISCIPLINE_NO_FEAR_UPSELL", "to": "BACKUP_AND_RETENTION_DESIGN", "edge_type": "constraint",
+      "why_related": "a backup add-on may only be proposed against an identified exposure and with the included native capabilities stated plainly", "relation_strength": 0.8 },
+
+    { "from": "MFA_ENFORCEMENT_BASELINE", "to": "MIGRATION_METHOD_SELECTION", "edge_type": "conflict",
+      "why_related": "closing legacy authentication paths breaks migration tools and protocols that rely on a stored password",
+      "resolution_rule": "keep tenant-wide enforcement and grant only a scoped, time-boxed exception for the named migration account, recorded in the exception register with an expiry no later than cutover; if no such exception is acceptable, change the migration method rather than weakening enforcement for users",
+      "relation_strength": 0.8, "conflict_probability": 0.45, "expected_rework_cost": 0.4 },
+    { "from": "CUTOVER_RUNBOOK", "to": "ROLLBACK_AND_COEXISTENCE", "edge_type": "conflict",
+      "why_related": "schedule pressure pushes toward passing the point of no return, while continuity demands the way back is kept open",
+      "resolution_rule": "business continuity dominates the schedule: the window does not open without a written rollback trigger and a reachable source, and the point of no return is only crossed when the runbook's stated pass criteria have been met",
+      "relation_strength": 0.82, "conflict_probability": 0.4, "expected_rework_cost": 0.55 },
+    { "from": "DATA_SCOPE_AND_FIDELITY", "to": "MIGRATION_METHOD_SELECTION", "edge_type": "conflict",
+      "why_related": "the fidelity the client wants can exceed what the cheapest viable method can deliver",
+      "resolution_rule": "never promise fidelity the chosen method cannot deliver: either change the method and re-price the work, or record the exclusion in the fidelity statement and obtain the client's acknowledgement before any mailbox moves",
+      "relation_strength": 0.84, "conflict_probability": 0.5, "expected_rework_cost": 0.45 },
+    { "from": "SCOPE_DISCIPLINE_NO_FEAR_UPSELL", "to": "TENANT_SECURITY_BASELINE", "edge_type": "conflict",
+      "why_related": "baseline work exposes gaps at the moment the client is most anxious and most likely to buy whatever is suggested",
+      "resolution_rule": "fix inside the project only what blocks safe delivery of the agreed scope; record every other finding neutrally with its materiality and defer it to the scheduled review, and never use a threat framing that is not supported by an observed finding in this tenant",
+      "relation_strength": 0.78, "conflict_probability": 0.4, "expected_rework_cost": 0.3 },
+    { "from": "FILE_AND_COLLABORATION_MIGRATION", "to": "CUTOVER_RUNBOOK", "edge_type": "conflict",
+      "why_related": "the appetite to clean up a decade of folder sprawl competes directly with the hours the mail cutover needs",
+      "resolution_rule": "the cutover date wins: only remediation that blocks transfer (illegal characters, over-long paths, locked files) happens inside the window, and discretionary restructuring is quoted and scheduled as separate work after acceptance",
+      "relation_strength": 0.76, "conflict_probability": 0.45, "expected_rework_cost": 0.35 },
+    { "from": "LEAST_PRIVILEGE_DATA_HANDLING", "to": "HYPERCARE_TRIAGE", "edge_type": "conflict",
+      "why_related": "fast triage under pressure tempts the technician toward standing high privilege and toward reading mailbox content",
+      "resolution_rule": "privilege is escalated per incident, time-boxed and logged with the reason, and mailbox content is opened only so far as reproducing the specific reported fault requires; speed never justifies standing global rights or browsing beyond the reported item",
+      "relation_strength": 0.8, "conflict_probability": 0.4, "expected_rework_cost": 0.3 },
+
+    { "from": "SOURCE_ENVIRONMENT_DISCOVERY", "to": "HYPERCARE_TRIAGE", "edge_type": "causal",
+      "why_related": "most post-cutover incidents trace back to something the inventory never captured, so discovery quality drives the stabilization load", "relation_strength": 0.82, "causal_confidence": 0.72 },
+    { "from": "USER_CHANGE_COMMUNICATION", "to": "HYPERCARE_TRIAGE", "edge_type": "causal",
+      "why_related": "what users were told, and by whom, largely determines how many of the first week's contacts are genuine faults rather than surprise", "relation_strength": 0.76, "causal_confidence": 0.68 },
+
+    { "from": "DOMAIN_AND_DNS_CONTROL", "to": "CUTOVER_EXECUTION_VERIFY", "edge_type": "sequence",
+      "why_related": "time-to-live reduction has to be applied at least one previous time-to-live period before the record change, or caches will keep sending mail to the old system after the switch", "relation_strength": 0.84 },
+    { "from": "PILOT_MIGRATION", "to": "USER_CHANGE_COMMUNICATION", "edge_type": "sequence",
+      "why_related": "dates and per-user instructions are announced to staff only after the pilot has measured what the window really takes", "relation_strength": 0.78 },
+
+    { "from": "HYPERCARE_TRIAGE", "to": "AS_BUILT_DOCUMENTATION", "edge_type": "feedback",
+      "why_related": "fixes and configuration changes made during stabilization must flow back into the pack or it becomes a false map", "relation_strength": 0.8 },
+    { "from": "CUTOVER_EXECUTION_VERIFY", "to": "MAIL_AUTHENTICATION_AND_FLOW", "edge_type": "feedback",
+      "why_related": "a failed delivery test or a device that cannot relay re-opens the sender authorization and flow design rather than being patched around", "relation_strength": 0.82 },
+
+    { "from": "USER_CHANGE_COMMUNICATION", "to": "USER_ONBOARDING_TRAINING", "edge_type": "similarity",
+      "why_related": "both are the people-facing half of delivery, drawing on the same internal champion and the same plain-language material, and they succeed or fail for the same reasons", "relation_strength": 0.62 }
+  ],
+
+  "conflict_axes": [
+    {
+      "name": "cutover_speed_vs_verified_readiness",
+      "description": "The client wants the promised date and the reseller wants the job finished, but pilot measurement, verification and a proven rollback position all take time the schedule resents.",
+      "poles": ["cut over on the promised date", "cut over only when measurement, verification and rollback are proven"],
+      "resolution_hint": "let readiness criteria rather than the calendar open the window; if the criteria are unmet, move the date and say why in writing, because a missed date costs far less than lost mail",
+      "affected_nodes": ["CUTOVER_RUNBOOK", "CUTOVER_EXECUTION_VERIFY", "PILOT_MIGRATION", "ROLLBACK_AND_COEXISTENCE"]
+    },
+    {
+      "name": "security_baseline_strictness_vs_user_friction",
+      "description": "Every hardening step that closes a real attack path also breaks a habit, a device or a workflow somebody depends on.",
+      "poles": ["enforce the full baseline immediately", "soften the baseline to keep users comfortable"],
+      "resolution_hint": "keep the baseline intact and absorb the friction through sequencing, training and a scoped exception register with expiry dates, rather than by lowering the standard",
+      "affected_nodes": ["MFA_ENFORCEMENT_BASELINE", "TENANT_SECURITY_BASELINE", "USER_ONBOARDING_TRAINING", "USER_CHANGE_COMMUNICATION"]
+    },
+    {
+      "name": "reseller_admin_convenience_vs_client_ownership",
+      "description": "It is faster for the reseller to hold every credential and administer directly, but that leaves the client unable to leave, unable to act in an emergency and dependent on one supplier.",
+      "poles": ["reseller holds all administrative access", "client owns the tenant and holds their own credential"],
+      "resolution_hint": "client ownership always wins: work through revocable delegated access, ensure the client holds an administrative credential they have actually used, and document custody in the handover pack",
+      "affected_nodes": ["ADMIN_SEPARATION_AND_BREAKGLASS", "ENGAGEMENT_AUTHORIZATION", "AS_BUILT_DOCUMENTATION", "HANDOVER_ACCEPTANCE"]
+    },
+    {
+      "name": "migration_fidelity_vs_window_and_budget",
+      "description": "Carrying every rule, permission, category and archive perfectly costs method complexity, tool licensing and hours that a fixed setup fee does not contain.",
+      "poles": ["move everything at full fidelity", "move what the business needs inside the agreed window"],
+      "resolution_hint": "decide fidelity per data class against business need, write the exclusions into a statement the client acknowledges, and price any upgrade in fidelity as a change rather than absorbing it silently",
+      "affected_nodes": ["DATA_SCOPE_AND_FIDELITY", "MIGRATION_METHOD_SELECTION", "PILOT_MIGRATION", "FILE_AND_COLLABORATION_MIGRATION"]
+    },
+    {
+      "name": "lift_and_shift_vs_clean_rebuild",
+      "description": "Carrying the existing mess across is quick and familiar; rebuilding it cleanly is better forever but adds change at the moment users are least receptive.",
+      "poles": ["replicate the current environment as-is", "rebuild to a clean standard model"],
+      "resolution_hint": "rebuild only what would be expensive or impossible to change later - identity model, naming, shared mailboxes, permission groups - and carry the rest across unchanged for a later, separately scheduled cleanup",
+      "affected_nodes": ["TENANT_AND_IDENTITY_ARCHITECTURE", "FILE_AND_COLLABORATION_MIGRATION", "DATA_SCOPE_AND_FIDELITY", "SOURCE_ENVIRONMENT_DISCOVERY"]
+    },
+    {
+      "name": "legacy_sender_compatibility_vs_authentication_hygiene",
+      "description": "The copier, the alarm panel and the ten-year-old line-of-business application all want to send mail the way they always have, while authentication hygiene requires that only known, authorized systems can send as the domain.",
+      "poles": ["keep every legacy sender working as it is", "authorize and authenticate every sender strictly"],
+      "resolution_hint": "enumerate senders first, give each one a supported path (authenticated submission, an authorized relay, or its own subdomain), and tighten policy only after monitoring shows the inventory is complete",
+      "affected_nodes": ["MAIL_AUTHENTICATION_AND_FLOW", "MFA_ENFORCEMENT_BASELINE", "SOURCE_ENVIRONMENT_DISCOVERY", "CUTOVER_EXECUTION_VERIFY"]
+    },
+    {
+      "name": "documented_authorization_vs_expedient_access",
+      "description": "Written authorization and least-privilege escalation slow the first hours and the worst hours, exactly when everyone wants the technician to just fix it.",
+      "poles": ["act now on a verbal request", "act only within documented, logged authorization"],
+      "resolution_hint": "documented authorization dominates: use a fast written path such as an email confirmation from the authorizing officer, but never substitute urgency for a record, and never open content beyond the reported fault",
+      "affected_nodes": ["ENGAGEMENT_AUTHORIZATION", "LEAST_PRIVILEGE_DATA_HANDLING", "HYPERCARE_TRIAGE"]
+    },
+    {
+      "name": "observed_need_vs_revenue_temptation",
+      "description": "Onboarding reveals genuine gaps at the moment the client is most anxious, which is precisely when an add-on sale is easiest and least trustworthy.",
+      "poles": ["sell the fix while the fear is fresh", "record the finding neutrally and defer to the scheduled review"],
+      "resolution_hint": "only fixes that block safe delivery of the agreed scope happen now; everything else goes into the findings register with observed evidence and materiality and is decided at the review, with declines recorded and respected",
+      "affected_nodes": ["SCOPE_DISCIPLINE_NO_FEAR_UPSELL", "BACKUP_AND_RETENTION_DESIGN", "TENANT_SECURITY_BASELINE", "HANDOVER_ACCEPTANCE"]
+    },
+    {
+      "name": "bounded_hypercare_vs_open_ended_goodwill",
+      "description": "Generosity after cutover builds enormous goodwill and also silently converts a fixed-fee project into unlimited free support.",
+      "poles": ["help with everything for as long as it takes", "hold the stated window and its scope"],
+      "resolution_hint": "state the window and its scope in writing before cutover, be genuinely generous inside it, close it explicitly, and route everything after it through the recurring arrangement",
+      "affected_nodes": ["HYPERCARE_TRIAGE", "HANDOVER_ACCEPTANCE", "USER_ONBOARDING_TRAINING"]
+    },
+    {
+      "name": "one_standard_baseline_vs_per_client_bespoke",
+      "description": "A single repeatable baseline is what makes a one-person reseller able to run many tenants safely, while each client has a workflow that wants an exception.",
+      "poles": ["apply the identical standard everywhere", "tailor each tenant to its client"],
+      "resolution_hint": "keep one baseline and one deviation register: exceptions are allowed but must be written down with a reason, an owner and a date so the standard stays visible and auditable",
+      "affected_nodes": ["TENANT_SECURITY_BASELINE", "BACKUP_AND_RETENTION_DESIGN", "AS_BUILT_DOCUMENTATION", "TENANT_AND_IDENTITY_ARCHITECTURE"]
+    }
+  ],
+
+  "edge_cases": [
+    {
+      "description": "The client cannot produce registrar credentials because the domain was registered years ago by a web developer who has since disappeared or wound up their company",
+      "trigger": "nobody at the client can log in to the registrar, and the registrant contact is an old third-party address",
+      "affected_nodes": ["DOMAIN_AND_DNS_CONTROL", "CUTOVER_RUNBOOK"],
+      "mitigation": "start the registrar's documented recovery or transfer process immediately, do not offer any cutover date until control is proven, and if the domain proves unrecoverable treat a domain change as a separate business decision for the client with its own communication plan",
+      "severity": "high"
+    },
+    {
+      "description": "What the client calls a shared mailbox turns out to be one licensed account that three staff sign in to with the same password",
+      "trigger": "discovery finds a single account with several people's devices and no individual attribution",
+      "affected_nodes": ["TENANT_AND_IDENTITY_ARCHITECTURE", "SOURCE_ENVIRONMENT_DISCOVERY", "MFA_ENFORCEMENT_BASELINE"],
+      "mitigation": "convert to individual accounts plus a shared mailbox with granted permissions, explain the auditing and second-factor reasons to the owner, and schedule the change with the migration rather than after it",
+      "severity": "high"
+    },
+    {
+      "description": "One mailbox or archive is far larger than the rest and will not fit the planned window, or a single desktop archive file is enormous",
+      "trigger": "the census shows one or two mailboxes dominating total volume, or a very large archive file is found on a workstation",
+      "affected_nodes": ["MIGRATION_METHOD_SELECTION", "DATA_SCOPE_AND_FIDELITY", "PILOT_MIGRATION"],
+      "mitigation": "pre-stage the heavy mailbox well ahead, split it by archive date, or move it as a separate wave; record the split in the fidelity statement and never let one mailbox dictate the whole business's window",
+      "severity": "medium"
+    },
+    {
+      "description": "A copier, alarm panel or line-of-business application sends mail as the domain and nobody knows its credentials or who configured it",
+      "trigger": "discovery or authentication reports show a sender that no person at the client can account for",
+      "affected_nodes": ["MAIL_AUTHENTICATION_AND_FLOW", "SOURCE_ENVIRONMENT_DISCOVERY", "CUTOVER_EXECUTION_VERIFY"],
+      "mitigation": "trace the sender through mail logs and reports, give it a supported authenticated path with a dedicated account before any policy is tightened, and verify it with a test message inside the cutover window",
+      "severity": "high"
+    },
+    {
+      "description": "The owner refuses to use a second factor while being the single most targeted account in the business",
+      "trigger": "the authorizing officer asks to be excluded from enforcement because it is inconvenient",
+      "affected_nodes": ["MFA_ENFORCEMENT_BASELINE", "SCOPE_DISCIPLINE_NO_FEAR_UPSELL", "ENGAGEMENT_AUTHORIZATION"],
+      "mitigation": "offer the lowest-friction supported method, explain the exposure using what was observed in their own environment rather than a generic scare, and if the refusal stands record it as a dated exception with an expiry and a written acknowledgement rather than quietly weakening the tenant",
+      "severity": "high"
+    },
+    {
+      "description": "The only available cutover weekend collides with payroll, month-end, a filing deadline or the client's seasonal peak",
+      "trigger": "the business calendar check finds the proposed window sits on a critical business event",
+      "affected_nodes": ["CUTOVER_RUNBOOK", "USER_CHANGE_COMMUNICATION"],
+      "mitigation": "move the window, or if the date is immovable split the migration into waves that leave the critical function untouched until after the event, and confirm the choice in writing with the authorizing officer",
+      "severity": "medium"
+    },
+    {
+      "description": "The source is a consumer-grade or free mail service whose export and access capabilities are limited, throttled or being retired",
+      "trigger": "the chosen migration tool cannot obtain the access it needs, or transfers run far slower than planned",
+      "affected_nodes": ["MIGRATION_METHOD_SELECTION", "PILOT_MIGRATION", "DATA_SCOPE_AND_FIDELITY"],
+      "mitigation": "measure the real limit in the pilot, fall back to a per-user export and import path with an explicit fidelity note, and re-size the window and the communication before promising anything",
+      "severity": "medium"
+    },
+    {
+      "description": "A departing employee's mailbox must be preserved untouched because of a dispute or an investigation while the migration is under way",
+      "trigger": "the client discloses a legal matter, or asks for one mailbox to be frozen",
+      "affected_nodes": ["BACKUP_AND_RETENTION_DESIGN", "LEAST_PRIVILEGE_DATA_HANDLING", "ROLLBACK_AND_COEXISTENCE"],
+      "mitigation": "leave that mailbox in place, apply the platform's hold capability class after verifying its current behaviour, keep the source copy reachable, log every access, and tell the client to take their own legal advice on the obligation class involved",
+      "severity": "high"
+    },
+    {
+      "description": "DNS is managed by a third-party web host who applies changes slowly, in business hours only, or overwrites the zone during unrelated site work",
+      "trigger": "the DNS custody check shows the change path runs through an unresponsive or careless third party",
+      "affected_nodes": ["DOMAIN_AND_DNS_CONTROL", "CUTOVER_RUNBOOK", "MAIL_AUTHENTICATION_AND_FLOW"],
+      "mitigation": "agree the change ticket and its timing with that host in advance, or move DNS hosting to a console the client controls before the window; keep a zone export so an overwrite can be reversed quickly",
+      "severity": "high"
+    },
+    {
+      "description": "After cutover some users keep working in the old system, so conversations split across two mailboxes and replies vanish from colleagues' view",
+      "trigger": "the stabilization log shows mail still arriving in or being sent from the source system",
+      "affected_nodes": ["ROLLBACK_AND_COEXISTENCE", "HYPERCARE_TRIAGE", "USER_ONBOARDING_TRAINING"],
+      "mitigation": "identify the users, remove the old profile from their devices, keep the source read-only for retrieval only, and reinforce with the champion that the old system is no longer a place to work",
+      "severity": "medium"
+    },
+    {
+      "description": "The migration tool reports complete success but a delegate or send-as permission set never carried, and it is discovered days later by the person who needed it",
+      "trigger": "a user reports they cannot open or send from a mailbox they always could",
+      "affected_nodes": ["CUTOVER_EXECUTION_VERIFY", "DATA_SCOPE_AND_FIDELITY", "HYPERCARE_TRIAGE"],
+      "mitigation": "treat permission rebuild as a manual list verified per user inside the window rather than as tool output, and add the missed case to the verification checklist so it cannot recur on the next migration",
+      "severity": "medium"
+    },
+    {
+      "description": "A manager asks the reseller directly to give them access to another employee's mailbox, or to forward it, without going through the authorizing officer",
+      "trigger": "an access request arrives from somebody who is not on the approved-requester list, often framed as urgent",
+      "affected_nodes": ["ENGAGEMENT_AUTHORIZATION", "LEAST_PRIVILEGE_DATA_HANDLING"],
+      "mitigation": "decline politely, route the request to the authorizing officer for written approval, execute only what that approval covers, and file the approval with the change record; never act on urgency alone",
+      "severity": "high"
+    }
+  ],
+
+  "workflow": [
+    {
+      "action": "Establish written authorization, the access model and the data-handling limits",
+      "node_ref": "ENGAGEMENT_AUTHORIZATION",
+      "description": "Name the authorizing officer and approved requesters, record the in-scope domains, systems and mailboxes, agree delegated revocable access rather than shared passwords, and state client ownership of tenant and data",
+      "artifact": "authorization and access-scope record",
+      "gate": "the record is dated before any administrative action and names the officer, the requesters, the scope, the access model and how it is revoked"
+    },
+    {
+      "action": "Inventory the source environment from consoles rather than from memory",
+      "node_ref": "SOURCE_ENVIRONMENT_DISCOVERY",
+      "description": "Export the mailbox census with sizes and types, map permissions, aliases and lists, enumerate every device and application that sends as the domain, locate files and archives, and list credential holders",
+      "artifact": "source environment inventory",
+      "gate": "mailbox census reconciles against the source console, and every sending device or application has a named owner and a current sending method"
+    },
+    {
+      "action": "Prove domain and DNS control and prepare the zone",
+      "node_ref": "DOMAIN_AND_DNS_CONTROL",
+      "description": "Confirm registrant, registrar and DNS host custody, export the zone and label each record keep, change or retire, perform a test change, and lower time-to-live on the records that will change",
+      "artifact": "DNS custody and zone-preparation record",
+      "gate": "a test record has been added and removed by the party who will run the cutover, and reduced time-to-live values are live well before the window"
+    },
+    {
+      "action": "Design the tenant and identity model before creating any account",
+      "node_ref": "TENANT_AND_IDENTITY_ARCHITECTURE",
+      "description": "Fix the creation-time choices knowingly, verify the client domain and make it primary, and settle per-human accounts, shared and resource mailboxes, groups, licence assignment and the naming standard",
+      "artifact": "tenant and account model sheet",
+      "gate": "the domain is verified and primary, and every planned account, shared mailbox, resource account and group appears with its purpose and naming pattern before the first account is created"
+    },
+    {
+      "action": "Separate administrative identities and create the break-glass account",
+      "node_ref": "ADMIN_SEPARATION_AND_BREAKGLASS",
+      "description": "Create distinct admin identities, establish the client-held administrative credential and its custody, create and exclude the break-glass account, configure alerting on its use, and scope the reseller's delegated access",
+      "artifact": "administrative access and custody map",
+      "gate": "a named client officer holds an administrative credential, the break-glass account is excluded and alerted, and the reseller's access is demonstrably revocable"
+    },
+    {
+      "action": "Enrol, enforce and verify multi-factor authentication and close legacy sign-in paths",
+      "node_ref": "MFA_ENFORCEMENT_BASELINE",
+      "description": "Choose methods with a documented fallback, enrol administrators first, run the registration window to an announced enforcement date, close or scope legacy authentication, and verify from sign-in data",
+      "artifact": "enforcement record with exception register",
+      "gate": "every enabled account has a registered factor or a dated exception with an owner, and sign-in data shows no successful legacy-authentication sign-ins for in-scope accounts"
+    },
+    {
+      "action": "Publish the sender authorization, signing and monitoring policy",
+      "node_ref": "MAIL_AUTHENTICATION_AND_FLOW",
+      "description": "Consolidate authorization for every enumerated sender, enable and publish signing, start reporting policy in monitoring mode, and assign each device and application a supported sending path",
+      "artifact": "mail authentication and sender plan",
+      "gate": "one valid authorization record resolves within the lookup limits, signing verifies on a test message, and monitoring reports show only known senders before any tightening"
+    },
+    {
+      "action": "Select the migration method and write the data scope and fidelity statement",
+      "node_ref": "MIGRATION_METHOD_SELECTION",
+      "description": "Score the candidate methods against source capability, volume, throughput and interruption tolerance, prove the tool's required access, then write the per-class in-or-out decision, fidelity notes and manual rebuild list",
+      "artifact": "migration plan with acknowledged fidelity statement",
+      "gate": "the chosen method is recorded with its reasoning and proven tool access, and the client has acknowledged in writing what will not move"
+    },
+    {
+      "action": "Run the pilot on a representative cohort and measure",
+      "node_ref": "PILOT_MIGRATION",
+      "description": "Migrate the champion plus a heavy mailbox, a shared mailbox, a delegated case and an awkward device; measure throughput and per-user setup time; verify fidelity; log and fold back every issue",
+      "artifact": "pilot measurement and issue report",
+      "gate": "measured throughput and setup time are recorded, fidelity is confirmed against the statement, and every issue is fixed in the runbook or explicitly accepted before scheduling"
+    },
+    {
+      "action": "Write the cutover runbook, schedule it against the business calendar and send the user communications",
+      "node_ref": "CUTOVER_RUNBOOK",
+      "description": "Build the timed sequence with owners, pass criteria, freeze instruction, record-change order, point of no return, rollback trigger and on-call contacts, confirm the date against payroll and seasonal constraints, and release the announcement and reminder messages from a client-side sender",
+      "artifact": "cutover runbook and client communication pack",
+      "gate": "every step has an owner, a duration and a pass criterion, the window is confirmed in writing by the authorizing officer, and the announcement and reminder have gone out with per-user prerequisites complete"
+    },
+    {
+      "action": "Execute the cutover and verify delivery per user and per system",
+      "node_ref": "CUTOVER_EXECUTION_VERIFY",
+      "description": "Complete the delta pass, change records in the planned order, check propagation from several vantage points, then test two-way external mail, auto-configuration, device relays, mobile profiles, shared mailboxes and delegate access",
+      "artifact": "signed verification checklist",
+      "gate": "each migrated user, each shared mailbox and each sending device has an individually ticked pass, and no verification line was skipped"
+    },
+    {
+      "action": "Train users, run the stabilization window, then document and accept",
+      "node_ref": "HANDOVER_ACCEPTANCE",
+      "description": "Complete per-user setup and the high-frequency training, run the stated stabilization window to its communicated close, finish the as-built pack including credential custody, review the findings register, decide on source decommission, and hold the acceptance meeting",
+      "artifact": "as-built pack plus dated acceptance record",
+      "gate": "the stabilization window is closed in writing, the client holds and has used their own administrative credential, the decommission decision is recorded, and the project-to-service boundary is stated and signed"
+    }
+  ],
+
+  "dominance_rules": [
+    {
+      "rule": "Documented client authorization dominates operational convenience and urgency",
+      "rationale": "administrative access to a business's mail is a fiduciary-grade responsibility, and urgency is the framing every improper access request arrives in",
+      "trigger": "any request to access, forward, export or grant rights over a mailbox or file store, however urgent it sounds",
+      "action": "route the request to the authorizing officer, act only within the written approval obtained, and file that approval with the change record"
+    },
+    {
+      "rule": "Client ownership of the tenant dominates reseller administrative convenience",
+      "rationale": "a client who cannot reach their own tenant is exposed to supplier failure and is locked in against their will, which no efficiency gain justifies",
+      "trigger": "any decision about who holds credentials, who owns the tenant, or how the reseller's access is granted",
+      "action": "keep the tenant in the client's ownership, ensure a named client officer holds and has used an administrative credential, and use revocable delegated access for the reseller"
+    },
+    {
+      "rule": "Business mail continuity dominates the cutover schedule",
+      "rationale": "a missed date is an inconvenience while lost or undelivered mail is a business injury that can end the relationship",
+      "trigger": "readiness criteria are unmet as the scheduled window approaches",
+      "action": "move the window and explain why in writing rather than opening it without a proven rollback position and a completed delta pass"
+    },
+    {
+      "rule": "Proven DNS control dominates any promised cutover date",
+      "rationale": "a cutover is a record change, so without demonstrated control of the zone the date is an aspiration and not a plan",
+      "trigger": "a date is requested or offered before a test change has been performed by the party who will run the cutover",
+      "action": "withhold the date until custody is proven and reduced time-to-live values are live, and put the recovery of control on the critical path"
+    },
+    {
+      "rule": "Identity hardening dominates user convenience, with exceptions only when scoped, recorded and time-limited",
+      "rationale": "an unprotected mailbox in a small business is the standard route to invoice fraud and supplier impersonation, and permanent exceptions become permanent exposure",
+      "trigger": "a user, including the owner, asks to be excluded from enforcement, or a device cannot support the standard",
+      "action": "offer the lowest-friction supported method, and if an exception is unavoidable record it with an owner, a reason and an expiry rather than weakening the tenant"
+    },
+    {
+      "rule": "Data preservation dominates cleanup, cost saving and schedule",
+      "rationale": "deletion and decommission are the only truly irreversible actions in a migration, and a month of duplicated subscription is trivial beside permanent data loss",
+      "trigger": "any proposal to delete a mailbox, wipe a server or cancel the source subscription",
+      "action": "hold until acceptance, reconciliation, a client-held export and written approval are all evidenced"
+    },
+    {
+      "rule": "Observed need dominates revenue opportunity in every recommendation",
+      "rationale": "trust compounds across the years of a subscription relationship while a pressured sale earns once and poisons the account",
+      "trigger": "a security or licensing gap is discovered during onboarding and an add-on could be sold on the strength of it",
+      "action": "record the finding neutrally with its materiality, state what the current subscription already covers, fix only what blocks safe delivery now, and defer the rest to the scheduled review"
+    },
+    {
+      "rule": "Least-privilege content access dominates troubleshooting speed",
+      "rationale": "the reseller's standing to hold administrative rights rests entirely on not using them beyond the task at hand",
+      "trigger": "an incident tempts the technician toward standing high privilege or toward browsing mailbox content",
+      "action": "escalate privilege per incident with a time box and a logged reason, and open only the content the specific reported fault requires"
+    },
+    {
+      "rule": "Verified-by-test dominates tool-reported success",
+      "rationale": "migration tools report their own completion, not whether a person can actually send from the shared address on Monday morning",
+      "trigger": "a tool or console reports success and there is pressure to close the window",
+      "action": "require the two-way delivery test, the device relay test and the per-user tick before the window is declared closed"
+    }
+  ],
+
+  "anti_rework_rules": [
+    {
+      "rule": "Prove domain and DNS control before offering any cutover date",
+      "prevents": "a promised date collapsing when it emerges that a former web developer holds the registrar, forcing rescheduling and lost client confidence"
+    },
+    {
+      "rule": "Complete the source inventory before selecting a migration method or writing a scope",
+      "prevents": "choosing a method that cannot carry a data class or a mailbox size nobody had measured, and re-planning the whole migration mid-flight"
+    },
+    {
+      "rule": "Decide the identity, sign-in-name and naming model before creating the first account",
+      "prevents": "a rename campaign that breaks logins, permissions, saved profiles and every mail client after the tenant is already populated"
+    },
+    {
+      "rule": "Create separate administrative identities and an excluded break-glass account before enforcing multi-factor",
+      "prevents": "a policy change locking the administrators out of the tenant they are configuring, with no emergency path back in"
+    },
+    {
+      "rule": "Enumerate every device and application that sends as the domain before publishing or tightening any authentication policy",
+      "prevents": "silently killing legitimate mail from a copier, an invoicing package or a reminder service and hunting the cause for weeks"
+    },
+    {
+      "rule": "Lower time-to-live on the records that will change well before the window, never during it",
+      "prevents": "mail continuing to reach the old system for hours after the switch because caches still hold the previous value"
+    },
+    {
+      "rule": "Run the pilot and fold its findings back into the runbook before scheduling the production window",
+      "prevents": "committing a whole business to a window sized by assumption, then discovering the throughput and per-user setup time were wrong"
+    },
+    {
+      "rule": "Get the fidelity statement acknowledged in writing before the first mailbox moves",
+      "prevents": "a Monday-morning dispute about rules, permissions or archives that were never in scope but were also never disclosed"
+    },
+    {
+      "rule": "Write the as-built documentation as each component is configured rather than from memory at the end",
+      "prevents": "a handover pack that is wrong in the details that matter, and a later technician working from a false map of the environment"
+    }
+  ],
+
+  "iteration_protocol": [
+    {
+      "trigger": "pilot throughput, fidelity or per-user setup time diverges materially from the plan",
+      "action": "re-size the window, re-select the method if necessary, update the fidelity statement, and re-issue dates to users before anything else proceeds",
+      "nodes": ["PILOT_MIGRATION", "MIGRATION_METHOD_SELECTION", "DATA_SCOPE_AND_FIDELITY", "CUTOVER_RUNBOOK"],
+      "priority": 1
+    },
+    {
+      "trigger": "an undocumented device or application that sends as the domain is discovered after authentication records were published",
+      "action": "add it to the sender inventory, give it a supported authenticated path, re-publish the consolidated record, and hold any policy tightening until monitoring is clean again",
+      "nodes": ["MAIL_AUTHENTICATION_AND_FLOW", "SOURCE_ENVIRONMENT_DISCOVERY", "CUTOVER_EXECUTION_VERIFY"],
+      "priority": 1
+    },
+    {
+      "trigger": "a lockout or a bypass is reported around the enforcement date",
+      "action": "confirm the break-glass exclusion still holds, re-check the exception register and its expiries, re-sequence enrolment for the affected group, and verify again from sign-in data",
+      "nodes": ["MFA_ENFORCEMENT_BASELINE", "ADMIN_SEPARATION_AND_BREAKGLASS"],
+      "priority": 1
+    },
+    {
+      "trigger": "stabilization tickets cluster into a systematic class such as missing permissions, unmigrated archives or devices still on the old server",
+      "action": "run a targeted remediation pass for the whole class rather than case by case, then update the verification checklist, the training and the discovery inventory so the class cannot recur",
+      "nodes": ["HYPERCARE_TRIAGE", "CUTOVER_EXECUTION_VERIFY", "USER_ONBOARDING_TRAINING"],
+      "priority": 1
+    },
+    {
+      "trigger": "DNS control changes hands, or a record is overwritten by a third party during unrelated work",
+      "action": "re-verify custody, restore the records from the zone export, re-test delivery and authentication, and update the custody map in the documentation pack",
+      "nodes": ["DOMAIN_AND_DNS_CONTROL", "MAIL_AUTHENTICATION_AND_FLOW", "AS_BUILT_DOCUMENTATION"],
+      "priority": 2
+    },
+    {
+      "trigger": "the vendor changes a plan capability, a retention window, an enforcement default or the delegated-administration mechanism",
+      "action": "re-verify the affected mechanism against current vendor documentation for this client's plan, adjust the baseline and the recoverability statement, and record the change in the documentation pack",
+      "nodes": ["TENANT_SECURITY_BASELINE", "BACKUP_AND_RETENTION_DESIGN", "ADMIN_SEPARATION_AND_BREAKGLASS", "AS_BUILT_DOCUMENTATION"],
+      "priority": 2
+    },
+    {
+      "trigger": "acceptance is refused, or the documentation pack cannot answer a question asked during handover",
+      "action": "reopen the specific gap, correct the pack, re-run the affected verification, and hold acceptance until the condition genuinely passes rather than waiving it",
+      "nodes": ["HANDOVER_ACCEPTANCE", "AS_BUILT_DOCUMENTATION"],
+      "priority": 2
+    },
+    {
+      "trigger": "a security or licensing gap is observed during onboarding that is not needed for safe delivery of the agreed scope",
+      "action": "record it in the findings register with observed evidence and materiality, state what the current subscription already covers, and carry it to the scheduled review instead of raising it under cutover pressure",
+      "nodes": ["SCOPE_DISCIPLINE_NO_FEAR_UPSELL", "TENANT_SECURITY_BASELINE", "BACKUP_AND_RETENTION_DESIGN"],
+      "priority": 3
+    }
+  ],
+
+  "priority_rationale": "Authorization and least-privilege handling come first because every later action is only legitimate inside them; discovery, proven DNS control and the tenant and identity architecture follow because they fix the facts and the creation-time choices that everything downstream inherits; the security baseline, multi-factor enforcement, recoverability design and mail authentication are built next because a tenant must be safe and able to deliver before data lands in it; method selection, data scope, file migration and the pilot then convert those facts into a measured plan; the runbook, user communication, execution with per-user verification and the rollback position carry the business across without interruption; and training, stabilization, honest findings disclosure, as-built documentation and a dated acceptance close the project so the client demonstrably owns the environment they paid for.",
+  "eval_objective": "verify_core_properties_of_tenant_migration_and_onboarding_kb"
+}
