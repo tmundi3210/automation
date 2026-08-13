@@ -28,6 +28,8 @@ That is the whole mechanism. No fine-tuning, no install — the intelligence is 
 
 ## 2. The catalog
 
+**All 25 businesses are complete** — each with 3 dense gate-passing KBs and a gated specialist.
+
 Each row: the money model, then the specialist (paste this) and its 3 KBs (deep reference).
 `raw` links give plain JSON an AI can fetch or you can copy; `view` links are browsable on GitHub.
 
@@ -342,6 +344,84 @@ Each row: the money model, then the specialist (paste this) and its 3 KBs (deep 
   - door-to-door and neighborhood sales are regulated (permits, do-not-knock, cooling-off rules) - flag and respect
   - no infestation scare-selling; findings must be shown, not invented
   - commission structures as mechanisms, never invented figures
+
+### Water Filtration Systems  ·  `water_filter`
+
+*How it makes money:* sell/install whole-home or point-of-use water treatment; revenue = equipment + install + recurring filter-replacement/service plans
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/water_filter/water_filter.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/water_filter/water_filter.specialist.json)
+- KB1 — Water-Treatment Offers & Honest Diagnostics — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/water_filter/kb1_offer_design_and_honest_diagnostics.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/water_filter/kb1_offer_design_and_honest_diagnostics.kb.json)
+- KB2 — System Sizing, Installation & Plumbing Compliance — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/water_filter/kb2_system_sizing_installation_and_compliance.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/water_filter/kb2_system_sizing_installation_and_compliance.kb.json)
+- KB3 — Filter Service Plans & Customer Retention — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/water_filter/kb3_filter_service_plans_and_retention.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/water_filter/kb3_filter_service_plans_and_retention.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/water_filter)
+
+*Hard boundaries this specialist enforces:*
+  - no health scare-selling and no medical claims - water-quality findings must come from real, shown tests; claims limited to what treatment classes verifiably do
+  - plumbing codes and (for some jurisdictions/products) contractor licensing are requirement classes to verify locally
+  - in-home water demonstrations must be honest chemistry, not theater tricks presented as contamination proof
+  - equipment margins and service-plan economics as mechanisms, never invented figures
+
+### Printer / Copier Leasing & Managed Print  ·  `copier_leasing`
+
+*How it makes money:* place office print/copy equipment under lease + service contracts (cost-per-page); revenue = equipment placement + lease stream + per-page service contracts
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/copier_leasing/copier_leasing.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/copier_leasing/copier_leasing.specialist.json)
+- KB1 — Office-Equipment Market & Lease Sales — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/copier_leasing/kb1_market_and_lease_sales.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/copier_leasing/kb1_market_and_lease_sales.kb.json)
+- KB2 — Print-Fleet Assessment, Deployment & Service Setup — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/copier_leasing/kb2_fleet_assessment_deployment_and_service_setup.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/copier_leasing/kb2_fleet_assessment_deployment_and_service_setup.kb.json)
+- KB3 — Lease/Service Economics & Renewal Cycles — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/copier_leasing/kb3_lease_service_economics_and_renewal_cycles.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/copier_leasing/kb3_lease_service_economics_and_renewal_cycles.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/copier_leasing)
+
+*Hard boundaries this specialist enforces:*
+  - lease terms (evergreen clauses, buyouts, return conditions) must be disclosed plainly - the vertical's reputation problem is buried terms; this specialist encodes disclosure as a rule
+  - per-page and lease economics as mechanisms, never invented rates
+  - no overselling capacity a client's volume cannot justify
+
+### Office Coffee & Water Service  ·  `office_coffee`
+
+*How it makes money:* place coffee brewers/water systems in offices; revenue = equipment placement + recurring consumables (coffee, cups, filters) + service route
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/office_coffee/office_coffee.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/office_coffee/office_coffee.specialist.json)
+- KB1 — OCS Market Targeting & Account Acquisition — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/office_coffee/kb1_ocs_market_and_account_acquisition.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/office_coffee/kb1_ocs_market_and_account_acquisition.kb.json)
+- KB2 — Equipment Placement, Route Setup & Consumables Logistics — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/office_coffee/kb2_equipment_placement_and_route_logistics.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/office_coffee/kb2_equipment_placement_and_route_logistics.kb.json)
+- KB3 — Route Economics, Account Retention & Expansion — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/office_coffee/kb3_route_economics_and_account_expansion.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/office_coffee/kb3_route_economics_and_account_expansion.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/office_coffee)
+
+*Hard boundaries this specialist enforces:*
+  - route economics as mechanisms, never invented figures
+  - food-handling/sanitation requirement classes verified locally
+  - honest consumption-based proposals - no overstocking clients into resentment
+
+### Travel Agent / Advisory Practice  ·  `travel_agent`
+
+*How it makes money:* book travel through host-agency or independent model; revenue = supplier commissions + planning fees + insurance/add-on commissions; repeat clients and referrals drive recurrence
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/travel_agent/travel_agent.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/travel_agent/travel_agent.specialist.json)
+- KB1 — Agency Models, Host Agencies & Niche Selection — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/travel_agent/kb1_agency_models_hosts_and_niches.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/travel_agent/kb1_agency_models_hosts_and_niches.kb.json)
+- KB2 — Trip Design, Booking & Supplier Management — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/travel_agent/kb2_trip_design_booking_and_suppliers.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/travel_agent/kb2_trip_design_booking_and_suppliers.kb.json)
+- KB3 — Commissions, Repeat Clients & Protection Add-Ons — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/travel_agent/kb3_commissions_repeat_clients_and_addons.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/travel_agent/kb3_commissions_repeat_clients_and_addons.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/travel_agent)
+
+*Hard boundaries this specialist enforces:*
+  - seller-of-travel registration classes exist in some states - verify jurisdiction before operating
+  - travel-insurance selling may carry licensing/appointment requirement classes - verify before offering
+  - commissions and host-agency splits as mechanisms, never invented percentages
+  - honest expectation-setting on pricing vs online booking; no pay-to-play steering hidden from the client
+
+### Solar Sales / Referral Business  ·  `solar_referral`
+
+*How it makes money:* commission per installed system (sales rep, dealer or referral model); weakest recurring potential in the set - the model is transaction commissions plus reputation-driven pipeline
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/solar_referral/solar_referral.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/solar_referral/solar_referral.specialist.json)
+- KB1 — Solar Market Models & Lead Economics — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/solar_referral/kb1_market_models_and_lead_economics.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/solar_referral/kb1_market_models_and_lead_economics.kb.json)
+- KB2 — Site Qualification, Proposal Integrity & Financing Literacy — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/solar_referral/kb2_site_qualification_and_proposal_integrity.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/solar_referral/kb2_site_qualification_and_proposal_integrity.kb.json)
+- KB3 — Installer Partnerships, Pipeline & Reputation — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/solar_referral/kb3_installer_partnerships_and_reputation.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/solar_referral/kb3_installer_partnerships_and_reputation.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/solar_referral)
+
+*Hard boundaries this specialist enforces:*
+  - the vertical's reputation is damaged by high-pressure and misleading-savings selling - this specialist encodes anti-pressure, verified-numbers selling as identity, not garnish
+  - savings/production claims must be mechanism-based (the client's own usage data, real rate structures, site production modeling) - never invented or guaranteed
+  - financing/lease/PPA structures carry disclosure obligation classes; consumer-protection rules for door sales apply - verify jurisdiction
+  - commission structures as mechanisms, never invented figures; installer licensing belongs to the installer
 ---
 
 ## 3. The operator prompt (paste-ready)
