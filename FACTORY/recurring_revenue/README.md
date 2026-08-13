@@ -49,16 +49,16 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 13 | `medicare_agent` | Health / Medicare Insurance Agent | 3 | 3/3 | pass | ✅ |
 | 14 | `medical_alert` | Medical Alert Systems | 3 | 3/3 | pass | ✅ |
 | 15 | `home_warranty` | Home Warranty / Service Plan Sales | 3 | 3/3 | pass | ✅ |
-| 16 | `payroll_services` | Payroll Service / Referral | 4 | — | — | — |
-| 17 | `bookkeeping_sub` | Subscription Bookkeeping | 4 | — | — | — |
-| 18 | `tax_prep` | Tax Preparation Practice | 4 | — | — | — |
-| 19 | `cleaning_broker` | Commercial Cleaning Broker | 4 | — | — | — |
-| 20 | `pest_control` | Pest Control Sales / Referral | 4 | — | — | — |
+| 16 | `payroll_services` | Payroll Service / Referral | 4 | 3/3 | pass | ✅ |
+| 17 | `bookkeeping_sub` | Subscription Bookkeeping | 4 | 3/3 | pass | ✅ |
+| 18 | `tax_prep` | Tax Preparation Practice | 4 | 3/3 | pass | ✅ |
+| 19 | `cleaning_broker` | Commercial Cleaning Broker | 4 | 3/3 | pass | ✅ |
+| 20 | `pest_control` | Pest Control Sales / Referral | 4 | 3/3 | pass | ✅ |
 | 21 | `water_filter` | Water Filtration Systems | 5 | — | — | — |
 | 22 | `copier_leasing` | Printer / Copier Leasing | 5 | — | — | — |
 | 23 | `office_coffee` | Office Coffee & Water Service | 5 | — | — | — |
 | 24 | `travel_agent` | Travel Agent / Advisory | 5 | — | — | — |
 | 25 | `solar_referral` | Solar Sales / Referral | 5 | — | — | — |
 
-Wave 1 landed 2026-08-12; waves 2-3 landed 2026-08-13 (all verified). Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
+Wave 1 landed 2026-08-12; waves 2-4 landed 2026-08-13 (all verified). Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
 `3/3` / `13/13` / `✅` as each vertical lands; each business is committed individually.
