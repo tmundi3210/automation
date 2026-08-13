@@ -266,6 +266,82 @@ Each row: the money model, then the specialist (paste this) and its 3 KBs (deep 
   - exclusions, caps and claim conditions MUST be surfaced before sale - burying them is the vertical's core ethical failure
   - the agent sells a defined contract, not a promise that everything is covered; claims outcomes belong to the obligor
   - commissions as mechanisms, never invented figures
+
+### Payroll Service / Referral Business  ·  `payroll_services`
+
+*How it makes money:* acquire small-business payroll clients (referral partnership with a payroll platform, or run a service practice on top of one); revenue = referral/revenue-share + recurring per-client relationship
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/payroll_services/payroll_services.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/payroll_services/payroll_services.specialist.json)
+- KB1 — Payroll Referral Models & Client Acquisition — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/payroll_services/kb1_referral_models_and_client_acquisition.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/payroll_services/kb1_referral_models_and_client_acquisition.kb.json)
+- KB2 — Client Onboarding, Data Migration & Setup — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/payroll_services/kb2_client_onboarding_and_setup.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/payroll_services/kb2_client_onboarding_and_setup.kb.json)
+- KB3 — Recurring Relationship, Compliance Calendar & Expansion — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/payroll_services/kb3_recurring_relationship_and_expansion.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/payroll_services/kb3_recurring_relationship_and_expansion.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/payroll_services)
+
+*Hard boundaries this specialist enforces:*
+  - payroll tax filing is a compliance-critical professional domain - errors carry penalties; not tax or legal advice
+  - referral/revenue-share structures as mechanisms - verify current partner-program terms
+  - client data (SSNs, wages, banking) demands strict confidentiality and least-privilege handling
+
+### Subscription Bookkeeping Practice  ·  `bookkeeping_sub`
+
+*How it makes money:* monthly bookkeeping/accounting packages for small businesses; revenue = fixed monthly subscription per client tier
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/bookkeeping_sub/bookkeeping_sub.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/bookkeeping_sub/bookkeeping_sub.specialist.json)
+- KB1 — Productized Bookkeeping Offer & Niche Selection — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/bookkeeping_sub/kb1_productized_offer_and_niche_selection.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/bookkeeping_sub/kb1_productized_offer_and_niche_selection.kb.json)
+- KB2 — Client Onboarding, Cleanup & Monthly Close — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/bookkeeping_sub/kb2_onboarding_cleanup_and_monthly_close.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/bookkeeping_sub/kb2_onboarding_cleanup_and_monthly_close.kb.json)
+- KB3 — Subscription Pricing, Capacity & Client Retention — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/bookkeeping_sub/kb3_subscription_pricing_capacity_and_retention.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/bookkeeping_sub/kb3_subscription_pricing_capacity_and_retention.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/bookkeeping_sub)
+
+*Hard boundaries this specialist enforces:*
+  - bookkeeping, not attest/audit work and not tax or legal advice; know where licensed-CPA territory begins - flag it
+  - fixed-fee tiers as pricing mechanisms; no invented market rates
+  - client financial data confidentiality and access discipline are first-class
+
+### Tax Preparation Practice  ·  `tax_prep`
+
+*How it makes money:* per-return fees with an annually returning client base; seasonal peak with off-season extension/amendment/planning work
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/tax_prep/tax_prep.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/tax_prep/tax_prep.specialist.json)
+- KB1 — Practice Setup, Credentials & Seasonal Demand — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/tax_prep/kb1_practice_setup_credentials_and_demand.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/tax_prep/kb1_practice_setup_credentials_and_demand.kb.json)
+- KB2 — Return Workflow, Accuracy & Documentation — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/tax_prep/kb2_return_workflow_accuracy_and_documentation.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/tax_prep/kb2_return_workflow_accuracy_and_documentation.kb.json)
+- KB3 — Returning Clients & Off-Season Revenue — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/tax_prep/kb3_returning_clients_and_offseason_revenue.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/tax_prep/kb3_returning_clients_and_offseason_revenue.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/tax_prep)
+
+*Hard boundaries this specialist enforces:*
+  - preparer registration/credential classes (PTIN/EFIN-class requirements, state rules) are prerequisites - verify current rules
+  - process and practice knowledge, not tax advice for specific situations; accuracy and penalty exposure make verification non-negotiable
+  - no refund-size promises or aggressive-position selling; due-diligence obligations on credits are compliance classes to respect
+
+### Commercial Cleaning Broker  ·  `cleaning_broker`
+
+*How it makes money:* win commercial cleaning contracts, arrange service through crews/subcontractors, retain the monthly margin
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/cleaning_broker/cleaning_broker.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/cleaning_broker/cleaning_broker.specialist.json)
+- KB1 — Contract Acquisition & Bid Strategy — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/cleaning_broker/kb1_contract_acquisition_and_bid_strategy.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/cleaning_broker/kb1_contract_acquisition_and_bid_strategy.kb.json)
+- KB2 — Crew Sourcing, Quality Control & Walkthroughs — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/cleaning_broker/kb2_crew_sourcing_and_quality_control.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/cleaning_broker/kb2_crew_sourcing_and_quality_control.kb.json)
+- KB3 — Margin Management, Client Retention & Renewals — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/cleaning_broker/kb3_margin_retention_and_renewals.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/cleaning_broker/kb3_margin_retention_and_renewals.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/cleaning_broker)
+
+*Hard boundaries this specialist enforces:*
+  - employee-vs-independent-contractor classification is a legal risk class that varies by jurisdiction - flag for professional verification, never assume
+  - honest broker positioning: the client knows the service model; no misrepresentation of who cleans
+  - margin structures as mechanisms, never invented figures; insurance/bonding requirement classes verified per contract
+
+### Pest Control Sales / Referral Business  ·  `pest_control`
+
+*How it makes money:* sell recurring pest-control service accounts (own licensed operation or commission/referral partnership with licensed operators); revenue = new-account commissions + recurring contract value
+
+- **SPECIALIST (paste this one)** — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/pest_control/pest_control.specialist.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/pest_control/pest_control.specialist.json)
+- KB1 — Pest Account Sales & Route-Density Economics — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/pest_control/kb1_account_sales_and_route_density.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/pest_control/kb1_account_sales_and_route_density.kb.json)
+- KB2 — Service Delivery Partnering & Licensing Awareness — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/pest_control/kb2_service_delivery_and_licensing_awareness.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/pest_control/kb2_service_delivery_and_licensing_awareness.kb.json)
+- KB3 — Recurring Contracts, Retention & Seasonal Upsells — [raw](https://raw.githubusercontent.com/tmundi3210/automation/HEAD/FACTORY/recurring_revenue/pest_control/kb3_recurring_contracts_and_seasonal_upsells.kb.json) · [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/pest_control/kb3_recurring_contracts_and_seasonal_upsells.kb.json)
+- Folder + README — [view](https://github.com/tmundi3210/automation/blob/claude/eager-wozniak-74rlgj/FACTORY/recurring_revenue/pest_control)
+
+*Hard boundaries this specialist enforces:*
+  - pesticide application requires operator/applicator licensing - jurisdiction-specific and non-negotiable; unlicensed application is out of scope
+  - door-to-door and neighborhood sales are regulated (permits, do-not-knock, cooling-off rules) - flag and respect
+  - no infestation scare-selling; findings must be shown, not invented
+  - commission structures as mechanisms, never invented figures
 ---
 
 ## 3. The operator prompt (paste-ready)
