@@ -109,3 +109,1503 @@
   ],
 
   "nodes": [
+    {
+      "id": "STOP_ECONOMIC_UNIT",
+      "topic": "stop_as_the_unit_of_account",
+      "definition": "Fix the stop - one scheduled visit to one serviceable location - as the unit every dollar and every minute in this KB is charged to, and write down the rules that decide what counts as one stop. Revenue is assigned to the stop that delivered the product, not to the customer name on the invoice, so a three-floor tenant served on three separate visits is three stops and two small firms sharing a suite door served together are one. Equipment carry travels with the stop that holds the machine, not with the corporate account, so a placed brewer sitting in a satellite office shows up in that satellite's economics. Costs that cannot be honestly attributed to a single stop - the van payment, insurance, the warehouse - are held in a route-level pool and allocated by a stated rule, and the rule is written once rather than re-invented each time a number is questioned. Without this frame every later measurement argues about its own denominator, and a profitable account and an unprofitable location hide inside the same customer record.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": ["what counts as one stop and how multi-location and shared-suite cases are split", "which revenue and which costs attach to a stop versus the route pool", "the written allocation rule for route-level costs"],
+        "excluded": ["the sequencing and scheduling of stops into a loop, which the route logistics KB owns", "the acquisition-stage decision to pursue the location at all", "company-level accounting, tax treatment and depreciation policy"]
+      },
+      "pros": [
+        { "claim": "Charging money and minutes to a visit rather than to a customer name exposes losing locations that a healthy parent account is subsidizing", "example": "a law firm whose main floor pays well while its two-person satellite office consumes a full visit for a handful of frac packs", "weight": 0.86 },
+        { "claim": "A written allocation rule ends the recurring argument about whether a stop is really unprofitable and lets the same number be defended twice", "example": "van and insurance cost spread across serviced stops by a stated rule rather than re-argued every time a stop is questioned", "weight": 0.74 }
+      ],
+      "cons": [
+        { "claim": "Stop-level attribution can make a strategically valuable location look like a loser when its real value is the relationship that feeds the profitable sites", "example": "an executive suite that consumes almost nothing but is where the facilities director who controls four other buildings actually sits", "weight": 0.68 },
+        { "claim": "Any allocation of shared route cost is a convention, so a stop near the break-even line can be argued either side of it by changing the convention", "example": "spreading warehouse cost evenly per stop versus by delivered volume moving the same small stop from thin to negative", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "measuring profitability per customer so a losing satellite location stays invisible inside a healthy account total",
+        "leaving route-level costs entirely unallocated so every stop looks profitable and the route as a whole does not",
+        "changing the allocation rule mid-analysis to reach a conclusion someone already wanted",
+        "attributing equipment carry to head office while the machine and its maintenance burden sit somewhere else"
+      ],
+      "acceptance_tests": [
+        "the rule that turns locations, tenants and floors into stops is written down and applied identically to every account on the route",
+        "each stop record names which revenue lines and which cost lines attach to it and which pooled costs are allocated to it by which rule",
+        "re-running the same period with the same rule reproduces the same per-stop numbers"
+      ],
+      "revisit_triggers": [
+        "an account adds, merges or moves a location and the stop split no longer matches how the visit is actually run",
+        "route-level costs change materially in shape, for example a second van or a new warehouse arrangement",
+        "a triage decision hinges entirely on the allocation convention rather than on the stop itself"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.82, "user_value": 0.78,
+        "technical_complexity": 0.3, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.3, "confidence": 0.76, "node_conflict_pressure": 0.28,
+        "acceptance_test_pass_rate": 0.86, "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.9, "evidence_confidence": 0.66,
+        "failure_rate": 0.14, "downside_weight": 0.48,
+        "uncertainty_interval": [0.2, 0.46],
+        "update_signal": "a stop definition or allocation rule change that moves several stops across the break-even line without any real-world change at those accounts"
+      }
+    },
+    {
+      "id": "SERVICE_TIME_LEDGER",
+      "topic": "park_to_park_minute_capture_per_stop",
+      "definition": "Measure what a stop actually costs in minutes, park to park, instead of assuming the scheduled service time. The clock starts when the van stops and ends when it rolls, so it captures the loading-dock wait, the visitor badge and elevator ride, the walk with a hand truck, the brewer clean and descale, the restock and rotation, the water-cooler sanitization, the ten minutes the office manager spends chatting about an invoice, and the paperwork or signature at the end. Minutes are recorded per visit for a run of visits rather than once, because a single timed visit flatters or damns a stop unfairly - the pattern is what matters. Drive minutes between stops are recorded separately and belong to the sequence, not to the stop, which is why they are allocated rather than charged directly. The ledger is the only honest input to any cost-to-serve conversation, and it is also the fastest source of surprises: the stops that hurt are usually not the ones the driver complains about.",
+      "group": "measurement",
+      "dependencies": ["STOP_ECONOMIC_UNIT"],
+      "competency_question_refs": ["CQ_02", "CQ_03"],
+      "scope_boundary": {
+        "included": ["park-to-park minute capture per visit across a run of visits", "the named categories that consume the minutes, including access, service, restock and client conversation", "separating drive minutes from stop minutes for later allocation"],
+        "excluded": ["designing the service and cleaning cadence itself, which the route logistics KB owns", "route sequencing and van loading order", "driver performance management and compensation design"]
+      },
+      "pros": [
+        { "claim": "Measured minutes relocate the blame for a thin stop from the product to the access and handling burden that actually eats the day", "example": "a downtown tower stop whose service work is short but whose dock check-in and freight-elevator wait doubles the visit", "weight": 0.88 },
+        { "claim": "A run of timed visits distinguishes a genuinely slow stop from a bad day, so decisions are not made on one anecdote", "example": "a stop that ran long only on the week a new machine was installed reverting to normal once the pattern is visible", "weight": 0.72 }
+      ],
+      "cons": [
+        { "claim": "Timing every visit adds friction for the driver and invites gaming if the numbers are used punitively rather than diagnostically", "example": "visits recorded as shorter than they were once the driver believes long stops will be blamed on them", "weight": 0.66 },
+        { "claim": "Client conversation time is real cost but also real retention work, so charging it purely as waste mismeasures its value", "example": "the fifteen minutes with the office manager that surfaces an upcoming headcount change worth more than the minutes cost", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "using scheduled service time instead of measured park-to-park time and never seeing access overhead",
+        "timing a single visit and generalizing from it",
+        "folding drive minutes into stop minutes so nearby and distant stops look identical",
+        "treating the ledger as a driver scorecard, which corrupts the data it depends on"
+      ],
+      "acceptance_tests": [
+        "each stop carries measured park-to-park minutes from multiple visits, not one, with the date of each observation",
+        "access and waiting time is recorded as its own category and is visible separately from hands-on service time",
+        "drive minutes are held separately from stop minutes and are never charged directly to a single stop"
+      ],
+      "revisit_triggers": [
+        "a building changes its vendor access, dock or badging process",
+        "the equipment at the stop changes class, altering the cleaning and restock work",
+        "a driver change alters the measured pattern for the same stops"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.8, "user_value": 0.7,
+        "technical_complexity": 0.42, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.25, "confidence": 0.68, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86, "evidence_confidence": 0.6,
+        "failure_rate": 0.24, "downside_weight": 0.5,
+        "uncertainty_interval": [0.26, 0.56],
+        "update_signal": "a run of newly timed visits whose pattern differs materially from the minutes currently on file for that stop"
+      }
+    },
+    {
+      "id": "CONSUMPTION_DRAW_MEASUREMENT",
+      "topic": "measured_draw_versus_ordered_and_shrink",
+      "definition": "Establish what each account actually consumes between visits, measured as the product that left the cabinet rather than the product that appeared on an order. The mechanism is a per-visit count: what was left from last visit, plus what was delivered, minus what is on the shelf now, equals draw for the interval - recorded per item class, because coffee, creamer, cups and water behave differently and an account can be growing in one and collapsing in another. Draw is then normalized to the interval length and to the days the office was actually occupied, so a holiday week or a shutdown does not read as decline. Apparent draw must be split from shrink and waste before it is trusted: pods leaving in handbags, a machine wasting product through a mis-set grind, and a case stored in a damp cupboard all consume product without earning a satisfied user. This measured series is the input that pricing, expansion, stock-out prevention and health monitoring all read from, which is why it must be a count and never an estimate carried forward from the original proposal.",
+      "group": "measurement",
+      "dependencies": ["STOP_ECONOMIC_UNIT"],
+      "competency_question_refs": ["CQ_02", "CQ_07"],
+      "scope_boundary": {
+        "included": ["the on-hand plus delivered minus remaining count per item class", "normalization for interval length and actual office occupancy", "separating true consumption from shrink and waste before the series is trusted"],
+        "excluded": ["setting par levels and order quantities from the series, which the route logistics KB owns", "the pre-sale consumption estimate used to qualify a prospect, which the acquisition KB owns", "inventory accounting for the warehouse and van"]
+      },
+      "pros": [
+        { "claim": "A counted series turns every downstream money decision into evidence rather than assertion, including the ones the client will push back on", "example": "answering a client who says they are being over-delivered with their own counted draw across recent visits", "weight": 0.9 },
+        { "claim": "Splitting draw by item class exposes silent substitution long before the account total moves", "example": "coffee volume holding steady while creamer and cup counts fall because staff started bringing their own drinks", "weight": 0.78 }
+      ],
+      "cons": [
+        { "claim": "Counting at every visit adds minutes to every stop, which is exactly the cost the economics is trying to control", "example": "a multi-cabinet floor where a full count adds meaningful time to a visit that was already long", "weight": 0.66 },
+        { "claim": "Shrink is hard to isolate without accusing anyone, so the series can silently overstate genuine consumption for a long time", "example": "single-serve pod counts that look like enthusiastic adoption and are partly stock walking home", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "treating invoiced quantity as consumption and never noticing a cupboard full of unopened stock",
+        "comparing raw intervals of different length or across a holiday shutdown and calling the difference a trend",
+        "aggregating all items into one number so a collapsing category hides inside a stable total",
+        "reading shrink as growth and increasing the standing order on the strength of it"
+      ],
+      "acceptance_tests": [
+        "every account has a draw series per item class built from counts at consecutive visits, each dated",
+        "the series is normalized for interval length and for known occupancy gaps before any trend is read from it",
+        "each account record states whether shrink or waste has been investigated for the item classes where apparent draw jumped"
+      ],
+      "revisit_triggers": [
+        "measured draw moves outside the band the account has been running in for more than one interval",
+        "the account changes headcount, in-office days or shift pattern",
+        "a new item class or brewing format is introduced, breaking comparability of the series"
+      ],
+      "base": {
+        "criticality": 0.92, "business_value": 0.88, "user_value": 0.8,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.88,
+        "irreversibility": 0.35, "confidence": 0.66, "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.92, "evidence_confidence": 0.62,
+        "failure_rate": 0.26, "downside_weight": 0.6,
+        "uncertainty_interval": [0.28, 0.6],
+        "update_signal": "two consecutive counted intervals whose draw sits outside the account's established band, or a shrink investigation that reclassifies part of the series"
+      }
+    },
+    {
+      "id": "COST_TO_SERVE_DRIVERS",
+      "topic": "what_moves_the_cost_side_of_a_stop",
+      "definition": "Enumerate the specific drivers that make one account expensive to serve and another cheap, so that a thin stop can be attacked at its cause rather than repriced blindly. The recurring drivers in office coffee and water service are visit frequency, the physical access path from parking to breakroom, building vendor requirements such as badging and dock scheduling, the equipment class in place and the cleaning and descaling burden it carries, the number of separate delivery points inside one location, the fragility and freight weight of what is delivered, water-system work such as filter changes and sanitization, and the administrative drag of the account's own billing and approval process. Each driver is recorded per account as an observable fact rather than an impression, and each carries a note about whether the operator can change it, the client can change it, or nobody can. That last distinction is what makes the list useful: a stop expensive for a driver the client controls is a conversation, a stop expensive for a driver nobody controls is a pricing or exit decision.",
+      "group": "measurement",
+      "dependencies": ["STOP_ECONOMIC_UNIT", "SERVICE_TIME_LEDGER"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": ["the named recurring drivers of cost at an installed account", "per-account recording of each driver as an observable fact", "who can change each driver: operator, client or nobody"],
+        "excluded": ["designing the cleaning cadence or selecting equipment to reduce those drivers, which the placement and logistics KB owns", "vehicle and warehouse cost structure at company level", "the pricing response itself, which the pricing nodes own"]
+      },
+      "pros": [
+        { "claim": "Naming the driver converts a vague complaint about a hard account into a specific, negotiable item", "example": "identifying that a single locked-storeroom key handover, not the service itself, is what stretches a visit", "weight": 0.82 },
+        { "claim": "Tagging who controls each driver prevents wasted effort on costs the operator cannot move", "example": "accepting a fixed building dock window as unchangeable and pricing for it instead of fighting it every week", "weight": 0.76 }
+      ],
+      "cons": [
+        { "claim": "Drivers interact, so removing one rarely delivers the full saving the list implies", "example": "moving to a delivery point closer to the door while the badge queue continues to absorb the time saved", "weight": 0.64 },
+        { "claim": "A driver list can harden into a stereotype about a class of building and stop being re-observed", "example": "assuming every high-rise stop carries dock overhead when one tenant has ground-floor street access", "weight": 0.55 }
+      ],
+      "failure_modes": [
+        "treating cost to serve as a single number per stop with no attribution to any driver",
+        "recording impressions from the driver's memory rather than observed facts",
+        "ignoring the administrative drag of an account that requires a purchase order for every delivery",
+        "never revisiting the list after the building, tenancy or equipment changes"
+      ],
+      "acceptance_tests": [
+        "each served account carries a driver list with observed facts, not adjectives, behind each entry",
+        "each driver is tagged with who can change it and what the change would require",
+        "the drivers named for a stop are consistent with that stop's measured minutes rather than contradicted by them"
+      ],
+      "revisit_triggers": [
+        "building management changes vendor access, insurance or scheduling requirements",
+        "the account moves, adds a delivery point or changes equipment class",
+        "measured minutes shift with no change in any recorded driver, indicating a missing driver"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.78, "user_value": 0.66,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.7, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.28, "confidence": 0.7, "node_conflict_pressure": 0.34,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8, "evidence_confidence": 0.6,
+        "failure_rate": 0.22, "downside_weight": 0.48,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "a building, tenancy or equipment change at an account, or measured minutes that move without a corresponding driver change"
+      }
+    },
+    {
+      "id": "STOP_CONTRIBUTION_MECHANISM",
+      "topic": "per_stop_contribution_arithmetic",
+      "definition": "State, as an explicit chain the operator can run on their own records, how a stop's billed revenue becomes the contribution it leaves behind. Start from what the account was actually billed for the period, including consumables, any disclosed service or delivery component and any equipment rental line. Subtract landed product cost for what was delivered, taken from supplier invoices with freight included rather than from a list price. Subtract service labor as measured minutes at a loaded hourly rate the operator computes from their own payroll cost, not a wage rate. Subtract the stop's allocated share of drive time and route-level cost under the rule fixed in the stop-unit frame. Subtract equipment carry - the periodic cost of the machine sitting there, however it was funded, plus its maintenance history. Subtract credits, spoilage and write-offs charged to this stop. What remains is stop contribution for the period, and it is stated as a level and as a trend, never as a single flattering snapshot. No step of the chain may use a remembered industry figure; where an input is not measured, the chain is run as a band with the missing input widened rather than filled with a plausible number.",
+      "group": "measurement",
+      "dependencies": ["SERVICE_TIME_LEDGER", "CONSUMPTION_DRAW_MEASUREMENT", "COST_TO_SERVE_DRIVERS"],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": ["the ordered chain from billed revenue to stop contribution", "the source each input must come from in the operator's own records", "expressing the result as a level and trend, with bands where an input is unmeasured"],
+        "excluded": ["company-level profit and loss, overhead recovery and tax treatment", "the decision of what to do about a weak result, which belongs to diagnosis and triage", "any benchmark comparison against other operators' margins"]
+      },
+      "pros": [
+        { "claim": "One stated chain makes every stop comparable and every disagreement resolvable at a specific line rather than as a clash of opinions", "example": "settling whether a stop is weak by pointing at its landed product cost line instead of arguing about the account overall", "weight": 0.9 },
+        { "claim": "Charging equipment carry to the stop stops placed machines from becoming invisible free assets that quietly consume the route's profit", "example": "a single-serve brewer placed years ago in an account whose draw never justified it still absorbing maintenance visits", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "The chain is only as honest as its weakest input, and a wrong loaded labor rate moves every stop at once in the same direction", "example": "a loaded rate that omits vehicle and benefits cost making the whole route look healthier than it is", "weight": 0.74 },
+        { "claim": "Period contribution is noisy for accounts that order in bursts, so a single period can misclassify a fine stop", "example": "an office that takes a large delivery before a shutdown and nothing after, splitting one cycle across two periods", "weight": 0.66 }
+      ],
+      "failure_modes": [
+        "using list product cost instead of landed cost with freight and thereby overstating contribution on every heavy item",
+        "charging labor at a wage rate rather than a loaded rate",
+        "omitting equipment carry so placed machines look free",
+        "judging a stop from one period rather than a trend, especially for burst-ordering accounts",
+        "quietly plugging an unmeasured input with a comfortable number instead of widening the band"
+      ],
+      "acceptance_tests": [
+        "every input in the chain names the record it comes from: supplier invoice, delivery ticket, timing ledger, payroll or the allocation rule",
+        "the loaded labor rate is documented, dated and applied identically across all stops in the same run",
+        "each stop's result is presented as a trend across several periods with the burst-ordering cases flagged",
+        "any unmeasured input appears as a widened band rather than as a point value"
+      ],
+      "revisit_triggers": [
+        "supplier pricing, freight terms or the loaded labor rate changes",
+        "the allocation rule for route-level cost is amended",
+        "a stop's contribution swings across the break-even line between consecutive periods"
+      ],
+      "base": {
+        "criticality": 0.95, "business_value": 0.93, "user_value": 0.8,
+        "technical_complexity": 0.58, "risk_if_wrong": 0.9, "cross_topic_coupling": 0.92,
+        "irreversibility": 0.42, "confidence": 0.64, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.94, "evidence_confidence": 0.6,
+        "failure_rate": 0.24, "downside_weight": 0.68,
+        "uncertainty_interval": [0.3, 0.62],
+        "update_signal": "a change in landed cost, loaded labor rate or allocation rule, or a period whose recomputed contribution contradicts the prior trend for several stops at once"
+      }
+    },
+    {
+      "id": "WEAK_STOP_DIAGNOSIS",
+      "topic": "volume_versus_time_fork_for_thin_stops",
+      "definition": "Take every stop the contribution chain flags as thin or negative and force it down one of two branches before any remedy is chosen, because the remedies are mutually exclusive and applying the wrong one makes the stop worse. The volume branch holds stops where measured draw is too small to carry any reasonable visit: the office is small, hybrid attendance gutted the demand, or the placed format produces few billable units. Its licensed remedies are lengthening the interval between visits, consolidating with a neighbouring stop, right-sizing the format, honestly growing draw where real demand exists, or applying a disclosed delivery minimum. The time branch holds stops whose draw is respectable but whose minutes are consumed by access, cleaning burden, multiple delivery points or administrative drag. Its licensed remedies are attacking the specific driver, renegotiating the access or delivery point with the client, changing equipment class, or pricing the burden openly. Stops failing on both branches are marked for the triage and exit path rather than for another round of tinkering, and the diagnosis is recorded with the evidence that placed the stop in its branch.",
+      "group": "diagnosis",
+      "dependencies": ["STOP_CONTRIBUTION_MECHANISM", "COST_TO_SERVE_DRIVERS"],
+      "competency_question_refs": ["CQ_03", "CQ_14"],
+      "scope_boundary": {
+        "included": ["the volume-versus-time fork and the evidence that assigns a stop to a branch", "the remedy set each branch licenses and the ones it forbids", "marking dual-failure stops for triage rather than repair"],
+        "excluded": ["executing the price change, which the pricing nodes own", "designing the new service cadence, which the logistics KB owns", "the final keep-or-release decision, which the churn and exit node owns"]
+      },
+      "pros": [
+        { "claim": "Forking before remedy stops the most common wasted move: repricing a stop whose problem was never price", "example": "a well-consuming account made thin purely by a freight-elevator wait, where a price increase would only add churn risk to a fixable access problem", "weight": 0.88 },
+        { "claim": "Recording the branch and its evidence makes the later review able to check whether the remedy worked on the cause it was aimed at", "example": "an interval change on a low-volume stop reviewed against that stop's own draw series rather than against a general impression", "weight": 0.76 }
+      ],
+      "cons": [
+        { "claim": "Real stops often sit near the fork with modest weakness on both sides, and forcing a branch can oversimplify the case", "example": "a small suburban office with mildly thin draw and a mildly awkward delivery path where neither remedy alone changes much", "weight": 0.68 },
+        { "claim": "The diagnosis depends entirely on upstream measurement quality, so a stop can be branched confidently on bad minutes or unadjusted shrink", "example": "branching a stop to volume because apparent draw fell, when the fall was shrink being curtailed rather than demand declining", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "jumping to a price increase as the universal remedy for every thin stop",
+        "cutting cadence on a time-branch stop, which reduces revenue while leaving the minute burden untouched",
+        "leaving dual-failure stops in permanent repair attempts instead of routing them to triage",
+        "diagnosing from the driver's opinion rather than from the measured series"
+      ],
+      "acceptance_tests": [
+        "every flagged stop carries a branch assignment with the specific measured evidence that placed it there",
+        "the remedy applied to each stop comes from the set its branch licenses, and any exception is written down with its reason",
+        "dual-failure stops are routed to triage rather than assigned another remedy round"
+      ],
+      "revisit_triggers": [
+        "a remedy is applied and the next period's contribution does not move in the direction the branch predicted",
+        "the account's headcount, occupancy pattern or building access changes",
+        "an upstream measurement correction reclassifies the stop's draw or minutes"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.86, "user_value": 0.78,
+        "technical_complexity": 0.52, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4, "confidence": 0.66, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.88, "evidence_confidence": 0.58,
+        "failure_rate": 0.28, "downside_weight": 0.62,
+        "uncertainty_interval": [0.3, 0.6],
+        "update_signal": "a remedy whose measured outcome contradicts the branch it was chosen from, indicating the fork was called wrong"
+      }
+    },
+    {
+      "id": "PRICE_ARCHITECTURE",
+      "topic": "disclosed_composition_of_the_account_price",
+      "definition": "Decide and write down what the account is actually paying for, component by component, so that every later increase, credit or comparison has a structure to move within. The components available to an office coffee and water operator are the consumable line itself, the carry for equipment placed at no upfront charge to the client, a disclosed service or delivery component where the visit work is real and priced, any rental line where equipment is rented rather than placed, and a surcharge line where an input such as freight genuinely moves. The architecture decision is how much of the equipment and service cost is recovered inside the product price versus shown separately: recovery inside the product price is simple and familiar to clients but silently penalizes light consumers and makes a later increase look arbitrary, while separate lines are transparent and defensible but expose the operator to line-by-line shopping. Whichever structure is chosen, the binding rule is that the operator must be willing to state every component out loud to the client, and no cost may be recovered by a mechanism the client would feel deceived to discover.",
+      "group": "pricing",
+      "dependencies": ["STOP_CONTRIBUTION_MECHANISM"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["the component set the account price is built from", "the recover-inside-product versus show-separately decision and its consequences", "the disclosure rule every component must satisfy"],
+        "excluded": ["the initial proposal pricing offered to win the account, which the acquisition KB owns", "catalog construction and item selection, which the logistics KB owns", "drafting or interpreting the contractual price terms of any specific agreement"]
+      },
+      "pros": [
+        { "claim": "A component structure lets an increase be attached to the component that actually moved instead of applied as a blanket raise", "example": "raising only the coffee line when green and freight costs move while leaving the service component untouched", "weight": 0.86 },
+        { "claim": "Separately shown equipment carry makes a light-consuming account see the real cost of the machine it insisted on, which turns a hidden loss into an honest conversation", "example": "a small office with a bean-to-cup machine seeing the carry line and choosing a simpler brewer instead", "weight": 0.78 }
+      ],
+      "cons": [
+        { "claim": "Unbundled lines invite the client to shop each line against a retail price that carries no service, which can lose an account that was fairly priced overall", "example": "a client comparing the coffee line alone with a warehouse-club shelf price while ignoring the machine and the visits", "weight": 0.72 },
+        { "claim": "Recovering everything inside the product price is simpler to sell but makes light users subsidize heavy ones and leaves increases looking unexplained", "example": "a low-draw account paying a product price inflated by equipment recovery it cannot see and resenting the next increase", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "burying equipment and service cost in the product price and then being unable to justify an increase",
+        "inventing a fee with a vague name that the operator would not defend in a meeting",
+        "changing the architecture per account until no two accounts can be compared or repriced consistently",
+        "quoting a component against a competitor's differently-composed price without saying what each includes"
+      ],
+      "acceptance_tests": [
+        "each account's price is expressed as named components whose sum is the invoice, with no unexplained residual",
+        "every component has a plain-language justification the operator has actually stated to the client, in writing",
+        "the same architecture rules are applied across accounts, and any deviation is recorded with its reason"
+      ],
+      "revisit_triggers": [
+        "an input cost moves enough to be visible in the contribution chain",
+        "a client challenges a line as unexplained or compares it to a retail price",
+        "the equipment at the account is replaced or its funding basis changes"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.9, "user_value": 0.82,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.5, "confidence": 0.68, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9, "evidence_confidence": 0.62,
+        "failure_rate": 0.22, "downside_weight": 0.66,
+        "uncertainty_interval": [0.28, 0.58],
+        "update_signal": "a documented input-cost move, a client dispute over a line, or an equipment change that alters what the carry component represents"
+      }
+    },
+    {
+      "id": "COST_PASSTHROUGH_MECHANISM",
+      "topic": "tracing_input_cost_moves_to_the_affected_line",
+      "definition": "Build the trace that connects a movement in what the operator pays to the specific price component it should affect, so that an increase is an arithmetic consequence rather than an opportunistic act. The inputs that move in this business are green and roasted coffee cost, freight and fuel, packaging, dairy and non-dairy creamer, paper goods, filters and cartridges, and the labor rate inside the service component. For each, the trace names the document that evidences the move - the supplier invoice or notice, dated - the item classes it touches, and the share of the affected line that input represents, because a move in a small input should not be allowed to justify a large change on the whole invoice. The mechanism also produces the absorb decision: a small, plausibly temporary move on an account with healthy contribution is absorbed and logged, while a durable move or a move on a stop already at the margin is passed through. What is never acceptable is passing through a cost that did not move, or passing through a move on lines it never touched.",
+      "group": "pricing",
+      "dependencies": ["PRICE_ARCHITECTURE"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["the named input classes that move and the document that evidences each move", "mapping a move to the specific components and item classes it touches", "the absorb-versus-pass-through decision and its logging"],
+        "excluded": ["supplier negotiation and procurement strategy", "the client-facing execution of the increase, which the reprice play owns", "hedging, forward buying or any financial instrument advice"]
+      },
+      "pros": [
+        { "claim": "A documented trace lets the operator answer the client's first question - why - with a specific dated cause instead of a general one", "example": "showing that a named consumable's landed cost moved on a dated supplier notice affecting only that item class", "weight": 0.84 },
+        { "claim": "Requiring the trace prevents the slow habit of raising everything when only one input moved", "example": "leaving cups, filters and the service component untouched when only the coffee line was affected", "weight": 0.78 }
+      ],
+      "cons": [
+        { "claim": "Tracing every move takes work that a small operator may skip precisely when costs are moving fastest and time is shortest", "example": "several supplier notices landing in the same month while the route is short-handed", "weight": 0.6 },
+        { "claim": "Passing through every small move trains clients to expect frequent changes and makes the operator look unstable", "example": "three small adjustments in quick succession where one considered change would have held", "weight": 0.66 }
+      ],
+      "failure_modes": [
+        "attributing an increase to costs without being able to produce the document that shows the move",
+        "spreading a move in one input across every line on the invoice",
+        "absorbing a durable increase indefinitely until the stop is quietly loss-making",
+        "forgetting that a move can go down and never passing a decrease through"
+      ],
+      "acceptance_tests": [
+        "every proposed change names the input that moved, the dated document evidencing it, and the item classes it touches",
+        "the absorb-or-pass decision is recorded per account with the reason and the date it should be re-examined",
+        "downward input moves are reviewed on the same trace and acted on rather than silently retained"
+      ],
+      "revisit_triggers": [
+        "a supplier issues a new price notice or freight terms change",
+        "an absorbed move passes its re-examination date without reversing",
+        "a stop that was healthy when a move was absorbed falls to the margin"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.84, "user_value": 0.72,
+        "technical_complexity": 0.48, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38, "confidence": 0.66, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.82, "evidence_confidence": 0.58,
+        "failure_rate": 0.26, "downside_weight": 0.6,
+        "uncertainty_interval": [0.3, 0.62],
+        "update_signal": "a new dated supplier notice, or an absorbed move that persists past the date it was set to be re-examined"
+      }
+    },
+    {
+      "id": "HONEST_REPRICE_PLAY",
+      "topic": "running_a_price_increase_without_deception",
+      "definition": "Execute a price change as a disclosed, evidenced conversation with the account rather than as a surprise on an invoice. The play has a fixed order: confirm the increase is warranted by the passthrough trace or by measured cost to serve; check the account's own health signals so the increase is not landing the week after a run-out; give notice in writing before the first affected delivery, in language a facilities manager can repeat to their own boss; state which components move and why, naming the input that moved; offer at least one genuine alternative that keeps the client's spend flat, such as a different blend, a different format, a longer interval or a smaller pack; and take the objection seriously, including the possibility that the account is right and the increase is wrong for them. Two moves are prohibited outright: reducing pack size or weight without saying so, and adding an unexplained fee line to recover an increase the operator did not want to announce. The prohibition is not squeamishness - a client who discovers either one stops believing every other number the operator has ever given them, and the account is usually lost at the discovery rather than at the increase.",
+      "group": "pricing",
+      "dependencies": ["COST_PASSTHROUGH_MECHANISM", "WEAK_STOP_DIAGNOSIS"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["the ordered execution of a disclosed increase, from warrant to notice to alternatives", "the prohibitions on stealth pack reduction and unexplained fee lines", "handling the objection, including reversing an increase that proves wrong for that account"],
+        "excluded": ["deciding that an input cost moved, which the passthrough mechanism owns", "the contractual notice terms of any specific agreement, which require the client's own legal review", "acquisition-stage discounting to win a new account"]
+      },
+      "pros": [
+        { "claim": "Written notice with a named cause and a real alternative converts most increases into a routine renewal conversation instead of a churn event", "example": "an account that accepts the coffee line moving because it is offered a lighter-cost blend as an alternative and keeps its spend near flat", "weight": 0.85 },
+        { "claim": "Refusing stealth methods protects the credibility that every other number in the relationship depends on", "example": "a competitor's quietly shrunk pack being discovered by the client, and the disclosed operator winning the comparison on trust", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "Disclosure invites the client to shop the account at exactly the moment they are most receptive to a competitor's tasting visit", "example": "a facilities manager using a notice letter as the trigger to solicit two rival proposals", "weight": 0.75 },
+        { "claim": "Offering alternatives can trade a price increase for a mix shift that leaves contribution no better", "example": "the client moving to a lower-cost blend whose thinner margin cancels the intended gain", "weight": 0.68 }
+      ],
+      "failure_modes": [
+        "raising prices on the invoice with no prior notice and letting the client discover it",
+        "reducing pack size or weight instead of stating an increase",
+        "timing an increase immediately after a service failure at that account",
+        "applying a blanket increase across the book without checking which stops actually needed it",
+        "refusing to reverse an increase that clearly does not fit the account's real economics"
+      ],
+      "acceptance_tests": [
+        "notice is in writing, dated before the first affected delivery, and names the moving input and the affected components",
+        "at least one genuine flat-spend alternative is offered and its effect on contribution is computed before it is offered",
+        "no change reduces pack size, weight or count without stating that change explicitly",
+        "the account's recent service record is checked before the notice goes out and the timing is recorded"
+      ],
+      "revisit_triggers": [
+        "the account responds with a competitive quote or a cancellation threat",
+        "post-increase draw falls materially, indicating the client is substituting away rather than accepting",
+        "an alternative accepted by the client changes the mix enough to alter contribution"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.88, "user_value": 0.76,
+        "technical_complexity": 0.44, "risk_if_wrong": 0.88, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6, "confidence": 0.6, "node_conflict_pressure": 0.66,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.88, "evidence_confidence": 0.56,
+        "failure_rate": 0.32, "downside_weight": 0.72,
+        "uncertainty_interval": [0.34, 0.68],
+        "update_signal": "post-increase draw and retention outcomes at the repriced accounts compared with what the play predicted"
+      }
+    },
+    {
+      "id": "DELIVERY_MINIMUM_DESIGN",
+      "topic": "making_small_stops_viable_without_punishing_them",
+      "definition": "Design the disclosed instruments that let a genuinely small account stay on the route without being carried by its neighbours or gouged for being small. The instruments are a stated minimum order value per delivery, a longer service interval matched to the account's measured draw, consolidation with another tenant in the same building into one visit, a will-call or drop-ship arrangement for accounts that cannot support a visit at all, and, where the operator chooses to use one, a delivery component priced openly for the visit itself. Every instrument is chosen from the account's own measured draw and minutes, offered in advance rather than imposed after a bad month, and explained as what it is: the visit costs something and the account is too light to cover it through product alone. The design rule is that the client should be able to choose a way to stay - a longer interval or a topped-up order - rather than being handed a fee with no alternative. A minimum that exists only to generate fee revenue from clients who cannot meet it is a churn engine wearing the costume of a pricing instrument.",
+      "group": "pricing",
+      "dependencies": ["STOP_CONTRIBUTION_MECHANISM", "PRICE_ARCHITECTURE"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["the instrument set for small stops: minimums, longer intervals, consolidation, will-call, priced visits", "choosing an instrument from measured draw and minutes and disclosing it in advance", "requiring that the client has a way to comply rather than only a way to be charged"],
+        "excluded": ["par-level and order-quantity mechanics, owned by the logistics KB", "the decision to accept a small account in the first place, owned by the acquisition KB", "the exit decision when no instrument makes the stop work, owned by the churn and exit node"]
+      },
+      "pros": [
+        { "claim": "A disclosed minimum with a compliance path keeps small accounts that would otherwise have to be dropped, and turns their order pattern into something the route can serve", "example": "a small design studio consolidating to a larger, less frequent order and remaining a viable stop", "weight": 0.82 },
+        { "claim": "Building-level consolidation converts several unviable stops into one healthy one without raising anyone's price", "example": "three small tenants in one building agreeing to a shared delivery point and one visit", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Minimums push clients to over-order to clear the threshold, producing stale product and the resentment that follows", "example": "an office adding cases it will not drink for months to avoid a fee, then finding stale stock at the back of the cupboard", "weight": 0.74 },
+        { "claim": "Longer intervals raise run-out risk exactly at the accounts least able to absorb one", "example": "a stretched interval at a small office whose consumption spikes during a hiring month", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "imposing a minimum retroactively on an account that was never told",
+        "setting a minimum from a general policy rather than from the stop's own measured economics",
+        "using a fee where a longer interval would have solved the problem without cost to anyone",
+        "letting minimum-clearing orders create stale inventory the client will eventually blame the operator for"
+      ],
+      "acceptance_tests": [
+        "each small-stop instrument is chosen from that stop's measured draw and minutes, and the working is recorded",
+        "the instrument is communicated in writing before it takes effect, with the compliance alternative stated",
+        "accounts subject to a minimum are checked for over-ordering and stale stock at subsequent visits"
+      ],
+      "revisit_triggers": [
+        "the account's draw grows or falls out of the band the instrument was designed for",
+        "stale or unopened stock is observed at an account subject to a minimum",
+        "a consolidation partner in the same building leaves or changes its schedule"
+      ],
+      "base": {
+        "criticality": 0.76, "business_value": 0.8, "user_value": 0.64,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.7, "cross_topic_coupling": 0.66,
+        "irreversibility": 0.42, "confidence": 0.68, "node_conflict_pressure": 0.52,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.78, "evidence_confidence": 0.58,
+        "failure_rate": 0.26, "downside_weight": 0.54,
+        "uncertainty_interval": [0.3, 0.58],
+        "update_signal": "observed over-ordering, stale stock or run-outs at accounts operating under a minimum or a stretched interval"
+      }
+    },
+    {
+      "id": "CONCESSION_AND_CREDIT_DISCIPLINE",
+      "topic": "bounding_giveaways_credits_and_saves",
+      "definition": "Govern everything the operator gives away - service credits for a failure, free product to smooth an increase, a waived minimum, an extra machine at no charge, a retention discount offered under a cancellation threat - by recording it against the stop that bears it and testing it against that stop's own contribution. The discipline has three parts. First, every concession is written to the account record with its cause, its value at landed cost, and an end date, because concessions with no end date become the permanent price. Second, a concession offered to fix a failure the operator caused is treated differently from a concession offered to buy retention: the first is a cost of the failure and belongs in the service recovery loop, the second is a price change wearing a temporary label and must be judged as one. Third, the cumulative concession load per stop is reviewed, since a stop can pass every individual test and still be given away one small kindness at a time. A concession that cannot be defended out loud alongside what other accounts pay is not a concession; it is an undisclosed price the operator has quietly agreed to.",
+      "group": "pricing",
+      "dependencies": ["PRICE_ARCHITECTURE"],
+      "competency_question_refs": ["CQ_06", "CQ_09"],
+      "scope_boundary": {
+        "included": ["recording every giveaway with cause, landed value and end date", "separating failure-recovery credits from retention concessions", "reviewing cumulative concession load per stop"],
+        "excluded": ["the technical response to a service failure itself, owned by the recovery loop", "the decision to leave the account, owned by the churn and exit node", "any credit that would constitute a rebate arrangement requiring the client's own accounting or legal review"]
+      },
+      "pros": [
+        { "claim": "Charging concessions to the stop keeps them visible in contribution, so a quietly discounted account cannot masquerade as a healthy one", "example": "a stop whose repeated goodwill cases of coffee turn a passing contribution into a negative one once counted", "weight": 0.84 },
+        { "claim": "End-dating every concession forces a deliberate decision to renew rather than an accidental permanent price", "example": "a temporary waiver granted during a client's office move expiring and being reconsidered rather than continuing for years", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Strict concession limits can cost an account in a moment where a fast, generous gesture would have held it", "example": "a delayed decision on a credit after a machine failure while the client is already taking a competitor's call", "weight": 0.68 },
+        { "claim": "Recording concessions in money terms understates the ones given in service, which are invisible in the ledger but real in minutes", "example": "an unscheduled extra visit that costs route time and never appears as a credit anywhere", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "granting open-ended discounts under cancellation pressure and never revisiting them",
+        "logging credits as marketing cost at company level so the burdened stop looks healthy",
+        "treating an operator-caused failure and a retention plea as the same kind of giveaway",
+        "giving extra unscheduled service visits without counting the minutes anywhere"
+      ],
+      "acceptance_tests": [
+        "every concession has a written cause, a landed-cost value, an owner and an end date on the account record",
+        "concessions in service minutes are recorded alongside those in product value",
+        "each stop's contribution is computed with its concessions charged to it, not to a company-level pool"
+      ],
+      "revisit_triggers": [
+        "a concession reaches its end date",
+        "cumulative concessions at a stop exceed what the operator would knowingly have agreed as a price",
+        "a cancellation threat prompts a new retention offer at an account that already carries concessions"
+      ],
+      "base": {
+        "criticality": 0.74, "business_value": 0.78, "user_value": 0.7,
+        "technical_complexity": 0.36, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.64,
+        "irreversibility": 0.45, "confidence": 0.66, "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.76, "evidence_confidence": 0.56,
+        "failure_rate": 0.3, "downside_weight": 0.58,
+        "uncertainty_interval": [0.32, 0.6],
+        "update_signal": "a concession review that finds cumulative giveaways at a stop materially changing its contribution, or a concession past its end date still running"
+      }
+    },
+    {
+      "id": "STOCKOUT_INCIDENT_ECONOMICS",
+      "topic": "run_out_cost_and_root_caused_prevention",
+      "definition": "Treat every run-out as a recorded incident with an economic consequence rather than as an ordinary inconvenience, because in office coffee service the empty cabinet on a Thursday morning is the event that recruits a competitor. The incident record captures which item ran out, the date and interval, what the office did about it - bought retail, went without, called - who noticed, and what the operator did in response. The cost is then assembled as a mechanism rather than a guess: the emergency drop that broke the route sequence and its minutes, any credit granted, the retail purchase the client made and now uses as a price comparison, and the standing reduction in confidence that shows up later as a competitor being invited in. Prevention is root-caused per incident and the cause is one of a small set: draw grew and the order did not, the interval was stretched too far, a delivery was missed or short, shrink drained stock invisibly, or the client changed something without telling anyone. The prohibited response is to solve every case by pushing more inventory into the client's cupboard, which converts a service failure into stale product and resentment.",
+      "group": "retention",
+      "dependencies": ["CONSUMPTION_DRAW_MEASUREMENT"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": ["the run-out incident record and what it must capture", "assembling the incident's cost as a mechanism from route minutes, credits and confidence effects", "root-cause classification and the prevention response each cause licenses"],
+        "excluded": ["par-level and buffer stock design mechanics, owned by the logistics KB", "the service cadence design itself, owned by the logistics KB", "solving run-outs by overstocking the client, which the honest expansion gate forbids"]
+      },
+      "pros": [
+        { "claim": "Recording incidents converts a vague sense that an account is unhappy into a countable pattern with a cause", "example": "two run-outs in one quarter at the same account both traced to a stretched interval after a headcount rise", "weight": 0.9 },
+        { "claim": "Costing the incident makes prevention investment arguable instead of sentimental", "example": "an emergency drop whose broken route sequence cost more minutes than a full interval adjustment would have", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Incident logging depends on the client telling you, and the quietest accounts under-report until they leave", "example": "an office that simply started buying its own coffee and never mentioned the empty cabinet", "weight": 0.72 },
+        { "claim": "Aggressive prevention drifts naturally toward pushing inventory, which trades a visible failure for an invisible one", "example": "extra cases delivered after a run-out that go stale and later read to the client as over-selling", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "treating a run-out as a one-off and never recording it",
+        "responding to every run-out by increasing the standing order regardless of cause",
+        "missing shrink as a cause and repeatedly raising quantities that keep disappearing",
+        "leaving the emergency drop uncounted so the route cost of the incident stays invisible",
+        "failing to ask whether the client changed headcount or schedule before blaming the order size"
+      ],
+      "acceptance_tests": [
+        "each run-out has a dated incident record with item, interval, client response and root cause",
+        "the incident cost is assembled from named components including route minutes and any credit",
+        "the prevention action taken matches the recorded root cause rather than defaulting to a larger order",
+        "repeat incidents at the same account are escalated to a review of interval and draw rather than handled individually"
+      ],
+      "revisit_triggers": [
+        "a second incident at the same account within a review cycle",
+        "the account's draw series shows growth that the order pattern has not tracked",
+        "a shrink investigation changes the interpretation of the draw that caused the incident"
+      ],
+      "base": {
+        "criticality": 0.93, "business_value": 0.88, "user_value": 0.9,
+        "technical_complexity": 0.46, "risk_if_wrong": 0.9, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.48, "confidence": 0.68, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.92, "evidence_confidence": 0.62,
+        "failure_rate": 0.3, "downside_weight": 0.74,
+        "uncertainty_interval": [0.28, 0.58],
+        "update_signal": "the incident series itself: a change in run-out frequency or in which root cause dominates after a prevention change"
+      }
+    },
+    {
+      "id": "SERVICE_PROMISE_CAPACITY",
+      "topic": "promising_only_what_the_route_can_hold",
+      "definition": "Keep every service promise made to an account inside what the route can actually deliver on its worst ordinary week, not its best. The promises at issue here are the visit interval, the response time for a machine failure, the emergency-delivery commitment and the window the client is told to expect the driver in. Each one is a claim on route-day minutes that are already spoken for, and each is made account by account while the capacity it consumes is shared. The work is to hold a running picture of committed minutes against available minutes per route day, including the slack that absorbs a breakdown or a sick driver, and to refuse or re-shape a promise that would consume the slack rather than accepting it and hoping. When capacity is genuinely short the honest moves are to re-sequence, to shift an account's day, to add capacity, or to tell the client plainly what can be committed - never to promise the interval that wins the moment and then miss it. A missed promise costs more than the promise ever earned, because it converts a reliability story into a reliability complaint and hands the account a reason to take a competitor's call.",
+      "group": "retention",
+      "dependencies": ["SERVICE_TIME_LEDGER", "COST_TO_SERVE_DRIVERS"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": ["the promise types that consume route capacity", "holding committed minutes against available minutes with deliberate slack", "the honest responses when a requested promise exceeds capacity"],
+        "excluded": ["building the route schedule and sequence itself, owned by the logistics KB", "hiring, vehicle and capacity investment decisions at company level", "the acquisition-stage promise made to win an account, owned by the acquisition KB"]
+      },
+      "pros": [
+        { "claim": "Committing against measured capacity turns reliability from an aspiration into something the operator can actually keep, which is the retention asset itself", "example": "declining a same-day response commitment for a distant stop and offering a next-visit commitment that is always met", "weight": 0.88 },
+        { "claim": "Deliberate slack absorbs the ordinary shocks that otherwise cascade into missed stops across the whole day", "example": "a machine failure handled within the day without pushing three later stops into next week", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "Holding slack means visibly unused capacity that is tempting to sell, and the temptation is strongest exactly when the book needs growth", "example": "filling the reserve minutes with a new stop and then having no room the first week something breaks", "weight": 0.72 },
+        { "claim": "A conservative promise can lose an account to a competitor who promises more, including promises they will not keep", "example": "a prospect choosing a rival's same-day pledge over an honest next-visit commitment", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "making per-account promises with no view of aggregate committed minutes",
+        "planning on best-case route days and having no absorption for a breakdown or absence",
+        "letting an unofficial promise from a driver become the client's expectation",
+        "keeping a promise for the loud accounts by quietly missing the quiet ones"
+      ],
+      "acceptance_tests": [
+        "every promise made to an account is written on the account record in the terms the client was given",
+        "committed minutes per route day are held against available minutes with a stated slack allowance",
+        "any promise that would consume the slack is escalated to a re-shape or refusal decision rather than accepted by default"
+      ],
+      "revisit_triggers": [
+        "a promise is missed at any account",
+        "a stop is added, removed or re-timed on a route day that was already near its committed limit",
+        "measured stop minutes drift upward across the day, eroding the slack"
+      ],
+      "base": {
+        "criticality": 0.87, "business_value": 0.82, "user_value": 0.84,
+        "technical_complexity": 0.42, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.52, "confidence": 0.66, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.6,
+        "failure_rate": 0.26, "downside_weight": 0.64,
+        "uncertainty_interval": [0.3, 0.6],
+        "update_signal": "missed-promise events and the drift between committed and available minutes on the affected route days"
+      }
+    },
+    {
+      "id": "SERVICE_RECOVERY_LOOP",
+      "topic": "restoring_trust_after_a_failure",
+      "definition": "Run the standard sequence that follows any failure the client experiences - a brewer down, a water system leaking, a wrong or short delivery, an invoice error, a missed visit - because how the failure is closed determines whether it costs the account or strengthens it. The sequence is acknowledge, restore, verify, and account for. Acknowledge means a same-working-day human response naming what happened without excuses. Restore means a defined interim that keeps the breakroom functioning while the real fix happens: a loaner machine, a pour-over setup with product, a manual dispenser, or an interim delivery. Verify means going back to confirm the fix held rather than assuming silence is satisfaction, since the next failure at the same account is far more expensive than the first. Account for means recording the failure, its cause, its minutes and any credit against the stop, so that a chronically failing machine or a chronically failing building shows up in the economics instead of hiding in goodwill. The loop is also where equipment reliability turns into an economic decision: the third failure of the same unit is a replacement question, not another service call.",
+      "group": "retention",
+      "dependencies": ["SERVICE_PROMISE_CAPACITY"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["the acknowledge-restore-verify-account sequence and its interim-service options", "recording failure cause, minutes and credits against the stop", "escalating a repeatedly failing unit into a replacement decision"],
+        "excluded": ["the technical repair procedure and preventive maintenance schedule, owned by the logistics KB", "warranty claims and supplier remedies, which require the operator's own contract review", "the credit amount policy itself, owned by the concession discipline node"]
+      },
+      "pros": [
+        { "claim": "A defined interim keeps the breakroom working during the failure, which is what the client actually cares about", "example": "leaving a loaner brewer and product the same day while the failed machine is taken for repair", "weight": 0.88 },
+        { "claim": "Verifying the fix and recording the cause converts recurring failures into a visible pattern instead of a series of forgotten calls", "example": "a unit whose third failure in one account triggers replacement rather than another repair visit", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Fast recovery consumes exactly the route slack that reliability depends on, so a bad week of failures degrades service everywhere", "example": "two same-day recovery runs pushing scheduled stops into the following week", "weight": 0.74 },
+        { "claim": "Generous recovery can teach an account to escalate ordinary issues, raising the cost of serving it", "example": "a client who begins calling for immediate attendance on minor issues after a strong recovery", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "acknowledging the failure but leaving the client without any interim way to make coffee",
+        "closing the ticket when the repair is done without verifying the fix held",
+        "absorbing recovery minutes into the day without recording them against the stop",
+        "repairing the same unit repeatedly instead of escalating it to a replacement decision",
+        "letting the recovery conversation drift into blaming the client or the building"
+      ],
+      "acceptance_tests": [
+        "every failure has a dated record with cause, interim provided, verification date and the minutes it consumed",
+        "an interim service option is offered in every case where the client's breakroom would otherwise be out of service",
+        "units with repeated failures at the same account are escalated to a replacement decision rather than re-repaired by default"
+      ],
+      "revisit_triggers": [
+        "a second failure of the same type at the same account",
+        "recovery minutes in a period materially exceeding the slack allowance",
+        "a client dispute about whether a past failure was properly resolved"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.76, "user_value": 0.88,
+        "technical_complexity": 0.38, "risk_if_wrong": 0.76, "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35, "confidence": 0.7, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8, "evidence_confidence": 0.6,
+        "failure_rate": 0.28, "downside_weight": 0.56,
+        "uncertainty_interval": [0.3, 0.56],
+        "update_signal": "the failure record itself: repeat causes, verification outcomes and the minutes recovery is consuming per period"
+      }
+    },
+    {
+      "id": "CHAMPION_CONTINUITY",
+      "topic": "surviving_the_loss_of_the_breakroom_contact",
+      "definition": "Protect the account against the departure of the one person who cares about it. In office coffee service the relationship almost always runs through a single office manager, executive assistant or facilities coordinator who chose the service, defends it in budget season and calls when something breaks. When that person leaves, the account becomes a line item to a successor with no history and often with a mandate to cut costs, and this is one of the most common ways a perfectly well-served account is lost. The work is to know who the champion is by name and role, to have at least one other contact who has met the driver and knows how the service works, to make sure the account's value is documented in a form the client keeps rather than only in the operator's head, and to notice the departure early - a bounced email, a new name on the delivery signature, a changed approval process. When the successor appears, the response is a short, factual re-introduction that shows the account's own numbers: what is delivered, what it costs, what the equipment is, what has been fixed. Cultivating the champion is legitimate relationship work, but it stays inside the client's own gift and hospitality rules, and no personal inducement may be used to influence a purchasing decision.",
+      "group": "retention",
+      "dependencies": ["STOP_ECONOMIC_UNIT"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": ["identifying the champion and a second contact per account", "early detection of a contact change and the factual re-introduction that follows", "the conduct limits on cultivating a client contact"],
+        "excluded": ["the original decision-maker mapping performed while winning the account, owned by the acquisition KB", "any gift, entertainment or inducement decision that would require the client's or operator's own compliance review", "the pricing response to a new manager's cost-cutting mandate, owned by the pricing nodes"]
+      },
+      "pros": [
+        { "claim": "A second known contact keeps the account explicable when the champion leaves, which is when most avoidable churn happens", "example": "a departing office manager's successor already knowing the driver by name and the delivery routine", "weight": 0.84 },
+        { "claim": "Documenting the service in a form the client keeps means the account's value survives the memory of one person", "example": "a one-page service summary in the client's own facilities folder listing equipment, cadence and contacts", "weight": 0.76 }
+      ],
+      "cons": [
+        { "claim": "Multi-threading can annoy a champion who regards the account as their domain and reads the second contact as going around them", "example": "an office manager who takes offence at the driver introducing himself to the operations lead", "weight": 0.62 },
+        { "claim": "Relationship investment is unmeasurable and can absorb service minutes that the stop economics never credits", "example": "regular conversation time at a stop whose contribution stays thin regardless", "weight": 0.58 }
+      ],
+      "failure_modes": [
+        "knowing only one contact and discovering the departure from a cancellation email",
+        "assuming a successor understands what the service includes and why it costs what it costs",
+        "responding to a new manager's cost question with defensiveness rather than the account's own numbers",
+        "using personal inducements to hold a contact, which risks the client's own policies and the operator's reputation"
+      ],
+      "acceptance_tests": [
+        "every account record names the champion, their role, and at least one alternate contact who has met the service",
+        "a contact-change detection signal exists and is acted on within the current review cycle",
+        "the re-introduction pack for a successor is factual, uses the account's own numbers, and is available on short notice"
+      ],
+      "revisit_triggers": [
+        "any change in the named champion or the approval process",
+        "an account reorganization, move or acquisition",
+        "the alternate contact also leaving, restoring single-thread exposure"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.8, "user_value": 0.74,
+        "technical_complexity": 0.3, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.68,
+        "irreversibility": 0.5, "confidence": 0.64, "node_conflict_pressure": 0.36,
+        "acceptance_test_pass_rate": 0.74, "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.8, "evidence_confidence": 0.54,
+        "failure_rate": 0.34, "downside_weight": 0.6,
+        "uncertainty_interval": [0.34, 0.64],
+        "update_signal": "champion turnover events and whether accounts with a documented alternate contact survived them differently from single-threaded ones"
+      }
+    },
+    {
+      "id": "ACCOUNT_HEALTH_SIGNALS",
+      "topic": "leading_indicators_of_churn",
+      "definition": "Assemble the small observable signals that appear weeks before a cancellation, from records the operator already holds, so that the account is worked while it can still be saved. The signals in this business are a sustained fall in measured draw that occupancy does not explain, a shift toward the cheapest items in the catalog, run-out incidents that the client stopped reporting, calls and emails going unanswered by a previously responsive contact, a new name signing for deliveries, invoice queries where there were none, requests for a copy of the agreement or its termination terms, a competitor's brewer or water cooler appearing in another part of the office, and a client suddenly asking for itemized pricing after years of paying without question. Each signal is recorded with its date and reviewed on the account's own baseline rather than against the route average, since a quiet account has always been quiet. The output is a per-account health state that routes the account to a save action, an expansion conversation or a triage decision - and the discipline is to act on the signal rather than to wait for the certainty that only arrives with the cancellation.",
+      "group": "retention",
+      "dependencies": ["CONSUMPTION_DRAW_MEASUREMENT", "STOCKOUT_INCIDENT_ECONOMICS", "CHAMPION_CONTINUITY"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": ["the observable leading indicators drawn from draw, service, contact and billing records", "reading each signal against the account's own baseline", "routing an account by health state to save, expand or triage"],
+        "excluded": ["the save-versus-release decision itself, owned by the churn and exit node", "the expansion offer, owned by the honest expansion gate", "any inference about the client's internal finances beyond what they have told the operator"]
+      },
+      "pros": [
+        { "claim": "Leading indicators buy the weeks in which a save is still possible, which a cancellation notice never does", "example": "acting on three intervals of falling draw and an unreturned call before the competitor's tasting is scheduled", "weight": 0.86 },
+        { "claim": "Using the account's own baseline avoids constant false alarms from accounts that were always low-volume", "example": "a small firm whose steady, modest draw reads as healthy rather than as decline", "weight": 0.78 }
+      ],
+      "cons": [
+        { "claim": "Signals are ambiguous and a decline can be the client's own business shrinking rather than dissatisfaction, so the wrong response can insult a loyal account", "example": "pitching a retention discount to a client whose draw fell because they laid off half the office", "weight": 0.72 },
+        { "claim": "Signal monitoring can degrade into anxious over-contact, which itself annoys the account", "example": "repeated check-in calls to a client whose only issue was a holiday shutdown", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "watching only revenue, which moves last, instead of draw and service signals, which move first",
+        "comparing an account to route averages rather than to its own history",
+        "recording signals but never assigning anyone to act on them",
+        "reading every decline as dissatisfaction and never asking the client what changed"
+      ],
+      "acceptance_tests": [
+        "each account carries a dated signal log and a current health state with the evidence behind it",
+        "signals are evaluated against that account's own baseline, and the baseline is stated",
+        "every account in a deteriorating state has a named next action with an owner and a date"
+      ],
+      "revisit_triggers": [
+        "a new signal type appears that the log does not capture",
+        "an account cancels with no prior signal recorded, indicating a blind spot",
+        "the account's occupancy or business circumstances change in a way that resets its baseline"
+      ],
+      "base": {
+        "criticality": 0.85, "business_value": 0.86, "user_value": 0.78,
+        "technical_complexity": 0.48, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.4, "confidence": 0.64, "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.58,
+        "failure_rate": 0.3, "downside_weight": 0.62,
+        "uncertainty_interval": [0.32, 0.62],
+        "update_signal": "cancellations reviewed against the signals that were and were not present beforehand"
+      }
+    },
+    {
+      "id": "CHURN_DECISION_AND_EXIT",
+      "topic": "save_release_and_the_honest_exit",
+      "definition": "Decide, for an account in trouble or an account the economics cannot justify, whether to save it or to release it - and if released, to leave in a way that costs nothing beyond the account itself. The save test is not sentiment: it asks whether the account's contribution can plausibly reach a level the route should keep once the specific cause is fixed, whether the fix is inside the operator's control, and what the freed minutes would earn if the stop were released and the capacity used elsewhere. A save is executed as a written commitment with a review date, not as a discount handed over in a phone call. A release is executed as a planned exit: notice given in the terms of the agreement, final deliveries honored, equipment de-installed and recovered with its condition recorded, water connections properly closed off by whoever is qualified to do it, final invoicing settled without punitive extras, and the client left with enough notice and information to arrange their own alternative. The reason this conduct matters commercially is that offices talk to each other and facilities managers move between buildings; the account being released today is a reference tomorrow, and an operator who exits badly buys a reputation that outlasts the stop.",
+      "group": "retention",
+      "dependencies": ["ACCOUNT_HEALTH_SIGNALS", "WEAK_STOP_DIAGNOSIS"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["the save-versus-release test against contribution, controllable cause and the value of freed capacity", "executing a save as a written commitment with a review date", "the planned-exit conduct: notice, equipment recovery, closure and final settlement"],
+        "excluded": ["interpreting the termination clauses of any specific agreement, which requires the client's or operator's own legal review", "the technical de-installation and water disconnection procedure, owned by the logistics KB", "any collections or dispute action, which is outside this KB"]
+      },
+      "pros": [
+        { "claim": "An explicit release decision converts a slow bleed into recovered route capacity that can be sold to a better stop", "example": "releasing a chronically negative stop and using the freed minutes to add an infill account nearby", "weight": 0.84 },
+        { "claim": "A clean exit protects referrals in a market where facilities managers move between buildings and talk", "example": "a released client later recommending the operator at their next employer because the handover was handled well", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Releasing a stop removes a fixed revenue line immediately while the replacement demand is uncertain and slower than expected", "example": "freed capacity sitting unsold for longer than planned after an exit", "weight": 0.74 },
+        { "claim": "Exit costs are real and front-loaded: de-installation, recovery, unrecoverable equipment condition and any remaining product", "example": "a placed machine returning damaged and unfit for the next account", "weight": 0.68 }
+      ],
+      "failure_modes": [
+        "saving every account by discount, converting a churn problem into a permanent margin problem",
+        "letting a decided release drag on for months while the stop keeps consuming minutes",
+        "abandoning equipment at a released account because recovery seemed like too much trouble",
+        "exiting with punitive final charges that turn a lost account into an active detractor",
+        "leaving a water connection or drain unclosed for someone else to discover"
+      ],
+      "acceptance_tests": [
+        "each save decision states the cause being fixed, the contribution it is expected to reach, and the date it will be reviewed",
+        "each release names the notice given, the equipment recovered with its recorded condition, and the closure steps completed",
+        "freed capacity from a release is explicitly assigned to a use rather than absorbed invisibly"
+      ],
+      "revisit_triggers": [
+        "a saved account fails to reach its stated contribution by the review date",
+        "released capacity remains unsold beyond the period assumed in the decision",
+        "an exit produces a complaint, a dispute or a lost referral"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.82, "user_value": 0.7,
+        "technical_complexity": 0.44, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.74,
+        "irreversibility": 0.78, "confidence": 0.62, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.82, "evidence_confidence": 0.56,
+        "failure_rate": 0.28, "downside_weight": 0.7,
+        "uncertainty_interval": [0.34, 0.66],
+        "update_signal": "outcomes of past saves and releases: whether saved accounts reached their stated contribution and whether freed capacity was actually re-sold"
+      }
+    },
+    {
+      "id": "HONEST_EXPANSION_GATE",
+      "topic": "consumption_pulled_disclosed_expansion",
+      "definition": "Bind every attempt to sell an existing account more - another machine, water service, tea and cocoa variety, snacks, breakroom supplies, a market upgrade - to evidence that the account will actually pull it, and to terms the client can see whole before agreeing. The gate has four conditions. Pull: the demand is visible in the account's own records or in something the client has said, not inferred from the operator's need for revenue. Reliability: the core service at that account is currently sound, since expanding an account that ran out of coffee twice this quarter is selling on top of a broken promise. Right-sizing: the initial quantity and assortment are sized to measured draw with a stated plan to grow or shrink at the next visit, so the client is never left holding stock they cannot consume. Disclosure: the price of the new category, any equipment carry it adds, its minimum and the exit path from it are stated before the first delivery. The gate exists because the failure mode it prevents is specific and destructive: an operator who pushes volume into cupboards converts a customer's goodwill into resentment, and the resentment arrives later as a cancellation that also takes the coffee service with it.",
+      "group": "expansion",
+      "dependencies": ["CONSUMPTION_DRAW_MEASUREMENT", "ACCOUNT_HEALTH_SIGNALS"],
+      "competency_question_refs": ["CQ_11", "CQ_07"],
+      "scope_boundary": {
+        "included": ["the four gate conditions: pull, reliability, right-sizing and disclosure", "sizing an initial assortment to measured draw with an explicit adjust-next-visit plan", "the prohibition on volume pushed for the operator's benefit"],
+        "excluded": ["which categories are worth adding at all, owned by the category screen", "acquisition-stage proposal design for new accounts, owned by the acquisition KB", "assortment and planogram construction, owned by the logistics KB"]
+      },
+      "pros": [
+        { "claim": "Requiring visible pull means expansion revenue tends to stick instead of reversing at the first stock review", "example": "a water system added only after staff were repeatedly seen refilling bottles at a distant tap and the office asked about it", "weight": 0.9 },
+        { "claim": "Right-sizing with an explicit adjustment at the next visit lets an account try a category with almost no risk of being stuck with it", "example": "a small starter assortment of snacks reviewed at the following visit and cut back on the items nobody touched", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "Waiting for demonstrated pull leaves revenue on the table where a client would have happily accepted a suggestion", "example": "an office that would have taken tea variety immediately but was never offered it because no pull signal existed yet", "weight": 0.66 },
+        { "claim": "Small right-sized starts can under-serve a category and make it look unsuccessful when the assortment was simply too thin to be used", "example": "a snack offering too limited to become part of anyone's routine and then withdrawn as a failure", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "loading an account with a category because the operator needs the volume this month",
+        "expanding an account that has unresolved service failures or unpaid disputes",
+        "sizing the first order from a supplier's suggested assortment rather than the account's own draw",
+        "leaving the exit path from a new category unstated so the client feels trapped",
+        "treating an unreturned suggestion as consent to deliver"
+      ],
+      "acceptance_tests": [
+        "each expansion has a recorded pull signal from the account's own evidence, dated and specific",
+        "the account's current reliability state is checked and recorded before the offer is made",
+        "the initial quantity is traceable to measured draw and carries a stated review-and-adjust date",
+        "the price, any added carry, the minimum and the exit path are given to the client in writing before the first delivery"
+      ],
+      "revisit_triggers": [
+        "the first review after a category launch shows unconsumed or expired stock",
+        "the account raises a service or billing issue after an expansion",
+        "the pull signal that justified the expansion turns out to have come from a small group that has since left"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.84, "user_value": 0.92,
+        "technical_complexity": 0.34, "risk_if_wrong": 0.88, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.45, "confidence": 0.72, "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9, "evidence_confidence": 0.64,
+        "failure_rate": 0.22, "downside_weight": 0.7,
+        "uncertainty_interval": [0.26, 0.54],
+        "update_signal": "post-launch reviews showing whether expanded categories were consumed as predicted or left unconsumed and withdrawn"
+      }
+    },
+    {
+      "id": "EXPANSION_CATEGORY_SCREEN",
+      "topic": "comparing_and_sequencing_candidate_categories",
+      "definition": "Compare the candidate categories an office coffee and water operator can add to an existing stop, on the dimensions that actually decide whether they help, and sequence them so the easy compounding ones come before the demanding ones. The realistic ladder runs from beverage variety within the existing equipment - tea, cocoa, alternative creamers, a second blend - through point-of-use water service or filtered bottle replacement, through cold beverage and paper-goods and breakroom supplies, and only then to snack racks, refrigerated items and finally an unattended market class. Each candidate is screened on: the added service minutes per visit, the freight and handling weight it adds to the van, its margin shape as computed from the operator's own landed cost, its spoilage and date-code exposure, its shrink exposure, the equipment or fixtures it demands, the obligation classes it may trigger, and whether it deepens the reason the client keeps the operator or merely adds an item. Categories that add minutes to every visit are judged much more harshly than ones that ride along on the existing stop, because minutes are the binding constraint on the whole route.",
+      "group": "expansion",
+      "dependencies": ["HONEST_EXPANSION_GATE", "STOP_CONTRIBUTION_MECHANISM"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["the candidate category ladder and its ordering logic", "the screening dimensions including minutes, weight, margin shape, spoilage, shrink and fixtures", "judging categories by their effect on the binding route-minute constraint"],
+        "excluded": ["the specific item assortment and planogram, owned by the logistics KB", "the qualification test for the unattended market class specifically, owned by its own node", "verifying which obligations apply locally, owned by the obligation-shift node"]
+      },
+      "pros": [
+        { "claim": "Screening on added minutes prevents a category that looks profitable per item from quietly consuming the route's capacity", "example": "a refrigerated line that adds rotation and date-checking work to every visit on the loop", "weight": 0.86 },
+        { "claim": "Sequencing from ride-along categories upward compounds revenue at almost no operational cost before any complex class is attempted", "example": "adding tea and a second blend within the existing equipment before considering any refrigerated offering", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "A minutes-first screen is biased against categories whose real value is defensive, making the account harder for a competitor to take whole", "example": "breakroom supplies that add handling time but make the operator the single source the office relies on", "weight": 0.68 },
+        { "claim": "Spoilage and shrink exposure are hard to estimate before running a category, so the screen's hardest inputs are its weakest", "example": "date-coded stock in a small office whose real waste rate only becomes visible after a full cycle", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "screening categories on gross margin alone and ignoring the minutes and weight they add",
+        "adopting a supplier's category program wholesale without screening it against this route's constraints",
+        "jumping the ladder to a complex class before the simple ones are working",
+        "ignoring that a category changes the van load and therefore the sequence of the whole route day"
+      ],
+      "acceptance_tests": [
+        "each candidate category carries a screen record covering minutes, weight, margin shape, spoilage, shrink, fixtures and obligation exposure",
+        "the ladder position of each category is stated along with what must be working before the next step is attempted",
+        "margin shape is computed from the operator's own landed cost, never from a supplier's suggested figures"
+      ],
+      "revisit_triggers": [
+        "a launched category's measured minutes or spoilage differ from what the screen assumed",
+        "supplier terms, freight or product availability change the margin shape of a category",
+        "route capacity changes, altering how harshly added minutes should be judged"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.88, "user_value": 0.74,
+        "technical_complexity": 0.58, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.5, "confidence": 0.62, "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84, "evidence_confidence": 0.56,
+        "failure_rate": 0.32, "downside_weight": 0.62,
+        "uncertainty_interval": [0.34, 0.66],
+        "update_signal": "measured minutes, spoilage and shrink from a category after a full cycle, compared with the values the screen assumed"
+      }
+    },
+    {
+      "id": "MICRO_MARKET_CLASS_UPGRADE",
+      "topic": "qualifying_an_account_for_unattended_retail",
+      "definition": "Treat the move from breakroom service to an unattended self-checkout market as a change of business class rather than as a bigger version of the same stop, and qualify an account against that reality before any fixture is ordered. The qualification questions are concrete: is the on-site population large enough and present enough days to turn stock before it dates; is the space secure and supervised enough that shrink stays inside what the category can carry; does the client accept the loss policy in writing, including who bears shrink and expired stock; is there power, network and payment connectivity for the kiosk; can the route absorb the restocking, rotation and cash-and-remote-monitoring work that a market adds to every visit; and what happens to the fixtures and the unrecovered investment if the client cancels or moves. The economics differ from coffee service in kind: capital is sunk into fixtures rather than a brewer, revenue depends on assortment and turn rather than a standing order, and losses arrive as shrink and date-outs rather than as bad debt. An account that is merely enthusiastic does not qualify; an account with the population, the supervision and the written loss terms does.",
+      "group": "expansion",
+      "dependencies": ["EXPANSION_CATEGORY_SCREEN"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["the qualification questions covering population, turn, shrink exposure, connectivity, route absorption and cancellation exposure", "written loss and shrink terms with the client", "the fixture investment and its recovery exposure"],
+        "excluded": ["fixture selection, planogram and installation execution, owned by the logistics KB", "the local obligation classes an unattended market triggers, owned by the obligation-shift node", "payment processing contracts and any tax or accounting treatment, which require the operator's own professional advice"]
+      },
+      "pros": [
+        { "claim": "Qualifying on population and turn before investing prevents fixtures being sunk into an account that cannot rotate perishable stock", "example": "declining a market for a small hybrid office whose typical on-site count would leave dated stock every cycle", "weight": 0.88 },
+        { "claim": "Written loss terms make shrink a shared, discussable fact instead of an argument after the first bad month", "example": "agreeing in advance how unexplained losses are reviewed and who bears them before the market opens", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "The class carries sunk fixture cost with a real chance of an early cancellation, which is a materially different risk from a placed brewer", "example": "a client relocating within a year of the market opening and the fixtures needing removal and refurbishment", "weight": 0.78 },
+        { "claim": "Markets add recurring work of a kind the coffee route was never designed for, including rotation, kiosk issues and remote monitoring", "example": "date-checking and planogram tidying turning a short stop into the longest one on the day", "weight": 0.72 }
+      ],
+      "failure_modes": [
+        "qualifying an account on enthusiasm and headcount on paper rather than on typical on-site presence",
+        "opening a market without written shrink and loss terms",
+        "underestimating the added visit work until the route day no longer fits",
+        "ignoring the cancellation and relocation exposure on sunk fixtures",
+        "launching before the local obligation classes have been verified"
+      ],
+      "acceptance_tests": [
+        "the qualification record answers every question - population and presence, turn, supervision and shrink, connectivity, route absorption, cancellation exposure - with account-specific evidence",
+        "loss, shrink and expired-stock terms are agreed in writing with the client before opening",
+        "the added visit minutes are estimated from the screen and checked against the route day's remaining capacity",
+        "the obligation-class verification for unattended retail is complete and recorded before opening"
+      ],
+      "revisit_triggers": [
+        "measured shrink or date-out losses exceed what the qualification assumed",
+        "the account's on-site population pattern changes",
+        "the client signals a relocation, restructuring or cancellation while fixtures remain unrecovered"
+      ],
+      "base": {
+        "criticality": 0.76, "business_value": 0.84, "user_value": 0.72,
+        "technical_complexity": 0.7, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.8, "confidence": 0.56, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.74, "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.8, "evidence_confidence": 0.5,
+        "failure_rate": 0.38, "downside_weight": 0.74,
+        "uncertainty_interval": [0.38, 0.72],
+        "update_signal": "measured shrink, date-out losses and added visit minutes from an operating market compared with the qualification assumptions"
+      }
+    },
+    {
+      "id": "FOOD_HANDLING_OBLIGATION_SHIFT",
+      "topic": "obligation_classes_that_change_when_categories_change",
+      "definition": "Recognize that moving an account from sealed shelf-stable coffee into other categories can move the operator into different regulatory classes, and re-verify locally at each step instead of assuming the coffee-service position still holds. The classes to check by name, with the responsible authority in the operator's own jurisdiction, include: retail or wholesale food-facility obligations once open, perishable or refrigerated food is supplied; date-marking, temperature control and traceability obligations for chilled and dated items; food-handler certification and sanitation obligations for staff who handle open product or clean dispensing equipment; potable-water, backflow-prevention and plumbing obligations for point-of-use water systems and ice equipment; weights-and-measures or pricing-display obligations where product is sold to consumers at a posted price; unattended-retail and payment-handling obligations for a self-checkout market; and any vendor requirements the building itself imposes, such as insurance certificates and sanitation documentation. Every one of these varies by jurisdiction and changes over time, so this node names the class and requires written verification with the responsible authority before the category goes live; it never states what any specific rule requires. The commercial reason to treat this as a gate rather than paperwork is that the discovery of an unmet obligation usually arrives with the client, and it takes the account with it.",
+      "group": "compliance",
+      "dependencies": ["EXPANSION_CATEGORY_SCREEN"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["the obligation classes whose applicability can change with category expansion", "requiring dated written verification with the responsible authority per jurisdiction", "treating verification as a gate that precedes launch"],
+        "excluded": ["stating what any specific rule requires in any named jurisdiction", "legal interpretation, permit drafting or representation before any authority", "the sanitation execution procedure for equipment, owned by the logistics KB"]
+      },
+      "pros": [
+        { "claim": "Naming the class rather than the rule keeps the guidance correct across jurisdictions and forces a real local check", "example": "identifying that adding chilled items raises a food-facility question and verifying it with the local authority before ordering a cooler", "weight": 0.9 },
+        { "claim": "Verifying before launch prevents the worst discovery path, which is the client or a building manager finding the gap first", "example": "a building requiring documentation for a new refrigerated offering that the operator already holds", "weight": 0.84 }
+      ],
+      "cons": [
+        { "claim": "Verification takes calendar time and can stall an expansion the client is enthusiastic about right now", "example": "a market launch waiting on a written answer while the client's interest cools", "weight": 0.66 },
+        { "claim": "Answers can be ambiguous or informal, and an informal answer is weak protection later", "example": "a verbal assurance by phone that nobody can produce when the question is raised again", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "assuming that because coffee service required nothing special, food or water categories require nothing special",
+        "relying on a supplier's claim that a category is compliant everywhere",
+        "verifying once and never again as the categories or the rules change",
+        "accepting an informal verbal answer and keeping no dated record of it",
+        "stating a specific requirement to a client rather than pointing them to the authority"
+      ],
+      "acceptance_tests": [
+        "each category change has a written list of the obligation classes it may touch and the authority responsible for each",
+        "each class is marked verified or unverified with a date and the form the answer took",
+        "no category goes live with an unverified class that could apply to it",
+        "the record states explicitly that requirements vary by jurisdiction and must be re-verified over time"
+      ],
+      "revisit_triggers": [
+        "a new category, item class or piece of equipment is proposed",
+        "an authority, building or client requests documentation the operator does not hold",
+        "the verification record passes the age at which the operator has decided to re-check"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.7, "user_value": 0.8,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.92, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.66, "confidence": 0.58, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.88, "evidence_confidence": 0.52,
+        "failure_rate": 0.28, "downside_weight": 0.8,
+        "uncertainty_interval": [0.36, 0.7],
+        "update_signal": "a written answer from a responsible authority, a building requirement, or any change in the categories the operator supplies"
+      }
+    },
+    {
+      "id": "ROUTE_DENSITY_AND_MARGINAL_STOP",
+      "topic": "density_as_the_profit_engine_and_the_infill_test",
+      "definition": "Treat geographic density, not account count, as the engine that makes an office coffee route profitable, and test every candidate addition on its incremental effect rather than on its own revenue. The mechanism is simple and unforgiving: drive minutes between stops are pure cost that no client pays for directly, so two accounts in the same building or the same block share an approach that a distant account of equal size does not. The marginal-stop test asks what adding this stop does to the route day: the incremental drive minutes to reach it from the existing sequence, the service minutes it adds, whether it fits inside the day without displacing another stop or eroding the slack, and what it does to the loop on the days it is not served. The same test runs in reverse when a stop is released, because losing an anchor stop in a distant cluster can turn its neighbours from profitable to marginal overnight. Density also compounds in retention: a route with several accounts in one building can respond fast, cover a failure cheaply and be visible in a way a scattered route cannot.",
+      "group": "book",
+      "dependencies": ["STOP_CONTRIBUTION_MECHANISM", "SERVICE_PROMISE_CAPACITY"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": ["the incremental test for adding or releasing a stop", "density effects on drive minutes, response capability and slack", "the anchor-stop dependency inside a distant cluster"],
+        "excluded": ["route sequencing and daily dispatch, owned by the logistics KB", "prospect targeting and territory definition for new business, owned by the acquisition KB", "vehicle and staffing capacity investment decisions"]
+      },
+      "pros": [
+        { "claim": "The incremental test correctly accepts a small nearby stop and correctly rejects a larger distant one, which raw revenue comparison inverts", "example": "adding a modest account two floors above an existing stop while declining a bigger account across town", "weight": 0.9 },
+        { "claim": "Running the test in reverse before releasing a stop protects the neighbours that depended on the same trip", "example": "recognizing that dropping the anchor account in an outlying cluster would strand two adjacent stops", "weight": 0.84 }
+      ],
+      "cons": [
+        { "claim": "Strict density discipline concentrates the book geographically, so a single building, campus or employer becomes a correlated exposure", "example": "several stops in one tower all affected when the building changes vendor access rules or the anchor tenant leaves", "weight": 0.74 },
+        { "claim": "Incremental logic can justify accepting many thin stops that are individually defensible and collectively fill the day with low-contribution work", "example": "a loop packed with small nearby accounts that leaves no room for a strong stop when one appears", "weight": 0.7 }
+      ],
+      "failure_modes": [
+        "comparing a candidate stop on its own revenue instead of on its incremental minutes",
+        "adding stops until the slack that absorbs failures has quietly disappeared",
+        "releasing an anchor stop without testing what it does to its cluster",
+        "treating a distant prestige account as a marketing asset while it drains the route day"
+      ],
+      "acceptance_tests": [
+        "every add or release decision records incremental drive minutes, incremental service minutes and the effect on that route day's remaining slack",
+        "cluster dependencies are recorded so anchor stops are identified before any release decision",
+        "the route day's committed minutes after the change are checked against its available minutes"
+      ],
+      "revisit_triggers": [
+        "a stop is added or released in any cluster",
+        "measured drive or service minutes drift so that a previously accepted addition no longer fits",
+        "a building or tenant change alters the cluster's composition"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.92, "user_value": 0.7,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.55, "confidence": 0.66, "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9, "evidence_confidence": 0.6,
+        "failure_rate": 0.26, "downside_weight": 0.66,
+        "uncertainty_interval": [0.3, 0.62],
+        "update_signal": "measured drive and service minutes after an add or release, compared with the incremental estimate that justified it"
+      }
+    },
+    {
+      "id": "BOOK_VALUE_AND_CONCENTRATION",
+      "topic": "what_makes_a_route_book_worth_something_and_what_makes_it_fragile",
+      "definition": "Understand what a route and its account book are actually worth, as a mechanism a buyer or a lender would work through, and manage the fragility that quietly discounts it. Value is built from the recurring contribution the book produces after honest cost to serve, the durability of that contribution across recent periods, the transferability of the accounts - whether agreements and equipment can be assigned and whether the relationships survive a change of operator - the geographic density that determines whether the book can be run efficiently by someone else, the condition and remaining life of the placed equipment and whether it is owned free of encumbrance, the cleanliness of the records themselves, and the concentration of the book in a few accounts, buildings or employers. Concentration is the fragility to manage actively: a book where one account or one tower carries a large share of contribution is worth less and is riskier to run, because a single tenancy decision moves the whole business. No multiple, ratio or valuation figure is asserted here; the operator computes their own contribution and durability from their own records, and any actual transaction is priced with their own professional advisers.",
+      "group": "book",
+      "dependencies": ["ROUTE_DENSITY_AND_MARGINAL_STOP", "CHURN_DECISION_AND_EXIT"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": ["the value drivers of a route book stated as a mechanism: recurring contribution, durability, transferability, density, equipment condition, record quality", "concentration by account, building and employer as an actively managed fragility", "keeping the records a buyer or lender would need in the form they would need them"],
+        "excluded": ["any stated multiple, ratio or valuation figure", "the negotiation, structuring, tax or legal treatment of an actual sale, which requires the operator's own professional advisers", "acquiring another operator's book, which is a separate transaction discipline"]
+      },
+      "pros": [
+        { "claim": "Knowing the value mechanism changes daily behaviour, because the same records that raise value are the ones that run the route well", "example": "keeping per-stop contribution and equipment condition current because both are what a buyer would examine", "weight": 0.84 },
+        { "claim": "Watching concentration turns a hidden single-point failure into a managed growth target", "example": "deliberately adding stops in a second cluster when one building's share of contribution grows uncomfortably large", "weight": 0.86 }
+      ],
+      "cons": [
+        { "claim": "Managing to a future sale can distort present decisions toward records and appearances rather than service", "example": "keeping a marginal account on the book purely to preserve stop count", "weight": 0.7 },
+        { "claim": "Value drivers are only partly in the operator's control, since transferability depends on agreements and relationships that may not survive a handover", "example": "accounts whose loyalty runs to the individual driver rather than to the business", "weight": 0.72 }
+      ],
+      "failure_modes": [
+        "measuring the book by revenue rather than by contribution after honest cost to serve",
+        "letting one account or one building grow to dominate the book without a stated ceiling",
+        "keeping records so informal that the contribution cannot be demonstrated to anyone else",
+        "assuming placed equipment adds value when its age, condition and encumbrance are unknown",
+        "quoting or relying on a rule-of-thumb valuation figure heard from another operator"
+      ],
+      "acceptance_tests": [
+        "the book is reported as recurring contribution by stop and cluster, with its durability across recent periods visible",
+        "concentration by account, building and employer is computed and compared against a ceiling the operator has stated in advance",
+        "placed equipment is inventoried with age, condition and ownership status",
+        "no valuation figure or multiple is asserted anywhere in the record; value drivers are described as mechanisms"
+      ],
+      "revisit_triggers": [
+        "the largest account or building crosses the concentration ceiling",
+        "a cluster is gained or lost, changing density and durability",
+        "the operator begins to consider a sale, a loan or a partner, raising the record-quality bar"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.9, "user_value": 0.68,
+        "technical_complexity": 0.52, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6, "confidence": 0.6, "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84, "evidence_confidence": 0.54,
+        "failure_rate": 0.3, "downside_weight": 0.66,
+        "uncertainty_interval": [0.34, 0.68],
+        "update_signal": "a change in concentration, cluster composition or equipment inventory, or an external review by a lender or buyer that tests the records"
+      }
+    },
+    {
+      "id": "ROUTE_ECONOMICS_REVIEW",
+      "topic": "the_periodic_review_that_closes_the_loop",
+      "definition": "Run the whole apparatus on a fixed cycle rather than when something goes wrong, and give every flagged stop a decision that leaves the review with an owner and a date. The review takes the same inputs each time: the draw series per account, the minute ledger, the current contribution per stop and its trend, the run-out and failure incident logs, the concession register, the health-signal states, the promise-versus-capacity picture per route day, and the concentration position of the book. Its output is a triage list where each flagged stop is assigned exactly one of: grow honestly, reprice through the disclosed play, re-cadence or re-instrument, fix a named cost driver, expand through the gate, or route to the save-versus-release decision. The review also checks its own inputs: which stops have stale timings, which accounts have no counted draw this cycle, which concessions have passed their end date, and which obligation verifications are aging. The cadence itself is chosen by the operator to match how fast their route changes, and the standing rule is that a decision made in the review has an owner and a review date, because a triage list nobody owns is just a list of stops everyone already worried about.",
+      "group": "book",
+      "dependencies": ["BOOK_VALUE_AND_CONCENTRATION", "WEAK_STOP_DIAGNOSIS", "HONEST_REPRICE_PLAY"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": ["the fixed input set the review consumes and the single-decision triage it produces", "the self-audit of stale timings, missing counts, expired concessions and aging verifications", "assigning an owner and a review date to every decision"],
+        "excluded": ["the execution of any individual remedy, which the owning node performs", "financial statement preparation and reporting, which is outside this KB", "the acquisition pipeline review for new business, owned by the acquisition KB"]
+      },
+      "pros": [
+        { "claim": "A fixed cycle catches slow deterioration that no single event would ever surface", "example": "three stops drifting toward marginal over several periods with no complaint, incident or cancellation to raise an alarm", "weight": 0.86 },
+        { "claim": "Forcing exactly one decision per flagged stop prevents the standing list of known problems that never resolves", "example": "a chronically thin stop finally assigned to release with a date instead of appearing on the list for the fourth cycle", "weight": 0.84 }
+      ],
+      "cons": [
+        { "claim": "A periodic review can be too slow for a fast-moving failure, so it must not replace event-driven response", "example": "a run-out and a champion departure in the same week that cannot wait for the next cycle", "weight": 0.72 },
+        { "claim": "Review overhead is real work for a small operator and competes directly with the route it is measuring", "example": "a cycle skipped during a short-staffed period, leaving the next one twice as large", "weight": 0.66 }
+      ],
+      "failure_modes": [
+        "running the review on revenue reports alone without the minute ledger or incident logs",
+        "producing a triage list with no owners or dates",
+        "letting event-driven problems wait for the review cycle",
+        "skipping the input self-audit so decisions are made on stale timings and uncounted draw",
+        "assigning multiple conflicting remedies to the same stop in one cycle"
+      ],
+      "acceptance_tests": [
+        "each cycle consumes the full stated input set and records which inputs were stale or missing",
+        "every flagged stop leaves the review with exactly one assigned decision, an owner and a review date",
+        "decisions from the previous cycle are checked for outcome before new ones are assigned",
+        "event-driven escalations are shown to have been handled outside the cycle rather than deferred into it"
+      ],
+      "revisit_triggers": [
+        "a cycle is skipped or its inputs are materially incomplete",
+        "decisions from prior cycles repeatedly fail to produce the predicted movement",
+        "the route changes fast enough that the chosen cadence is visibly too slow"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.82, "user_value": 0.72,
+        "technical_complexity": 0.38, "risk_if_wrong": 0.76, "cross_topic_coupling": 0.9,
+        "irreversibility": 0.3, "confidence": 0.7, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.86, "evidence_confidence": 0.6,
+        "failure_rate": 0.24, "downside_weight": 0.55,
+        "uncertainty_interval": [0.28, 0.56],
+        "update_signal": "the hit rate of prior cycles' decisions and the share of stops whose predicted movement actually occurred"
+      }
+    }
+  ],
+
+  "edges": [
+    { "from": "STOP_ECONOMIC_UNIT", "to": "SERVICE_TIME_LEDGER", "edge_type": "dependency",
+      "why_related": "minutes can only be recorded once it is settled what counts as one stop, otherwise a multi-floor tenant's time is attributed to whichever record happens to be open", "relation_strength": 0.86 },
+    { "from": "STOP_ECONOMIC_UNIT", "to": "CONSUMPTION_DRAW_MEASUREMENT", "edge_type": "dependency",
+      "why_related": "draw is counted per serviced location, so the stop split decides which cabinet's counts belong to which record", "relation_strength": 0.84 },
+    { "from": "STOP_ECONOMIC_UNIT", "to": "COST_TO_SERVE_DRIVERS", "edge_type": "dependency",
+      "why_related": "drivers such as access path and delivery points are properties of a serviced location, which the stop definition fixes", "relation_strength": 0.78 },
+    { "from": "SERVICE_TIME_LEDGER", "to": "STOP_CONTRIBUTION_MECHANISM", "edge_type": "dependency",
+      "why_related": "the service labor line of the contribution chain is measured minutes at a loaded rate, and without the ledger it is a guess", "relation_strength": 0.9 },
+    { "from": "CONSUMPTION_DRAW_MEASUREMENT", "to": "STOP_CONTRIBUTION_MECHANISM", "edge_type": "dependency",
+      "why_related": "landed product cost and billed volume both derive from what the account actually drew rather than from what was ordered", "relation_strength": 0.9 },
+    { "from": "COST_TO_SERVE_DRIVERS", "to": "STOP_CONTRIBUTION_MECHANISM", "edge_type": "dependency",
+      "why_related": "the driver list explains which costs belong to the stop and which are pooled, which the chain must respect to stay honest", "relation_strength": 0.8 },
+    { "from": "STOP_CONTRIBUTION_MECHANISM", "to": "WEAK_STOP_DIAGNOSIS", "edge_type": "dependency",
+      "why_related": "only a computed contribution can flag a stop as thin, and the diagnosis reads the same inputs the chain used", "relation_strength": 0.9 },
+    { "from": "STOP_CONTRIBUTION_MECHANISM", "to": "PRICE_ARCHITECTURE", "edge_type": "dependency",
+      "why_related": "the price components must recover the costs the contribution chain actually charges to the stop, including equipment carry", "relation_strength": 0.86 },
+    { "from": "PRICE_ARCHITECTURE", "to": "COST_PASSTHROUGH_MECHANISM", "edge_type": "dependency",
+      "why_related": "a cost move can only be traced to a component if the components exist and are defined", "relation_strength": 0.84 },
+    { "from": "COST_PASSTHROUGH_MECHANISM", "to": "HONEST_REPRICE_PLAY", "edge_type": "dependency",
+      "why_related": "the play requires a documented warrant before any notice goes out, and the trace is that warrant", "relation_strength": 0.88 },
+    { "from": "WEAK_STOP_DIAGNOSIS", "to": "HONEST_REPRICE_PLAY", "edge_type": "dependency",
+      "why_related": "repricing is licensed only for stops the fork placed where price is actually the lever, not for every thin stop", "relation_strength": 0.82 },
+    { "from": "PRICE_ARCHITECTURE", "to": "DELIVERY_MINIMUM_DESIGN", "edge_type": "dependency",
+      "why_related": "a minimum or priced visit is a component of the same disclosed structure and must sit inside it rather than beside it", "relation_strength": 0.78 },
+    { "from": "CONSUMPTION_DRAW_MEASUREMENT", "to": "STOCKOUT_INCIDENT_ECONOMICS", "edge_type": "dependency",
+      "why_related": "root-causing a run-out requires the counted draw series to show whether demand grew, the interval stretched, or stock disappeared", "relation_strength": 0.88 },
+    { "from": "SERVICE_TIME_LEDGER", "to": "SERVICE_PROMISE_CAPACITY", "edge_type": "dependency",
+      "why_related": "committed minutes can only be held against available minutes when stop minutes are measured rather than assumed", "relation_strength": 0.86 },
+    { "from": "SERVICE_PROMISE_CAPACITY", "to": "SERVICE_RECOVERY_LOOP", "edge_type": "dependency",
+      "why_related": "the recovery response is only deliverable if the route holds the slack the promise assumed", "relation_strength": 0.8 },
+    { "from": "STOCKOUT_INCIDENT_ECONOMICS", "to": "ACCOUNT_HEALTH_SIGNALS", "edge_type": "dependency",
+      "why_related": "the incident log is one of the strongest leading indicators the health state reads, especially when incidents stop being reported", "relation_strength": 0.84 },
+    { "from": "ACCOUNT_HEALTH_SIGNALS", "to": "CHURN_DECISION_AND_EXIT", "edge_type": "dependency",
+      "why_related": "the save-or-release test needs a health state and its evidence before it can judge whether the cause is fixable", "relation_strength": 0.86 },
+    { "from": "HONEST_EXPANSION_GATE", "to": "EXPANSION_CATEGORY_SCREEN", "edge_type": "dependency",
+      "why_related": "categories are only screened for accounts that have already passed the pull, reliability, sizing and disclosure conditions", "relation_strength": 0.84 },
+    { "from": "EXPANSION_CATEGORY_SCREEN", "to": "MICRO_MARKET_CLASS_UPGRADE", "edge_type": "dependency",
+      "why_related": "the market class sits at the top of the ladder and is only considered once the screen has cleared the simpler categories", "relation_strength": 0.8 },
+    { "from": "STOP_CONTRIBUTION_MECHANISM", "to": "ROUTE_DENSITY_AND_MARGINAL_STOP", "edge_type": "dependency",
+      "why_related": "the incremental test compares a candidate's added minutes against contribution computed the same way for every existing stop", "relation_strength": 0.85 },
+    { "from": "ROUTE_DENSITY_AND_MARGINAL_STOP", "to": "BOOK_VALUE_AND_CONCENTRATION", "edge_type": "dependency",
+      "why_related": "density is one of the value drivers of the book and determines whether another operator could run it efficiently", "relation_strength": 0.82 },
+    { "from": "BOOK_VALUE_AND_CONCENTRATION", "to": "ROUTE_ECONOMICS_REVIEW", "edge_type": "dependency",
+      "why_related": "the review reads the concentration and durability position as one of its standing inputs", "relation_strength": 0.78 },
+
+    { "from": "FOOD_HANDLING_OBLIGATION_SHIFT", "to": "MICRO_MARKET_CLASS_UPGRADE", "edge_type": "constraint",
+      "why_related": "an unattended market may touch food-facility, unattended-retail and payment-handling obligation classes, none of which may be assumed from the coffee-service position", "relation_strength": 0.88, "expected_rework_cost": 0.6, "conflict_probability": 0.25,
+      "risk_of_conflict": "fixtures ordered and stock committed before a class is verified, forcing an expensive stand-down" },
+    { "from": "HONEST_EXPANSION_GATE", "to": "MICRO_MARKET_CLASS_UPGRADE", "edge_type": "constraint",
+      "why_related": "the market class is the expansion with the largest sunk cost, so the pull, reliability, sizing and disclosure conditions bind hardest there", "relation_strength": 0.84, "expected_rework_cost": 0.55, "conflict_probability": 0.3 },
+    { "from": "STOCKOUT_INCIDENT_ECONOMICS", "to": "HONEST_EXPANSION_GATE", "edge_type": "constraint",
+      "why_related": "the gate's reliability condition reads the incident log directly: an account with unresolved run-outs is not eligible for a new category", "relation_strength": 0.86, "expected_rework_cost": 0.45, "conflict_probability": 0.35 },
+    { "from": "SERVICE_PROMISE_CAPACITY", "to": "ROUTE_DENSITY_AND_MARGINAL_STOP", "edge_type": "constraint",
+      "why_related": "an addition that fits the map but consumes the slack the promises depend on is refused however attractive its contribution looks", "relation_strength": 0.85, "expected_rework_cost": 0.5, "conflict_probability": 0.4 },
+    { "from": "CONCESSION_AND_CREDIT_DISCIPLINE", "to": "STOP_CONTRIBUTION_MECHANISM", "edge_type": "constraint",
+      "why_related": "credits, free product and unscheduled visits must be charged to the stop that received them or the contribution chain reports a stop that does not exist", "relation_strength": 0.8, "expected_rework_cost": 0.4, "conflict_probability": 0.3 },
+
+    { "from": "HONEST_REPRICE_PLAY", "to": "ACCOUNT_HEALTH_SIGNALS", "edge_type": "conflict",
+      "why_related": "the increase a stop needs economically often falls due exactly when the account's health signals are deteriorating, and the two pull in opposite directions", "relation_strength": 0.82, "signed_tension": -0.5, "conflict_probability": 0.55, "expected_rework_cost": 0.5,
+      "resolution_rule": "if the deterioration traces to an operator-caused failure, stabilize and verify the fix before any notice goes out; if it traces to the client's own occupancy or budget, proceed with the notice but lead with the flat-spend alternatives rather than the increase" },
+    { "from": "DELIVERY_MINIMUM_DESIGN", "to": "STOCKOUT_INCIDENT_ECONOMICS", "edge_type": "conflict",
+      "why_related": "stretching the interval or imposing a minimum is how a small stop is made viable, and it is also the most reliable way to cause the run-out that loses it", "relation_strength": 0.84, "signed_tension": -0.55, "conflict_probability": 0.6, "expected_rework_cost": 0.45,
+      "resolution_rule": "run-out prevention wins at any account with an incident in the current review cycle; interval stretching is allowed only where the counted draw series shows headroom across the longer interval, and the first stretched cycle is verified at the next visit" },
+    { "from": "EXPANSION_CATEGORY_SCREEN", "to": "SERVICE_PROMISE_CAPACITY", "edge_type": "conflict",
+      "why_related": "every added category earns more per stop and spends the route minutes that keep the service promises the whole book depends on", "relation_strength": 0.83, "signed_tension": -0.45, "conflict_probability": 0.5, "expected_rework_cost": 0.5,
+      "resolution_rule": "capacity wins: an expansion whose estimated added minutes would consume the stated slack is staged across cycles, re-sequenced onto a lighter route day, or deferred until capacity is added, and never launched on the assumption that the minutes will be found" },
+    { "from": "CHURN_DECISION_AND_EXIT", "to": "ROUTE_DENSITY_AND_MARGINAL_STOP", "edge_type": "conflict",
+      "why_related": "releasing a thin stop is right for that stop and can strand the neighbouring stops that shared its trip", "relation_strength": 0.8, "signed_tension": -0.4, "conflict_probability": 0.45, "expected_rework_cost": 0.55,
+      "resolution_rule": "run the incremental test in reverse before executing a release; if the stop is the anchor of its cluster, exhaust repricing and re-cadencing first, and if it still fails, plan the cluster's exit or replacement as one decision rather than releasing the anchor alone" },
+
+    { "from": "STOCKOUT_INCIDENT_ECONOMICS", "to": "CHURN_DECISION_AND_EXIT", "edge_type": "causal",
+      "why_related": "repeated run-outs are the most common avoidable path from a well-priced account to a cancellation, because they push the client into buying retail and comparing", "relation_strength": 0.86, "causal_confidence": 0.78, "conflict_probability": 0.3, "expected_rework_cost": 0.4 },
+    { "from": "CHAMPION_CONTINUITY", "to": "ACCOUNT_HEALTH_SIGNALS", "edge_type": "causal",
+      "why_related": "the departure of the breakroom champion is what turns several health signals at once, from unanswered contact to sudden requests for itemized pricing", "relation_strength": 0.8, "causal_confidence": 0.74, "conflict_probability": 0.25, "expected_rework_cost": 0.35 },
+    { "from": "ROUTE_DENSITY_AND_MARGINAL_STOP", "to": "SERVICE_PROMISE_CAPACITY", "edge_type": "causal",
+      "why_related": "density buys back drive minutes, which is what makes a fast response and a tight interval affordable to promise in the first place", "relation_strength": 0.82, "causal_confidence": 0.76, "conflict_probability": 0.2, "expected_rework_cost": 0.3 },
+
+    { "from": "WEAK_STOP_DIAGNOSIS", "to": "DELIVERY_MINIMUM_DESIGN", "edge_type": "sequence",
+      "why_related": "the small-stop instruments are chosen only after the fork has placed the stop on the volume branch, since a time-branch stop is made worse by a minimum", "relation_strength": 0.78, "expected_rework_cost": 0.35, "conflict_probability": 0.2 },
+    { "from": "SERVICE_RECOVERY_LOOP", "to": "CONCESSION_AND_CREDIT_DISCIPLINE", "edge_type": "sequence",
+      "why_related": "the credit is decided after the failure has been acknowledged, restored and verified, so that the giveaway settles a known cost rather than substituting for the fix", "relation_strength": 0.76, "expected_rework_cost": 0.3, "conflict_probability": 0.25 },
+
+    { "from": "ROUTE_ECONOMICS_REVIEW", "to": "CONSUMPTION_DRAW_MEASUREMENT", "edge_type": "feedback",
+      "why_related": "the review's input self-audit is what keeps counted draw and dated timings from decaying between cycles, feeding measurement quality back upstream", "relation_strength": 0.8, "expected_rework_cost": 0.35, "conflict_probability": 0.2 },
+    { "from": "SERVICE_RECOVERY_LOOP", "to": "SERVICE_PROMISE_CAPACITY", "edge_type": "feedback",
+      "why_related": "recovery runs consume the slack the promises were sized against, so a period of failures must feed back into what may be promised next", "relation_strength": 0.82, "expected_rework_cost": 0.4, "conflict_probability": 0.3 },
+
+    { "from": "STOCKOUT_INCIDENT_ECONOMICS", "to": "SERVICE_RECOVERY_LOOP", "edge_type": "similarity",
+      "why_related": "both are incident-driven trust loops with the same shape - record, root-cause, restore, verify, charge the cost to the stop - and they share the same failure of being handled informally and forgotten", "relation_strength": 0.7, "expected_rework_cost": 0.25, "conflict_probability": 0.15 }
+  ],
+
+  "conflict_axes": [
+    { "name": "measured_contribution_vs_relationship_loyalty",
+      "description": "The stop the numbers say to release is often the account that has been loyal for years, refers other tenants and treats the driver like staff; the ledger and the relationship give opposite instructions.",
+      "poles": ["release or reprice on measured contribution", "hold the account for its relationship and referral value"],
+      "resolution_hint": "make the relationship value explicit and testable - name the referrals it has actually produced and the doors it actually opens - and if it cannot be named, the contribution decides",
+      "affected_nodes": ["STOP_CONTRIBUTION_MECHANISM", "CHURN_DECISION_AND_EXIT", "CHAMPION_CONTINUITY"] },
+    { "name": "price_integrity_vs_fear_of_losing_the_account",
+      "description": "An honest, evidenced increase is exactly the moment a client is most receptive to a competitor's tasting visit, so the operator is tempted into stealth methods or into absorbing costs indefinitely.",
+      "poles": ["disclose the increase and its cause in writing", "protect the account by absorbing or by quiet adjustment"],
+      "resolution_hint": "disclosure is not negotiable; the room to move is in the alternatives offered and the timing relative to service history, never in concealment",
+      "affected_nodes": ["HONEST_REPRICE_PLAY", "COST_PASSTHROUGH_MECHANISM", "ACCOUNT_HEALTH_SIGNALS"] },
+    { "name": "stock_certainty_vs_client_inventory_burden",
+      "description": "The surest way to prevent a run-out is to leave more product on site, and the surest way to make a client feel over-sold is to leave more product on site.",
+      "poles": ["carry more stock at the account to eliminate run-outs", "hold stock to measured draw and accept a thinner buffer"],
+      "resolution_hint": "prevent run-outs by fixing the cause the incident record names - interval, order tracking, shrink or an unannounced change - and treat added client-side stock as the last resort, agreed with the client rather than delivered into their cupboard",
+      "affected_nodes": ["STOCKOUT_INCIDENT_ECONOMICS", "HONEST_EXPANSION_GATE", "DELIVERY_MINIMUM_DESIGN"] },
+    { "name": "service_richness_vs_route_minutes",
+      "description": "Everything clients love - a chat, a deeper clean, an extra check of the water system, a same-day response - is spent from the same finite pool of route-day minutes that determines whether the whole book gets served.",
+      "poles": ["give each account the service that delights it", "protect the route day's committed and slack minutes"],
+      "resolution_hint": "richness is allocated deliberately to the stops whose contribution and strategic value carry it, and the slack allowance is never the source it is drawn from",
+      "affected_nodes": ["SERVICE_TIME_LEDGER", "SERVICE_PROMISE_CAPACITY", "SERVICE_RECOVERY_LOOP"] },
+    { "name": "expansion_revenue_vs_operational_simplicity",
+      "description": "Each new category raises revenue per stop and drags in spoilage, date codes, shrink, fixtures, freight weight and new obligation classes that the coffee route was never built to carry.",
+      "poles": ["grow revenue per stop through new categories", "keep the route simple, fast and reliable"],
+      "resolution_hint": "climb the ladder in order and require each step to be operating cleanly before the next is attempted, judging every candidate first on the minutes it adds to every visit",
+      "affected_nodes": ["EXPANSION_CATEGORY_SCREEN", "MICRO_MARKET_CLASS_UPGRADE", "FOOD_HANDLING_OBLIGATION_SHIFT"] },
+    { "name": "equipment_carry_inside_price_vs_shown_separately",
+      "description": "Recovering the placed machine inside the product price is familiar and easy to sell but penalizes light users and makes increases look arbitrary; showing it separately is honest and invites line-by-line shopping.",
+      "poles": ["recover equipment and service cost inside the product price", "show carry and service as their own disclosed components"],
+      "resolution_hint": "whichever structure is chosen must be fully disclosable on request and applied consistently across accounts, so that no client discovers a cost they were never told about",
+      "affected_nodes": ["PRICE_ARCHITECTURE", "STOP_CONTRIBUTION_MECHANISM", "DELIVERY_MINIMUM_DESIGN"] },
+    { "name": "save_the_account_vs_concession_creep",
+      "description": "Every individual retention gesture is defensible in the moment, and their accumulation is an undisclosed permanent discount that no one ever decided to give.",
+      "poles": ["concede now to hold the account", "hold the price and risk the cancellation"],
+      "resolution_hint": "every concession carries a landed value, an owner and an end date, and the cumulative load at the stop is reviewed as if it were a price the operator had agreed deliberately",
+      "affected_nodes": ["CONCESSION_AND_CREDIT_DISCIPLINE", "CHURN_DECISION_AND_EXIT", "HONEST_REPRICE_PLAY"] },
+    { "name": "density_discipline_vs_book_concentration",
+      "description": "Packing stops tightly is what makes the route profitable, and it is also what makes one building, campus or employer able to take a large share of the book away in a single decision.",
+      "poles": ["maximize density in the strongest clusters", "spread exposure across buildings and employers"],
+      "resolution_hint": "grow density inside a cluster until the concentration ceiling the operator has stated in advance is approached, then deliberately open or deepen a second cluster",
+      "affected_nodes": ["ROUTE_DENSITY_AND_MARGINAL_STOP", "BOOK_VALUE_AND_CONCENTRATION"] },
+    { "name": "responsiveness_vs_sequence_integrity",
+      "description": "Breaking the loop to rescue one account is what earns a reputation for reliability, and doing it often is what destroys the reliability of everyone else's scheduled visit.",
+      "poles": ["respond immediately to the account in trouble", "protect the planned sequence the other stops depend on"],
+      "resolution_hint": "respond from the stated slack allowance, and when the slack is gone, offer a defined interim rather than a broken sequence, recording the event so the pattern becomes visible in capacity planning",
+      "affected_nodes": ["SERVICE_RECOVERY_LOOP", "SERVICE_PROMISE_CAPACITY", "STOCKOUT_INCIDENT_ECONOMICS"] },
+    { "name": "measurement_effort_vs_the_minutes_it_consumes",
+      "description": "Counting draw and timing visits is what makes every decision in this KB possible, and it is paid for in exactly the resource - stop minutes - that the whole analysis exists to protect.",
+      "poles": ["measure everything at every visit", "measure lightly and decide on judgment"],
+      "resolution_hint": "measure fully during a defined baseline period and at any account under review, and run a lighter standing count elsewhere, with the review's self-audit deciding where full measurement is reinstated",
+      "affected_nodes": ["CONSUMPTION_DRAW_MEASUREMENT", "SERVICE_TIME_LEDGER", "ROUTE_ECONOMICS_REVIEW"] }
+  ],
+
+  "edge_cases": [
+    { "description": "Single-serve pod counts climb steeply at an account whose headcount has not changed, and the operator reads it as adoption and raises the standing order",
+      "trigger": "apparent draw rises with no occupancy or culture change to explain it",
+      "affected_nodes": ["CONSUMPTION_DRAW_MEASUREMENT", "STOCKOUT_INCIDENT_ECONOMICS", "HONEST_EXPANSION_GATE"],
+      "mitigation": "investigate shrink before acting on the rise: compare the pattern across item classes, discuss access and storage with the client without accusing anyone, and hold the standing order until the cause is identified",
+      "severity": "high" },
+    { "description": "An office moves to fewer in-office days and draw halves within two intervals while the same visit cadence continues",
+      "trigger": "a hybrid or hoteling policy change at the account",
+      "affected_nodes": ["CONSUMPTION_DRAW_MEASUREMENT", "WEAK_STOP_DIAGNOSIS", "DELIVERY_MINIMUM_DESIGN"],
+      "mitigation": "re-baseline draw against actual occupancy days, branch the stop on volume, and offer a longer interval or a consolidated order before any price conversation",
+      "severity": "high" },
+    { "description": "A tenant relocates to an upper floor of the same building and the visit doubles in length because of freight-elevator scheduling",
+      "trigger": "an internal move that leaves the account looking unchanged on paper",
+      "affected_nodes": ["SERVICE_TIME_LEDGER", "COST_TO_SERVE_DRIVERS", "SERVICE_PROMISE_CAPACITY"],
+      "mitigation": "re-time the stop across several visits, update the driver list with the new access constraint, and renegotiate the delivery point or the visit window with the client before repricing",
+      "severity": "medium" },
+    { "description": "A client asks to skip the next visit to save money but expects the breakroom to stay stocked, and runs out mid-week",
+      "trigger": "a client-initiated schedule change without a matching order change",
+      "affected_nodes": ["STOCKOUT_INCIDENT_ECONOMICS", "SERVICE_PROMISE_CAPACITY", "CONCESSION_AND_CREDIT_DISCIPLINE"],
+      "mitigation": "confirm in writing what the skip means for quantities before agreeing to it, size the pre-skip order to the counted draw, and record the incident against the client-change cause if it still happens",
+      "severity": "high" },
+    { "description": "Building management introduces new vendor badging, insurance documentation and dock booking that adds waiting time to every visit in the tower",
+      "trigger": "a building policy change affecting several stops at once",
+      "affected_nodes": ["COST_TO_SERVE_DRIVERS", "SERVICE_PROMISE_CAPACITY", "ROUTE_DENSITY_AND_MARGINAL_STOP"],
+      "mitigation": "re-time all affected stops together, treat the cluster as one economic case rather than several, and decide on cluster-level repricing or re-cadencing before individual accounts are approached",
+      "severity": "medium" },
+    { "description": "A supplier increase lands while the account is inside a fixed-price term it agreed in writing",
+      "trigger": "an input cost move that the agreement does not permit passing through yet",
+      "affected_nodes": ["COST_PASSTHROUGH_MECHANISM", "HONEST_REPRICE_PLAY", "STOP_CONTRIBUTION_MECHANISM"],
+      "mitigation": "absorb the move for the remaining term, log it with the date the term ends, prepare the evidenced notice for that date, and have the operator's own adviser review the term before assuming any earlier remedy exists",
+      "severity": "medium" },
+    { "description": "The office manager who has championed the service for years leaves, and the successor opens a competitive bid within weeks",
+      "trigger": "champion departure detected late, often from a new signature on a delivery ticket",
+      "affected_nodes": ["CHAMPION_CONTINUITY", "ACCOUNT_HEALTH_SIGNALS", "CHURN_DECISION_AND_EXIT"],
+      "mitigation": "respond with a factual re-introduction built from the account's own records - equipment, cadence, incident history, current pricing components - and treat the bid as a legitimate review rather than a betrayal",
+      "severity": "high" },
+    { "description": "The largest account on the route demands a price concession and hints at consolidating all its buildings with one national vendor",
+      "trigger": "a concentration-heavy account exercising its leverage",
+      "affected_nodes": ["BOOK_VALUE_AND_CONCENTRATION", "CONCESSION_AND_CREDIT_DISCIPLINE", "CHURN_DECISION_AND_EXIT"],
+      "mitigation": "compute what the account actually contributes and what the book looks like without it, decide the concession against that arithmetic rather than against fear, and start deliberate growth in a second cluster regardless of the outcome",
+      "severity": "high" },
+    { "description": "A snack offering placed in a small office produces expired stock at the second review and the client asks to be credited for product nobody ate",
+      "trigger": "a category launched into an account whose population cannot turn perishable stock",
+      "affected_nodes": ["EXPANSION_CATEGORY_SCREEN", "HONEST_EXPANSION_GATE", "CONCESSION_AND_CREDIT_DISCIPLINE"],
+      "mitigation": "credit the dated product without argument, withdraw or shrink the assortment to what the counted draw supports, and record the launch as a screening failure so the population and turn test is tightened",
+      "severity": "medium" },
+    { "description": "Micro-market losses jump after a headcount change and the client argues the shrink is the operator's problem",
+      "trigger": "unattended-retail shrink exceeding what the qualification assumed, with no written loss terms in place",
+      "affected_nodes": ["MICRO_MARKET_CLASS_UPGRADE", "BOOK_VALUE_AND_CONCENTRATION", "CHURN_DECISION_AND_EXIT"],
+      "mitigation": "return to the written loss terms if they exist and agree them now if they do not, adjust assortment and monitoring, and treat continued unbounded shrink as grounds to convert the market back to a serviced breakroom",
+      "severity": "high" },
+    { "description": "The same brewer fails three times in one account, each time handled as a routine service call",
+      "trigger": "repeat failures of one unit absorbed as individual tickets rather than escalated",
+      "affected_nodes": ["SERVICE_RECOVERY_LOOP", "STOP_CONTRIBUTION_MECHANISM", "ACCOUNT_HEALTH_SIGNALS"],
+      "mitigation": "escalate the unit to a replacement decision on the recorded failure history, charge the accumulated recovery minutes and credits to the stop, and re-check the account's health signals for damage the tickets concealed",
+      "severity": "medium" },
+    { "description": "An account is comfortably profitable on paper while paying later every cycle and disputing invoice lines each month",
+      "trigger": "a widening gap between billed contribution and cash actually collected at one stop",
+      "affected_nodes": ["STOP_CONTRIBUTION_MECHANISM", "ACCOUNT_HEALTH_SIGNALS", "CHURN_DECISION_AND_EXIT"],
+      "mitigation": "surface payment behaviour and dispute frequency in the account's health state, resolve the invoicing cause if it is the operator's, and treat persistent non-payment as a release decision rather than a pricing one",
+      "severity": "medium" }
+  ],
+
+
+  "workflow": [
+    { "action": "Fix the stop as the unit of account and write the allocation rule",
+      "node_ref": "STOP_ECONOMIC_UNIT",
+      "description": "Decide what counts as one stop for every account on the route, including multi-floor tenants and shared suites, and state which costs attach to a stop and which are pooled and allocated by what rule",
+      "artifact": "stop register with the split rule and the written route-cost allocation rule",
+      "gate": "every serviced location maps to exactly one stop record, and the allocation rule is written and reproduces the same numbers on a re-run" },
+    { "action": "Time the stops park to park across a run of visits",
+      "node_ref": "SERVICE_TIME_LEDGER",
+      "description": "Capture measured minutes per visit with access, service, restock and client-conversation time separated, and hold drive minutes apart from stop minutes",
+      "artifact": "minute ledger with dated observations per stop",
+      "gate": "each stop carries multiple dated timings, access time is visible as its own category, and no drive minutes are charged directly to a stop" },
+    { "action": "Start counting draw per item class at every account",
+      "node_ref": "CONSUMPTION_DRAW_MEASUREMENT",
+      "description": "Run the on-hand plus delivered minus remaining count each visit, normalize for interval length and occupancy, and separate shrink and waste from genuine consumption",
+      "artifact": "draw series per account per item class with occupancy notes",
+      "gate": "every account has counted intervals rather than inferred volumes, and any item class with an unexplained jump carries a shrink note" },
+    { "action": "Record the cost-to-serve drivers per account",
+      "node_ref": "COST_TO_SERVE_DRIVERS",
+      "description": "List the observed drivers behind each stop's minutes - access path, building requirements, delivery points, equipment class, water work, administrative drag - and tag who can change each",
+      "artifact": "driver list per account with control tags",
+      "gate": "each driver is an observed fact with a control tag, and the drivers named for a stop are consistent with its measured minutes" },
+    { "action": "Compute stop contribution for every stop",
+      "node_ref": "STOP_CONTRIBUTION_MECHANISM",
+      "description": "Run the chain from billed revenue through landed product cost, loaded service labor, allocated drive and route cost, equipment carry and charged concessions to a contribution level and trend",
+      "artifact": "per-stop contribution table with trend and stated bands where inputs are unmeasured",
+      "gate": "every input names its source record, the loaded labor rate is documented and uniform, and unmeasured inputs appear as bands rather than point values" },
+    { "action": "Fork every flagged stop on volume versus time",
+      "node_ref": "WEAK_STOP_DIAGNOSIS",
+      "description": "Assign each thin or negative stop to the volume branch or the time branch on measured evidence, and mark dual-failure stops for triage",
+      "artifact": "diagnosis list with branch, evidence and licensed remedy set per stop",
+      "gate": "no stop carries a remedy from outside its branch without a written exception, and dual-failure stops are routed to triage rather than to another repair" },
+    { "action": "Rebuild the price architecture and the small-stop instruments",
+      "node_ref": "PRICE_ARCHITECTURE",
+      "description": "State the components each account's price is composed of, decide what is recovered inside product versus shown separately, and design the disclosed minimum, interval or consolidation instrument for stops that need one",
+      "artifact": "price component sheet per account with any small-stop instrument and its compliance path",
+      "gate": "components sum to the invoice with no unexplained residual, every component has a plain-language justification given in writing, and every instrument leaves the client a way to comply" },
+    { "action": "Trace input-cost moves and decide absorb or pass through",
+      "node_ref": "COST_PASSTHROUGH_MECHANISM",
+      "description": "Attach each documented supplier or freight move to the components and item classes it touches, and record the absorb-or-pass decision with a re-examination date",
+      "artifact": "passthrough register with dated evidence per move",
+      "gate": "no proposed change lacks a dated document and an affected-component mapping, and downward moves are reviewed on the same register" },
+    { "action": "Run warranted increases through the disclosed reprice play",
+      "node_ref": "HONEST_REPRICE_PLAY",
+      "description": "Check account health and service history, give written notice before the first affected delivery naming the moving input, and offer at least one genuine flat-spend alternative",
+      "artifact": "notice pack per account with the alternative offered and its computed effect on contribution",
+      "gate": "notice is dated before the affected delivery, no pack size or count is reduced without stating it, and no notice goes to an account with an unresolved service failure" },
+    { "action": "Stand up the run-out and failure incident loops",
+      "node_ref": "STOCKOUT_INCIDENT_ECONOMICS",
+      "description": "Record every run-out and every service failure with cause, response and cost in minutes and credits, and route each to the prevention or recovery action its cause licenses",
+      "artifact": "incident register with root causes and the prevention action taken",
+      "gate": "each incident has a root cause and a matching action, repeat incidents are escalated, and no incident is closed by simply increasing the standing order" },
+    { "action": "Build the account health state and its watch list",
+      "node_ref": "ACCOUNT_HEALTH_SIGNALS",
+      "description": "Combine draw trend, incident history, contact behaviour and billing signals into a per-account health state read against that account's own baseline, with an owner for each deteriorating account",
+      "artifact": "health register with dated signals, states and assigned next actions",
+      "gate": "every account has a current state with its evidence, and every deteriorating account has a named owner and a date" },
+    { "action": "Gate and screen expansion, then review the route and book",
+      "node_ref": "ROUTE_ECONOMICS_REVIEW",
+      "description": "Admit expansions only through the pull, reliability, sizing and disclosure conditions with obligation classes verified, then run the periodic review over draw, minutes, contribution, incidents, concessions, health, capacity and concentration, assigning one decision per flagged stop",
+      "artifact": "review pack with the triage list, owners, dates and the input self-audit",
+      "gate": "every flagged stop leaves with exactly one decision, an owner and a date; prior-cycle decisions are checked for outcome; and no expansion appears that lacks a pull signal or a completed obligation verification" }
+  ],
+
+  "dominance_rules": [
+    { "rule": "Verified local obligation classes dominate every category launch",
+      "rationale": "an unverified food, water, weights-and-measures or unattended-retail obligation is usually discovered by the client or the building, which costs the account as well as the category",
+      "trigger": "any proposal to add food, refrigeration, water equipment, posted-price selling or an unattended market at an account",
+      "action": "hold the launch until each applicable obligation class carries a dated written verification with the responsible authority in that jurisdiction" },
+    { "rule": "Measured consumption evidence dominates expansion revenue",
+      "rationale": "volume pushed into a client's cupboard converts goodwill into resentment and returns later as a cancellation that takes the coffee service with it",
+      "trigger": "any offer to increase quantity, assortment or category at an existing account",
+      "action": "require a dated pull signal from the account's own records and size the first order to counted draw with a stated review at the next visit" },
+    { "rule": "Route capacity dominates any service promise",
+      "rationale": "a missed promise costs more than the promise earned, because it converts the reliability story that holds the book into the complaint that loses it",
+      "trigger": "a client asks for a shorter interval, faster response or a fixed window, or a new stop is proposed on a full route day",
+      "action": "commit only inside available minutes with the slack allowance intact; otherwise re-shape, re-sequence, add capacity or say plainly what can be committed" },
+    { "rule": "Disclosure dominates margin engineering",
+      "rationale": "a client who discovers a shrunk pack or an unexplained fee stops believing every number the operator has ever given them, and the account is lost at the discovery rather than at the increase",
+      "trigger": "any price, pack, fee or surcharge change under consideration",
+      "action": "state the change and its cause in writing before it takes effect, or do not make it" },
+    { "rule": "Core reliability dominates expansion effort at the same account",
+      "rationale": "selling a new category on top of an unresolved run-out or an unfixed machine reads to the client as an operator who wants more money and cannot deliver what is already sold",
+      "trigger": "an expansion opportunity at an account with an open incident or an unverified fix",
+      "action": "close and verify the reliability issue first, then re-open the expansion conversation" },
+    { "rule": "Measured contribution dominates billed revenue in every triage decision",
+      "rationale": "the largest invoices on a route are routinely attached to the stops that consume the most minutes, so revenue ranking inverts the truth",
+      "trigger": "any decision to keep, reprice, re-cadence, expand or release a stop",
+      "action": "rank and decide on contribution computed through the stated chain, never on invoice size" },
+    { "rule": "Cash actually collected dominates paper contribution",
+      "rationale": "a stop that bills well, pays late and disputes monthly is consuming working capital and administrative time that no contribution figure shows",
+      "trigger": "an account whose payment behaviour or dispute frequency diverges from the rest of the book",
+      "action": "surface payment behaviour in the account's health state and treat persistent non-payment as a release decision rather than a pricing one" },
+    { "rule": "A sanitation or safety defect dominates the schedule",
+      "rationale": "serving from equipment that is unsafe or unsanitary risks the client's people and the operator's standing far beyond the value of the visit",
+      "trigger": "a brewer, water system or cooler found in a condition the operator would not drink from",
+      "action": "take the equipment out of service and provide an interim rather than completing the visit as scheduled" },
+    { "rule": "The client's own records dominate the operator's assumption in any consumption dispute",
+      "rationale": "the operator's credibility rests on being the one who counts rather than the one who estimates, and a disagreement settled on the client's own numbers ends permanently",
+      "trigger": "a client challenges quantities, frequency or the size of a standing order",
+      "action": "settle the question against the counted draw series and the client's own occupancy information, and adjust if the client is right" },
+    { "rule": "Cluster integrity dominates an individual release decision",
+      "rationale": "releasing the anchor stop of a distant cluster can turn its profitable neighbours into marginal ones overnight",
+      "trigger": "a release decision for a stop that shares its trip with other accounts",
+      "action": "run the incremental test in reverse and decide the cluster as one case before executing any release" }
+  ],
+
+  "anti_rework_rules": [
+    { "rule": "Measure stop minutes and counted draw before choosing any remedy for a thin stop",
+      "prevents": "repricing an account whose problem was access time, or stretching the interval at an account whose problem was a growing draw" },
+    { "rule": "Separate shrink from genuine draw before increasing any standing order",
+      "prevents": "repeatedly raising quantities that keep disappearing, which raises cost, invites a run-out anyway and eventually becomes an uncomfortable conversation" },
+    { "rule": "Compute stop contribution before agreeing to a new cadence, a new category or a new promise",
+      "prevents": "committing route minutes to an account that cannot carry the visit it already receives" },
+    { "rule": "Verify the applicable obligation classes before ordering fixtures, coolers or refrigerated stock",
+      "prevents": "sunk investment in a category that has to be stood down, and the loss of client confidence that stand-down causes" },
+    { "rule": "Resolve and verify open reliability issues before making any expansion offer at that account",
+      "prevents": "an expansion conversation that hardens an unhappy client's decision to look at competitors" },
+    { "rule": "Put the price architecture and any minimum in writing before the first invoice under it",
+      "prevents": "a dispute in which the operator has to reconstruct after the fact what the client was supposed to have agreed" },
+    { "rule": "Run the incremental minutes test before signing an out-of-cluster stop",
+      "prevents": "a route day quietly stretched past its slack, which surfaces later as missed visits across accounts that had nothing to do with the new one" },
+    { "rule": "Record equipment serial, condition, placement terms and the recovery path at installation and keep it current",
+      "prevents": "an exit in which the operator cannot identify, locate or recover a machine, or has to argue about its condition" },
+    { "rule": "Identify a second contact at every account while the champion is still there",
+      "prevents": "discovering a champion's departure from a cancellation email and having to re-justify the whole service to a stranger" },
+    { "rule": "Agree the measurement basis with the client before repricing anything that depends on consumption",
+      "prevents": "an increase that collapses into an argument about whose numbers are right at the worst possible moment" }
+  ],
+
+  "iteration_protocol": [
+    { "trigger": "measured draw at an account moves outside its established band for more than one interval",
+      "action": "re-baseline against occupancy, investigate shrink, then adjust order size and interval before touching price",
+      "nodes": ["CONSUMPTION_DRAW_MEASUREMENT", "WEAK_STOP_DIAGNOSIS", "DELIVERY_MINIMUM_DESIGN"],
+      "priority": 1 },
+    { "trigger": "a supplier, freight or labor input cost moves and is documented",
+      "action": "re-run the passthrough trace, decide absorb or pass through per account with a re-examination date, and run warranted increases through the disclosed play",
+      "nodes": ["COST_PASSTHROUGH_MECHANISM", "HONEST_REPRICE_PLAY", "STOP_CONTRIBUTION_MECHANISM"],
+      "priority": 1 },
+    { "trigger": "a second run-out or a repeat service failure at the same account within a review cycle",
+      "action": "escalate from incident handling to a root-cause review of interval, order tracking, shrink and equipment, and re-check what has been promised against capacity",
+      "nodes": ["STOCKOUT_INCIDENT_ECONOMICS", "SERVICE_RECOVERY_LOOP", "SERVICE_PROMISE_CAPACITY"],
+      "priority": 1 },
+    { "trigger": "the named champion at an account changes, or the approval process changes",
+      "action": "run the factual re-introduction from the account's own records, re-establish an alternate contact, and re-read the health signals that the change may have masked",
+      "nodes": ["CHAMPION_CONTINUITY", "ACCOUNT_HEALTH_SIGNALS"],
+      "priority": 2 },
+    { "trigger": "a stop is added, released or re-timed on a route day",
+      "action": "recompute incremental minutes and the day's remaining slack, re-check cluster anchors, and update what may be promised on that day",
+      "nodes": ["ROUTE_DENSITY_AND_MARGINAL_STOP", "SERVICE_PROMISE_CAPACITY", "BOOK_VALUE_AND_CONCENTRATION"],
+      "priority": 2 },
+    { "trigger": "a new category has completed its first full cycle at an account",
+      "action": "recompute the stop's contribution including spoilage, shrink and added minutes, compare against what the screen assumed, and shrink, grow or withdraw the assortment accordingly",
+      "nodes": ["EXPANSION_CATEGORY_SCREEN", "HONEST_EXPANSION_GATE", "STOP_CONTRIBUTION_MECHANISM"],
+      "priority": 2 },
+    { "trigger": "the share of book contribution held by one account, building or employer approaches the stated ceiling",
+      "action": "open or deepen a second cluster deliberately and re-examine any concession being granted to the dominant account",
+      "nodes": ["BOOK_VALUE_AND_CONCENTRATION", "CONCESSION_AND_CREDIT_DISCIPLINE", "ROUTE_DENSITY_AND_MARGINAL_STOP"],
+      "priority": 3 },
+    { "trigger": "the periodic review cycle falls due, or a cycle is skipped",
+      "action": "run the full review over the standing input set with its self-audit, check prior decisions for outcome, and assign exactly one owned, dated decision per flagged stop",
+      "nodes": ["ROUTE_ECONOMICS_REVIEW", "WEAK_STOP_DIAGNOSIS", "CHURN_DECISION_AND_EXIT"],
+      "priority": 1 }
+  ],
+
+  "priority_rationale": "The measurement frame comes first because every later decision in route economics is an argument about a denominator: what counts as a stop, how many minutes it took, what actually left the cabinet and which costs belong to it. Contribution and the volume-versus-time diagnosis sit next, since no pricing, retention or expansion move can be chosen correctly until a stop's weakness has a cause. Pricing follows diagnosis so that increases are traced to documented input moves and disclosed to the client rather than engineered onto the invoice. Retention nodes - run-out economics, promise capacity, recovery, champion continuity and health signals - come before expansion because an operator who expands an unreliable account sells on top of a broken promise, and they feed the save-or-release decision. Expansion is gated on measured pull, screened on the minutes it adds, and blocked until the obligation classes it touches are locally verified. Route density, book value and the periodic review close the order, because they compose individual stop decisions into a route that can be served, a book that is not fragile, and a cycle that keeps the whole apparatus honest between reviews.",
+  "eval_objective": "verify_core_properties_of_route_economics_account_retention_and_expansion_kb"
+}
