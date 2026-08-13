@@ -42,8 +42,8 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 6 | `fleet_tracking` | GPS / Fleet Tracking Reseller | 2 | 3/3 | pass | ✅ |
 | 7 | `managed_wifi` | Managed Wi-Fi Provider | 2 | 3/3 | pass | ✅ |
 | 8 | `web_hosting` | Website & Hosting Reseller | 2 | 3/3 | pass | ✅ |
-| 9 | `cloud_reseller` | Business Email & Cloud Reseller | 2 | — | — | — |
-| 10 | `managed_cyber` | Managed Cybersecurity Services | 2 | — | — | — |
+| 9 | `cloud_reseller` | Business Email & Cloud Reseller | 2 | 3/3 | pass | ✅ |
+| 10 | `managed_cyber` | Managed Cybersecurity Services | 2 | 3/3 | pass | ✅ |
 | 11 | `life_insurance` | Life Insurance Agent | 3 | — | — | — |
 | 12 | `pc_insurance` | P&C Insurance Agent | 3 | — | — | — |
 | 13 | `medicare_agent` | Health / Medicare Insurance Agent | 3 | — | — | — |
@@ -60,5 +60,5 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 24 | `travel_agent` | Travel Agent / Advisory | 5 | — | — | — |
 | 25 | `solar_referral` | Solar Sales / Referral | 5 | — | — | — |
 
-Wave 1 landed 2026-08-12 (all five verified). Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
+Wave 1 landed 2026-08-12; wave 2 landed 2026-08-13 (all verified). Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
 `3/3` / `13/13` / `✅` as each vertical lands; each business is committed individually.
