@@ -58,7 +58,7 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 22 | `copier_leasing` | Printer / Copier Leasing | 5 | 3/3 | pass | ✅ |
 | 23 | `office_coffee` | Office Coffee & Water Service | 5 | 3/3 | pass | ✅ |
 | 24 | `travel_agent` | Travel Agent / Advisory | 5 | 3/3 | pass | ✅ |
-| 25 | `solar_referral` | Solar Sales / Referral | 5 | — | — | — |
+| 25 | `solar_referral` | Solar Sales / Referral | 5 | 3/3 | pass | ✅ |
 
-Wave 1 landed 2026-08-12; waves 2-4 landed 2026-08-13 (all verified). Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
+**COMPLETE — all 25 verticals landed and verified (waves 1-5, 2026-08-12/13):** 75 dense KBs at 35/35, 25 specialists at 15/15, every vertical ALL GREEN on FACTORY/build.sh, every fresh-context verifier pass returning zero blocking issues. Wave 1 = the five flagged as deserving particular attention. Statuses flipped to
 `3/3` / `13/13` / `✅` as each vertical lands; each business is committed individually.
