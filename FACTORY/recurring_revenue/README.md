@@ -39,9 +39,9 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 3 | `voip_reseller` | Business VoIP Reseller | 1 | 3/3 | pass | ✅ |
 | 4 | `connectivity_agent` | Business Internet & Wireless Agent | 1 | 3/3 | pass | ✅ |
 | 5 | `cctv_cloud` | CCTV & Cloud Video Recording | 1 | 3/3 | pass | ✅ |
-| 6 | `fleet_tracking` | GPS / Fleet Tracking Reseller | 2 | — | — | — |
-| 7 | `managed_wifi` | Managed Wi-Fi Provider | 2 | — | — | — |
-| 8 | `web_hosting` | Website & Hosting Reseller | 2 | — | — | — |
+| 6 | `fleet_tracking` | GPS / Fleet Tracking Reseller | 2 | 3/3 | pass | ✅ |
+| 7 | `managed_wifi` | Managed Wi-Fi Provider | 2 | 3/3 | pass | ✅ |
+| 8 | `web_hosting` | Website & Hosting Reseller | 2 | 3/3 | pass | ✅ |
 | 9 | `cloud_reseller` | Business Email & Cloud Reseller | 2 | — | — | — |
 | 10 | `managed_cyber` | Managed Cybersecurity Services | 2 | — | — | — |
 | 11 | `life_insurance` | Life Insurance Agent | 3 | — | — | — |
