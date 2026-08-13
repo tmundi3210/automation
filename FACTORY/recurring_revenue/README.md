@@ -54,10 +54,10 @@ content honesty is enforced by the briefs + a fresh-context verifier pass per ve
 | 18 | `tax_prep` | Tax Preparation Practice | 4 | 3/3 | pass | ✅ |
 | 19 | `cleaning_broker` | Commercial Cleaning Broker | 4 | 3/3 | pass | ✅ |
 | 20 | `pest_control` | Pest Control Sales / Referral | 4 | 3/3 | pass | ✅ |
-| 21 | `water_filter` | Water Filtration Systems | 5 | — | — | — |
-| 22 | `copier_leasing` | Printer / Copier Leasing | 5 | — | — | — |
-| 23 | `office_coffee` | Office Coffee & Water Service | 5 | — | — | — |
-| 24 | `travel_agent` | Travel Agent / Advisory | 5 | — | — | — |
+| 21 | `water_filter` | Water Filtration Systems | 5 | 3/3 | pass | ✅ |
+| 22 | `copier_leasing` | Printer / Copier Leasing | 5 | 3/3 | pass | ✅ |
+| 23 | `office_coffee` | Office Coffee & Water Service | 5 | 3/3 | pass | ✅ |
+| 24 | `travel_agent` | Travel Agent / Advisory | 5 | 3/3 | pass | ✅ |
 | 25 | `solar_referral` | Solar Sales / Referral | 5 | — | — | — |
 
 Wave 1 landed 2026-08-12; waves 2-4 landed 2026-08-13 (all verified). Wave 1 = the five the user flagged as deserving particular attention. Statuses flip to
