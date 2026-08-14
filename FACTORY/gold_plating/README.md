@@ -39,7 +39,7 @@ plating_business (intake, quote, risk sign-off)
 
 | # | slug | Specialist | KBs (dense gate) | Specialist gate | Verified |
 |---|------|-----------|:---:|:---:|:---:|
-| 1 | `surface_prep` | Surface Preparation & Substrate Readiness | building | – | – |
+| 1 | `surface_prep` | Surface Preparation & Substrate Readiness | 3/3 | pass | ✅ |
 | 2 | `bath_chemistry` | Gold Bath Chemistry & Solution Management | building | – | – |
 | 3 | `process_execution` | Plating Process Control & Execution | building | – | – |
 | 4 | `quality_finish` | Finish Quality, Color & Defect Diagnosis | building | – | – |
