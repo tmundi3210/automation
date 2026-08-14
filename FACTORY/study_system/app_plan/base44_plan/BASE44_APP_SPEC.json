@@ -1,0 +1,156 @@
+{
+  "app": {
+    "name": "Base44 Study App (INBDE/TOEFL adaptive study engine)",
+    "source_zip": "Base44 export of app id 6a4d7164497f2266c1d3ac55 [FACT - APP_RECON section 1]; single-user React 18/Vite frontend + 20 entities + 5 Deno backend functions; recon copy analyzed 2026-07-08",
+    "plan_package": "FACTORY/study_system/app_plan/base44_plan/ (paste order: BASE44_MASTER_PLAN.md first, then one slice at a time from BASE44_SLICES.md; BASE44_LOOPS.md binding for loops)",
+    "honesty_contract": "Tags [FACT]/[FACT-source]/[ESTIMATE]/[METHOD]/[UNKNOWN]/[SIGNAL] are load-bearing. Vendor facts only from recon/EXTERNAL_RECON.md; app facts only from recon/APP_RECON.md. Never invent endpoints, model names, prices, or citations; resolve UNKNOWN via its METHOD or the owner."
+  },
+  "entities": {
+    "existing": [
+      "CalibrationBin", "Card", "CardState", "Concept", "ConceptEdge", "DailyPlan", "Deck", "Exam", "ExamPlan", "ItemElo", "ItemOption", "LearnerState", "MasteryHistory", "PipelineRun", "Revlog", "Settings", "SystemMetrics", "User", "VoiceQueue", "Weakness"
+    ],
+    "existing_note": "[FACT - base44/entities/*.jsonc directory listing 2026-07-08]. Known dead fields to wire or delete: Card.quality_flag, SystemMetrics.llm_cost_usd, SystemMetrics.stt_cost_usd, DailyPlan.per_exam_alloc_json, Concept.inbde_cc; Exam entity read by nothing [FACT - APP_RECON section 2].",
+    "deltas_by_slice": {
+      "slice_0": [
+        {"entity": "OutboxItem", "change": "new", "fields": ["target", "action", "payload", "idempotency_key", "status queued|sent|failed|dead", "attempts", "last_error", "external_id"]},
+        {"entity": "Settings", "change": "extend", "fields": ["timezone (IANA name, owner-set; canonical day-key source)"]},
+        {"entity": "PipelineRun", "change": "extend", "fields": ["per-run-date overlap guard", "rows_scanned per stage (truncation observable)"]}
+      ],
+      "slice_1": [
+        {"entity": "Settings", "change": "optional extend", "fields": ["dismissed_hints (or client storage; must survive reload)"]}
+      ],
+      "slice_2": [
+        {"entity": "DailyPlan", "change": "extend", "fields": ["per-topic breakdown: topic, review_count, new_count (0 if gated), probe_count, assigned_window, why_line, computed_at", "single writer = pipeline; submitReview only increments done_units"]},
+        {"entity": "Weakness", "change": "extend/rework", "fields": ["one open row per (concept, cause), upserted across days", "first_seen", "last_seen", "states open|probing|resolved|regressed|snoozed", "snooze replaces Mark-Resolved"]},
+        {"entity": "ConceptEdge", "change": "behavior", "fields": ["manual 'A is the base of B' prereq creation in Library (must route through slice_6 writeEdge once it exists)"]},
+        {"entity": "LearnerState", "change": "behavior", "fields": ["elo_theta_sd decay direction fixed: grows with inactivity, never only shrinks [FACT defect - APP_RECON section 3a]"]}
+      ],
+      "slice_3": [],
+      "slice_4": [
+        {"entity": "ExportJob", "change": "new", "fields": ["scope", "formats", "status", "file_refs", "created_date"]},
+        {"entity": "IngestJob", "change": "new", "fields": ["file ref", "status staged pipeline: uploaded -> proposed_units -> owner_approved -> cards_created | failed(reason)", "resumable, no silent drops"]}
+      ],
+      "slice_5": [
+        {"entity": "Settings", "change": "extend", "fields": ["active_models: exactly two, role-labeled generator+grader, live-catalog picked, never hardcoded", "token usage counters per day (companions to SystemMetrics.llm_cost_usd until a verified price exists)"]}
+      ],
+      "slice_6": [
+        {"entity": "ConceptEdge", "change": "extend", "fields": ["source manual|ingest|msi_import|llm", "method", "confidence 0-1", "evidence FACT|ESTIMATE|UNKNOWN", "status active|quarantined", "REMOVE default type 'prereq' [FACT hazard - ConceptEdge.jsonc]; type always explicit"]},
+        {"entity": "Concept", "change": "extend", "fields": ["gloss (<=2 sentences, owner-approved)", "synonyms[]", "taxonomy_role (small closed enum, kgraph-defined)", "high_yield tier 0-3 (0=untagged; never faked in render)"]},
+        {"entity": "TermLink", "change": "new", "fields": ["card_id", "span_text", "concept_id", "match_method exact|abbrev|fuzzy", "confidence", "status auto|verified|rejected"]}
+      ],
+      "slice_7": [
+        {"entity": "MediaAsset", "change": "new", "fields": ["card_id/concept_id", "kind image|image_set|glb|usdz", "file ref + size", "role occlusion_source|diagram|flowchart|model", "provenance: machine_generated, exact prompt, generator (confirmed or literal UNKNOWN), quality band, clinical-gate outcome (verified_by+date or unverified), tripo task id/branch/QC for 3D", "status"]},
+        {"entity": "MediaTask", "change": "new", "fields": ["queue row: requested -> generating -> generated -> gate_pending -> attached | rejected | failed(reason)", "gate_pending is a real blocking state"]}
+      ],
+      "slice_8": [
+        {"entity": "AgentActionJournal", "change": "new", "fields": ["append-only: timestamp", "duty", "action", "evidence ref"]},
+        {"entity": "Proposal", "change": "new", "fields": ["source duty", "evidence", "status pending|approved|rejected", "owner decision date"]},
+        {"entity": "BenchmarkLedger", "change": "new", "fields": ["function", "exemplar", "what-to-copy + modification", "evidence tag", "verdict adopt|adapt|reject"]},
+        {"entity": "WeaknessEvent", "change": "new", "fields": ["append-only resolution/snooze/probe events (rerun-proof)"]},
+        {"entity": "PipelineRun", "change": "extend", "fields": ["run_id (local day_key, attempt_n)", "local day_key", "per-step status", "degraded flag"]}
+      ]
+    }
+  },
+  "screens": [
+    {"name": "Dashboard", "status": "existing", "changes": "rung-1/2 captions on Due/New/Today/Streak (slice 1); day-box click opens day-detail panel (slice 2); pipeline health/staleness flags (slices 1, 8); manual pipeline button kept as override"},
+    {"name": "Review", "status": "existing", "changes": "'why this card now' surface (slice 1); AI-suggested-rating honesty copy (slice 1); inline media render + voice-note chip (slice 7); TermLink thinking-cloud popovers on card text (slice 6)"},
+    {"name": "Library", "status": "existing", "changes": "manual 'A is the base of B' prereq declaration (slice 2, via writeEdge from slice 6); upload/ingest zone with staged approval (slice 4); Media panel on card editor with skip/2D/3D verdict + rationale (slice 7)"},
+    {"name": "LearnerModel", "status": "existing", "changes": "weakness rows gain WHY + staleness + rule-confidence honesty copy (slice 1); lifecycle states + snooze replace Mark-Resolved (slice 2)"},
+    {"name": "Planner", "status": "existing", "changes": "go/tight/no_go labeled as heuristic estimate, never verdict (slice 1); coarse feasibility curve is the only beyond-tomorrow view (slice 2)"},
+    {"name": "Settings", "status": "existing", "changes": "explainability captions incl. 'not active yet' on dead fields (slice 1); 'How much do you want to study?' panel (slice 3); Integrations panel with slot status (slices 0-5); export buttons (slice 4); model picker + token usage (slice 5); LLM budget cap (slice 8)"},
+    {"name": "DayDetailPanel", "status": "new", "slice": 2, "purpose": "past day = what happened; today/tomorrow = per-topic plan with time windows; beyond = forecast band that can never show tick/green fill; gate/regression events listed"},
+    {"name": "Guide", "status": "new", "slice": 1, "route": "/guide", "purpose": "rung-4 canonical catalog + A-Z glossary with stable anchors; Hints section for dismissed hints"},
+    {"name": "GraphPage", "status": "new", "slice": 6, "purpose": "semantic-zoom concept map (L0-L3), side panel with details/cards/gate state/edge editor, search-to-fly, filters; shows which nodes are gate-locked and by which edge"},
+    {"name": "MediaReview", "status": "new", "slice": 7, "purpose": "the ONLY path from gate_pending to attached: image/model + prompt + checklist + provenance; owner is verifier of record"},
+    {"name": "AgentActivity", "status": "new", "slice": 8, "purpose": "what ran, what it found, what awaits approval; approve/reject proposals; self-metric snapshot+threshold+consumer display; degraded-run flags; DLQ surfacing"}
+  ],
+  "settings_controls": [
+    {"control": "review_frequency_dial", "slice": 3, "spec": "outcome-labeled desired_retention dial 0.70-0.97 ('fewer reviews, forget more <-> more reviews, forget less') with live workload delta estimate; warn above 0.90 (sched doctrine); no interval multiplier ever [FACT - APP_RECON section 5.11 + sched invariant]"},
+    {"control": "study_amount_panel", "slice": 3, "spec": "new_per_day + daily_minutes grouped with the dial; UI states nothing else is honestly tunable"},
+    {"control": "timezone", "slice": 0, "spec": "owner-set IANA timezone; source of the one canonical day-key"},
+    {"control": "model_picker", "slice": 5, "spec": "lists LIVE Ollama Cloud catalog (GET https://ollama.com/api/tags or /v1/models) at open [FACT-source: docs.ollama.com cloud.mdx + openai-compatibility.mdx]; exactly two active, role-labeled generator+grader; third activation forces explicit swap; retired/missing model => selection invalid, calls stop, owner re-picks; never a hardcoded name, never a silent substitute"},
+    {"control": "integration_toggles", "slice": 0, "spec": "one row per integration slot showing configured/not-configured (slot name only, never a value); per-slot enable toggles; WAHA off by default with ban-risk notice"},
+    {"control": "export_buttons", "slice": 4, "spec": "JSON per entity (dynamic enumeration, never hardcoded list), CSV for tabular, JSON chart-data snapshots; paginated past all row caps"},
+    {"control": "upload_folder", "slice": 4, "spec": "Library upload zone -> staged ingest (file -> proposed units/cards -> owner approves -> cards created); text-first, OCR flagged later"},
+    {"control": "mcp_config", "slice": 5, "spec": "MCP_BRIDGE_TOKEN slot; per-write-capability unlock switches (read-only default); bridge install notes for Codex/Claude Code/Grok via one shared project-scope .mcp.json"},
+    {"control": "llm_budget_cap", "slice": 8, "spec": "owner-set cap consuming slice 5 cost visibility; agent spend above cap requires the spend gate"},
+    {"control": "hints_management", "slice": 1, "spec": "dismissed one-time hints never re-nag; permanently re-reachable from Guide 'Hints' section"}
+  ],
+  "backend_jobs": [
+    {"name": "nightly-pipeline", "trigger": "scheduled Automation, daily ~02:00 owner-local [ESTIMATE default]; manual Dashboard button kept as override", "slice": 0, "spec": "runPipeline with overlap guard, local day keys, idempotent run_id, append-only snapshots, full pagination, degraded mode; step order per BASE44_LOOPS section 1; Base44 schedule timezone support [UNKNOWN - METHOD: workspace Automations UI]"},
+    {"name": "outbox-drainer", "trigger": "frequent schedule (granularity [UNKNOWN - METHOD: verify in workspace])", "slice": 0, "spec": "retries retriable classes only (timeouts/5xx/429) with backoff+jitter; DLQ on exhaustion; per-target circuit breaker"},
+    {"name": "calendar-sync", "trigger": "after each nightly plan, via outbox", "slice": 3, "spec": "events.insert with reminders.useDefault=false + popup overrides [FACT-source: developers.google.com Calendar]; external_id prevents duplicates; plan re-run updates/deletes its own prior events"},
+    {"name": "waha-notify", "trigger": "via outbox, session-state guarded", "slice": 4, "spec": "POST /api/sendText only when session WORKING [FACT-source: waha.devlike.pro docs]; one nudge per (date, nudge_type), app-side dedup"},
+    {"name": "export-runner", "trigger": "ExportJob creation", "slice": 4, "spec": "dynamic entity enumeration, paginated to exhaustion"},
+    {"name": "ingest-processor", "trigger": "IngestJob creation", "slice": 4, "spec": "staged: parse -> propose units/cards (contenteng lint) -> hold for owner approval; resumable"},
+    {"name": "mcp-endpoints", "trigger": "authenticated custom endpoints (bearer MCP_BRIDGE_TOKEN)", "slice": 5, "spec": "reads: due summary, weaknesses, tomorrow's plan; writes (individually unlocked, journaled): card create, pipeline trigger"},
+    {"name": "model-catalog-refresh", "trigger": "picker open + pre-pipeline check", "slice": 5, "spec": "live catalog fetch; retired/missing pinned model => invalidate selection, stop calls, ask owner"},
+    {"name": "writeEdge", "trigger": "sole edge-write path (all UIs + imports)", "slice": 6, "spec": "invariants: endpoints exist, no duplicates, explicit closed-vocabulary type, prereq cycle rejection, complete provenance"},
+    {"name": "linkTerms", "trigger": "button (schedulable later by slice 8)", "slice": 6, "spec": "exact-before-fuzzy cascade, exam-scoped disambiguation, abstain below confidence 0.7 [ESTIMATE default]; precision/abstain report on first 50 links"},
+    {"name": "msi-import", "trigger": "staged, owner-gated (G1/G2)", "slice": 6, "spec": "validate -> dedupe by exam-scoped normalized name -> writeEdge invariants -> quarantine unsourced -> sample review -> commit source=msi_import"},
+    {"name": "media-queue-processor", "trigger": "explicit 'Process media queue' button (no scheduler assumed until slices 0/8)", "slice": 7, "spec": "MediaTask state machine; bridge-generated images; Tripo create->poll->download; gate_pending blocks until human approval"},
+    {"name": "voice-queue-consumer", "trigger": "async batch under voice's state machine", "slice": 7, "spec": "queued -> transcribed -> graded/structured | failed(reason); candidates require owner confirmation; engine choice deferred to voice's config flag"},
+    {"name": "managing-agent", "trigger": "Base44 agent (JSONC in base44/agents/, CLI-synced [FACT-source: docs.base44.com AI-agents pages, via snippet - verify in-app]); runtime limits [UNKNOWN - METHOD: throwaway automation first]", "slice": 8, "spec": "five duties per BASE44_LOOPS section 2; shadow mode first; append-only journal; proposals never self-apply"}
+  ],
+  "integration_slots": [
+    {"slot": "ollama_cloud", "target": "ollama.com /api + /v1", "auth": "Bearer key", "secrets": ["OLLAMA_API_KEY"], "gates": ["credential_add", "spend"]},
+    {"slot": "google_calendar", "target": "Google Calendar events.insert", "auth": "OAuth 2.0 auth-code, scope https://www.googleapis.com/auth/calendar.events (least privilege)", "secrets": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN"], "secrets_note": "unless the Base44 Google Workspace connector covers Calendar scope [UNKNOWN - METHOD: check workspace connector list]", "gates": ["credential_add", "external_send"]},
+    {"slot": "anki_bridge", "target": "AnkiConnect http://127.0.0.1:8765 (browser route or local bridge; never cloud-direct) [FACT-source: anki-connect README via mirror]", "auth": "in-Anki origin permission popup (+ optional AnkiConnect apiKey held locally, not in app Secrets)", "secrets": [], "gates": ["external_send (owner approves one-way push direction before first addNotes)"]},
+    {"slot": "waha", "target": "self-hosted WAHA container (WhatsApp Web wrapper; ban-risk [SIGNAL]; off by default)", "auth": "API key", "secrets": ["WAHA_API_KEY", "WAHA_BASE_URL"], "gates": ["credential_add", "host_public", "external_send", "spend"]},
+    {"slot": "mcp_bridge", "target": "app custom endpoints <- local MCP server on owner's machine", "auth": "static bearer token", "secrets": ["MCP_BRIDGE_TOKEN"], "gates": ["credential_add", "write_unlock (per capability)"]},
+    {"slot": "tripo", "target": "platform.tripo3d.ai (async image->3D tasks; pricing [UNKNOWN - METHOD: billing docs/dashboard]; get_balance() is the only cost ground truth)", "auth": "API key", "secrets": ["TRIPO_API_KEY"], "gates": ["credential_add", "spend", "data_export (source images leave the app)"]}
+  ],
+  "secrets_policy": "Per-app Base44 Secrets read server-side in backend functions only [FACT-source: docs.base44.com/Integrations/Using-integrations, via snippet]; never client code, never the two-way-synced repo; UI shows slot names only; rotate-on-exposure fires security_alert.",
+  "approval_gates": {
+    "enum": ["credential_add", "external_send", "spend", "host_public", "data_export", "security_alert", "schedule_enable", "write_unlock"],
+    "definitions": {
+      "credential_add": "owner personally adds/replaces any secret or OAuth grant",
+      "external_send": "first send to any new external surface (calendar event, WhatsApp text, Anki note) + wording/trial review",
+      "spend": "anything that costs money (WAHA Plus, Tripo credits, paid Ollama tier, agent LLM budget above cap)",
+      "host_public": "anything reachable from the internet (WAHA exposure, any public bridge endpoint)",
+      "data_export": "user data leaving the app as files or to a third-party API (incl. images sent to Tripo)",
+      "security_alert": "suspected credential exposure -> immediate rotation + owner notice",
+      "schedule_enable": "owner enables any recurring Automation and approves its run time",
+      "write_unlock": "owner unlocks each MCP/agent write capability individually; every unlocked write is journaled append-only"
+    },
+    "per_slice_signoffs": {
+      "slice_0": "schedule_enable; credential_add per filled slot",
+      "slice_1": "Guide tone+depth; FK/CC glossary wording before canon",
+      "slice_2": "time-window split rule; 0.6 gating threshold; auto-resolution evidence rule before Mark-Resolved removal",
+      "slice_3": "Google OAuth consent personally; trial-week calendar review; one-way Anki push direction",
+      "slice_4": "export round-trip inspection; first 20 ingested cards by hand; WhatsApp ban-risk opt-in",
+      "slice_5": "one read-only Codex session before any write unlock; initial 2 active models picked by owner",
+      "slice_6": "G1 msi read + mapping; G2 import sample; G3 legend/roles/LOD on ~50 concepts; G4 external vocabulary only after license recon",
+      "slice_7": "Tripo budget + per-week cap; image egress; first 5 3D cards side-by-side vs 2D before bulk; cloud STT consent if ever",
+      "slice_8": "schedule_enable (run time approved; manual button kept until two clean scheduled weeks); two-week shadow then per-duty go-live (steward first, auditor last); LLM budget cap; every proposal application"
+    }
+  },
+  "loops": [
+    {"name": "fsrs_review_loop", "cadence": "every rating click", "consumer": "due queue -> next review (the app's one genuinely closed loop [FACT - APP_RECON section 3d])", "status": "existing, keep"},
+    {"name": "nightly_analysis", "cadence": "daily ~02:00 owner-local [ESTIMATE]; idempotent run_id per (local day_key, attempt_n)", "consumer": "tomorrow's DailyPlan, weakness lifecycle, mastery snapshots, self-metrics scorecard; degraded mode ships FSRS-due-only plan", "status": "slice 0 schedules; slice 2 extends; slice 8 hardens (BASE44_LOOPS section 1)"},
+    {"name": "calibration_to_refit", "cadence": "nightly bins; re-fit decision weekly-to-monthly behind gate (~1000+ reviews AND 2-4 weeks since last fit [ESTIMATE])", "consumer": "re-fit request Proposal (owner-gated; no in-repo optimizer exists [FACT - APP_RECON risk 2]); auto-revert w on post-fit calibration degradation", "status": "slice 8"},
+    {"name": "weakness_lifecycle", "cadence": "nightly diagnosis + per-review evidence", "consumer": "open->probing->resolved on 2-distinct-day probe evidence [ESTIMATE]; probes injected into next plan (<=3/day cap [ESTIMATE]); new-card gate", "status": "slice 2 (+WeaknessEvent in slice 8)"},
+    {"name": "signal_consumers", "cadence": "continuous", "consumer": "bkt_p_mastery -> new-card gate + weakness flag; elo_theta + ItemElo.elo_b -> p~0.85 acquisition/probe selection; elo_theta_sd (grows with inactivity) -> well-measured-weakness rule; CalibrationBin trend -> re-fit gate + health flag; error_tags (persisted to Revlog) -> E2 evidence", "status": "slices 2 + 8; rule: no metric without snapshot+threshold+named consumer, else delete"},
+    {"name": "plan_regression", "cadence": "nightly", "consumer": "concept gate re-applies on regression; adherence <60% over >=7 days [ESTIMATE] -> plan-shrink Proposal; model-level auto-revert of w", "status": "slices 2 + 8"},
+    {"name": "outbox_drain", "cadence": "frequent schedule [UNKNOWN granularity]", "consumer": "all external sends (Anki/Calendar/WhatsApp); DLQ surfaces in UI", "status": "slice 0"},
+    {"name": "agent_stewardship", "cadence": "daily (post-pipeline) + morning scorecard read", "consumer": "retry-once, degraded-mode switch, journal rows, threshold-breach Proposals (trend-not-point)", "status": "slice 8, shadow mode first"},
+    {"name": "spec_audit_self_loop", "cadence": "~monthly, one specialist per run [ESTIMATE]; max 2 rounds; NOT-CONVERGED flagged honestly", "consumer": "LOOP_REPORT-style Proposals only; apply+re-gate lives in the repo toolchain, never the app [FACT - SELF_LOOP invariants 3-4]", "status": "slice 8"},
+    {"name": "benchmark_scan", "cadence": "quarterly [ESTIMATE] + event triggers (competitor change, new entrant, own-metric fault)", "consumer": "BenchmarkLedger rows (function/exemplar/copy+modification/evidence tag/verdict adopt|adapt|reject); adoption into backlog is owner-gated", "status": "slice 8"}
+  ],
+  "specialist_registry": [
+    {"code": "sched", "path": "/home/user/automation/FACTORY/study_system/specialists/sched/sched.specialist.json", "use_for": "FSRS scheduling math, desired-retention dial, queue/plan assembly, revlog design, Anki interop doctrine, feasibility go/tight/no_go, refusal of invented projections", "load_when": "slices 2 and 3; any change to due semantics, plan budgets, or the retention dial"},
+    {"code": "learner", "path": "/home/user/automation/FACTORY/study_system/specialists/learner/learner.specialist.json", "use_for": "BKT/Elo mastery estimation, uncertainty-gated weakness flagging, E1-E4 diagnosis, gating thresholds, challenge-band calibration", "load_when": "slice 2; any mastery/diagnosis/threshold question anywhere"},
+    {"code": "qcraft", "path": "/home/user/automation/FACTORY/study_system/specialists/qcraft/qcraft.specialist.json", "use_for": "item quality, one-best-answer authoring canon, probe-item qualification, psychometric bands", "load_when": "slice 2 probe selection; slice 4 generated-card quality"},
+    {"code": "dental", "path": "/home/user/automation/FACTORY/study_system/specialists/dental/dental.specialist.json", "use_for": "INBDE identity, 10-FK x 56-CC blueprint taxonomy, FK/CC wording", "load_when": "slice 1 glossary; slice 6 FK grouping for taxonomy roles"},
+    {"code": "toefl", "path": "/home/user/automation/FACTORY/study_system/specialists/toefl/toefl.specialist.json", "use_for": "TOEFL 2026 format truth, section/band semantics", "load_when": "slice 1 TOEFL glossary entries; any TOEFL-specific surface"},
+    {"code": "contenteng", "path": "/home/user/automation/FACTORY/study_system/specialists/contenteng/contenteng.specialist.json", "use_for": "document decomposition (units/terms/claims/edges/cards), card lint, coverage+honesty ship gate", "load_when": "slice 4 ingest; edge-triple semantics feeding slice 6"},
+    {"code": "engage", "path": "/home/user/automation/FACTORY/study_system/specialists/engage/engage.specialist.json", "use_for": "day-box calendar render law (owner brief = binding), streak/slack semantics, effort-vs-mastery separation, non-punitive nudge wording", "load_when": "slices 1, 2, 4; anything rendered on the calendar or worded as motivation"},
+    {"code": "voice", "path": "/home/user/automation/FACTORY/study_system/specialists/voice/voice.specialist.json", "use_for": "voice capture queue state machine, transcriber deferral (local default, cloud consent-gated), rubric grading, human-confirmed candidates", "load_when": "slice 7 voice notes; any VoiceQueue consumer"},
+    {"code": "sysloops", "path": "/home/user/automation/FACTORY/study_system/specialists/sysloops/sysloops.specialist.json", "use_for": "nightly pipeline contract (idempotency, append-only, degraded mode, snapshot+threshold+consumer), benchmark ledger, managing-agent duties", "load_when": "slice 8 (with BASE44_LOOPS.md + /home/user/automation/FACTORY/SELF_LOOP.md); slice 2 pipeline changes; slice 5 agent-exposure rules"},
+    {"code": "kgraph", "path": "/home/user/automation/FACTORY/study_system/specialists/kgraph/kgraph.specialist.json", "use_for": "graph schema/meaning, integrity invariants, cycle-free prereq DAG, provenance/quarantine, terminology linking, gating semantics, msi import contract", "load_when": "slice 6 section 1; any ConceptEdge write path anywhere"},
+    {"code": "viz", "path": "/home/user/automation/FACTORY/study_system/specialists/viz/viz.specialist.json", "use_for": "semantic-zoom LOD ladder, channel-to-meaning color system (perceptual, CVD-safe, never color alone), layout, interaction, measured build-vs-adopt", "load_when": "slice 6 section 2; analytics charts beyond engage's day-box"},
+    {"code": "extint", "path": "/home/user/automation/FACTORY/study_system/specialists/extint/extint.specialist.json", "use_for": "everything crossing the app boundary: Base44 platform ops (Automations/Secrets/functions/agents), AnkiConnect, Google OAuth, WAHA, MCP, Ollama Cloud, Tripo transport, LLM model-ops, outbox/retry/idempotency", "load_when": "slices 0, 3, 4, 5; transport in 7; agent runtime in 8"},
+    {"code": "media", "path": "/home/user/automation/FACTORY/study_system/specialists/media/media.specialist.json", "use_for": "earns-its-cost media verdicts (skip/2D/3D), image roles + prompt discipline, clinical-check gate, mesh QC, web budget, provenance contract", "load_when": "slice 7; any request to attach media to a card"},
+    {"code": "uxguide", "path": "/home/user/automation/FACTORY/study_system/specialists/uxguide/uxguide.specialist.json", "use_for": "four-rung disclosure ladder, Guide/glossary, WHY surfaces, honest wording rules, hover/tap accessibility contract", "load_when": "slice 1; any user-facing explanatory copy in any slice"}
+  ]
+}

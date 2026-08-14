@@ -1,0 +1,1873 @@
+{
+  "domain": "voip_deployment_number_porting_and_qos",
+  "domain_label": "VoIP Deployment, Number Porting & Call Quality",
+  "purpose": "How a business VoIP reseller takes a signed phone-system deal from discovery to stabilized live service: mapping seats and features to how the business actually answers calls, choosing between new phones, softphones and reused devices, porting the customer's numbers without ever putting them at risk, proving the site network can carry voice with QoS and failover, configuring and verifying E911 dispatchable locations as a hard gate, and executing a trained, tested, reversible cutover that hands a documented system to recurring support.",
+  "assumptions": [
+    "no observed dataset supplied; all scores are heuristic priors",
+    "deployments serve US small-business customers (dental offices, trucking dispatch, restaurants, motels, small offices) of a business VoIP reseller; regulatory obligations are named as classes and must be verified current for the jurisdiction at deployment time",
+    "the reseller may operate under an agent, reseller-of-record, or white-label model; the deployment mechanics here apply across models while the economics of those models live in the channel-economics KB",
+    "the customer's established business number is treated as the single most valuable asset touched by the project, and porting sequences are designed so it is never exposed to loss",
+    "carrier and platform procedures differ in detail; nodes describe carrier-agnostic mechanisms plus the per-carrier verification step, never one vendor's exact screens or timelines as universal fact"
+  ],
+  "exclusions": [
+    "channel model selection and economics - agent vs reseller vs white-label, who owns the customer, the bill and the risk, niche selection, offer packaging and competitive positioning belong to the channel-economics-and-segments KB",
+    "running the recurring service book - support model and carrier escalation, churn signals and prevention, seat and feature expansion, contract/SLA hygiene, renewals and account-review cross-sell belong to the recurring-service-and-expansion KB",
+    "invented commission rates, per-seat prices, port fees, bandwidth figures or savings percentages stated as fact; monetary and performance quantities appear only as mechanisms (how the number arises, what moves it, how to verify it on this deal) or as qualitative bands",
+    "asserting current E911, USF-class contribution, telecom-tax or call-recording-consent requirements as settled legal advice; this KB names the obligation class and requires verification of current rules in the customer's jurisdiction by a qualified professional or the platform's compliance resources",
+    "guaranteed-uptime or guaranteed-savings claims of any kind without a verified basis (tested failover behavior, the platform's own published commitments, or the customer's actual bills)",
+    "designing or migrating alarm-monitoring, elevator-phone or other life-safety communication paths; these are surveyed, flagged and referred to the licensed responsible vendor, never self-performed",
+    "personalized legal, tax, financial or medical-privacy advice for the customer's business"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What does a complete deployment engagement cover, who decides what during it, and what exactly counts as done?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "DEPLOYMENT_SCOPE_FRAME states the charter, workstreams, named decision-makers and written success criteria, and DEPLOYMENT_HANDOFF_GATE states the definition-of-done that moves the account to recurring support",
+      "covered_by": ["DEPLOYMENT_SCOPE_FRAME", "DEPLOYMENT_HANDOFF_GATE"]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How do I find every line, number and service the business actually has - including the ones the owner forgot - before I design or port anything?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "SITE_DISCOVERY_AUDIT describes the walk-through and bill collection and NUMBER_INVENTORY_AUDIT describes building the frozen, countersigned number list from bills, the CSR, dialing tests and public listings",
+      "covered_by": ["SITE_DISCOVERY_AUDIT", "NUMBER_INVENTORY_AUDIT"]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What non-voice devices ride the existing copper or account, and how do I keep the port from silently killing the alarm, the fax or the card terminal?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "ANALOG_DEPENDENCY_SURVEY enumerates the device classes, the disposition options for each, and the rule that life-safety lines are referred to the responsible vendor before any disconnect order exists",
+      "covered_by": ["ANALOG_DEPENDENCY_SURVEY"]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How do I map this customer's people and places to seat types and features without over-provisioning the bill or under-provisioning day one, and what does the pattern for their vertical prescribe?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "SEAT_FEATURE_MAPPING gives the per-role seat and feature mapping with its pricing honesty rule and VERTICAL_DEPLOYMENT_PATTERNS gives the dental/restaurant/motel/trucking/office starting templates and the rule that the site map overrides the template",
+      "covered_by": ["SEAT_FEATURE_MAPPING", "VERTICAL_DEPLOYMENT_PATTERNS"]
+    },
+    {
+      "id": "CQ_05",
+      "question": "When do I sell new desk phones, when do I deploy softphones, and when do I reuse the customer's existing devices?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "ENDPOINT_STRATEGY states the per-seat decision factors (margin, mobility, quality control, provisioning risk, E911 implications) and the bench-test rule before reuse is promised",
+      "covered_by": ["ENDPOINT_STRATEGY"]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How do I design an auto-attendant, ring groups and schedules that the business will actually use, with no call path that dead-ends?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "CALL_FLOW_DESIGN requires every inbound number to have an explicit destination, every path to terminate at an owned endpoint, and a walk-through review with the customer decision-maker dialing the flows",
+      "covered_by": ["CALL_FLOW_DESIGN"]
+    },
+    {
+      "id": "CQ_07",
+      "question": "What makes a port order reject, how do I prepare one that passes the first time, and what is the recovery loop when it rejects anyway?",
+      "must_be_answerable_from": ["nodes", "edge_cases"],
+      "acceptance_condition": "PORT_ORDER_PREPARATION lists the CSR-reconciliation elements (authorized name, exact service address, account number, PIN, freezes, pending orders) and PORT_REJECTION_RECOVERY gives the read-fix-resubmit-rebaseline loop with escalation mechanisms",
+      "covered_by": ["PORT_ORDER_PREPARATION", "PORT_REJECTION_RECOVERY"]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How do I sequence port activation so the business never loses inbound calls during the transition and never loses the number itself?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "PORT_ACTIVATION_SEQUENCE states the build-before-FOC rule, the bridging tactics across the flip, per-number inbound verification, and the never-cancel-the-losing-service-before-confirmation rule with its rationale",
+      "covered_by": ["PORT_ACTIVATION_SEQUENCE"]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How do I decide whether this site's internet and LAN can carry the seat count's calls, and what do I change when they cannot?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "NETWORK_READINESS_ASSESSMENT gives the busy-hour measurement and concurrent-call demand mechanism with a pass / pass-with-changes / fail verdict, and QOS_LAN_CONFIGURATION gives the VLAN, DSCP, SIP-ALG, PoE and edge-device remediation set",
+      "covered_by": ["NETWORK_READINESS_ASSESSMENT", "QOS_LAN_CONFIGURATION"]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What happens to this customer's phones when the internet or power fails, and what am I allowed to promise about it?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "FAILOVER_CONTINUITY_DESIGN describes the forward-on-unreachable, backup-WAN, UPS and carrier-level survival layers with the pull-the-plug demonstration, and HONEST_EXPECTATION_SETTING binds every continuity claim to tested behavior or published platform commitments",
+      "covered_by": ["FAILOVER_CONTINUITY_DESIGN", "HONEST_EXPECTATION_SETTING"]
+    },
+    {
+      "id": "CQ_11",
+      "question": "What E911 and regulatory obligations does this deployment raise, and how do I configure, verify and document them instead of guessing?",
+      "must_be_answerable_from": ["nodes"],
+      "acceptance_condition": "E911_CONFIGURATION covers per-device dispatchable locations, the Kari's Law and RAY BAUM obligation classes with the verify-current-rules requirement, softphone location behavior and sanctioned verification, and REGULATORY_FLAG_REGISTER routes USF-class, consent-law-class and privacy-class flags to qualified verification with an auditable record",
+      "covered_by": ["E911_CONFIGURATION", "REGULATORY_FLAG_REGISTER"]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How do I plan cutover day, train the staff beforehand, prove the system works, and stabilize it before handing the account to support?",
+      "must_be_answerable_from": ["nodes", "workflow"],
+      "acceptance_condition": "CUTOVER_RUNBOOK gives the scripted sequence with rollback trigger, STAFF_TRAINING_PROGRAM gives role-based pre-cutover training, ACCEPTANCE_TEST_MATRIX gives the countersigned test rows, and HYPERCARE_STABILIZATION gives the post-cutover ownership window and tuning pass",
+      "covered_by": ["CUTOVER_RUNBOOK", "STAFF_TRAINING_PROGRAM", "ACCEPTANCE_TEST_MATRIX", "HYPERCARE_STABILIZATION"]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "CSR (customer service record)",
+      "definition": "The losing carrier's record of the customer's account: the authorized name, exact service address, account number, and the numbers and features on the account. Port orders are reconciled against the CSR line-by-line because any mismatch between the order and the CSR is a rejection waiting to happen."
+    },
+    {
+      "term": "LOA (letter of authorization)",
+      "definition": "The document, signed by a person authorized on the losing account, that permits the winning carrier to move the customer's numbers. The signer's name and the service address on the LOA must match the CSR, not the customer's letterhead."
+    },
+    {
+      "term": "FOC date (firm order commitment)",
+      "definition": "The date the losing carrier commits to release the numbers after accepting a port order. Nothing before FOC is a real date; cutover scheduling, customer promises and old-service cancellation all key off FOC, never off hope."
+    },
+    {
+      "term": "port rejection",
+      "definition": "The losing carrier's refusal of a port order, always for a stated reason code - name mismatch, address mismatch, wrong account number, missing PIN, a freeze on the account, or a pending order. Each rejection costs a resubmission cycle and moves every dependent date."
+    },
+    {
+      "term": "partial port",
+      "definition": "Porting some but not all numbers on an account. Dangerous in two directions: it can strand hunt-group members on the old carrier so inbound callers hit busy signals, and it can trigger the losing carrier to re-rate or disconnect the services left behind."
+    },
+    {
+      "term": "ATA (analog telephone adapter)",
+      "definition": "A device that presents an analog port to legacy equipment - fax machines, cordless phones, door phones - and carries the call over the VoIP service. Workable for fax with tuned settings and realistic expectations; never acceptable for alarm panels or other life-safety dialers."
+    },
+    {
+      "term": "dispatchable location",
+      "definition": "The location data an emergency call must convey so responders can find the caller: street address plus the floor, suite, or room detail appropriate to the premises. Every device that can dial out needs one registered, and it must move when the device moves."
+    },
+    {
+      "term": "SIP ALG",
+      "definition": "A router feature that rewrites SIP packets in transit, intended to help VoIP through NAT and notorious for breaking registrations, one-way audio and dropped transfers. Checking and usually disabling it on the customer's router is among the most common field fixes in the trade."
+    },
+    {
+      "term": "hunt group / rollover lines",
+      "definition": "A set of lines arranged so a call to the main number that finds it busy rolls to the next line. Legacy hunt arrangements hide numbers the owner never dials and must be captured whole in the inventory, because porting only the lead number strands the rest."
+    },
+    {
+      "term": "hypercare",
+      "definition": "The deliberately over-resourced support window immediately after cutover - direct access to the deploying technician, daily punch-list sweeps, and live call-quality monitoring - that ends with a formal review rather than by quietly fading out."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "DEPLOYMENT_SCOPE_FRAME",
+      "topic": "deployment_charter_success_criteria_and_workstreams",
+      "definition": "Fix what the deployment engagement covers before any hardware is ordered: the project runs from countersigned order to a stabilized system formally handed to recurring support, and its success criteria are written down - every business number ported and confirmed, every seat registered and passing calls, E911 verified, staff trained, customer signed off. The charter names the three workstreams that run in parallel from day one (number porting, site build, network readiness), the owner of each, and the customer-side decision-maker empowered to answer questions about hours, ring order and greetings, because a deployment with no named decision-maker stalls at every small choice. It also states what deployment does not include: the channel-economics questions settled at sale time, and the ongoing support relationship that begins only after the handoff gate.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": ["engagement boundaries order-to-handoff", "written success criteria", "parallel workstream owners", "named customer decision-maker"],
+        "excluded": ["offer packaging and pricing decisions", "post-handoff support operations"]
+      },
+      "pros": [
+        {
+          "claim": "A written definition-of-done stops the project from bleeding into unpaid perpetual tinkering",
+          "example": "a motel deployment closes against its charter checklist instead of drifting into months of free tweak visits",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A rigid charter can turn genuine mid-project discoveries into adversarial change-order fights",
+          "example": "billing a dentist a change order for an operatory the walk-through missed sours the account before the first invoice",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "no customer decision-maker named, so hours and ring-order questions stall for weeks",
+        "success criteria left implicit, making 'done' a negotiation at the worst moment",
+        "the porting workstream started late because it was treated as sequential rather than parallel"
+      ],
+      "acceptance_tests": [
+        "the charter states port-complete, seats-live, E911-verified, training-done and sign-off as explicit success criteria, names an owner per workstream, and names the customer decision-maker"
+      ],
+      "revisit_triggers": [
+        "the sold scope and what discovery finds on site diverge materially",
+        "the handoff contract with the recurring-support side changes"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.82, "user_value": 0.76,
+        "technical_complexity": 0.32, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.42, "confidence": 0.74, "node_conflict_pressure": 0.34,
+        "acceptance_test_pass_rate": 0.84, "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.88, "evidence_confidence": 0.66,
+        "failure_rate": 0.14, "downside_weight": 0.48,
+        "uncertainty_interval": [0.2, 0.46],
+        "update_signal": "the engagement scope, the workstream split, or the support-handoff contract is restated"
+      }
+    },
+    {
+      "id": "HONEST_EXPECTATION_SETTING",
+      "topic": "disclosure_first_expectations_on_timelines_outages_and_savings",
+      "definition": "Set the customer's expectations to what the deployment can verifiably deliver, in writing, before cutover pressure begins. Porting timelines are controlled by the losing carrier and are quoted as ranges that firm up only at FOC; VoIP behaves differently from copper when power or internet fails, so the specific failover behavior configured for this site is demonstrated rather than promised in the abstract; savings claims are computed only against the customer's actual collected bills; uptime language is limited to the platform's own published commitments plus the site's tested failover design. This node exists because deployment is where sales promises meet physics: the reseller who corrects an overpromise before cutover keeps the account, while the one who lets it surface as a day-one surprise manufactures the churn the recurring-service side must then fight.",
+      "group": "frame",
+      "dependencies": ["DEPLOYMENT_SCOPE_FRAME"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["porting-timeline range discipline", "outage-behavior demonstration", "bill-based savings comparison", "uptime language bounded by verified basis"],
+        "excluded": ["competitive positioning and offer construction", "SLA drafting for the ongoing contract"]
+      },
+      "pros": [
+        {
+          "claim": "Disclosure-first framing converts outage behavior from a post-incident betrayal into a designed, accepted tradeoff",
+          "example": "a trucking dispatcher who watched the LTE-failover demo treats a later fiber cut as a known mode, not a broken promise",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Candor about porting uncertainty and outage behavior can lose deals to rivals who promise hard dates and zero downtime",
+          "example": "a motel signs with a competitor guaranteeing a Friday cutover, then suffers exactly the slip you declined to hide",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "promising a port date before the FOC exists",
+        "an uptime or savings figure stated with no verified basis behind it",
+        "outage behavior buried in contract fine print instead of demonstrated"
+      ],
+      "acceptance_tests": [
+        "every timeline, savings and continuity statement made to the customer traces to a verifiable source: an FOC, the collected bills, a tested failover run, or the platform's published commitment"
+      ],
+      "revisit_triggers": [
+        "the FOC moves or the failover design changes after expectations were set",
+        "a sales-side claim is discovered that deployment cannot support"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.8, "user_value": 0.84,
+        "technical_complexity": 0.3, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6, "confidence": 0.72, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84, "evidence_confidence": 0.64,
+        "failure_rate": 0.16, "downside_weight": 0.6,
+        "uncertainty_interval": [0.2, 0.48],
+        "update_signal": "a promised element loses its verified basis or a new claim is requested of the deployment team"
+      }
+    },
+    {
+      "id": "SITE_DISCOVERY_AUDIT",
+      "topic": "site_walk_current_system_and_bill_collection",
+      "definition": "Walk the site and inventory current telephony reality before designing anything: every handset and where it sits, how inbound calls actually flow (who answers, who covers lunch, where overflow lands), business hours and the after-hours arrangement, the wiring closet, switch and router make and model, cable runs and drop counts, the internet service, and the current carrier bills collected for every location and account. The bill review is the core move - it exposes lines, features and recurring charges the owner forgot exist, and it is the only honest basis for any savings comparison later. The output is a site survey document that the seat map, the number inventory, the analog survey and the network assessment all build on, so an error here propagates into all four.",
+      "group": "assess",
+      "dependencies": ["DEPLOYMENT_SCOPE_FRAME"],
+      "competency_question_refs": ["CQ_02"],
+      "scope_boundary": {
+        "included": ["physical walk-through and photo record", "call-answering behavior interviews", "bill collection for every account", "LAN and internet inventory"],
+        "excluded": ["number disposition decisions", "network pass/fail verdict"]
+      },
+      "pros": [
+        {
+          "claim": "One structured walk catches what remote quoting always misses",
+          "example": "the restaurant's 'four lines' turn out to be three voice lines plus a credit-card terminal line the remote quote would have destroyed",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Deep discovery costs unbilled hours that small deals cannot absorb",
+          "example": "a two-seat insurance office warrants the bill pull and a photo checklist, not a half-day audit",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "designing from the sales quote instead of the walk",
+        "bills never collected, so hidden lines surface for the first time at port submission",
+        "nobody interviewed about lunch coverage and after-hours reality, so the call-flow design fights the staff's actual habits"
+      ],
+      "acceptance_tests": [
+        "the survey document contains the handset map, the answering-behavior notes, photos of the closet and edge gear, and a complete set of current bills"
+      ],
+      "revisit_triggers": [
+        "a second suite, location or account is discovered mid-project",
+        "the customer changes premises or staffing before cutover"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.8, "user_value": 0.78,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.76, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.38, "confidence": 0.7, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86, "evidence_confidence": 0.64,
+        "failure_rate": 0.18, "downside_weight": 0.5,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "site facts change or a downstream node finds the survey contradicted on site"
+      }
+    },
+    {
+      "id": "ANALOG_DEPENDENCY_SURVEY",
+      "topic": "non_voice_devices_riding_copper_and_their_dispositions",
+      "definition": "Enumerate every non-voice device riding the existing copper lines or the current phone account before any port or disconnect order is written: fax machines, fire and burglar alarm panel dialers, elevator phones, gate and door buzzers, credit-card terminals, postage meters, and DSL internet delivered over a voice line. Each device gets an explicit disposition - keep a copper line for it, move it to an ATA with the known reliability caveats stated, migrate it to a purpose-built path (a cellular alarm communicator installed by the alarm company, an e-fax service), or confirm it is genuinely dead. Alarm and elevator lines are life-safety adjacent: the reseller flags and refers them to the responsible licensed vendor and never treats their migration as a do-it-yourself item, and no disconnect order exists until every disposition is recorded.",
+      "group": "assess",
+      "dependencies": ["SITE_DISCOVERY_AUDIT"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": ["device-class enumeration on every copper pair and account line", "per-device disposition record", "life-safety referral rule"],
+        "excluded": ["performing alarm or elevator line migration", "fax workflow redesign beyond the transport choice"]
+      },
+      "pros": [
+        {
+          "claim": "The survey prevents the classic disaster where the port completes and the alarm goes silent",
+          "example": "a motel's fire-alarm dialer found on line two triggers an alarm-company referral weeks before cutover instead of a dead panel discovered after",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Dispositions add vendors and cost the customer resents paying alongside the phone project",
+          "example": "a dentist balks at the alarm company's cellular-communicator charge appearing on top of the phone quote",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "canceling the copper account with DSL internet riding on it, taking the business dark twice at once",
+        "assuming a fax line is idle because nobody at the front desk remembers it",
+        "putting an alarm dialer behind an ATA because it seemed to work in a quick test"
+      ],
+      "acceptance_tests": [
+        "every copper pair and account line has a listed device or an explicit 'nothing rides this line' finding, every device has a disposition, and each life-safety device has a named referred vendor before any disconnect order is drafted"
+      ],
+      "revisit_triggers": [
+        "a new device is discovered after the survey closed",
+        "the losing carrier's disconnect scope turns out broader than the port order intended"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.78, "user_value": 0.84,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.7, "confidence": 0.66, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.88, "evidence_confidence": 0.62,
+        "failure_rate": 0.2, "downside_weight": 0.7,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "a device inventory miss is found on any deployment, or a disposition option (e.g. an e-fax path) changes viability"
+      }
+    },
+    {
+      "id": "NUMBER_INVENTORY_AUDIT",
+      "topic": "authoritative_number_list_and_port_leave_release_classification",
+      "definition": "Build the authoritative list of every telephone number the business owns or advertises, because the number that gets forgotten is the one the port kills: main lines, hunt-group and rollover members, direct lines, fax numbers, toll-free numbers, tracking numbers pointed at the business by marketing vendors, and the numbers printed on the door, the trucks, the website and the online listings. Sources are the collected bills, a CSR pulled from the losing carrier, live dialing tests, and a sweep of public-facing listings. Each number is classified port, leave, or release, tracking numbers are identified as vendor-owned and routed through the vendor's own process, and the finished inventory is frozen and countersigned before the LOA is drafted - a number found late forces a supplemental port order and a second cutover event.",
+      "group": "porting",
+      "dependencies": ["SITE_DISCOVERY_AUDIT"],
+      "competency_question_refs": ["CQ_02"],
+      "scope_boundary": {
+        "included": ["multi-source number discovery", "port/leave/release classification", "freeze-and-countersign before LOA"],
+        "excluded": ["port order mechanics", "call-flow destinations for the numbers"]
+      },
+      "pros": [
+        {
+          "claim": "The CSR pull surfaces numbers the owner does not know he pays for",
+          "example": "a trucking company's CSR reveals two hunt members and a forgotten fax number billed for years, all of which would have stranded on a lead-number-only port",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Chasing every advertised number can burn cycles on numbers that are not the customer's to port",
+          "example": "a restaurant's ad-campaign tracking number belongs to the marketing vendor and follows that vendor's process, not the port order",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "porting the lead number only and stranding the hunt group",
+        "a toll-free number missed because it never appears on the local carrier's bill",
+        "the inventory kept informally so nobody can say later which list the LOA was built from"
+      ],
+      "acceptance_tests": [
+        "every number carries a source citation (bill, CSR, dialing test, or listing sweep) and a port/leave/release class, and the customer countersigned the frozen inventory before the LOA was drafted"
+      ],
+      "revisit_triggers": [
+        "any number surfaces after the freeze",
+        "the CSR and the bills disagree on what the account contains"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.84, "user_value": 0.82,
+        "technical_complexity": 0.48, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.66, "confidence": 0.68, "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9, "evidence_confidence": 0.64,
+        "failure_rate": 0.18, "downside_weight": 0.66,
+        "uncertainty_interval": [0.22, 0.52],
+        "update_signal": "a late number discovery on any project, or a change in how the losing carrier releases CSR data"
+      }
+    },
+    {
+      "id": "SEAT_FEATURE_MAPPING",
+      "topic": "per_role_seat_types_and_feature_assignment",
+      "definition": "Translate discovery into a per-person, per-place seat map: each user or common area gets a seat type (full user, common-area phone, conference room, paging endpoint) and a feature set that reflects the actual job - who needs voicemail-to-email, who sits in which ring group, who may use call recording (flagged against the consent-law class before it is enabled), who needs park, paging or intercom. Because service is priced per seat, the map is also the honest quantity basis of the monthly bill: over-provisioning pads MRR today and invites the resentful downgrade conversation later, while under-provisioning creates day-one coverage gaps that read as a botched install. The map is reviewed with the decision-maker role-by-role, not emailed as a spreadsheet.",
+      "group": "assess",
+      "dependencies": ["SITE_DISCOVERY_AUDIT"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["seat-type assignment per person and place", "feature mapping tied to role", "recording flagged to consent-law class", "seat-count honesty toward the bill"],
+        "excluded": ["per-seat price setting", "device model selection"]
+      },
+      "pros": [
+        {
+          "claim": "Right-sized seats make the monthly bill defensible line by line at every future renewal",
+          "example": "hygiene bays get common-area phones instead of five full user seats, and the dentist can see why every line item exists",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Per-role precision costs owner interview time that busy customers resist giving",
+          "example": "a restaurant owner who will not sit for the role review gets a guessed map that misroutes the host stand on opening night",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "copying seat counts from the sales quote instead of the walk",
+        "granting every feature to everyone and drowning the training session",
+        "enabling call recording before the consent-law class for the jurisdictions involved was flagged"
+      ],
+      "acceptance_tests": [
+        "every person and common area appears exactly once with a seat type and feature set, and any recording feature carries a consent-law-class flag disposition"
+      ],
+      "revisit_triggers": [
+        "staffing or layout changes before cutover",
+        "the vertical template and the observed site disagree on a role"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.84, "user_value": 0.8,
+        "technical_complexity": 0.42, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.85,
+        "irreversibility": 0.4, "confidence": 0.7, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84, "evidence_confidence": 0.64,
+        "failure_rate": 0.18, "downside_weight": 0.46,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "a role, headcount or layout change, or a feature's regulatory flag disposition changes"
+      }
+    },
+    {
+      "id": "VERTICAL_DEPLOYMENT_PATTERNS",
+      "topic": "dental_restaurant_motel_trucking_office_deployment_templates",
+      "definition": "Maintain deployment templates for the verticals this business targets, because the same pattern repeats within a niche and encoding it saves discovery time on every deal. Dental offices need front-desk-heavy flows, an after-hours emergency path to the on-call dentist or answering service, and caution with voicemail-to-email and transcription because messages can contain patient information - flag the healthcare-privacy class rather than self-advising. Restaurants need loud-environment ring behavior, a host-stand phone that parks a caller in two touches, and hours menus that track the kitchen, not the lobby sign. Motels need room phones, front-desk console behavior, wake-up call handling, and explicit review of direct-911-and-notification behavior for guest rooms. Trucking dispatch needs high simultaneous-call capacity, softphones for drivers, and hunt behavior that never rings dead air. Small offices are the generic base. Every template is a starting draft that the per-site map overrides on any observed difference.",
+      "group": "assess",
+      "dependencies": ["SEAT_FEATURE_MAPPING"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["per-vertical starting seat and flow patterns", "vertical-specific compliance flags", "template-update loop from repeated overrides"],
+        "excluded": ["choosing which verticals to target", "vertical pain-point sales positioning"]
+      },
+      "pros": [
+        {
+          "claim": "A niche template turns the second dental office into a half-day design instead of a from-scratch exercise",
+          "example": "the after-hours emergency path and hygiene-bay seat pattern from the last practice apply nearly verbatim to the next one",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Templates invite skipping the site walk and shipping a pattern the site contradicts",
+          "example": "the motel template assumes a staffed front desk at night, but this property runs unattended after ten and needs a different emergency-notification design",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "template applied without the site walk that would contradict it",
+        "a vertical compliance flag (guest-room 911 behavior, patient-information voicemail) dropped because the template was trusted as complete",
+        "templates never updated, so the same override is rediscovered on every deal"
+      ],
+      "acceptance_tests": [
+        "the chosen template is named in the design record along with every site-specific override applied to it"
+      ],
+      "revisit_triggers": [
+        "the same override repeats across deployments in a vertical",
+        "a vertical's regulatory flag set changes"
+      ],
+      "base": {
+        "criticality": 0.74, "business_value": 0.78, "user_value": 0.76,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.62, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.3, "confidence": 0.68, "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.76, "evidence_confidence": 0.62,
+        "failure_rate": 0.18, "downside_weight": 0.4,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "repeated per-site overrides or a change in a vertical's operating pattern"
+      }
+    },
+    {
+      "id": "ENDPOINT_STRATEGY",
+      "topic": "new_phones_vs_softphones_vs_existing_device_reuse",
+      "definition": "Decide device by device between new desk phones, softphones, and reuse of what the customer already owns. New hardware earns installation margin, arrives pre-provisioned and standardizes support, but inflates the up-front quote the customer compares against rivals. Softphones cost little and suit mobile roles - drivers, the on-call dentist, the owner who works from home - but tie call quality to the user's own device and headset, and complicate E911 because the location moves. Reusing the customer's existing SIP phones preserves their sunk cost and can win the deal, but carries locked-firmware, ownership-transfer and provisioning risk that is bench-tested per model before it is ever promised; analog devices are reused only through an ATA with its caveats stated. The decision is made per seat against the map, never as one global answer for the site.",
+      "group": "design",
+      "dependencies": ["SEAT_FEATURE_MAPPING", "ANALOG_DEPENDENCY_SURVEY"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["per-seat device decision", "bench-test-before-promise rule for reuse", "softphone suitability and its E911 implication", "ATA caveats for analog reuse"],
+        "excluded": ["hardware margin targets", "vendor line-card selection"]
+      },
+      "pros": [
+        {
+          "claim": "A tested reuse offer can win a deal a rip-and-replace quote loses",
+          "example": "bench-testing the dental office's recent SIP phone fleet and reusing it undercuts the competitor who quoted all-new hardware",
+          "weight": 0.76
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Reused devices can consume more labor than their value",
+          "example": "an old carrier-locked phone model eats hours of provisioning attempts that exceed the price of a new handset",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "promising reuse before the bench test",
+        "softphone-only seats granted to roles that call 911 from changing locations with no location-update behavior configured",
+        "the ATA treated as a universal answer for every analog device including ones it must never carry"
+      ],
+      "acceptance_tests": [
+        "every seat in the map has a device decision with its rationale, every reuse promise cites a completed bench test, and every softphone seat carries its E911 location-behavior note"
+      ],
+      "revisit_triggers": [
+        "a bench test fails after the quote assumed reuse",
+        "the network readiness verdict removes PoE or Wi-Fi assumptions the device plan relied on"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.8, "user_value": 0.78,
+        "technical_complexity": 0.52, "risk_if_wrong": 0.68, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5, "confidence": 0.66, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.78, "evidence_confidence": 0.62,
+        "failure_rate": 0.2, "downside_weight": 0.45,
+        "uncertainty_interval": [0.26, 0.56],
+        "update_signal": "a bench-test outcome, a platform provisioning change, or a readiness finding that alters device assumptions"
+      }
+    },
+    {
+      "id": "CALL_FLOW_DESIGN",
+      "topic": "auto_attendant_ring_groups_schedules_and_path_completeness",
+      "definition": "Design how calls actually move: auto-attendant menus kept short and phrased in the business's own language, business-hours and holiday schedules, ring groups and hunt order, no-answer and overflow paths, voicemail boxes and their delivery, on-hold audio, and the after-hours path. Two completeness rules govern the work: every inbound number in the inventory gets an explicit destination, and every path terminates at a human, a voicemail box someone owns, or an announced closure - nothing rings forever and nothing dead-ends silently. The finished design is reviewed with the customer decision-maker by dialing the flows aloud together, because owners will approve a diagram they do not understand and then hate the behavior it produces on day one.",
+      "group": "design",
+      "dependencies": ["SEAT_FEATURE_MAPPING", "VERTICAL_DEPLOYMENT_PATTERNS"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["attendant menus and schedules", "ring-group and overflow design", "per-number destination completeness", "dial-through design review"],
+        "excluded": ["greeting studio production", "post-cutover tuning decisions"]
+      },
+      "pros": [
+        {
+          "claim": "The every-path-terminates rule eliminates the silent dead-ends that bleed callers",
+          "example": "walking the tree finds the holiday schedule routing to an unassigned voicemail box before a caller ever does",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Design depth beyond what the business can operate becomes shelfware",
+          "example": "a five-branch attendant tree for a six-person office gets bypassed by staff who just want the phone to ring at the desk",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "an inbound number left with no explicit destination and discovered by a customer's missed call",
+        "menus written in provider jargon instead of the business's own words",
+        "the design approved from a diagram without ever dialing it"
+      ],
+      "acceptance_tests": [
+        "a destination table covers one hundred percent of the number inventory, a path walk shows every branch terminating at an owned endpoint, and the dial-through review with the decision-maker is recorded as done"
+      ],
+      "revisit_triggers": [
+        "hypercare traffic shows a flow being bypassed or misrouting",
+        "hours, staffing or the after-hours arrangement change"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.78, "user_value": 0.84,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.74, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.42, "confidence": 0.68, "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8, "evidence_confidence": 0.62,
+        "failure_rate": 0.2, "downside_weight": 0.45,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "live-traffic evidence from hypercare or a change to hours, staffing or numbers"
+      }
+    },
+    {
+      "id": "PORT_ORDER_PREPARATION",
+      "topic": "csr_reconciled_loa_and_rejection_proof_port_orders",
+      "definition": "Prepare each port order so the losing carrier has no ground to reject it: the LOA signed by a person authorized on the losing account whose name matches the CSR, the service address written exactly as the CSR shows it down to suite spelling, the account number and any port-out PIN or passcode obtained from the losing carrier, freezes lifted, no pending orders open on the account, and the number list matched to the CSR line by line with partial-port consequences (stranded hunt members, re-rated leftover services) explicitly dispositioned. Rejections are mechanical, not mysterious - name mismatch, address mismatch, wrong account number, missing PIN, freeze, pending order - and every one of them is preventable by reconciling the order against a fresh CSR before submission, while every one that ships costs a rejection cycle measured in days against the cutover date.",
+      "group": "porting",
+      "dependencies": ["NUMBER_INVENTORY_AUDIT", "ANALOG_DEPENDENCY_SURVEY"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": ["LOA authorization matching", "CSR line-by-line reconciliation", "PIN, freeze and pending-order clearance", "partial-port consequence disposition"],
+        "excluded": ["the activation-day sequence", "rejection recovery once an order has bounced"]
+      },
+      "pros": [
+        {
+          "claim": "CSR-first preparation converts porting from a lottery into a checklist",
+          "example": "catching that the losing account still carries the practice's previous owner as authorized name, and fixing authorization before submission instead of eating two rejection cycles",
+          "weight": 0.86
+        }
+      ],
+      "cons": [
+        {
+          "claim": "CSR retrieval itself can add days of lead time the schedule must absorb",
+          "example": "a losing carrier that only releases the CSR to the account holder by mail pushes the whole porting workstream out before anything else can move",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "the LOA signed by an owner whose name is not on the losing account",
+        "the service address transcribed from letterhead instead of the CSR",
+        "a partial port submitted without dispositioning what remains on the old account"
+      ],
+      "acceptance_tests": [
+        "the submitted order matches a CSR pulled for this submission on authorized name, service address, account number and number list, PIN present where required, freezes and pending orders cleared, and each number's partial-port consequence dispositioned"
+      ],
+      "revisit_triggers": [
+        "the CSR is stale relative to recent account changes",
+        "the losing carrier changes its port-out authentication requirements"
+      ],
+      "base": {
+        "criticality": 0.92, "business_value": 0.86, "user_value": 0.82,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6, "confidence": 0.66, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.92, "evidence_confidence": 0.64,
+        "failure_rate": 0.22, "downside_weight": 0.68,
+        "uncertainty_interval": [0.24, 0.56],
+        "update_signal": "a rejection pattern from a specific losing carrier, or an industry change to port-out authentication"
+      }
+    },
+    {
+      "id": "PORT_REJECTION_RECOVERY",
+      "topic": "rejection_reason_loop_escalation_and_date_rebaselining",
+      "definition": "When a port order rejects anyway, run the recovery loop instead of flailing: read the rejection reason code, fix exactly the mismatched element against a freshly pulled CSR, resubmit, and rebaseline the FOC and every date that hangs off it - telling the customer immediately with the new range rather than letting the cutover date silently slip into fiction. Escalation mechanisms exist in layers: the winning carrier's porting desk first, supervisory escalation for repeated or apparently bogus rejections, and for genuinely stuck ports the losing carrier's executive-relations and regulator-complaint channels, described as mechanisms whose leverage is documentation - the order history and reason codes are the evidence. Rejection causes are tracked per losing carrier, because patterns (one always demands the PIN, another rejects on suite formatting) become permanent checklist lines in preparation.",
+      "group": "porting",
+      "dependencies": ["PORT_ORDER_PREPARATION"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": ["reason-code driven correction", "resubmission and FOC rebaselining", "layered escalation mechanisms", "per-carrier rejection pattern log"],
+        "excluded": ["first-submission preparation", "cutover-day mechanics"]
+      },
+      "pros": [
+        {
+          "claim": "A disciplined loop keeps a rejection from cascading into a credibility collapse",
+          "example": "same-day correction and resubmission with a proactive customer call preserves trust even as the FOC moves a week",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Escalation spent early burns leverage needed for genuinely stuck ports",
+          "example": "raising a supervisor fight over a routine name-mismatch fix leaves no headroom when a real months-long stuck port needs the pressure",
+          "weight": 0.54
+        }
+      ],
+      "failure_modes": [
+        "resubmitting the same order unchanged and collecting the same rejection",
+        "the customer learning of the slip from the dead cutover date instead of from you",
+        "no rejection log, so the same carrier quirk bites every future deal"
+      ],
+      "acceptance_tests": [
+        "each rejection records its reason code, the exact corrected element, the resubmission, and the rebaselined dates communicated to the customer"
+      ],
+      "revisit_triggers": [
+        "the same reason code recurs for one losing carrier",
+        "a port exceeds the expected range and needs the next escalation layer"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.76, "user_value": 0.78,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.45, "confidence": 0.62, "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.8, "evidence_confidence": 0.6,
+        "failure_rate": 0.26, "downside_weight": 0.55,
+        "uncertainty_interval": [0.28, 0.6],
+        "update_signal": "a new rejection reason pattern or a change in a carrier's escalation behavior"
+      }
+    },
+    {
+      "id": "PORT_ACTIVATION_SEQUENCE",
+      "topic": "foc_day_sequencing_bridging_and_never_cancel_first",
+      "definition": "Sequence activation so the business never loses inbound calls during the transition and never loses the number itself. The new system is built, registered and tested before the FOC date; on FOC day the number flips at the carrier level, so bridging tactics - temporary forwarding or simultaneous-ring where the losing carrier supports them - cover the propagation window; inbound is verified on every ported number the moment the port completes, from an outside line, one by one. The iron rule: the customer never cancels the losing service until every number is confirmed live on the new carrier, because a number on a canceled account can be disconnected rather than ported and a disconnected number can be lost to the business entirely - the single most catastrophic error in this trade. Old service is then canceled deliberately, in writing, with the analog-dependency lines explicitly excluded from the disconnect order.",
+      "group": "porting",
+      "dependencies": ["PORT_ORDER_PREPARATION"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": ["build-and-test before FOC", "bridging across the flip", "per-number inbound verification", "deliberate written cancellation afterward"],
+        "excluded": ["order preparation and rejection handling", "the wider cutover-day runbook this sequence slots into"]
+      },
+      "pros": [
+        {
+          "claim": "The never-cancel-first rule makes the worst outcome in the trade structurally impossible",
+          "example": "a motel owner eager to stop paying the old bill is held off two weeks, and when the port stalls the numbers are still safe on the living account",
+          "weight": 0.88
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Holding both services open means a period of double-paying the customer resents",
+          "example": "the dentist pays the old carrier and the new per-seat service for the overlap month and wants the difference explained on the invoice",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "old service canceled before port confirmation and a number lost outright",
+        "no bridging configured, so inbound goes dark during propagation on the business's busiest line",
+        "port declared complete without dialing every number from outside"
+      ],
+      "acceptance_tests": [
+        "the activation record shows pre-FOC test completion, the bridging tactic used, an inbound verification entry per ported number, and a written cancellation issued only after all confirmations with analog lines excluded"
+      ],
+      "revisit_triggers": [
+        "the FOC moves after bridging was scheduled",
+        "a number fails inbound verification post-flip"
+      ],
+      "base": {
+        "criticality": 0.94, "business_value": 0.88, "user_value": 0.86,
+        "technical_complexity": 0.58, "risk_if_wrong": 0.9, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.85, "confidence": 0.64, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.94, "evidence_confidence": 0.62,
+        "failure_rate": 0.22, "downside_weight": 0.75,
+        "uncertainty_interval": [0.24, 0.56],
+        "update_signal": "a carrier changes its bridging options or its treatment of numbers on canceled accounts"
+      }
+    },
+    {
+      "id": "NETWORK_READINESS_ASSESSMENT",
+      "topic": "busy_hour_link_measurement_and_concurrent_call_capacity_verdict",
+      "definition": "Establish whether the site's network can carry the seat count's concurrent calls before quality is ever promised. Measure the internet link's upload and download capacity, latency, jitter and packet loss at the site's busy hour - a quiet-morning speed test says nothing about the dinner rush - and set concurrent-call demand from the seat map against the per-call bandwidth requirement the chosen platform publishes, upload being the side that usually binds. Survey the LAN: PoE budget against the phone count, switch capability for VLANs and QoS, cable plant condition, consumer-grade gear daisy-chained into closets, and the contending traffic that shares the link (guest Wi-Fi, cloud backups, ordering tablets, cameras). The output is a written pass, pass-with-changes, or fail verdict with the change list priced - never a silent hope that it will probably be fine.",
+      "group": "network",
+      "dependencies": ["SITE_DISCOVERY_AUDIT"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["busy-hour link measurement", "concurrent-call demand versus platform-published per-call requirement", "LAN and PoE survey", "written verdict with priced changes"],
+        "excluded": ["performing the QoS configuration", "ISP contract negotiation"]
+      },
+      "pros": [
+        {
+          "claim": "A written verdict before promises protects both margin and reputation",
+          "example": "the restaurant's saturated upload at dinner service is caught in assessment and priced as an ISP upgrade, not discovered as garbled calls on opening weekend",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A conservative verdict can add cost that kills a marginal deal",
+          "example": "requiring a switch replacement at a four-seat office where best-effort would likely have coped prices the project past the competitor",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "testing off-peak and certifying a link that collapses at the busy hour",
+        "counting download while the upload side binds",
+        "PoE budget never checked, discovered when half the phones will not power on install day"
+      ],
+      "acceptance_tests": [
+        "the readiness report contains busy-hour measurements, the concurrent-call demand calculation citing the platform's published per-call requirement, the LAN and PoE findings, and a signed pass / pass-with-changes / fail verdict"
+      ],
+      "revisit_triggers": [
+        "seat count or contending traffic changes after the verdict",
+        "hypercare quality metrics contradict the assessment baseline"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.8, "user_value": 0.8,
+        "technical_complexity": 0.62, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.45, "confidence": 0.66, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.64,
+        "failure_rate": 0.2, "downside_weight": 0.55,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "a measurement contradicted by live experience, or a platform change to its published per-call requirements"
+      }
+    },
+    {
+      "id": "QOS_LAN_CONFIGURATION",
+      "topic": "vlan_dscp_sip_alg_and_edge_device_remediation",
+      "definition": "Configure the network so voice survives contention rather than merely working on a quiet day: a voice VLAN or equivalent separation from data traffic, DSCP marking honored end-to-end across the LAN and prioritized upstream at the router - upstream saturation, not downstream, is the usual call-killer - SIP ALG located and usually disabled on the customer's router where it mangles registrations and causes one-way audio, PoE delivery confirmed against the phone count with the budget arithmetic written down, and device provisioning locked so a phone reset does not fall off the plan. Where the customer's existing router or ISP-supplied gateway cannot do this work, the design either replaces the edge device as a priced change or records the accepted risk in writing with the customer's signature - it never silently hopes.",
+      "group": "network",
+      "dependencies": ["NETWORK_READINESS_ASSESSMENT", "ENDPOINT_STRATEGY"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["voice/data separation", "priority marking and upstream shaping", "SIP ALG handling", "PoE confirmation", "edge-device replace-or-accepted-risk rule"],
+        "excluded": ["the readiness verdict itself", "carrier-side network engineering"]
+      },
+      "pros": [
+        {
+          "claim": "Configured priority keeps the phones working through the traffic the business generates itself",
+          "example": "the office's cloud backup kicking off at four no longer flattens the receptionist's calls once voice is prioritized upstream",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Deep QoS work on customer-owned gear creates a maintenance surface the reseller now implicitly owns",
+          "example": "the customer's IT volunteer resets the router months later, wiping the voice priority rules, and the resulting call complaints land on the reseller",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "SIP ALG left enabled and misdiagnosed for weeks as a platform problem",
+        "DSCP markings stripped at an unmanaged switch nobody surveyed",
+        "QoS configured downstream only while the upload side stays saturated"
+      ],
+      "acceptance_tests": [
+        "the as-built network record shows the separation scheme, the marking and shaping configuration, the SIP ALG disposition, the PoE arithmetic, and either the replaced edge device or the signed accepted-risk note"
+      ],
+      "revisit_triggers": [
+        "hypercare quality metrics degrade against the baseline",
+        "the customer changes router, ISP or switch hardware"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.76, "user_value": 0.8,
+        "technical_complexity": 0.68, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5, "confidence": 0.64, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.82, "evidence_confidence": 0.62,
+        "failure_rate": 0.22, "downside_weight": 0.5,
+        "uncertainty_interval": [0.26, 0.58],
+        "update_signal": "a quality regression traced to network configuration, or an edge-device change at the site"
+      }
+    },
+    {
+      "id": "FAILOVER_CONTINUITY_DESIGN",
+      "topic": "outage_behavior_design_demonstration_and_honest_limits",
+      "definition": "Design what happens when things fail, and demonstrate it rather than describe it. The layers: carrier-level rules that survive total site loss (unreachable-device routing to voicemail, a mobile app, a cell number or an answering service, configured at the platform so they work when the building is dark), automatic forward-to-cell for the numbers that must always answer, an LTE or secondary-WAN backup path where the seat count and the cost of missed calls justify it, and UPS coverage sized for the switch, router and the phones that must ride out short outages. Behavior is proven by pulling the plug in front of the customer and watching where calls land, and what is promised afterward is exactly what the test showed - the no-guaranteed-uptime boundary lives here, because continuity is a designed set of behaviors with limits, not an assurance.",
+      "group": "network",
+      "dependencies": ["NETWORK_READINESS_ASSESSMENT", "HONEST_EXPECTATION_SETTING"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["carrier-level survival routing", "forward-to-cell rules", "backup-WAN and UPS sizing rationale", "pull-the-plug demonstration"],
+        "excluded": ["uptime guarantees", "SLA credit structures of the ongoing contract"]
+      },
+      "pros": [
+        {
+          "claim": "A demonstrated failover turns the scariest VoIP objection into a selling point",
+          "example": "the dispatcher watches the internet drop and driver calls roll to the on-call cell within the same minute, and the objection dissolves",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Full continuity layering can be over-engineering for the customer's actual risk",
+          "example": "an LTE backup and rack UPS quoted for a two-seat office whose calls could simply forward to the owner's cell during rare outages",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "failover configured but never tested, failing during the first real outage",
+        "carrier-level rules absent so a dead site takes calls to nowhere instead of voicemail",
+        "the UPS covering the phones but not the switch that powers them"
+      ],
+      "acceptance_tests": [
+        "the continuity design lists each failure mode with its configured behavior, and a witnessed pull-the-plug test record shows where calls actually landed"
+      ],
+      "revisit_triggers": [
+        "a real outage exposes behavior differing from the test",
+        "the customer's risk profile changes (new hours, new dependence on inbound calls)"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.74, "user_value": 0.8,
+        "technical_complexity": 0.6, "risk_if_wrong": 0.76, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55, "confidence": 0.62, "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.76, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.78, "evidence_confidence": 0.6,
+        "failure_rate": 0.22, "downside_weight": 0.6,
+        "uncertainty_interval": [0.28, 0.6],
+        "update_signal": "an outage event, a platform change to unreachable-routing behavior, or a change in the customer's continuity needs"
+      }
+    },
+    {
+      "id": "E911_CONFIGURATION",
+      "topic": "dispatchable_location_karis_law_ray_baum_class_compliance",
+      "definition": "Treat emergency calling as a hard gate on every deployment, never a checkbox. Every device that can place a call gets a registered dispatchable location - street address plus the floor, suite or room detail responders need to find the caller - and multi-line systems are configured for the Kari's Law class of obligations (direct 911 dialing with no prefix, on-site notification when 911 is dialed) and the RAY BAUM class (dispatchable location conveyed with the call), with the reseller verifying the current requirements for this jurisdiction and platform at deployment time rather than trusting memory of the rules. Softphone and other nomadic users get location-update behavior configured and explained to them, because their registered address is wrong the moment they leave it. Motels get room-level location detail and a front-desk notification review. Verification uses the carrier's sanctioned address-verification test procedure - never casual live 911 calls outside the documented, PSAP-respecting process.",
+      "group": "compliance",
+      "dependencies": ["ENDPOINT_STRATEGY", "SEAT_FEATURE_MAPPING"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["per-device dispatchable location registration", "direct-dial and notification behavior of the Kari's Law class", "location conveyance of the RAY BAUM class", "nomadic-user location behavior", "sanctioned verification procedure"],
+        "excluded": ["legal advice on the statutes themselves", "PSAP-side operations"]
+      },
+      "pros": [
+        {
+          "claim": "Gating go-live on verified E911 protects lives and removes the deployment's worst liability exposure in one move",
+          "example": "the walk finds a softphone seat registered to the office while its user works from home, and the fix ships before cutover instead of after an emergency",
+          "weight": 0.9
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Per-device location work on multi-room premises is slow and easy to resent under schedule pressure",
+          "example": "registering room-level detail across a forty-room motel adds a day nobody budgeted, and the pressure to skip it is real",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "a device left on the platform's default or the reseller's own address",
+        "direct-dial or notification behavior assumed from memory of the rules instead of verified for the current jurisdiction and platform",
+        "softphones deployed with no location-update behavior configured or explained",
+        "verification skipped because the schedule slipped"
+      ],
+      "acceptance_tests": [
+        "every dial-capable device shows a registered dispatchable location, direct-dial and notification behavior is verified against current requirements for the jurisdiction and platform, nomadic seats show configured location-update behavior, and a sanctioned verification record exists per site"
+      ],
+      "revisit_triggers": [
+        "any device moves, is added, or changes user",
+        "the jurisdiction's or platform's emergency-calling requirements change"
+      ],
+      "base": {
+        "criticality": 0.96, "business_value": 0.8, "user_value": 0.9,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.95, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.8, "confidence": 0.66, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.96, "evidence_confidence": 0.64,
+        "failure_rate": 0.18, "downside_weight": 0.9,
+        "uncertainty_interval": [0.2, 0.5],
+        "update_signal": "a change in emergency-calling rules, platform E911 behavior, or any device location at the site"
+      }
+    },
+    {
+      "id": "REGULATORY_FLAG_REGISTER",
+      "topic": "usf_class_consent_class_and_privacy_class_flags_to_verification",
+      "definition": "Keep a live register of the regulatory and tax flags each deployment raises and route every one to qualified verification instead of in-house guessing. USF-class contribution and telecom-tax treatment differs with the channel model - an agent, a reseller of record and a white-label operator carry different obligations - so the firm's actual duties are confirmed by a telecom-tax professional or the platform's compliance resources, never assumed from a forum post. Call-recording features are enabled only after the consent-law class for every jurisdiction the customer calls into is flagged and dispositioned. Healthcare-adjacent customers such as dental practices get privacy-class flags on voicemail-to-email, transcription and recording features. Alarm-line changes are referred to licensed alarm vendors. The register records each flag, its disposition, who verified it and when - it turns 'verify current rules' from a vibe into an auditable artifact the handoff gate can check.",
+      "group": "compliance",
+      "dependencies": ["DEPLOYMENT_SCOPE_FRAME"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["flag classes: USF/telecom-tax, consent-law, healthcare-privacy, life-safety referral", "routing to qualified verifiers", "auditable flag-disposition record"],
+        "excluded": ["rendering the legal or tax opinions themselves", "channel model selection that drives the tax treatment"]
+      },
+      "pros": [
+        {
+          "claim": "A written register makes compliance survivable by ordinary people under deadline pressure",
+          "example": "the recording feature for the trucking dispatcher stays disabled until the register shows the consent-class flag dispositioned, no matter who is in a hurry",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Professional verification costs money and days on deals that feel routine",
+          "example": "holding a small office's recording feature for counsel review reads as bureaucracy to a customer who just wants the button on",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "tax treatment assumed to match a different channel model than the one actually operated",
+        "recording enabled with the consent flag never dispositioned",
+        "flags tracked in someone's head and lost at handoff"
+      ],
+      "acceptance_tests": [
+        "the register lists every flag raised by this deployment with class, disposition, verifier and date, and the handoff gate can read it without asking anyone"
+      ],
+      "revisit_triggers": [
+        "the channel model changes",
+        "a rule class the register cites is amended",
+        "a new feature with regulatory surface is enabled post-deployment"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.72, "user_value": 0.74,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.62, "confidence": 0.64, "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.84, "evidence_confidence": 0.6,
+        "failure_rate": 0.18, "downside_weight": 0.72,
+        "uncertainty_interval": [0.26, 0.58],
+        "update_signal": "a change in the firm's channel model, an amendment in a flagged rule class, or a new regulated feature request"
+      }
+    },
+    {
+      "id": "CUTOVER_RUNBOOK",
+      "topic": "scripted_cutover_day_with_rollback_trigger",
+      "definition": "Script cutover day before it happens rather than improvising it live. The date is chosen against the FOC and the vertical's low-traffic window - never a restaurant on Friday night, never trucking dispatch on Monday at six - and the runbook lays out a timed sequence: confirm port completion, verify inbound per number, walk the call flows, check fax and ATA devices, confirm E911 registrations, with named roles for who executes and who watches, and the customer decision-maker reachable on site. The rollback plan is written next to the sequence, not invented under stress: temporary forwarding back to the losing carrier while that account still lives, the spare analog path if one was kept, and an explicit, pre-agreed trigger condition for invoking rollback. A cutover without a written rollback trigger becomes a hostage negotiation with itself when something breaks at four in the afternoon.",
+      "group": "cutover",
+      "dependencies": ["PORT_ACTIVATION_SEQUENCE", "CALL_FLOW_DESIGN", "QOS_LAN_CONFIGURATION", "E911_CONFIGURATION", "STAFF_TRAINING_PROGRAM"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["date selection against FOC and traffic window", "timed sequence with named roles", "written rollback plan and trigger", "decision-maker presence"],
+        "excluded": ["the port order itself", "post-cutover acceptance testing and hypercare"]
+      },
+      "pros": [
+        {
+          "claim": "A pre-agreed rollback trigger converts a mid-cutover failure from a panic into a procedure",
+          "example": "when inbound verification fails on two numbers at the agreed trigger point, forwarding snaps back to the old carrier and the restaurant takes dinner reservations while the fix runs",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Heavy scripting can over-fit the plan and slow adaptation when reality diverges",
+          "example": "the runbook assumes the port completes by noon; when it lands at three, a team glued to the script burns the window instead of re-sequencing",
+          "weight": 0.54
+        }
+      ],
+      "failure_modes": [
+        "cutover scheduled into the vertical's peak window",
+        "no rollback plan, so a failure strands the business with no working phones in either system",
+        "roles unassigned, so three people fix one problem while nobody watches inbound"
+      ],
+      "acceptance_tests": [
+        "the runbook shows the FOC-anchored date rationale, the timed sequence with named roles, the rollback method and its explicit trigger condition, and the decision-maker's confirmed availability"
+      ],
+      "revisit_triggers": [
+        "the FOC or a gating workstream slips",
+        "a rehearsal or rejection event changes the sequence assumptions"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.84, "user_value": 0.86,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.84,
+        "irreversibility": 0.7, "confidence": 0.66, "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9, "evidence_confidence": 0.62,
+        "failure_rate": 0.22, "downside_weight": 0.7,
+        "uncertainty_interval": [0.24, 0.54],
+        "update_signal": "a date slip, a failed rehearsal assumption, or a change in the rollback path's availability"
+      }
+    },
+    {
+      "id": "ACCEPTANCE_TEST_MATRIX",
+      "topic": "countersigned_proof_the_system_works",
+      "definition": "Prove the system works with a written matrix executed and countersigned, not with a shrug that the phones seem fine. Rows: inbound to every number in the inventory from an outside line, outbound with correct caller-ID name and number per seat, every attendant branch and schedule including the holiday entries, ring groups and overflow behavior, voicemail deposit and delivery for every box, fax send and receive through each ATA, E911 verification per the carrier's sanctioned procedure, the failover demonstration, and the vertical-specific checks - the motel wake-up call, the dental after-hours emergency path, the dispatcher's simultaneous-call load. Each row records expected behavior and observed result; a failed row either blocks handoff or is accepted in writing as a punch-list item with an owner and a date. The countersigned matrix is the deployment's proof-of-work and the support desk's baseline.",
+      "group": "cutover",
+      "dependencies": ["CUTOVER_RUNBOOK", "E911_CONFIGURATION"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["per-number and per-seat test rows", "flow, voicemail, fax, E911 and failover rows", "vertical-specific rows", "countersignature and punch-list capture"],
+        "excluded": ["the hypercare tuning that follows", "load or penetration testing beyond deployment scope"]
+      },
+      "pros": [
+        {
+          "claim": "A countersigned matrix ends the era of 'it never worked' disputes before it starts",
+          "example": "when the motel claims weeks later that faxing never worked, the signed row showing a successful send-receive on cutover day reframes the conversation to what changed since",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Exhaustive testing costs cutover-day hours when everyone wants to go home",
+          "example": "dialing all thirty numbers of a motel's inventory inbound one by one at nine at night tests discipline as much as telephony",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "sampling a few numbers instead of testing all of them, missing the one that did not port",
+        "outbound caller-ID never checked, so the business dials out showing the wrong name for weeks",
+        "failures accepted verbally with no owner or date, evaporating into the punch list"
+      ],
+      "acceptance_tests": [
+        "the matrix covers every inventory number inbound, per-seat outbound caller-ID, every flow branch, every voicemail box, every ATA, E911 verification and failover, and carries the customer countersignature with punch-list items owned and dated"
+      ],
+      "revisit_triggers": [
+        "a punch-list item ages past its date",
+        "any post-cutover change invalidates tested rows"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.8, "user_value": 0.84,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5, "confidence": 0.7, "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86, "evidence_confidence": 0.64,
+        "failure_rate": 0.16, "downside_weight": 0.55,
+        "uncertainty_interval": [0.2, 0.48],
+        "update_signal": "a defect escaping the matrix into hypercare, or a new row class needed by a vertical"
+      }
+    },
+    {
+      "id": "STAFF_TRAINING_PROGRAM",
+      "topic": "role_based_pre_cutover_training_and_adoption",
+      "definition": "Train by role before cutover day, never during it. Front-desk and reception staff get deep hands-on practice - transfer, hold versus park, ring-group behavior, retrieving from the queue - because they touch every caller the business has; everyone else gets the five moves their job needs plus a one-page quick reference taped where they actually work; owners and managers get the admin portal tour: changing hours, recording a holiday greeting, pulling a call log. Voicemail boxes are personalized during the session itself so no caller ever reaches an unconfigured box. Adoption is the true deliverable: a technically perfect system the staff cannot drive reads as a failed project, generates the day-one ticket flood the support desk inherits, and poisons the renewal conversation years early.",
+      "group": "cutover",
+      "dependencies": ["CALL_FLOW_DESIGN", "ENDPOINT_STRATEGY"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["role-tiered curriculum", "hands-on practice on the real system", "in-session voicemail personalization", "quick-reference artifacts", "admin-portal owner training"],
+        "excluded": ["ongoing refresher training in the support relationship", "call-handling script consulting"]
+      },
+      "pros": [
+        {
+          "claim": "Pre-cutover training absorbs the panic that otherwise becomes day-one support tickets",
+          "example": "the receptionist who practiced park-and-page on Thursday handles Monday's first rush without a single help call",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Training scheduled around a busy staff's shifts can delay the cutover it gates",
+          "example": "a restaurant that cannot assemble its staff outside service hours pushes training out a week and the cutover with it",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "training compressed into cutover morning while the team fights fires",
+        "one generic session for every role, too shallow for the front desk and too long for everyone else",
+        "voicemail personalization left as homework nobody does"
+      ],
+      "acceptance_tests": [
+        "a training record shows each role's session completed before cutover, voicemail boxes personalized in-session, quick references placed, and the owner able to change hours and greetings unaided"
+      ],
+      "revisit_triggers": [
+        "staff turnover before or shortly after cutover",
+        "a call-flow change that invalidates trained behavior"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.76, "user_value": 0.86,
+        "technical_complexity": 0.38, "risk_if_wrong": 0.66, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.35, "confidence": 0.7, "node_conflict_pressure": 0.36,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.78, "evidence_confidence": 0.62,
+        "failure_rate": 0.18, "downside_weight": 0.42,
+        "uncertainty_interval": [0.24, 0.52],
+        "update_signal": "adoption friction observed in hypercare or turnover in trained roles"
+      }
+    },
+    {
+      "id": "HYPERCARE_STABILIZATION",
+      "topic": "post_cutover_ownership_window_and_live_traffic_tuning",
+      "definition": "Own the first weeks after cutover as part of the deployment, not as early support. Hypercare means heightened availability with a direct line to the deploying technician rather than the general queue, a daily punch-list sweep through week one, monitoring of the registration and call-quality indicators the platform exposes - quality scores and jitter and loss trends read against the readiness baseline - and a deliberate tuning pass on ring-group timing, attendant options and overflow behavior informed by live traffic, which always differs from what the design predicted. Hypercare ends at a scheduled review that either extends it with named reasons or hands off formally; it never just fades out. The window exists because the first weeks decide whether the account starts loyal or resentful, and because real callers expose what no test matrix can.",
+      "group": "handoff",
+      "dependencies": ["ACCEPTANCE_TEST_MATRIX", "CUTOVER_RUNBOOK"],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["direct-line availability window", "daily punch-list sweeps", "quality monitoring against baseline", "live-traffic tuning pass", "scheduled end-of-hypercare review"],
+        "excluded": ["the steady-state support model and its economics", "churn management of the ongoing account"]
+      },
+      "pros": [
+        {
+          "claim": "Live-traffic tuning fixes the designs that were plausible on paper and wrong in practice",
+          "example": "week-one traffic shows lunch calls overflowing to a voicemail nobody checks, and the overflow moves to the manager's cell before the customer ever complains",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "An open-ended hypercare window trains the customer to bypass the support process forever",
+          "example": "a motel owner still texting the installing technician at month four because hypercare never formally ended",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "hypercare skipped, so week-one friction hits a support desk with no context",
+        "quality indicators unmonitored, letting a degrading trend hide until the customer notices",
+        "no end review, so the window fades into permanent free escalation"
+      ],
+      "acceptance_tests": [
+        "the hypercare record shows the availability window honored, daily sweeps in week one, quality trends read against the readiness baseline, tuning changes logged, and the end review held with its outcome recorded"
+      ],
+      "revisit_triggers": [
+        "quality trends degrade against baseline",
+        "punch-list items recur after being closed"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.78, "user_value": 0.84,
+        "technical_complexity": 0.48, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4, "confidence": 0.66, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8, "evidence_confidence": 0.62,
+        "failure_rate": 0.2, "downside_weight": 0.48,
+        "uncertainty_interval": [0.26, 0.56],
+        "update_signal": "quality-trend movement, punch-list recurrence, or a change in the handoff contract with support"
+      }
+    },
+    {
+      "id": "DEPLOYMENT_HANDOFF_GATE",
+      "topic": "definition_of_done_and_documented_transition_to_support",
+      "definition": "Gate the transition from project to recurring service on a definition-of-done, because what crosses this line becomes the support desk's inheritance. Pass conditions: all port orders complete and confirmed per number; the acceptance matrix countersigned with its punch list resolved or formally accepted; E911 registrations verified and documented; the regulatory flag register clean or professionally dispositioned; as-built documentation delivered - the number inventory with dispositions, the seat map, call-flow diagrams, network configuration including QoS and failover settings, and the device inventory with credentials handled per the firm's security policy; training completion recorded; and a handoff briefing held so the support desk receives context instead of a mystery box. A gate that fails is held open with the missing items named and dated - never waved through because the invoice wants to close.",
+      "group": "handoff",
+      "dependencies": ["HYPERCARE_STABILIZATION", "ACCEPTANCE_TEST_MATRIX", "REGULATORY_FLAG_REGISTER"],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": ["explicit pass conditions", "as-built documentation contract", "support handoff briefing", "hold-open-with-named-items rule"],
+        "excluded": ["the ongoing support operation itself", "renewal and expansion management"]
+      },
+      "pros": [
+        {
+          "claim": "A documented gate is the difference between a support desk that fixes and one that re-discovers",
+          "example": "six months later a new technician resolves a routing complaint in minutes from the as-built call-flow diagram instead of reverse-engineering the tree live",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A strict gate can hold revenue recognition hostage to paperwork on a system that genuinely works",
+          "example": "the final invoice waits on a missing wiring diagram while the customer has been happily taking calls for three weeks",
+          "weight": 0.52
+        }
+      ],
+      "failure_modes": [
+        "the gate waved through under billing pressure with the punch list quietly open",
+        "as-built documentation reconstructed months later from memory instead of captured during the build",
+        "no handoff briefing, so support meets the account for the first time inside an angry ticket"
+      ],
+      "acceptance_tests": [
+        "every pass condition has evidence attached (port confirmations, countersigned matrix, E911 records, flag register, as-built set, training record, briefing note), and any failed condition is named with an owner and date while the gate holds"
+      ],
+      "revisit_triggers": [
+        "the support side reports missing or wrong as-built information",
+        "the definition-of-done contract with the recurring-service side changes"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.82, "user_value": 0.78,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.86,
+        "irreversibility": 0.55, "confidence": 0.7, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86, "evidence_confidence": 0.64,
+        "failure_rate": 0.16, "downside_weight": 0.55,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "support-side feedback on handoff quality or a change in the definition-of-done contract"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "DEPLOYMENT_SCOPE_FRAME",
+      "to": "SITE_DISCOVERY_AUDIT",
+      "edge_type": "dependency",
+      "why_related": "discovery runs inside the charter's scope and feeds the success criteria the charter names",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "DEPLOYMENT_SCOPE_FRAME",
+      "to": "HONEST_EXPECTATION_SETTING",
+      "edge_type": "dependency",
+      "why_related": "expectations are set against the charter's written success criteria and workstream timelines",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "SITE_DISCOVERY_AUDIT",
+      "to": "ANALOG_DEPENDENCY_SURVEY",
+      "edge_type": "dependency",
+      "why_related": "the analog survey works from the lines, closet and bills the discovery walk captured",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "SITE_DISCOVERY_AUDIT",
+      "to": "SEAT_FEATURE_MAPPING",
+      "edge_type": "dependency",
+      "why_related": "the seat map is built from the roles, places and answering behavior discovery recorded",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SITE_DISCOVERY_AUDIT",
+      "to": "NUMBER_INVENTORY_AUDIT",
+      "edge_type": "dependency",
+      "why_related": "the collected bills are a primary source the number inventory reconciles against",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "SITE_DISCOVERY_AUDIT",
+      "to": "NETWORK_READINESS_ASSESSMENT",
+      "edge_type": "dependency",
+      "why_related": "the readiness assessment measures the link and LAN the discovery walk inventoried",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "SEAT_FEATURE_MAPPING",
+      "to": "VERTICAL_DEPLOYMENT_PATTERNS",
+      "edge_type": "dependency",
+      "why_related": "the vertical template is selected and overridden against the observed seat map",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "SEAT_FEATURE_MAPPING",
+      "to": "ENDPOINT_STRATEGY",
+      "edge_type": "dependency",
+      "why_related": "device decisions are made per seat in the map, not globally for the site",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "ANALOG_DEPENDENCY_SURVEY",
+      "to": "ENDPOINT_STRATEGY",
+      "edge_type": "dependency",
+      "why_related": "analog dispositions decide which devices need ATAs, kept copper, or purpose-built replacements",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "SEAT_FEATURE_MAPPING",
+      "to": "CALL_FLOW_DESIGN",
+      "edge_type": "dependency",
+      "why_related": "ring groups, boxes and destinations are drawn from the confirmed seat map",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "NUMBER_INVENTORY_AUDIT",
+      "to": "PORT_ORDER_PREPARATION",
+      "edge_type": "dependency",
+      "why_related": "the frozen countersigned inventory is the number list the port order carries",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "PORT_ORDER_PREPARATION",
+      "to": "PORT_REJECTION_RECOVERY",
+      "edge_type": "dependency",
+      "why_related": "recovery corrects the specific prepared elements a rejection names",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "PORT_ORDER_PREPARATION",
+      "to": "PORT_ACTIVATION_SEQUENCE",
+      "edge_type": "dependency",
+      "why_related": "activation sequencing keys off the FOC the accepted order produces",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "NETWORK_READINESS_ASSESSMENT",
+      "to": "QOS_LAN_CONFIGURATION",
+      "edge_type": "dependency",
+      "why_related": "QoS work implements the change list the readiness verdict priced",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "ENDPOINT_STRATEGY",
+      "to": "E911_CONFIGURATION",
+      "edge_type": "dependency",
+      "why_related": "each chosen device type - desk phone, softphone, ATA - carries its own dispatchable-location behavior to configure",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "PORT_ACTIVATION_SEQUENCE",
+      "to": "CUTOVER_RUNBOOK",
+      "edge_type": "dependency",
+      "why_related": "the runbook wraps the activation sequence in date choice, roles and rollback",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CALL_FLOW_DESIGN",
+      "to": "CUTOVER_RUNBOOK",
+      "edge_type": "dependency",
+      "why_related": "the runbook's flow-walk steps execute the approved call-flow design",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "QOS_LAN_CONFIGURATION",
+      "to": "CUTOVER_RUNBOOK",
+      "edge_type": "dependency",
+      "why_related": "cutover assumes the network work is complete, or its runbook inherits open risk",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "CUTOVER_RUNBOOK",
+      "to": "ACCEPTANCE_TEST_MATRIX",
+      "edge_type": "dependency",
+      "why_related": "the matrix executes against the live system the runbook produced",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "E911_CONFIGURATION",
+      "to": "ACCEPTANCE_TEST_MATRIX",
+      "edge_type": "dependency",
+      "why_related": "the matrix's E911 rows verify the registrations the configuration created",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "CALL_FLOW_DESIGN",
+      "to": "STAFF_TRAINING_PROGRAM",
+      "edge_type": "dependency",
+      "why_related": "training teaches the flows as designed; an untrained flow is a flow that fails",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "ACCEPTANCE_TEST_MATRIX",
+      "to": "HYPERCARE_STABILIZATION",
+      "edge_type": "dependency",
+      "why_related": "hypercare works the punch list the matrix produced and monitors what it certified",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "HYPERCARE_STABILIZATION",
+      "to": "DEPLOYMENT_HANDOFF_GATE",
+      "edge_type": "dependency",
+      "why_related": "the gate's end-of-hypercare review is the moment the transition decision is made",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "REGULATORY_FLAG_REGISTER",
+      "to": "DEPLOYMENT_HANDOFF_GATE",
+      "edge_type": "dependency",
+      "why_related": "the gate reads the flag register and holds on any undispositioned flag",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "HONEST_EXPECTATION_SETTING",
+      "to": "FAILOVER_CONTINUITY_DESIGN",
+      "edge_type": "constraint",
+      "why_related": "continuity language is bounded to what the tested design and published platform commitments support - no guaranteed-uptime claims",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "REGULATORY_FLAG_REGISTER",
+      "to": "E911_CONFIGURATION",
+      "edge_type": "constraint",
+      "why_related": "E911 work proceeds only against verified-current requirements, not remembered ones; the register records who verified and when",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "HONEST_EXPECTATION_SETTING",
+      "to": "PORT_ACTIVATION_SEQUENCE",
+      "edge_type": "constraint",
+      "why_related": "no hard port or cutover date is promised to the customer before the FOC exists",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "E911_CONFIGURATION",
+      "to": "CUTOVER_RUNBOOK",
+      "edge_type": "constraint",
+      "why_related": "no go-live while any device lacks a verified dispatchable location - the runbook cannot schedule around this gate",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "ANALOG_DEPENDENCY_SURVEY",
+      "to": "PORT_ORDER_PREPARATION",
+      "edge_type": "sequence",
+      "why_related": "every analog disposition is recorded before any port or disconnect order is drafted, so the order's scope cannot orphan a live device",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "STAFF_TRAINING_PROGRAM",
+      "to": "CUTOVER_RUNBOOK",
+      "edge_type": "sequence",
+      "why_related": "training completes before cutover day; the runbook assumes staff who already know the system",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "NETWORK_READINESS_ASSESSMENT",
+      "to": "ENDPOINT_STRATEGY",
+      "edge_type": "causal",
+      "why_related": "readiness findings - no PoE budget, weak Wi-Fi, saturated upload - directly change which devices are viable per seat",
+      "relation_strength": 0.7,
+      "causal_confidence": 0.72
+    },
+    {
+      "from": "PORT_REJECTION_RECOVERY",
+      "to": "CUTOVER_RUNBOOK",
+      "edge_type": "causal",
+      "why_related": "a rejection-driven FOC rebaseline moves the cutover date and everything scheduled against it",
+      "relation_strength": 0.68,
+      "causal_confidence": 0.74
+    },
+    {
+      "from": "HYPERCARE_STABILIZATION",
+      "to": "CALL_FLOW_DESIGN",
+      "edge_type": "feedback",
+      "why_related": "live-traffic observations from hypercare drive the tuning pass on attendant options, ring timing and overflow",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "HYPERCARE_STABILIZATION",
+      "to": "QOS_LAN_CONFIGURATION",
+      "edge_type": "feedback",
+      "why_related": "quality trends read against the readiness baseline send the deployment back into network configuration when they degrade",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "ENDPOINT_STRATEGY",
+      "to": "QOS_LAN_CONFIGURATION",
+      "edge_type": "conflict",
+      "why_related": "reusing the customer's devices and edge gear saves quote money but strips the reseller of the network control that call quality depends on",
+      "relation_strength": 0.66,
+      "resolution_rule": "the readiness verdict wins: reuse is allowed only for seats and gear that pass the assessment, and where the customer insists on failing gear the accepted risk is signed in writing or the deal is declined"
+    },
+    {
+      "from": "CUTOVER_RUNBOOK",
+      "to": "PORT_ACTIVATION_SEQUENCE",
+      "edge_type": "conflict",
+      "why_related": "the customer's preferred cutover date and the FOC the losing carrier grants routinely disagree",
+      "relation_strength": 0.64,
+      "resolution_rule": "the FOC governs; the cutover date moves to it, temporary forwarding bridges any customer-facing gap, and no runbook date is communicated as firm before the FOC exists"
+    },
+    {
+      "from": "VERTICAL_DEPLOYMENT_PATTERNS",
+      "to": "SEAT_FEATURE_MAPPING",
+      "edge_type": "conflict",
+      "why_related": "the template's economical defaults and the site's observed reality pull the seat map in different directions",
+      "relation_strength": 0.6,
+      "resolution_rule": "the per-site map overrides the template on any observed difference; when the same override recurs across deployments, the template itself is amended"
+    },
+    {
+      "from": "HYPERCARE_STABILIZATION",
+      "to": "DEPLOYMENT_HANDOFF_GATE",
+      "edge_type": "conflict",
+      "why_related": "billing close-out pressure pushes to end hypercare while open punch-list items push to extend it",
+      "relation_strength": 0.62,
+      "resolution_rule": "the gate's pass conditions win: hypercare extends with named items, owners and dates, and the gate is never waved through for invoice convenience"
+    },
+    {
+      "from": "ANALOG_DEPENDENCY_SURVEY",
+      "to": "NUMBER_INVENTORY_AUDIT",
+      "edge_type": "similarity",
+      "why_related": "both are hidden-asset audits of the legacy account - one hunts devices riding the copper, the other hunts numbers riding the bill - and both must freeze before porting paperwork starts",
+      "relation_strength": 0.6
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "cutover_speed_vs_port_certainty",
+      "description": "The customer wants the new system on a date convenient to them; the port completes on the date the losing carrier grants, and pushing cutover ahead of port certainty risks the number itself.",
+      "poles": ["cut over when the customer wants", "cut over when the port is certain"],
+      "resolution_hint": "the FOC governs every date; bridging tactics absorb the customer-facing wait, and no date is spoken as firm before FOC",
+      "affected_nodes": ["PORT_ACTIVATION_SEQUENCE", "CUTOVER_RUNBOOK", "PORT_ORDER_PREPARATION"]
+    },
+    {
+      "name": "hardware_margin_vs_right_sized_endpoints",
+      "description": "New phones at every seat maximize install revenue; softphones and tested reuse right-size the quote but shrink the hardware line the deployment margin lives on.",
+      "poles": ["sell new hardware everywhere", "deploy the cheapest device that serves the seat"],
+      "resolution_hint": "decide per seat from the map; win the account with honest sizing and let margin come from work actually needed",
+      "affected_nodes": ["ENDPOINT_STRATEGY", "SEAT_FEATURE_MAPPING", "HONEST_EXPECTATION_SETTING"]
+    },
+    {
+      "name": "template_efficiency_vs_site_truth",
+      "description": "Vertical templates make the tenth dental office fast and consistent, but every site deviates somewhere, and a trusted template quietly ships its assumptions over observed reality.",
+      "poles": ["deploy the proven vertical pattern", "design from this site's observed facts"],
+      "resolution_hint": "template as starting draft, site walk as authority; recurring overrides amend the template",
+      "affected_nodes": ["VERTICAL_DEPLOYMENT_PATTERNS", "SEAT_FEATURE_MAPPING", "CALL_FLOW_DESIGN"]
+    },
+    {
+      "name": "network_control_vs_customer_gear_reuse",
+      "description": "Quality is easiest to defend on gear the reseller controls; the customer's existing router, switches and wiring are cheaper but carry SIP ALG surprises, PoE gaps and reset-prone configs.",
+      "poles": ["replace the edge and own the path", "reuse what the customer has"],
+      "resolution_hint": "readiness verdict decides per component; failing gear is replaced as a priced change or its risk accepted in writing",
+      "affected_nodes": ["QOS_LAN_CONFIGURATION", "NETWORK_READINESS_ASSESSMENT", "ENDPOINT_STRATEGY"]
+    },
+    {
+      "name": "continuity_assurance_vs_honest_claims",
+      "description": "Customers want to hear the phones will never go down; the truthful offer is designed failover behavior with demonstrated limits, which sells worse than a guarantee.",
+      "poles": ["promise continuity to close", "state only tested behavior"],
+      "resolution_hint": "demonstrate the failover live and put in writing exactly what the test showed; no uptime language beyond the platform's own published commitments",
+      "affected_nodes": ["FAILOVER_CONTINUITY_DESIGN", "HONEST_EXPECTATION_SETTING"]
+    },
+    {
+      "name": "compliance_rigor_vs_deployment_margin",
+      "description": "Per-device dispatchable locations, verified current rules and professionally dispositioned flags cost unbilled hours on every job; skipping them fattens margin until the day it destroys the firm.",
+      "poles": ["full compliance work on every deployment", "compress compliance to protect margin"],
+      "resolution_hint": "E911 and flag dispositions are non-negotiable gates priced into every job; margin is recovered elsewhere, never here",
+      "affected_nodes": ["E911_CONFIGURATION", "REGULATORY_FLAG_REGISTER", "DEPLOYMENT_HANDOFF_GATE"]
+    },
+    {
+      "name": "feature_richness_vs_adoption_capacity",
+      "description": "The platform offers more features than any small business can absorb; enabling everything demonstrates value on paper but drowns training and produces a staff that trusts nothing.",
+      "poles": ["enable the full feature surface", "enable what the staff can actually drive"],
+      "resolution_hint": "map features to roles, train the mapped set deeply, and stage later features into the recurring relationship",
+      "affected_nodes": ["SEAT_FEATURE_MAPPING", "STAFF_TRAINING_PROGRAM", "CALL_FLOW_DESIGN"]
+    },
+    {
+      "name": "parallel_run_safety_vs_double_cost",
+      "description": "Keeping the losing service alive through porting and stabilization is the only safe sequence, but the customer pays two carriers for the overlap and pressures for early cancellation.",
+      "poles": ["hold the old service until everything is confirmed", "cancel early and stop the double bill"],
+      "resolution_hint": "never cancel before per-number confirmation; explain the overlap as the price of the number's safety at expectation-setting time",
+      "affected_nodes": ["PORT_ACTIVATION_SEQUENCE", "HONEST_EXPECTATION_SETTING", "CUTOVER_RUNBOOK"]
+    },
+    {
+      "name": "project_closure_vs_stabilization_completeness",
+      "description": "The books want the project closed and invoiced; the account wants hypercare, punch-list closure and complete as-builts, and closing early converts open items into support-desk mysteries.",
+      "poles": ["close and bill at cutover", "close only through the handoff gate"],
+      "resolution_hint": "the gate's evidence-backed pass conditions decide; failed conditions hold the gate with named items and dates",
+      "affected_nodes": ["DEPLOYMENT_HANDOFF_GATE", "HYPERCARE_STABILIZATION", "ACCEPTANCE_TEST_MATRIX"]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "The port completes and the losing carrier disconnects the whole account - including the DSL internet riding a voice line - taking the business's phones and internet down together",
+      "trigger": "a full-account port or cancellation with a data service riding the voice account",
+      "affected_nodes": ["ANALOG_DEPENDENCY_SURVEY", "PORT_ORDER_PREPARATION"],
+      "mitigation": "the analog survey flags account-riding services before the order is drafted, and the order explicitly scopes what remains; internet delivery is re-homed before any copper disconnect",
+      "severity": "high"
+    },
+    {
+      "description": "A fire or burglar alarm panel dialer rides a copper line scheduled for disconnect, and monitoring goes silently dead after cutover",
+      "trigger": "an alarm dialer on the legacy line missed or ATA'd instead of referred",
+      "affected_nodes": ["ANALOG_DEPENDENCY_SURVEY", "REGULATORY_FLAG_REGISTER"],
+      "mitigation": "life-safety lines get a named referral to the alarm vendor with the migration confirmed complete before the disconnect order exists; the flag register holds the gate until dispositioned",
+      "severity": "high"
+    },
+    {
+      "description": "The port order rejects repeatedly because the losing account still carries the business's previous owner as the authorized name",
+      "trigger": "a business sold or restructured without updating the carrier account",
+      "affected_nodes": ["PORT_ORDER_PREPARATION", "PORT_REJECTION_RECOVERY"],
+      "mitigation": "the CSR pull exposes the stale authorization early; the customer corrects account authority with the losing carrier before the LOA is submitted",
+      "severity": "high"
+    },
+    {
+      "description": "A partial port moves the main number but strands the hunt-group rollover members, so busy-hour callers get dead air on the old carrier",
+      "trigger": "porting the lead number without the hunt members the CSR shows",
+      "affected_nodes": ["NUMBER_INVENTORY_AUDIT", "PORT_ACTIVATION_SEQUENCE"],
+      "mitigation": "the inventory captures hunt membership from the CSR and the port order carries the group whole or dispositions each member explicitly",
+      "severity": "high"
+    },
+    {
+      "description": "A softphone user dials 911 from home while the seat's registered dispatchable location is the office across town",
+      "trigger": "nomadic use with no location-update behavior configured or explained",
+      "affected_nodes": ["E911_CONFIGURATION", "ENDPOINT_STRATEGY"],
+      "mitigation": "every softphone seat gets location-update behavior configured, the user briefed on it, and the arrangement recorded in the E911 verification record",
+      "severity": "high"
+    },
+    {
+      "description": "A motel's room phones require a dial-out prefix to reach 911, or the front desk never learns a guest dialed it",
+      "trigger": "multi-line configuration that predates or ignores the direct-dial and notification obligation class",
+      "affected_nodes": ["E911_CONFIGURATION", "VERTICAL_DEPLOYMENT_PATTERNS"],
+      "mitigation": "the motel template forces a room-phone 911 review: direct dialing verified with no prefix, notification behavior configured and tested per current requirements",
+      "severity": "high"
+    },
+    {
+      "description": "The restaurant's ordering tablets and guest Wi-Fi saturate the upload at dinner rush and calls turn to garble at the exact hour the business lives on",
+      "trigger": "readiness measured off-peak while contending traffic peaks with the business",
+      "affected_nodes": ["NETWORK_READINESS_ASSESSMENT", "QOS_LAN_CONFIGURATION"],
+      "mitigation": "measure at the busy hour, price the upstream fix in the verdict, and prioritize voice upstream before cutover rather than after complaints",
+      "severity": "medium"
+    },
+    {
+      "description": "The customer cancels the old carrier the day the new phones arrive, before any port completes, and the numbers head toward disconnection instead of porting",
+      "trigger": "double-bill resentment plus nobody stating the never-cancel-first rule",
+      "affected_nodes": ["PORT_ACTIVATION_SEQUENCE", "HONEST_EXPECTATION_SETTING"],
+      "mitigation": "the rule and its reason are stated at expectation setting and repeated at every date conversation; if cancellation already happened, the losing carrier is engaged immediately while the account can still be restored",
+      "severity": "high"
+    },
+    {
+      "description": "The dental office's after-hours emergency calls route to a voicemail box nobody personalized or checks, and a weekend emergency goes unanswered",
+      "trigger": "an after-hours path terminating at an unowned box",
+      "affected_nodes": ["CALL_FLOW_DESIGN", "ACCEPTANCE_TEST_MATRIX"],
+      "mitigation": "the path-completeness rule assigns every terminal box an owner, training personalizes it in-session, and the matrix dials the after-hours path explicitly",
+      "severity": "medium"
+    },
+    {
+      "description": "The office fax behind an ATA works in testing but fails intermittently on the insurance claims the practice depends on",
+      "trigger": "fax-over-VoIP sensitivity to jitter and codec handling",
+      "affected_nodes": ["ANALOG_DEPENDENCY_SURVEY", "ENDPOINT_STRATEGY", "HYPERCARE_STABILIZATION"],
+      "mitigation": "set fax expectations honestly at disposition time, tune the ATA per the platform's fax guidance, monitor through hypercare, and offer the e-fax path where reliability matters more than the machine",
+      "severity": "medium"
+    },
+    {
+      "description": "Cutover lands in the vertical's peak window - dispatch on Monday morning - and a minor glitch becomes a business-stopping event",
+      "trigger": "date chosen for installer convenience instead of the traffic calendar",
+      "affected_nodes": ["CUTOVER_RUNBOOK", "VERTICAL_DEPLOYMENT_PATTERNS"],
+      "mitigation": "the runbook selects the vertical's low-traffic window and the template records what that window is for each niche",
+      "severity": "medium"
+    },
+    {
+      "description": "Week one after cutover, the untrained front desk misroutes every transfer and the staff revolts against the new system",
+      "trigger": "training compressed into cutover morning or skipped for schedule",
+      "affected_nodes": ["STAFF_TRAINING_PROGRAM", "HYPERCARE_STABILIZATION"],
+      "mitigation": "training is a sequenced gate before cutover; hypercare's first sweep watches the front desk specifically and retrains on the spot where friction shows",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "Charter the deployment and set expectations",
+      "node_ref": "DEPLOYMENT_SCOPE_FRAME",
+      "description": "Write the success criteria, name workstream owners and the customer decision-maker, and set verifiable expectations on dates, outages and savings",
+      "artifact": "deployment charter with expectation record",
+      "gate": "success criteria, owners, decision-maker and the verified-basis rule for every claim are on paper"
+    },
+    {
+      "action": "Walk the site and collect the bills",
+      "node_ref": "SITE_DISCOVERY_AUDIT",
+      "description": "Inventory handsets, answering behavior, closet, LAN, internet and every carrier bill",
+      "artifact": "site survey document",
+      "gate": "handset map, answering notes, closet photos and a complete bill set exist"
+    },
+    {
+      "action": "Survey analog dependencies and disposition each",
+      "node_ref": "ANALOG_DEPENDENCY_SURVEY",
+      "description": "Find every non-voice device on the copper and the account; assign keep, ATA, migrate or confirm-dead; refer life-safety lines",
+      "artifact": "analog disposition record",
+      "gate": "every line has a device or a nothing-rides-here finding; life-safety devices carry named vendor referrals"
+    },
+    {
+      "action": "Build and freeze the number inventory",
+      "node_ref": "NUMBER_INVENTORY_AUDIT",
+      "description": "Reconcile bills, CSR, dialing tests and public listings into a port/leave/release list the customer countersigns",
+      "artifact": "frozen countersigned number inventory",
+      "gate": "every number carries a source citation and class; the freeze predates the LOA"
+    },
+    {
+      "action": "Map seats and features against the vertical pattern",
+      "node_ref": "SEAT_FEATURE_MAPPING",
+      "description": "Assign seat types and role-based features, applying the vertical template and recording every override",
+      "artifact": "seat and feature map with template overrides",
+      "gate": "every person and place appears once; recording features carry consent-class flags; overrides are named"
+    },
+    {
+      "action": "Decide endpoints per seat",
+      "node_ref": "ENDPOINT_STRATEGY",
+      "description": "Choose new phone, softphone or bench-tested reuse per seat, with ATA caveats and E911 notes attached",
+      "artifact": "per-seat device plan",
+      "gate": "every reuse promise cites a bench test; every softphone seat carries its location-behavior note"
+    },
+    {
+      "action": "Design and dial-review the call flows",
+      "node_ref": "CALL_FLOW_DESIGN",
+      "description": "Build attendants, schedules, groups and overflow so every number has a destination and every path terminates",
+      "artifact": "call-flow design with destination table",
+      "gate": "destination table covers the full inventory and the dial-through review with the decision-maker is done"
+    },
+    {
+      "action": "Assess the network and configure QoS and failover",
+      "node_ref": "QOS_LAN_CONFIGURATION",
+      "description": "Measure at busy hour, issue the verdict, then implement separation, priority, SIP-ALG and PoE fixes plus the continuity design with its plug-pull test",
+      "artifact": "readiness verdict plus as-built network and continuity record",
+      "gate": "verdict signed; QoS as-built recorded; failover demonstrated and its observed behavior written down"
+    },
+    {
+      "action": "Prepare and submit the port orders",
+      "node_ref": "PORT_ORDER_PREPARATION",
+      "description": "Reconcile LOA and order against a fresh CSR, clear PINs, freezes and pending orders, disposition partial-port consequences, submit and track to FOC",
+      "artifact": "submitted port order with CSR reconciliation record",
+      "gate": "order matches the CSR line-by-line and every number's consequence is dispositioned"
+    },
+    {
+      "action": "Configure and verify E911 with flags dispositioned",
+      "node_ref": "E911_CONFIGURATION",
+      "description": "Register dispatchable locations per device, verify direct-dial and notification behavior against current rules, configure nomadic location updates, run the sanctioned verification, and disposition the regulatory register",
+      "artifact": "E911 verification record and updated flag register",
+      "gate": "every dial-capable device verified; the register shows verifier and date on every flag"
+    },
+    {
+      "action": "Train the staff by role",
+      "node_ref": "STAFF_TRAINING_PROGRAM",
+      "description": "Run role-tiered sessions before cutover, personalize voicemail in-session, place quick references, train the owner on the portal",
+      "artifact": "training completion record",
+      "gate": "every role trained before cutover day and every voicemail box personalized"
+    },
+    {
+      "action": "Execute cutover, prove it, stabilize it, and hand off",
+      "node_ref": "DEPLOYMENT_HANDOFF_GATE",
+      "description": "Run the runbook on the FOC-anchored date with rollback armed, execute the countersigned acceptance matrix, hold the hypercare window with its tuning pass, and pass the handoff gate on evidence",
+      "artifact": "executed runbook, countersigned matrix, hypercare record, as-built documentation set",
+      "gate": "every gate pass condition holds with evidence attached, or the gate is held open with named items and dates"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "E911 verification dominates every schedule and margin pressure",
+      "rationale": "an emergency call that fails or misdirects is a human catastrophe and an existential liability; no deadline outranks it",
+      "trigger": "any pressure to go live with unverified dispatchable locations or unconfirmed notification behavior",
+      "action": "hold the cutover until the E911 verification record is complete"
+    },
+    {
+      "rule": "The FOC dominates every preferred date",
+      "rationale": "the losing carrier's commitment is the only real date in the project; everything else is scheduling fiction",
+      "trigger": "a customer, salesperson or installer proposes a firm date before FOC",
+      "action": "communicate ranges until FOC, then anchor the runbook to it"
+    },
+    {
+      "rule": "Never-cancel-before-confirmation dominates double-bill complaints",
+      "rationale": "a canceled account can turn a port into a disconnection and cost the business its number permanently",
+      "trigger": "the customer moves to cancel the losing service before per-number confirmation",
+      "action": "stop the cancellation, restate the rule and its reason, and revisit only after every number is confirmed live"
+    },
+    {
+      "rule": "Analog disposition completeness dominates copper cancellation",
+      "rationale": "an undispositioned device on a dropped line means a dead alarm, fax or terminal discovered by failure",
+      "trigger": "a disconnect order is drafted while any line lacks a disposition",
+      "action": "hold the order until the survey shows every line dispositioned and life-safety referrals confirmed"
+    },
+    {
+      "rule": "The verified basis dominates the persuasive claim",
+      "rationale": "an uptime or savings promise without a tested or documented basis is a churn seed and a liability, whatever it closes today",
+      "trigger": "any customer-facing claim about dates, savings or continuity lacking its source",
+      "action": "restate the claim to what the FOC, the bills, the failover test or the platform's published commitments support"
+    },
+    {
+      "rule": "The readiness verdict dominates reuse economics",
+      "rationale": "call quality on a failing network becomes the reseller's reputation regardless of whose gear failed",
+      "trigger": "quote pressure to reuse edge gear or links the assessment failed",
+      "action": "replace as a priced change or take a signed accepted-risk note; silent hope is not an option"
+    },
+    {
+      "rule": "The site map dominates the vertical template",
+      "rationale": "templates encode last site's truth; this site's walk encodes this site's",
+      "trigger": "the template and observed site facts disagree on a seat, flow or compliance item",
+      "action": "apply the observed fact, record the override, and amend the template if the override recurs"
+    },
+    {
+      "rule": "Qualified verification dominates in-house regulatory guessing",
+      "rationale": "USF-class, consent-class and privacy-class exposure is firm-level and model-dependent; a confident guess is still a guess",
+      "trigger": "a regulatory or tax question answered internally without a professional or platform-compliance source",
+      "action": "route the flag to the qualified verifier and record the disposition in the register"
+    },
+    {
+      "rule": "Gate evidence dominates close-out pressure",
+      "rationale": "an unearned handoff converts deployment debts into support-desk mysteries at interest",
+      "trigger": "billing or utilization pressure to close a deployment with failed pass conditions",
+      "action": "hold the gate open with named items, owners and dates until evidence exists"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Pull the CSR and reconcile the order against it before any port submission",
+      "prevents": "rejection cycles that burn days each and stack up against the cutover date"
+    },
+    {
+      "rule": "Complete the analog dependency survey before drafting any port or disconnect order",
+      "prevents": "post-cutover discovery of a dead alarm line, drowned fax or darkened DSL that must be resurrected under emergency pressure"
+    },
+    {
+      "rule": "Freeze and countersign the number inventory before the LOA is drafted",
+      "prevents": "late-found numbers forcing supplemental port orders and a second cutover event"
+    },
+    {
+      "rule": "Verify network readiness at the busy hour before ordering endpoints or promising quality",
+      "prevents": "phones shipped against absent PoE, and quality complaints that force network rework after go-live"
+    },
+    {
+      "rule": "Configure and verify E911 before cutover, not after",
+      "prevents": "emergency-call exposure during the gap and a rushed compliance scramble layered on stabilization"
+    },
+    {
+      "rule": "Train staff before cutover day",
+      "prevents": "day-one chaos, a ticket flood into hypercare, and retraining under fire that costs double"
+    },
+    {
+      "rule": "Build call flows from the confirmed seat map, not the sales quote",
+      "prevents": "wholesale flow rebuilds when actual roles and staffing contradict what was sold"
+    },
+    {
+      "rule": "Keep the losing service alive through the parallel window with cancellation as a deliberate written act",
+      "prevents": "the unrecoverable loss of a business number - rework that no amount of labor can perform"
+    },
+    {
+      "rule": "Capture as-built documentation during the build, not retroactively",
+      "prevents": "reverse-engineering the deployment months later from memory when support hits its first hard ticket"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "a port order rejects",
+      "action": "correct the named element against a fresh CSR, resubmit, rebaseline the FOC and every dependent date, and tell the customer before the dates tell them",
+      "nodes": ["PORT_REJECTION_RECOVERY", "PORT_ORDER_PREPARATION", "CUTOVER_RUNBOOK"],
+      "priority": 1
+    },
+    {
+      "trigger": "a number, line or device surfaces after the inventory freeze",
+      "action": "reopen the affected inventory, disposition the newcomer, and issue a supplemental port order or disposition record with its own dates",
+      "nodes": ["NUMBER_INVENTORY_AUDIT", "ANALOG_DEPENDENCY_SURVEY", "PORT_ORDER_PREPARATION"],
+      "priority": 1
+    },
+    {
+      "trigger": "call-quality complaints or degrading platform metrics during hypercare",
+      "action": "compare live metrics to the readiness baseline, isolate LAN versus link versus platform, and retune QoS or escalate the link with evidence in hand",
+      "nodes": ["HYPERCARE_STABILIZATION", "QOS_LAN_CONFIGURATION", "NETWORK_READINESS_ASSESSMENT"],
+      "priority": 1
+    },
+    {
+      "trigger": "emergency-calling rules or platform E911 behavior change, or any device moves",
+      "action": "re-verify dispatchable locations and notification behavior against current requirements and update the verification record",
+      "nodes": ["REGULATORY_FLAG_REGISTER", "E911_CONFIGURATION"],
+      "priority": 1
+    },
+    {
+      "trigger": "live traffic shows a call flow bypassed, misrouting or overflowing wrong",
+      "action": "run the tuning pass on the affected flows and retrain the roles whose behavior the change touches",
+      "nodes": ["CALL_FLOW_DESIGN", "STAFF_TRAINING_PROGRAM", "HYPERCARE_STABILIZATION"],
+      "priority": 2
+    },
+    {
+      "trigger": "the site changes mid-project - staffing, layout, a new suite, changed hours",
+      "action": "re-run the affected slice of the seat map and endpoint plan, and propagate to flows and E911 registrations",
+      "nodes": ["SEAT_FEATURE_MAPPING", "ENDPOINT_STRATEGY", "E911_CONFIGURATION"],
+      "priority": 2
+    },
+    {
+      "trigger": "a failover test or a real outage shows behavior different from what was designed or promised",
+      "action": "redesign the failing layer, re-test with the customer watching, and re-issue the continuity statement to match observed behavior",
+      "nodes": ["FAILOVER_CONTINUITY_DESIGN", "HONEST_EXPECTATION_SETTING"],
+      "priority": 2
+    },
+    {
+      "trigger": "the support desk reports as-built gaps or handoff friction on a closed deployment",
+      "action": "repair the documentation set, feed the gap back into the gate's checklist, and review recent gates for the same omission",
+      "nodes": ["DEPLOYMENT_HANDOFF_GATE", "HYPERCARE_STABILIZATION"],
+      "priority": 3
+    }
+  ],
+  "priority_rationale": "Frame nodes come first because the charter, the disclosure discipline and the discovery walk determine what every later workstream builds on; porting, network and compliance work run as parallel tracks whose sequencing rules (CSR before order, survey before disconnect, verification before go-live) exist to protect the customer's number, lines and legal exposure; and cutover, acceptance, training, hypercare and the handoff gate come last because they compose the built system into a proven, adopted, documented service the recurring-support side can inherit without archaeology.",
+  "eval_objective": "verify_core_properties_of_voip_deployment_number_porting_and_qos_kb"
+}

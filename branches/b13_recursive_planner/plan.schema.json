@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://automation.local/b13/plan.schema.json",
+  "title": "RecursivePlanTree",
+  "description": "A type-driven recursive plan-decomposition tree with a provable termination bound, per-node contracts, defeater-justified fallbacks, and SPOF tagging. Validated by plan_validator.py. This schema describes STRUCTURE; the validator enforces the SEMANTIC obligations (ranking strictly decreases parent->child OR depth within depth_cap; leaves carry acceptance tests; every node has pre+postconditions; every node has a defeater-justified fallback OR is SPOF-tagged with a reason; children postconditions cover the parent's; no cycles; no SPOF-with-no-fallback on a root->leaf path).",
+  "type": "object",
+  "required": ["plan_id", "root", "ranking_name", "depth_cap", "nodes"],
+  "additionalProperties": false,
+  "properties": {
+    "plan_id": {"type": "string", "minLength": 1},
+    "root": {"type": "string", "minLength": 1, "description": "node id of the single root"},
+    "ranking_name": {"type": "string", "minLength": 1, "description": "name of the well-founded ranking function whose value must strictly decrease parent->child (termination proof obligation)"},
+    "depth_cap": {"type": "integer", "minimum": 1, "description": "global circuit-breaker depth bound; a non-leaf edge that does NOT strictly decrease the ranking is only allowed if both nodes are within this depth"},
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/definitions/node"}
+    }
+  },
+  "definitions": {
+    "node": {
+      "type": "object",
+      "required": ["id", "goal", "type", "arity", "parent", "children", "ranking_value", "preconditions", "postconditions", "acceptance_tests", "fallbacks", "single_point_of_failure", "spof_reason", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "goal": {"type": "string", "minLength": 1},
+        "type": {"type": "string", "minLength": 1, "description": "node type; the TYPE drives the decomposition arity (type-driven arity, not a fixed binary split)"},
+        "arity": {"type": "integer", "minimum": 0, "description": "number of children this node's type decomposes into; 0 for a leaf; must equal len(children)"},
+        "parent": {"type": ["string", "null"], "description": "parent node id, or null for the root"},
+        "children": {"type": "array", "items": {"type": "string"}},
+        "ranking_value": {"type": "number", "description": "value of the named ranking function at this node; must strictly decrease from parent to each child unless the depth_cap clause applies"},
+        "preconditions": {"type": "array", "items": {"type": "string"}, "description": "precondition contract tags"},
+        "postconditions": {"type": "array", "items": {"type": "string"}, "description": "postcondition contract tags; a parent's postconditions must be covered by the union of its children's postconditions (contract composition)"},
+        "acceptance_tests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "desc"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "desc": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "fallbacks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "trigger", "action"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "trigger": {"type": "string", "minLength": 1, "description": "the defeater/trigger condition that activates this fallback (defeater-justified, not blanket)"},
+              "action": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "single_point_of_failure": {"type": "boolean"},
+        "spof_reason": {"type": ["string", "null"], "description": "required (non-empty) when single_point_of_failure is true"},
+        "status": {"type": "string", "enum": ["planned", "decomposed", "ready", "blocked", "done"]}
+      }
+    }
+  }
+}

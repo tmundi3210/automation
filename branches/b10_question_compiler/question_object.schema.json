@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automation.local/branches/b10/question_object.schema.json",
+  "title": "Typed Question Object",
+  "description": "Erotetic-compiler output: a single question lowered into a typed, machine-checkable object. The answer_schema shape is governed by interrogative_type. CLOSED types (polar, alternative) enumerate an admissible answer set; OPEN types (wh, why, how, quantitative, definitional, counterfactual) declare a type-conformance schema plus a required warrant slot, because their admissible answer set is open-ended.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "question_id",
+    "text",
+    "interrogative_type",
+    "presuppositions",
+    "answer_schema",
+    "resolution_criteria",
+    "decision_relevance",
+    "sub_questions"
+  ],
+  "properties": {
+    "question_id": {
+      "type": "string",
+      "pattern": "^Q[A-Za-z0-9_]+$",
+      "description": "Stable identifier for this question object, e.g. Q_ROOT."
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The natural-language surface form of the question."
+    },
+    "interrogative_type": {
+      "type": "string",
+      "enum": [
+        "polar",
+        "alternative",
+        "wh",
+        "why",
+        "how",
+        "quantitative",
+        "definitional",
+        "counterfactual"
+      ],
+      "description": "Erotetic type. polar+alternative are CLOSED (finite admissible answer set); the rest are OPEN (open-ended answer set, scored by type-conformance + warrant)."
+    },
+    "presuppositions": {
+      "type": "array",
+      "description": "Background propositions the question takes for granted. A question with any presupposition.validity=='false' is a loaded question and must be refused or repaired before it is answered.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "validity"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^P[A-Za-z0-9_]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "validity": {
+            "type": "string",
+            "enum": ["asserted", "verified", "false", "unchecked"],
+            "description": "asserted=claimed but unwarranted; verified=warranted true; false=known false (loaded); unchecked=not yet assessed."
+          }
+        }
+      }
+    },
+    "answer_schema": {
+      "type": "object",
+      "description": "Type-governed description of what counts as a well-formed answer. Shape depends on interrogative_type; see oneOf branches.",
+      "oneOf": [
+        {
+          "title": "closed_polar",
+          "additionalProperties": false,
+          "required": ["admissible", "warrant_required"],
+          "properties": {
+            "admissible": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["yes", "no", "indeterminate"] },
+              "minItems": 1
+            },
+            "warrant_required": { "type": "boolean" }
+          }
+        },
+        {
+          "title": "closed_alternative",
+          "additionalProperties": false,
+          "required": ["admissible", "warrant_required"],
+          "properties": {
+            "admissible": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2,
+              "description": "The enumerated mutually-exclusive alternatives plus optionally 'indeterminate'."
+            },
+            "warrant_required": { "type": "boolean" }
+          }
+        },
+        {
+          "title": "open_wh",
+          "additionalProperties": false,
+          "required": ["entity_or_relation_type", "warrant_required"],
+          "properties": {
+            "entity_or_relation_type": { "type": "string", "minLength": 1 },
+            "warrant_required": { "type": "boolean", "const": true }
+          }
+        },
+        {
+          "title": "open_why",
+          "additionalProperties": false,
+          "required": ["explanans_schema", "warrant_required"],
+          "properties": {
+            "explanans_schema": { "type": "string", "minLength": 1 },
+            "warrant_required": { "type": "boolean", "const": true }
+          }
+        },
+        {
+          "title": "open_how",
+          "additionalProperties": false,
+          "required": ["ordered_step_schema", "warrant_required"],
+          "properties": {
+            "ordered_step_schema": { "type": "string", "minLength": 1 },
+            "warrant_required": { "type": "boolean", "const": true }
+          }
+        },
+        {
+          "title": "open_quantitative",
+          "additionalProperties": false,
+          "required": ["unit", "range", "warrant_required"],
+          "properties": {
+            "unit": { "type": "string", "minLength": 1 },
+            "range": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "warrant_required": { "type": "boolean", "const": true }
+          }
+        },
+        {
+          "title": "open_definitional",
+          "additionalProperties": false,
+          "required": ["definiendum", "warrant_required"],
+          "properties": {
+            "definiendum": { "type": "string", "minLength": 1 },
+            "warrant_required": { "type": "boolean", "const": true }
+          }
+        },
+        {
+          "title": "open_counterfactual",
+          "additionalProperties": false,
+          "required": ["antecedent", "consequent_type", "warrant_required"],
+          "properties": {
+            "antecedent": { "type": "string", "minLength": 1 },
+            "consequent_type": { "type": "string", "minLength": 1 },
+            "warrant_required": { "type": "boolean", "const": true }
+          }
+        }
+      ]
+    },
+    "resolution_criteria": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What makes an answer COMPLETE and CLOSED for this question (the stopping rule)."
+    },
+    "decision_relevance": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Which downstream decision this question informs and why it is worth asking."
+    },
+    "sub_questions": {
+      "type": "array",
+      "description": "Decomposition into dependent sub-questions forming a DAG (no cycles; each depends_on id must resolve).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "type", "depends_on"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^Q[A-Za-z0-9_]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "type": {
+            "type": "string",
+            "enum": [
+              "polar",
+              "alternative",
+              "wh",
+              "why",
+              "how",
+              "quantitative",
+              "definitional",
+              "counterfactual"
+            ]
+          },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^Q[A-Za-z0-9_]+$" }
+          }
+        }
+      }
+    }
+  }
+}

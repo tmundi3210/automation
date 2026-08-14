@@ -1,0 +1,302 @@
+# PROJECT_REGISTRY — deliverable 2 (Phase 1, read-only discovery)
+# Source: very-thorough repo inventory 2026-07-13 (git-date-verified statuses).
+# Baselines: except where a gate command exists, quality/latency/cost baselines
+# do not exist yet -> "baseline: none_recorded" (honest; Phase-8 records them).
+# autonomy_level values reference AUTONOMY_POLICY.yaml (L0..L5).
+# Scope note: this registry covers the ONE authorized repo (tmundi3210/automation).
+# Other projects on the operator's machines are invisible to the hub (see
+# ASSUMPTIONS_AND_RISKS.md A6).
+
+_schema:
+  status_values: [active, maintained, experimental, parked, archived]
+  risk_values: [LOW, MED, HIGH]
+  autonomy_note: "L5 (merge/deploy) is NEVER autonomous for any project."
+
+projects:
+
+- id: specialist_factory_core
+  name: Specialist Factory + Knowledge-Searcher KB set
+  path: "schema/ taxonomy/ validators/ tools/ prompts/ calibration/ knowledge_base/ specialists/ dist/"
+  repo: tmundi3210/automation
+  status: active
+  purpose: Turn any domain into gated dense KBs + distilled prompt-only specialists behind one router.
+  stack: Python 3.11 stdlib; JSON KBs (schema v1.3); bash gates; JSONL dist.
+  architecture: taxonomy -> 3 dense KBs/domain (35-check gate) -> distilled specialist (13-check gate) -> INDEX + ROUTER.
+  models: model-agnostic by design (prompt payloads for any model)
+  orchestration_pattern: orchestrator + helper authors + deterministic Python gate as arbiter
+  memory_strategy: none at runtime; KBs are the knowledge store
+  topics: [agent_loops, tool_use_mcp, context_engineering, memory_retrieval, rag_knowledge_graphs, evaluation_frameworks]
+  topic_exclusions: [social_media_automation, image_video_workflows]
+  evals: ["python3 validators/kb_validator.py <KB> --mode dense", "python3 validators/specialist_validator.py <SPEC>", "bash tools/gate_all.sh --repo", "python3 -m unittest validators/test_kb_validator.py"]
+  baseline: "gate_all fingerprint bd8210c23eee; 93 KBs + 31 specialists all_pass"
+  protected: [validators/, tools/compute_kb_formulas.py, tools/build_router.py, tools/build_index.py, schema/, specialists/ROUTER.json, dist/prompt_template.json]
+  deployment: none (in-repo artifact set)
+  risk: HIGH   # shared substrate of every other project
+  autonomy_level: L2   # recommend only; changes via EXCHANGE task + gates + operator visibility
+
+- id: exchange_protocol
+  name: EXCHANGE multi-agent collaboration protocol
+  path: "EXCHANGE/ incoming/ inbox/ tools/check_scope.sh tools/gate_all.sh tools/status.py"
+  repo: tmundi3210/automation
+  status: active
+  purpose: Governance channel for 3 model-family agents coordinating through the repo as message bus.
+  stack: markdown message protocol; JSON ledgers; bash gates; per-task branches.
+  architecture: builders on scoped branches -> self-gate -> submit DELIVERED-SHA -> integrator re-verifies, merges --no-ff, verdicts.
+  models: Claude Code (integrator) + Grok CLI + Codex CLI (builders), three families as cross-verification
+  orchestration_pattern: single-writer integrator; zero-token polling gates; trust-score routing (SCORING.md)
+  memory_strategy: ledgers (tasks.json, scores.json) + STATUS.md digest; messages append-only
+  topics: [multi_agent_coordination, agent_loops, context_engineering, evaluation_frameworks, security_prompt_injection, cost_latency]
+  topic_exclusions: [image_video_workflows]
+  evals: ["bash tools/check_scope.sh --agent <a> --task TASK-NNN", "bash tools/gate_all.sh --task <dir>", "python3 tools/status.py"]
+  baseline: "10 tasks integrated; per-lane trust scores in scores.json"
+  protected: [EXCHANGE/ORCHESTRATION.md, EXCHANGE/AGENTS.json, EXCHANGE/tasks.json, tools/gate_all.sh, tools/check_scope.sh]
+  deployment: live (operator Mac schedulers + hub Routine)
+  risk: MED
+  autonomy_level: L4   # may draft tasks/PR content autonomously; policy/gate edits operator-approved
+
+- id: factory_kit
+  name: FACTORY self-serve specialist-building kit
+  path: "FACTORY/*.md FACTORY/build.sh FACTORY/setup_local.sh FACTORY/*.template.json branches/_forge/kb_forge.py"
+  repo: tmundi3210/automation
+  status: maintained
+  purpose: One-command kit for anyone to author, forge, gate, and use specialists.
+  stack: bash driver + Python stdlib forge; JSON templates.
+  architecture: compact spec.json -> kb_forge.py -> gated KB -> gated specialist; ALL GREEN or per-file FAIL.
+  models: provider-neutral
+  orchestration_pattern: single deterministic build pipeline
+  memory_strategy: none
+  topics: [evaluation_frameworks, rag_knowledge_graphs]
+  topic_exclusions: [social_media_automation]
+  evals: ["bash FACTORY/build.sh <folder>/"]
+  baseline: "all verticals build green as of 2026-07-02"
+  protected: [FACTORY/build.sh, branches/_forge/kb_forge.py]
+  deployment: none
+  risk: MED
+  autonomy_level: L2
+
+- id: study_system
+  name: Adaptive spaced-repetition study system (INBDE + TOEFL) + Base44 app plan
+  path: "FACTORY/study_system/"
+  repo: tmundi3210/automation
+  status: active
+  purpose: FSRS/SM-2 scheduling, learner modeling, gamified UI, book->flashcard pipeline; Base44 build plan.
+  stack: 19 specialists / 55 KBs; markdown app plan; BASE44_APP_SPEC.json; KG pipeline.
+  architecture: content-eng + KG specialists feed scheduler/learner model + gamification UI; sliced Base44 build prompts.
+  models: Base44 platform target; voice analysis provider undecided
+  orchestration_pattern: specialist roster + slice-by-slice app build plan
+  memory_strategy: app-side KG + SR history (planned, in spec)
+  topics: [memory_retrieval, rag_knowledge_graphs, evaluation_frameworks, multimodal_generation, coding_agents]
+  topic_exclusions: [social_media_automation]
+  evals: ["bash FACTORY/build.sh FACTORY/study_system/specialists/<domain>/"]
+  baseline: none_recorded (app not built)
+  protected: []
+  deployment: Base44 (planned, not deployed)
+  risk: LOW
+  autonomy_level: L3   # isolated experiments OK; app-plan changes are drafts
+
+- id: movie_studio
+  name: AI movie/reel studio (Higgsfield surface, luxury IG vertical)
+  path: "FACTORY/movie_studio/"
+  repo: tmundi3210/automation
+  status: maintained
+  purpose: Specialists that direct AI image/video generation for photoreal luxury reels + media manager.
+  stack: 11 specialists / 29 KBs; runbooks; Higgsfield MCP catalog (read-only enumerated).
+  architecture: director orchestrates prompt/character/cine/sound/story/edit/realism-QC loops.
+  models: Higgsfield catalog (Flux, Veo, Kling, Seedance, Minimax, Wan2, ...) - referenced not integrated
+  orchestration_pattern: generate -> critique -> regenerate feedback loops
+  memory_strategy: persona/production packages in-repo
+  topics: [multimodal_generation, image_video_workflows, social_media_intelligence]
+  topic_exclusions: [deployment_infrastructure]
+  evals: ["bash FACTORY/build.sh FACTORY/movie_studio/specialists/<domain>/"]
+  baseline: none_recorded
+  protected: []
+  deployment: none (Higgsfield MCP was session-scoped; disconnected)
+  risk: LOW
+  autonomy_level: L2
+
+- id: plated_jewelry
+  name: Gold-plated jewelry market pack + live-ops engine + Base44 app
+  path: "FACTORY/plated_jewelry/"
+  repo: tmundi3210/automation
+  status: maintained
+  purpose: Continuous market-demand read that emits a deployable poll on corroborated signal.
+  stack: 6 specialists / 18 KBs; process records; HTML poll; Base44 spec; Grok CLI backend bridge.
+  architecture: FORWARD/BACKWARD two-lane loop with fail-closed SAFETY_REVIEW gate before state promotion.
+  models: Grok Code CLI subprocess backend; Base44; env-slot API keys (no inline secrets)
+  orchestration_pattern: two-lane research loop + gate
+  memory_strategy: promoted state records + history lane
+  topics: [social_media_intelligence, social_media_automation, evaluation_frameworks, security_prompt_injection]
+  topic_exclusions: [image_video_workflows]
+  evals: ["bash FACTORY/build.sh FACTORY/plated_jewelry/specialists/<domain>/"]
+  baseline: none_recorded
+  protected: []
+  deployment: zip pack + Base44 (planned)
+  risk: LOW
+  autonomy_level: L2
+
+- id: sweater_vertical
+  name: Ludhiana sweater manufacturing vertical + BRAIN/SELF_LOOP doctrine
+  path: "FACTORY/sweater_vertical/"
+  repo: tmundi3210/automation
+  status: maintained
+  purpose: Domain expert set for knit-sweater manufacturing/brand economics.
+  stack: 10 specialist dirs / 27 KBs; BRAIN.md doctrine.
+  architecture: 9 domain specialists + BRAIN meta-specialist (N1-N7 honesty gate, fresh-context critic loops).
+  models: Flux referenced for design renders only
+  orchestration_pattern: BRAIN think/decide + self-improvement loop
+  memory_strategy: analysis records in-repo
+  topics: [agent_loops, evaluation_frameworks]
+  topic_exclusions: [social_media_automation, coding_agents]
+  evals: ["bash FACTORY/build.sh FACTORY/sweater_vertical/specialists/<domain>/"]
+  baseline: none_recorded
+  protected: [FACTORY/sweater_vertical/specialists/BRAIN/]   # doctrine cited repo-wide
+  deployment: none
+  risk: MED
+  autonomy_level: L2
+
+- id: phase_b_llm_engineering
+  name: Orchestrated fine-tuned specialist system (Phase B)
+  path: "phase_b/"
+  repo: tmundi3210/automation
+  status: parked   # clean stop; remaining work needs external data/GPU
+  purpose: Router + weighted DAG over narrow fine-tuned specialists with monitored/rollback training.
+  stack: Python stdlib scaffold, offline MockBackend; 12 specialists / 25 KBs.
+  architecture: ingest -> distill -> train(rollback) -> orchestrate -> eval -> render; 12/12 offline smoke PASS.
+  models: backend hooks only (Api/Local/HFTrainer) - no live providers
+  orchestration_pattern: router + DAG (design)
+  memory_strategy: none at runtime
+  topics: [fine_tuning_adaptation, model_routing, evaluation_frameworks]
+  topic_exclusions: [social_media_automation]
+  evals: ["bash phase_b/scaffold/run_all.sh"]
+  baseline: "12/12 offline smoke PASS at park time"
+  protected: [phase_b/IDEA_NEUTRALIZED.md]
+  deployment: none
+  risk: LOW
+  autonomy_level: L1   # parked -> monitor + summarize only
+
+- id: idea_branches
+  name: Idea-branch meta-capabilities (B10/B11/B13/B60)
+  path: "branches/"
+  repo: tmundi3210/automation
+  status: maintained
+  purpose: Composed meta-specialists + one deterministic validator each; B60 = content-intelligence engine with MIND memory.
+  stack: Python stdlib validators + unittest; heavy dense KBs; B60 runnable scaffold.
+  architecture: each branch composes root specialists + ships a stdlib artifact; promoted only via gates.
+  models: pluggable backend in b60 scaffold
+  orchestration_pattern: per-branch; B60 has controller loop + episodic memory
+  memory_strategy: B60 MIND journal/memory store (episodic)
+  topics: [agent_loops, memory_retrieval, evaluation_frameworks, rag_knowledge_graphs]
+  topic_exclusions: [image_video_workflows]
+  evals: ["python3 -m unittest discover -s branches -p 'test_*.py'"]
+  baseline: "unit suites green at 2026-06-29"
+  protected: [branches/_forge/kb_forge.py]
+  deployment: none
+  risk: MED
+  autonomy_level: L2
+
+- id: turlock_business
+  name: Turlock independent business catalog
+  path: "FACTORY/turlock_business/"
+  repo: tmundi3210/automation
+  status: maintained
+  purpose: Discover/categorize/profile non-chain Turlock businesses into a structured catalog.
+  stack: 3 KBs + organizer specialist + JSON catalog.
+  architecture: discovery/categorization/profiling KBs -> organizer -> sector catalog.
+  models: none
+  orchestration_pattern: single-specialist pipeline
+  memory_strategy: catalog JSON is the store
+  topics: [social_media_intelligence]
+  topic_exclusions: [coding_agents, image_video_workflows]
+  evals: ["python3 validators/kb_validator.py FACTORY/turlock_business/kb1_business_discovery_methodology.kb.json --mode dense"]
+  baseline: none_recorded
+  protected: []
+  deployment: none
+  risk: LOW
+  autonomy_level: L1
+
+- id: turlock_income
+  name: Central Valley income specialist
+  path: "FACTORY/turlock_income/"
+  repo: tmundi3210/automation
+  status: maintained
+  purpose: Wage-job / paid-driving / CA service-contract income guidance.
+  stack: 3 KBs + 1 specialist.
+  architecture: 3 KBs -> income specialist.
+  models: none
+  orchestration_pattern: single specialist
+  memory_strategy: none
+  topics: []
+  topic_exclusions: [all_default_off]   # monitor-only; no technique mapping wanted
+  evals: ["python3 validators/kb_validator.py FACTORY/turlock_income/kb1_turlock_wage_jobs.kb.json --mode dense"]
+  baseline: none_recorded
+  protected: []
+  deployment: none
+  risk: LOW
+  autonomy_level: L1
+
+- id: webshop_blueprint
+  name: E-commerce store orchestration blueprint
+  path: "FACTORY/webshop/ORCHESTRATION_BLUEPRINT.md"
+  repo: tmundi3210/automation
+  status: experimental
+  purpose: Phased plan to build an online store by composing existing specialists in a MIND-BRAIN cycle.
+  stack: markdown blueprint only; some named specialists not yet forged.
+  architecture: W0-W6 cognitive cycle; fail-closed compliance gate; viability->build->security/law each phase.
+  models: provider-neutral
+  orchestration_pattern: MIND-BRAIN cycle (design)
+  memory_strategy: n/a (design doc)
+  topics: [agent_loops, multi_agent_coordination, deployment_infrastructure]
+  topic_exclusions: []
+  evals: []
+  baseline: none_recorded
+  protected: []
+  deployment: none
+  risk: LOW
+  autonomy_level: L2
+
+- id: build_benchmark
+  name: Grok-vs-Claude build benchmark (culinary)
+  path: "benchmark/"
+  repo: tmundi3210/automation
+  status: active
+  purpose: Head-to-head agent comparison through the identical gated pipeline.
+  stack: gated KBs/specialists + comparison table.
+  architecture: same spec built twice; measured on density/gate-iterations/errors.
+  models: Grok vs Claude as build agents
+  orchestration_pattern: n/a
+  memory_strategy: none
+  topics: [evaluation_frameworks, multi_agent_coordination]
+  topic_exclusions: []
+  evals: ["python3 validators/kb_validator.py benchmark/culinary_claude/kb1.kb.json --mode dense"]
+  baseline: "COMPARISON.md table"
+  protected: []
+  deployment: none
+  risk: LOW
+  autonomy_level: L2
+
+- id: bounded_autonomy_plan
+  name: Bounded-autonomy intelligence system (this planning package)
+  path: "plans/bounded_autonomy/"
+  repo: tmundi3210/automation
+  status: experimental
+  purpose: The system this package designs; planning phase only.
+  stack: markdown/yaml planning docs.
+  architecture: see SYSTEM_ARCHITECTURE.md
+  models: Claude Code + Grok CLI + Codex CLI (verified non-interchangeable; CAPABILITY_MATRIX.md)
+  orchestration_pattern: deterministic control plane over EXCHANGE substrate (design)
+  memory_strategy: see MEMORY_ARCHITECTURE.md (design)
+  topics: [all]
+  topic_exclusions: []
+  evals: []
+  baseline: none_recorded
+  protected: [plans/bounded_autonomy/SPEC.md]   # operator's verbatim brief
+  deployment: "none (STOP CONDITION: no implementation until operator approval)"
+  risk: LOW
+  autonomy_level: L2
+
+# Cross-project dependency facts (from inventory):
+# - validators/ + schema/ + branches/_forge/kb_forge.py + tools/compute_kb_formulas.py
+#   gate/forge EVERYTHING (~200+ KBs). Any change ripples repo-wide -> HIGH risk,
+#   integrator-only, operator-visible.
+# - specialists/ROUTER.json ids are load-bearing for branches/ and webshop blueprint.
+# - EXCHANGE governance files control builder write access across all projects.

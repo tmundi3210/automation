@@ -1,0 +1,5590 @@
+{
+  "domain": "ctx_budget_compaction",
+  "domain_label": "Context Budget and Compaction",
+  "purpose": "Engineer token budgets, layered digests, compaction triggers, and context-rot measurement so long-running multi-agent work keeps invariants and working set while freeing capacity safely.",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "Model context is finite and meterable with a known tokenizer",
+    "Some strings are character-critical and must not be paraphrased",
+    "Bulk artifacts can be stored outside the prompt with durable locators"
+  ],
+  "exclusions": [
+    "Training-time long-context architecture research",
+    "GPU/cluster capacity planning",
+    "End-user product analytics unrelated to agent context",
+    "Storing secrets in prompts or telemetry"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What is the current token ledger by segment and headroom to hard cap?",
+      "must_be_answerable_from": [
+        "TOKEN_BUDGET",
+        "HARD_CAP_ENFORCE",
+        "BUDGET_FORECAST"
+      ],
+      "acceptance_condition": "lists tokens for system/tools/working_set/history/retrieved and remaining headroom",
+      "covered_by": [
+        "TOKEN_BUDGET",
+        "HARD_CAP_ENFORCE",
+        "BUDGET_FORECAST",
+        "BUDGET_TELEMETRY"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "Which compaction triggers are active and what action should fire now?",
+      "must_be_answerable_from": [
+        "COMPACTION_TRIGGERS",
+        "TOKEN_BUDGET",
+        "SYSTEM_INVARIANT"
+      ],
+      "acceptance_condition": "states util% or rot trigger and next action compact|externalize|refuse",
+      "covered_by": [
+        "COMPACTION_TRIGGERS",
+        "TOKEN_BUDGET",
+        "HARD_CAP_ENFORCE",
+        "CONTEXT_ROT"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "What belongs in the active working set and pinned fact register for this task?",
+      "must_be_answerable_from": [
+        "WORKING_SET",
+        "PINNED_FACTS",
+        "HISTORY_TAIL"
+      ],
+      "acceptance_condition": "names goal, active paths, open decisions, and key task KV facts",
+      "covered_by": [
+        "WORKING_SET",
+        "PINNED_FACTS",
+        "HISTORY_TAIL",
+        "MULTI_AGENT_SHARE"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "Which strings are never-compact invariants and where are they placed in the prompt?",
+      "must_be_answerable_from": [
+        "SYSTEM_INVARIANT",
+        "VERBATIM_KEEP",
+        "ATTENTION_HOTSPOTS"
+      ],
+      "acceptance_condition": "lists pin set and positions (system/tail) not mid-digest only",
+      "covered_by": [
+        "SYSTEM_INVARIANT",
+        "VERBATIM_KEEP",
+        "ATTENTION_HOTSPOTS",
+        "SLIDING_WINDOW"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How is recent history separated from layered digests?",
+      "must_be_answerable_from": [
+        "HISTORY_TAIL",
+        "DIGEST_HIERARCHY",
+        "PINNED_FACTS"
+      ],
+      "acceptance_condition": "states tail policy and at least L0 vs L1/L2 roles",
+      "covered_by": [
+        "HISTORY_TAIL",
+        "DIGEST_HIERARCHY",
+        "PINNED_FACTS",
+        "WORKING_SET"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What is kept verbatim vs summarized when compressing narrative?",
+      "must_be_answerable_from": [
+        "VERBATIM_KEEP",
+        "SUMMARIZE_POLICY",
+        "DIGEST_HIERARCHY"
+      ],
+      "acceptance_condition": "gives class table with sha/path/error vs narrative examples",
+      "covered_by": [
+        "VERBATIM_KEEP",
+        "SUMMARIZE_POLICY",
+        "DIGEST_HIERARCHY"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "What should be externalized vs dropped under budget pressure?",
+      "must_be_answerable_from": [
+        "EXTERNALIZE_STORE",
+        "SUMMARIZE_POLICY",
+        "EVICTION_ORDER"
+      ],
+      "acceptance_condition": "names at least one externalize candidate with locator need and one drop class",
+      "covered_by": [
+        "EXTERNALIZE_STORE",
+        "SUMMARIZE_POLICY",
+        "EVICTION_ORDER"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How do you rehydrate a detail that left the prompt?",
+      "must_be_answerable_from": [
+        "REHYDRATE_PATH",
+        "EXTERNALIZE_STORE",
+        "PROGRESSIVE_DISCLOSURE"
+      ],
+      "acceptance_condition": "gives locator or layer-descent steps with a size cap",
+      "covered_by": [
+        "REHYDRATE_PATH",
+        "EXTERNALIZE_STORE",
+        "PROGRESSIVE_DISCLOSURE",
+        "DIGEST_HIERARCHY"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is context rot measured before and after compaction?",
+      "must_be_answerable_from": [
+        "CONTEXT_ROT",
+        "COMPACTION_TRIGGERS",
+        "BUDGET_TELEMETRY"
+      ],
+      "acceptance_condition": "describes probe set and when scores are recorded",
+      "covered_by": [
+        "CONTEXT_ROT",
+        "COMPACTION_TRIGGERS",
+        "BUDGET_TELEMETRY",
+        "BUDGET_FORECAST"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "Does compression fidelity meet the floor given position bias?",
+      "must_be_answerable_from": [
+        "COMPRESS_RATIO",
+        "CONTEXT_ROT",
+        "ATTENTION_HOTSPOTS"
+      ],
+      "acceptance_condition": "reports ratio and probe score and pin placement check",
+      "covered_by": [
+        "COMPRESS_RATIO",
+        "CONTEXT_ROT",
+        "ATTENTION_HOTSPOTS"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "Why is bare sliding window unsafe and what is the emergency alternative?",
+      "must_be_answerable_from": [
+        "SLIDING_WINDOW",
+        "EVICTION_ORDER",
+        "REHYDRATE_PATH"
+      ],
+      "acceptance_condition": "names dropped-invariant risk and re-pin + structured eviction alternative",
+      "covered_by": [
+        "SLIDING_WINDOW",
+        "EVICTION_ORDER",
+        "REHYDRATE_PATH",
+        "SYSTEM_INVARIANT"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How should multi-agent spawns share budget without cloning full transcripts?",
+      "must_be_answerable_from": [
+        "MULTI_AGENT_SHARE",
+        "DIGEST_HIERARCHY",
+        "COMPRESS_RATIO"
+      ],
+      "acceptance_condition": "specifies task packet contents, role caps, and digest return schema",
+      "covered_by": [
+        "MULTI_AGENT_SHARE",
+        "DIGEST_HIERARCHY",
+        "COMPRESS_RATIO",
+        "BUDGET_TELEMETRY"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "hard_cap",
+      "definition": "Maximum input tokens allowed for a model call; local preflight must enforce"
+    },
+    {
+      "term": "working_set",
+      "definition": "Minimal high-fidelity live task state required for the next correct action"
+    },
+    {
+      "term": "L0_digest",
+      "definition": "Lowest digest layer: short bullet facts with ids, paths, decisions"
+    },
+    {
+      "term": "context_rot",
+      "definition": "Degradation where model stops honoring earlier constraints or settled facts"
+    },
+    {
+      "term": "verbatim_span",
+      "definition": "Substring that must not be paraphrased (SHA, path, error, threshold)"
+    },
+    {
+      "term": "externalize",
+      "definition": "Move bulk artifact out of prompt; leave locator+hash+gist"
+    },
+    {
+      "term": "rehydrate",
+      "definition": "Demand-driven reload of detail from store or deeper digest layer"
+    },
+    {
+      "term": "eviction_order",
+      "definition": "Priority sequence for freeing tokens under pressure"
+    },
+    {
+      "term": "task_packet",
+      "definition": "Lean spawn payload for a subagent: pins + goal + scoped files, not full chat"
+    },
+    {
+      "term": "fidelity_floor",
+      "definition": "Minimum probe score that outranks compression ratio targets"
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model"
+    ],
+    "probabilistic_modeling": [
+      "nodes"
+    ],
+    "risk_analysis": [
+      "edge_cases"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic priors for LLM context budget and compaction engineering in multi-agent systems",
+      "citation_or_locator": "heuristic prior; operational practice distilled for agent orchestration; no external dataset supplied",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "TOKEN_BUDGET",
+      "topic": "token_budget_accounting",
+      "definition": "Maintain an explicit token ledger for system, tools, retrieved docs, working set, and history. A context window is a hard capacity (e.g. 128k\u20131M tokens depending on model); without a ledger, compaction decisions are guesswork and overflow truncates the wrong segments. Count input tokens with the same tokenizer the model uses; treat tool JSON and code blocks as high-density cost centers (often 1.2\u20132\u00d7 prose tokens per character-visible length).",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "per-segment token counts",
+          "hard cap vs soft target",
+          "tokenizer-consistent measurement"
+        ],
+        "excluded": [
+          "model quality scoring",
+          "GPU capacity planning"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.95,
+        "business_value": 0.9,
+        "user_value": 0.92,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.64,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.28,
+        "lock_score": 0.71,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.9,
+        "uncertainty_range_width": 0.25,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "posterior_importance": 0.73,
+        "update_signal": "measured input tokens exceed planned budget by >10% or overflow truncates mid-artifact",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit ledger makes eviction and compaction falsifiable",
+          "example": "at 90% of hard cap, remaining 10% reserved for reply + tool returns"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Ledger lag of one turn can still overflow on large tool payloads",
+          "example": "a 40k-token tool dump bypasses a stale budget snapshot"
+        }
+      ],
+      "failure_modes": [
+        "counting characters as tokens (off by 2\u20134\u00d7 on code)",
+        "ignoring system+tool schema fixed cost"
+      ],
+      "acceptance_tests": [
+        "budget report lists tokens for system, tools, working_set, history, retrieved with sum \u2264 hard_cap"
+      ],
+      "revisit_triggers": [
+        "model or tokenizer changes",
+        "tool schemas grow >5k tokens"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "WORKING_SET",
+      "topic": "active_working_set",
+      "definition": "Define the minimal live task state that must remain high-fidelity: current goal, open decisions, active file paths, failing tests, and the last accepted plan step. Working set is not 'everything recent' \u2014 it is the set without which the next action cannot be correct. Typical target: 8\u201320% of usable budget for long multi-agent runs; grow only when the active task surface expands.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "current goal/plan step",
+          "active paths and blockers",
+          "open decisions"
+        ],
+        "excluded": [
+          "archival full chat logs",
+          "marketing copy"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.93,
+        "business_value": 0.88,
+        "user_value": 0.91,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.66,
+        "confidence_score": 0.6,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.7,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.45
+        ],
+        "posterior_importance": 0.7,
+        "update_signal": "agent re-asks for already-stated goal or reopens closed decisions after a compaction",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Preserving working set prevents goal drift after compaction",
+          "example": "after 3 compact cycles goal string still matches task header"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-wide working set starves history and retrieval slots",
+          "example": "working set at 45% of budget forces aggressive history loss"
+        }
+      ],
+      "failure_modes": [
+        "equating working set with entire conversation tail",
+        "dropping failing-test names while keeping chat niceties"
+      ],
+      "acceptance_tests": [
+        "working set artifact names goal, active paths, open decisions, last plan step"
+      ],
+      "revisit_triggers": [
+        "task scope changes",
+        "multi-file failure cluster expands"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SYSTEM_INVARIANT",
+      "topic": "never_compact_invariants",
+      "definition": "Identify strings and structures that must never be summarized away: safety rules, hard denials, ASSIGNEE/scope constraints, acceptance criteria, and authenticated task headers. Invariants are pinned verbatim; digests may reference them by id but must not paraphrase obligations. Pin cost is intentional: 2\u20138k tokens of invariants is cheaper than a single out-of-scope force-push.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "safety and protocol hard denials",
+          "task acceptance criteria",
+          "authenticated headers"
+        ],
+        "excluded": [
+          "verbose narrative history",
+          "optional style tips"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.96,
+        "business_value": 0.86,
+        "user_value": 0.89,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.94,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.7,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.3,
+        "risk_score": 0.71,
+        "confidence_score": 0.64,
+        "revisit_pressure": 0.24,
+        "lock_score": 0.7,
+        "final_importance": 0.82
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.92,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.95,
+        "evidence_confidence": 0.82,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.1,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.1,
+          0.32
+        ],
+        "posterior_importance": 0.78,
+        "update_signal": "a compacted prompt loses a hard denial or changes ASSIGNEE/scope meaning",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Verbatim pins eliminate obligation drift under compression",
+          "example": "HARD DENIALS block still byte-stable across 5 compactions"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Pin bloat reduces room for task-specific detail",
+          "example": "12k pinned boilerplate on a 32k model leaves little working set"
+        }
+      ],
+      "failure_modes": [
+        "summarizing 'do not force-push' into 'be careful with git'",
+        "pinning non-invariants that should rotate"
+      ],
+      "acceptance_tests": [
+        "invariant set listed; each item marked pin=verbatim; none appear only inside digests"
+      ],
+      "revisit_triggers": [
+        "protocol version change",
+        "new hard denial added by integrator"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "HISTORY_TAIL",
+      "topic": "recent_history_tail",
+      "definition": "Keep a short high-fidelity tail of the most recent turns (often last 2\u20136 exchanges or ~5\u201315% of budget) because recency bias and repair of the latest error both depend on unsummarized detail. Older turns graduate into digests; the tail is the only place mid-repair state is trustworthy.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "last N turns full text",
+          "latest tool error payloads (bounded)",
+          "uncommitted plan micro-edits"
+        ],
+        "excluded": [
+          "full session archive",
+          "multi-day logs"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "WORKING_SET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.86,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.54,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.71,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.85,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "agent repeats a just-failed approach that was only in the dropped last turn",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tail preserves repair context for the active failure",
+          "example": "retry uses the exact error string from last tool call"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.66,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Long tails with huge tool dumps dominate budget",
+          "example": "single 30k stack trace in tail forces digest of all prior work"
+        }
+      ],
+      "failure_modes": [
+        "keeping entire session as 'tail'",
+        "dropping the failing tool output while keeping user chit-chat"
+      ],
+      "acceptance_tests": [
+        "tail policy states N turns or token cap and lists what graduates to digest"
+      ],
+      "revisit_triggers": [
+        "tool outputs regularly exceed 10k tokens",
+        "user messages become multi-file dumps"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DIGEST_HIERARCHY",
+      "topic": "digest_hierarchy_layers",
+      "definition": "Maintain layered digests: L0 bullet facts (\u2264500 tokens), L1 section summaries (1\u20133k), L2 episode narratives (3\u20138k). Higher layers cite lower layer ids. Compaction promotes detail upward only after L0 facts are extracted; never jump from raw log to a single vague paragraph. Hierarchy enables selective rehydration of one episode without reloading the whole history.",
+      "node_type": "work_unit",
+      "group": "compaction",
+      "scope_boundary": {
+        "included": [
+          "L0/L1/L2 digest layers",
+          "id cross-links between layers",
+          "promotion criteria"
+        ],
+        "excluded": [
+          "lossy single-paragraph 'session so far' only"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "WORKING_SET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.85,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.68,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.65,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "post-compaction answers miss concrete ids/paths that existed only in raw history",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Layered digests preserve queryable facts under tight budgets",
+          "example": "L0 still lists failing test name after L2 narrative compresses story"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.64,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Poor promotion drops numbers and paths at L0",
+          "example": "L0 says 'fixed tests' without naming which tests"
+        }
+      ],
+      "failure_modes": [
+        "one-shot summarize entire history to 200 tokens",
+        "layers without stable ids so rehydration cannot target"
+      ],
+      "acceptance_tests": [
+        "at least two digest layers present with L0 containing concrete ids/paths/decisions"
+      ],
+      "revisit_triggers": [
+        "rehydration often fails to find detail",
+        "L0 grows past 1k tokens"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "VERBATIM_KEEP",
+      "topic": "verbatim_keep_policy",
+      "definition": "Decide what stays verbatim: error messages, SHAs, file paths, numeric thresholds, protocol headers, failing assertions, and legal/safety clauses. Verbatim spans are short and high-value; they are carved out before summarization. Rule of thumb: if a single wrong character changes action (SHA, path, exit code), keep verbatim.",
+      "node_type": "work_unit",
+      "group": "compaction",
+      "scope_boundary": {
+        "included": [
+          "SHAs paths exit codes",
+          "error strings",
+          "numeric gates and versions"
+        ],
+        "excluded": [
+          "stylistic paraphrases of prose advice"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "SYSTEM_INVARIANT",
+        "DIGEST_HIERARCHY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.82,
+        "user_value": 0.88,
+        "technical_complexity": 0.52,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.6,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.67,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.27,
+        "lock_score": 0.69,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "posterior_importance": 0.72,
+        "update_signal": "compacted context rewrites a commit SHA or filepath and agent acts on wrong target",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Character-critical tokens survive compression",
+          "example": "DELIVERED-SHA remains exact hex after digest"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-verbatim keeps noise (full stack frames) that should be clipped",
+          "example": "keeping 200-line stack instead of top frame + type"
+        }
+      ],
+      "failure_modes": [
+        "paraphrasing error text",
+        "truncating SHAs to 4 chars"
+      ],
+      "acceptance_tests": [
+        "verbatim policy lists classes: sha, path, error, numeric threshold, protocol header"
+      ],
+      "revisit_triggers": [
+        "new artifact id formats",
+        "gates add new fingerprint fields"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SUMMARIZE_POLICY",
+      "topic": "summarize_vs_drop_policy",
+      "definition": "Separate summarize-worthy narrative (why a decision was made, alternatives rejected) from droppable chatter (acknowledgements, duplicate tool noise). Summarize when future decisions need the why; drop when only the outcome matters and is already in L0. Target compression: narrative 5\u201315\u00d7; never compress below the point where rejected alternatives disappear if still relevant.",
+      "node_type": "work_unit",
+      "group": "compaction",
+      "scope_boundary": {
+        "included": [
+          "decision rationales",
+          "rejected alternatives still in play",
+          "user constraints stated in prose"
+        ],
+        "excluded": [
+          "pure phatics",
+          "duplicate successful tool logs"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "DIGEST_HIERARCHY",
+        "VERBATIM_KEEP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.6,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.67,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.24,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.24,
+          0.52
+        ],
+        "posterior_importance": 0.58,
+        "update_signal": "agent re-proposes an already-rejected alternative that was only in dropped narrative",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Policy prevents silent loss of rejected paths",
+          "example": "digest notes 'avoided force-push per hard denial'"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.63,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-summarizing collapses distinct failures into one vague 'had issues'",
+          "example": "three distinct gate failures become one sentence"
+        }
+      ],
+      "failure_modes": [
+        "summarizing and dropping the same class without criterion",
+        "keeping all tool stdout 'just in case'"
+      ],
+      "acceptance_tests": [
+        "policy table: keep_verbatim | summarize | externalize | drop with examples per class"
+      ],
+      "revisit_triggers": [
+        "recurring re-proposal of rejected options",
+        "digest length exceeds L1 budget"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EXTERNALIZE_STORE",
+      "topic": "externalize_to_store",
+      "definition": "Move bulky recoverable artifacts out of the prompt into repo files, object stores, or ticket attachments; leave a locator + hash + one-line gist in context. Externalization is preferred over lossy summary when the artifact may need exact re-read (logs, full diffs, large JSON). Locator must be actionable (path, URL, blob id) and freshness-stamped.",
+      "node_type": "work_unit",
+      "group": "compaction",
+      "scope_boundary": {
+        "included": [
+          "large logs and diffs",
+          "raw tool dumps",
+          "multi-file patches"
+        ],
+        "excluded": [
+          "tiny constants that belong pinned",
+          "secrets (never store in shared logs)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "VERBATIM_KEEP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.83,
+        "user_value": 0.84,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.45,
+        "confidence": 0.75,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.61,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.69,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.75,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "posterior_importance": 0.64,
+        "update_signal": "agent cannot re-open a log that was 'summarized away' with no locator",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Exact artifacts remain recoverable without prompt bloat",
+          "example": "1-line pointer replaces 25k log; rehydrate on demand"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Broken locators or deleted files create false confidence",
+          "example": "gist says 'see /tmp/log' after temp cleaned"
+        }
+      ],
+      "failure_modes": [
+        "externalizing without hash/freshness",
+        "putting secrets into exchange transcripts"
+      ],
+      "acceptance_tests": [
+        "each externalized item has locator, content hash or mtime, and 1-line gist in context"
+      ],
+      "revisit_triggers": [
+        "rehydrate misses rise",
+        "/tmp or ephemeral paths used as locators"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "COMPACTION_TRIGGERS",
+      "topic": "compaction_trigger_thresholds",
+      "definition": "Define objective triggers to compact: utilization \u226580\u201390% of hard cap; projected next tool return would exceed remaining headroom; turn count since last compact \u2265K; or measured context-rot score crosses threshold. Avoid compaction every turn (cost and churn) and avoid waiting for hard failure. Triggers should be measurable from the token ledger and task telemetry.",
+      "node_type": "work_unit",
+      "group": "compaction",
+      "scope_boundary": {
+        "included": [
+          "utilization thresholds",
+          "projected overflow from next tool",
+          "rot-score triggers"
+        ],
+        "excluded": [
+          "subjective 'feels long' only"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "HISTORY_TAIL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.87,
+        "business_value": 0.81,
+        "user_value": 0.83,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.73,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.62,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.68,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.83,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.73,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "posterior_importance": 0.63,
+        "update_signal": "session hits hard overflow without a prior compact attempt",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Objective triggers make compaction ops-reviewable",
+          "example": "compact fires at 85% util before overflow"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too-low thresholds thrash and lose nuance",
+          "example": "compact every 2 turns at 50% util"
+        }
+      ],
+      "failure_modes": [
+        "no trigger until context error",
+        "trigger without measuring tokens"
+      ],
+      "acceptance_tests": [
+        "written thresholds: util%, projected headroom, max turns since compact"
+      ],
+      "revisit_triggers": [
+        "frequent overflow still occurs",
+        "compact thrash >1 per 5 turns"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CONTEXT_ROT",
+      "topic": "context_rot_measurement",
+      "definition": "Detect context rot: the model stops using early constraints, contradicts prior decisions, or re-asks settled facts. Proxies: constraint-recall probes (quiz on pinned rules), decision consistency checks, and attention to ids from L0. Rot is not just length \u2014 a clean 20k context can outperform a noisy 100k one. Measure before/after compaction with the same probe set.",
+      "node_type": "work_unit",
+      "group": "measurement",
+      "scope_boundary": {
+        "included": [
+          "constraint-recall probes",
+          "decision consistency diffs",
+          "pre/post compact scores"
+        ],
+        "excluded": [
+          "user satisfaction surveys only",
+          "GPU utilization"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WORKING_SET",
+        "DIGEST_HIERARCHY",
+        "SYSTEM_INVARIANT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.89,
+        "business_value": 0.85,
+        "user_value": 0.9,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.68,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.63,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.29,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.26,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.26,
+          0.55
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "probe fails on ASSIGNEE or scope after session lengthens even under budget",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rot metrics justify compaction quality not just size",
+          "example": "post-compact probe \u2265 pre-compact on invariants"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.57,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Probes add cost and can themselves bloat context if naively inlined",
+          "example": "20-question probe each turn costs 2k tokens"
+        }
+      ],
+      "failure_modes": [
+        "assuming longer context is always better",
+        "no measurement, only vibes"
+      ],
+      "acceptance_tests": [
+        "rot probe set defined; run at least at compact boundaries; scores recorded"
+      ],
+      "revisit_triggers": [
+        "accepted tasks later show constraint violations",
+        "probes always pass yet users report drift"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "BUDGET_FORECAST",
+      "topic": "budget_forecast_for_next_step",
+      "definition": "Before expensive tools or large retrieval, forecast token delta: expected tool return size (p50/p90 from history), prompt growth, and reply reserve (often 2\u20138k). If p90 return > remaining headroom after reserve, compact or externalize first. Forecast errors should update size priors.",
+      "node_type": "work_unit",
+      "group": "measurement",
+      "scope_boundary": {
+        "included": [
+          "p50/p90 tool size priors",
+          "reply reserve",
+          "pre-tool headroom check"
+        ],
+        "excluded": [
+          "training-time FLOPs forecasts"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "COMPACTION_TRIGGERS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.83,
+        "business_value": 0.79,
+        "user_value": 0.81,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.61,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.67,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.57,
+        "update_signal": "tool return regularly overflows despite 'enough room' gut feel",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.83,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Forecast prevents mid-tool context death",
+          "example": "p90=25k tool blocked when headroom=12k; compact first"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.56,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Priors wrong on new tools cause over-cautious delays",
+          "example": "new API always assumed 50k until observed"
+        }
+      ],
+      "failure_modes": [
+        "no reply reserve",
+        "using p50 only when variance is high"
+      ],
+      "acceptance_tests": [
+        "before large tool: recorded headroom, p90 estimate, go/compact decision"
+      ],
+      "revisit_triggers": [
+        "overflow rate on tool returns >5%",
+        "priors off by >2\u00d7"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EVICTION_ORDER",
+      "topic": "eviction_priority_order",
+      "definition": "When forced to free tokens, evict in order: (1) duplicate tool noise, (2) old dropped-class chatter, (3) aged L2 narrative already covered by L0, (4) stale retrieval chunks, (5) older history tail beyond policy, never (6) system invariants or active working set. Document the order; reverse ad-hoc deletions cause silent goal loss.",
+      "node_type": "work_unit",
+      "group": "compaction",
+      "scope_boundary": {
+        "included": [
+          "ordered eviction classes",
+          "protect pins and working set",
+          "prefer externalize before delete"
+        ],
+        "excluded": [
+          "random truncation from the middle of the prompt"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "SUMMARIZE_POLICY",
+        "WORKING_SET",
+        "SYSTEM_INVARIANT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.58,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.46,
+        "risk_score": 0.68,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.66,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.64,
+        "update_signal": "compaction drops working-set goal while keeping duplicate npm install logs",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.89,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stable eviction order protects high-value spans under pressure",
+          "example": "pins+working set untouched at 95% util"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rigid order may keep low-value L2 too long if L0 incomplete",
+          "example": "L2 retained while L0 missing SHAs"
+        }
+      ],
+      "failure_modes": [
+        "FIFO drop from the front including system",
+        "truncate mid-JSON tool call"
+      ],
+      "acceptance_tests": [
+        "eviction order written; simulation on a full session shows pins retained"
+      ],
+      "revisit_triggers": [
+        "goal loss after compact",
+        "large protected set prevents any eviction"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "REHYDRATE_PATH",
+      "topic": "selective_rehydration",
+      "definition": "Provide a path to pull detail back: from external store by locator, from L2\u2192L1\u2192raw if archived, or by re-running a bounded retrieval. Rehydration is demand-driven (answer a CQ or resume a subtask), not full session restore. Cap rehydrate size; prefer the smallest layer that answers.",
+      "node_type": "work_unit",
+      "group": "compaction",
+      "scope_boundary": {
+        "included": [
+          "locator-based file re-read",
+          "layer descent L0\u2192L1\u2192raw",
+          "bounded re-retrieval"
+        ],
+        "excluded": [
+          "full chat replay as default"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "DIGEST_HIERARCHY",
+        "EXTERNALIZE_STORE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.86,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.63,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.67,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "agent cannot recover detail needed for revise because only vague L2 remains",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Selective rehydrate restores precision without full reload",
+          "example": "re-read one log path to fix SHA mismatch"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rehydrate loops can re-bloat context if not budgeted",
+          "example": "pulling 5 full files each turn"
+        }
+      ],
+      "failure_modes": [
+        "no locator so rehydrate impossible",
+        "rehydrate entire history on any uncertainty"
+      ],
+      "acceptance_tests": [
+        "rehydrate procedure documented with size cap and stop condition"
+      ],
+      "revisit_triggers": [
+        "frequent full-session reloads",
+        "broken locators"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "COMPRESS_RATIO",
+      "topic": "compression_fidelity_tradeoff",
+      "definition": "Track achieved compression ratio vs fidelity probes. Aggressive 50\u00d7 summaries often destroy numeric anchors; mild 3\u20138\u00d7 on narrative with verbatim carve-outs usually preserves decision quality. Set a minimum fidelity floor (e.g. probe \u22650.85 on invariants) that overrides ratio goals.",
+      "node_type": "work_unit",
+      "group": "measurement",
+      "scope_boundary": {
+        "included": [
+          "ratio metrics",
+          "fidelity floors",
+          "carve-out accounting"
+        ],
+        "excluded": [
+          "BLEU against chat logs as sole quality"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CONTEXT_ROT",
+        "SUMMARIZE_POLICY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.76,
+        "user_value": 0.78,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.4,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.6,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.66,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.24,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.24,
+          0.52
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "high compression celebrated while constraint probes drop below 0.7",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fidelity floor stops unsafe over-compression",
+          "example": "block ship of digest if invariant probe <0.85"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-strict floors prevent any compaction on small windows",
+          "example": "32k model cannot move if floor demands 99% recall of all prose"
+        }
+      ],
+      "failure_modes": [
+        "optimizing only for ratio",
+        "no pre/post probe"
+      ],
+      "acceptance_tests": [
+        "report ratio and probe scores together for each compact event"
+      ],
+      "revisit_triggers": [
+        "probe regressions after compact",
+        "ratio stuck near 1.0 with overflow risk"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ATTENTION_HOTSPOTS",
+      "topic": "attention_and_position_bias",
+      "definition": "Account for lost-in-the-middle and primacy/recency effects: critical constraints perform better at start (system) and end (tail), not buried mid-prompt. After compaction, re-place pins and working set at privileged positions; do not leave them only inside a middle digest blob.",
+      "node_type": "work_unit",
+      "group": "measurement",
+      "scope_boundary": {
+        "included": [
+          "pin placement at edges",
+          "working set near end before user turn",
+          "avoid mid-prompt only homes"
+        ],
+        "excluded": [
+          "internal transformer attention research without ops mapping"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "SYSTEM_INVARIANT",
+        "HISTORY_TAIL",
+        "WORKING_SET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.81,
+        "business_value": 0.77,
+        "user_value": 0.83,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.36,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.61,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.64,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.26,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.26,
+          0.54
+        ],
+        "posterior_importance": 0.54,
+        "update_signal": "model ignores a rule that exists only mid-prompt in a 80k context",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Position-aware layout recovers compliance without more tokens",
+          "example": "moving hard denials to system+tail cuts violations"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-duplicating pins everywhere wastes budget",
+          "example": "same 3k rules pasted 4 times"
+        }
+      ],
+      "failure_modes": [
+        "burying ASSIGNEE only inside a long digest",
+        "assuming model reads all tokens equally"
+      ],
+      "acceptance_tests": [
+        "layout checklist: invariants in system; working set near tail; digest in middle"
+      ],
+      "revisit_triggers": [
+        "rules present but ignored",
+        "duplicate pin bloat"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SLIDING_WINDOW",
+      "topic": "naive_sliding_window_failure",
+      "definition": "Document why naive keep-last-N-tokens fails: it drops system invariants, loses early acceptance criteria, and severs dependency on early design decisions. Sliding window is acceptable only as a last-resort emergency after structured eviction fails \u2014 and must re-prepend pins.",
+      "node_type": "work_unit",
+      "group": "risks",
+      "scope_boundary": {
+        "included": [
+          "failure modes of FIFO context",
+          "emergency window + re-pin pattern"
+        ],
+        "excluded": [
+          "OS page cache tuning"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "EVICTION_ORDER",
+        "SYSTEM_INVARIANT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.74,
+        "user_value": 0.8,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.63,
+        "confidence_score": 0.6,
+        "revisit_pressure": 0.28,
+        "lock_score": 0.68,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "implementation uses drop-oldest without re-pinning system rules",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Naming the anti-pattern prevents 'simple' overflow fixes that break safety",
+          "example": "code review blocks bare sliding window"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Emergency window still needed under hard faults \u2014 must be paired with re-pin",
+          "example": "crash path forgets re-pin step"
+        }
+      ],
+      "failure_modes": [
+        "defaulting all agents to last-8k-only",
+        "sliding window that clips system message"
+      ],
+      "acceptance_tests": [
+        "design doc forbids bare sliding window; emergency path includes re-pin invariants"
+      ],
+      "revisit_triggers": [
+        "any overflow handler adds FIFO drop",
+        "incident of dropped system rules"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MULTI_AGENT_SHARE",
+      "topic": "multi_agent_budget_sharing",
+      "definition": "Allocate budget across parent, subagents, and xverify roles: subagents should start lean (fresh context + task packet), not clone the full parent transcript. Shared pins can be a common prefix; task-specific bulk stays local. Parent retains orchestration state; workers return digests not full chains. Prevents N\u00d7 replication of the same 50k history.",
+      "node_type": "work_unit",
+      "group": "multi_agent",
+      "scope_boundary": {
+        "included": [
+          "per-role budget caps",
+          "task packet vs full clone",
+          "return digests to parent"
+        ],
+        "excluded": [
+          "HR team sizing"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "WORKING_SET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.82,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.48,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.67,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.65,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "each subagent receives full parent transcript and hits cap before working",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Role-scoped budgets multiply effective capacity",
+          "example": "3 subagents \u00d7 20k packets << 3\u00d780k clones"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Under-sharing causes duplicated retrieval and inconsistent facts",
+          "example": "each agent fetches different file versions"
+        }
+      ],
+      "failure_modes": [
+        "spawn with full chat always",
+        "no budget for worker replies into parent"
+      ],
+      "acceptance_tests": [
+        "spawn policy: packet contents + token cap; parent merge expects digest schema"
+      ],
+      "revisit_triggers": [
+        "workers overflow on spawn",
+        "parent merge loses worker decisions"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PROGRESSIVE_DISCLOSURE",
+      "topic": "progressive_disclosure_loading",
+      "definition": "Load detail only when a step needs it: start with L0 + goal, pull file bodies on edit, pull logs on failure. Progressive disclosure is the dual of eviction \u2014 an admit policy. Pair with forecast so disclosure cannot overrun headroom.",
+      "node_type": "work_unit",
+      "group": "multi_agent",
+      "scope_boundary": {
+        "included": [
+          "on-demand file loads",
+          "failure-driven log pulls",
+          "admit policy"
+        ],
+        "excluded": [
+          "eager full-corpus RAG for every turn"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BUDGET_FORECAST",
+        "REHYDRATE_PATH",
+        "WORKING_SET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.38,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.59,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.68,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "agent preloads entire repo tree into context at task start",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Admit-only-as-needed keeps early turns cheap and focused",
+          "example": "first turn uses 8k not 80k"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too-lazy loading causes extra round-trips and partial edits",
+          "example": "edits file without reading current content"
+        }
+      ],
+      "failure_modes": [
+        "load everything 'to be safe'",
+        "never read file before patch"
+      ],
+      "acceptance_tests": [
+        "load policy: default L0; read-before-edit; logs on fail; cap per admit"
+      ],
+      "revisit_triggers": [
+        "high patch-fail from unread files",
+        "average context at turn1 >40% cap"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "BUDGET_TELEMETRY",
+      "topic": "budget_telemetry_and_audit",
+      "definition": "Emit structured telemetry per turn: tokens_in, tokens_by_segment, compact_events, probe_scores, evictions. Telemetry enables offline tuning of thresholds and proves gate-time claims about context discipline. Strip secrets; keep ids and sizes.",
+      "node_type": "work_unit",
+      "group": "measurement",
+      "scope_boundary": {
+        "included": [
+          "per-turn segment sizes",
+          "compact event logs",
+          "probe score history"
+        ],
+        "excluded": [
+          "end-user product analytics"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "CONTEXT_ROT",
+        "COMPACTION_TRIGGERS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.8,
+        "user_value": 0.76,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.3,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.53,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.29,
+        "lock_score": 0.71,
+        "final_importance": 0.67
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.58,
+        "update_signal": "cannot explain why an agent overflowed or dropped a constraint",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Telemetry makes context engineering inspectable",
+          "example": "postmortem shows eviction of working set at t=41"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Verbose telemetry can itself bloat if written into the prompt",
+          "example": "dumping 5k metrics into system each turn"
+        }
+      ],
+      "failure_modes": [
+        "no logs of compact decisions",
+        "telemetry containing secrets/tokens"
+      ],
+      "acceptance_tests": [
+        "telemetry schema includes tokens_by_segment and compact_reason; sample run produces records"
+      ],
+      "revisit_triggers": [
+        "missing segments in reports",
+        "PII/secrets found in telemetry"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "HARD_CAP_ENFORCE",
+      "topic": "hard_cap_enforcement",
+      "definition": "Enforce a hard cap in the runtime: refuse to send prompts over limit; prefer fail-closed with compact/externalize over silent provider truncation. Provider-side truncation is untrusted because it may drop system or tail unpredictably. Client-side enforcement is part of correctness.",
+      "node_type": "work_unit",
+      "group": "risks",
+      "scope_boundary": {
+        "included": [
+          "local preflight token check",
+          "fail-closed over silent truncate",
+          "compact-or-refuse path"
+        ],
+        "excluded": [
+          "billing alerts only"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TOKEN_BUDGET",
+        "EVICTION_ORDER",
+        "COMPACTION_TRIGGERS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.86,
+        "user_value": 0.85,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.65,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.7,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.69,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.9,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.12,
+          0.34
+        ],
+        "posterior_importance": 0.74,
+        "update_signal": "API returns truncated prompt or context_length_exceeded with no local pre-check",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.93,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Local hard cap prevents undefined provider truncation",
+          "example": "preflight blocks send at 100% of model limit"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too-strict local estimator may refuse valid prompts if tokenizer mismatch",
+          "example": "estimate 5% high causes false refusals"
+        }
+      ],
+      "failure_modes": [
+        "rely on server error as the only control",
+        "retry same oversize prompt"
+      ],
+      "acceptance_tests": [
+        "preflight check exists; on fail runs compact/evict once then refuse with error"
+      ],
+      "revisit_triggers": [
+        "provider truncation still observed",
+        "false refusals >2%"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PINNED_FACTS",
+      "topic": "pinned_fact_register",
+      "definition": "Maintain a small register of durable task facts (branch name, task id, deliverable paths, gate commands) separate from narrative digests. Register entries are short key-value lines updated in place; they are the preferred L0 substrate for multi-hour work.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "task id branch paths",
+          "gate commands",
+          "deliverable checklist"
+        ],
+        "excluded": [
+          "long prose rationales"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "SYSTEM_INVARIANT",
+        "WORKING_SET",
+        "VERBATIM_KEEP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.87,
+        "business_value": 0.83,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.77,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.61,
+        "confidence_score": 0.6,
+        "revisit_pressure": 0.28,
+        "lock_score": 0.71,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "agent invents a wrong branch name after narrative-only compaction",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "KV register survives when prose digests drift",
+          "example": "branch=grok/task-007-ctxeng always exact"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stale register entries mislead if not updated on task change",
+          "example": "old TASK-005 paths after new assign"
+        }
+      ],
+      "failure_modes": [
+        "narrative only with no KV",
+        "register with paragraphs not keys"
+      ],
+      "acceptance_tests": [
+        "register file or block with \u226430 keys; updated when task facts change"
+      ],
+      "revisit_triggers": [
+        "wrong path actions after compact",
+        "register size >2k tokens"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "TOKEN_BUDGET",
+      "to": "WORKING_SET",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "working set sized against ledger",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_002",
+      "from": "TOKEN_BUDGET",
+      "to": "SYSTEM_INVARIANT",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "pins counted in fixed cost",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_003",
+      "from": "TOKEN_BUDGET",
+      "to": "COMPACTION_TRIGGERS",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "triggers read utilization",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_004",
+      "from": "TOKEN_BUDGET",
+      "to": "HARD_CAP_ENFORCE",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "enforcement uses same meter",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_005",
+      "from": "WORKING_SET",
+      "to": "HISTORY_TAIL",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "tail complements working set",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_006",
+      "from": "WORKING_SET",
+      "to": "DIGEST_HIERARCHY",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "digests preserve working-set facts",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_007",
+      "from": "WORKING_SET",
+      "to": "PINNED_FACTS",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.85,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "register stores working-set keys",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_008",
+      "from": "SYSTEM_INVARIANT",
+      "to": "VERBATIM_KEEP",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "invariants are verbatim class",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_009",
+      "from": "SYSTEM_INVARIANT",
+      "to": "SLIDING_WINDOW",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "emergency window must re-pin",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_010",
+      "from": "DIGEST_HIERARCHY",
+      "to": "SUMMARIZE_POLICY",
+      "edge_type": "dependency",
+      "relation_strength": 0.83,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.83,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "policy populates layers",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_011",
+      "from": "DIGEST_HIERARCHY",
+      "to": "REHYDRATE_PATH",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "rehydrate walks layers",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_012",
+      "from": "VERBATIM_KEEP",
+      "to": "EXTERNALIZE_STORE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "hashes and paths stay exact",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_013",
+      "from": "SUMMARIZE_POLICY",
+      "to": "EVICTION_ORDER",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "drop-class evicted first",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_014",
+      "from": "EXTERNALIZE_STORE",
+      "to": "REHYDRATE_PATH",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "locators enable rehydrate",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_015",
+      "from": "COMPACTION_TRIGGERS",
+      "to": "BUDGET_FORECAST",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "forecast can trip early compact",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_016",
+      "from": "CONTEXT_ROT",
+      "to": "COMPRESS_RATIO",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "fidelity floor from probes",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_017",
+      "from": "BUDGET_FORECAST",
+      "to": "PROGRESSIVE_DISCLOSURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.77,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.77,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "admit only if headroom",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_018",
+      "from": "MULTI_AGENT_SHARE",
+      "to": "DIGEST_HIERARCHY",
+      "edge_type": "causal",
+      "relation_strength": 0.81,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.81,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "workers return digests not full clones (causal ops link)",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_019",
+      "from": "COMPACTION_TRIGGERS",
+      "to": "EVICTION_ORDER",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "trigger starts ordered eviction",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_020",
+      "from": "CONTEXT_ROT",
+      "to": "COMPACTION_TRIGGERS",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "rot score can trigger compact",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_021",
+      "from": "HARD_CAP_ENFORCE",
+      "to": "SLIDING_WINDOW",
+      "edge_type": "causal",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.75,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "failed enforce must not FIFO-drop system",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_022",
+      "from": "ATTENTION_HOTSPOTS",
+      "to": "CONTEXT_ROT",
+      "edge_type": "causal",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "mid-prompt burial looks like rot",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_023",
+      "from": "SYSTEM_INVARIANT",
+      "to": "EVICTION_ORDER",
+      "edge_type": "constraint",
+      "relation_strength": 0.92,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.92,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "eviction must not remove pins",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_024",
+      "from": "HARD_CAP_ENFORCE",
+      "to": "PROGRESSIVE_DISCLOSURE",
+      "edge_type": "constraint",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "admit cannot exceed hard cap",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_025",
+      "from": "VERBATIM_KEEP",
+      "to": "SUMMARIZE_POLICY",
+      "edge_type": "constraint",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "summarizer cannot rewrite verbatim spans",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_026",
+      "from": "TOKEN_BUDGET",
+      "to": "BUDGET_FORECAST",
+      "edge_type": "sequence",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.76,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "ledger before forecast",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_027",
+      "from": "SUMMARIZE_POLICY",
+      "to": "DIGEST_HIERARCHY",
+      "edge_type": "sequence",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "policy then layer fill",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_028",
+      "from": "EVICTION_ORDER",
+      "to": "REHYDRATE_PATH",
+      "edge_type": "sequence",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "after eviction ensure rehydrate still works",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_029",
+      "from": "BUDGET_TELEMETRY",
+      "to": "COMPACTION_TRIGGERS",
+      "edge_type": "feedback",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.7,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.12,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "telemetry tunes thresholds",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_030",
+      "from": "COMPRESS_RATIO",
+      "to": "SUMMARIZE_POLICY",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "fidelity results revise summarize rules",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_031",
+      "from": "CONTEXT_ROT",
+      "to": "ATTENTION_HOTSPOTS",
+      "edge_type": "feedback",
+      "relation_strength": 0.71,
+      "signed_tension": 0.0,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.71,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.12,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "probe fails drive layout changes",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_032",
+      "from": "PINNED_FACTS",
+      "to": "SYSTEM_INVARIANT",
+      "edge_type": "similarity",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.68,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.12,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "both are durable non-narrative state",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_033",
+      "from": "HISTORY_TAIL",
+      "to": "WORKING_SET",
+      "edge_type": "similarity",
+      "relation_strength": 0.66,
+      "signed_tension": 0.0,
+      "edge_score": 0.12,
+      "edge_heat": 0.25,
+      "prior_relation_strength": 0.66,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.12,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "both high-fidelity live context",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_034",
+      "from": "SUMMARIZE_POLICY",
+      "to": "VERBATIM_KEEP",
+      "edge_type": "conflict",
+      "relation_strength": 0.76,
+      "signed_tension": -0.45,
+      "edge_score": 0.27,
+      "edge_heat": 0.35,
+      "prior_relation_strength": 0.76,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.27,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "summarize pressure vs keep-every-error-text pressure",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "carve character-critical spans first; summarize only non-verbatim narrative"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "HISTORY_TAIL",
+      "to": "DIGEST_HIERARCHY",
+      "edge_type": "conflict",
+      "relation_strength": 0.74,
+      "signed_tension": -0.45,
+      "edge_score": 0.26,
+      "edge_heat": 0.34,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.26,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "long high-fidelity tail vs room for structured digests",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "cap tail by tokens; graduate older turns to L0/L1 before growing tail"
+    },
+    {
+      "id": "EDGE_036",
+      "from": "MULTI_AGENT_SHARE",
+      "to": "WORKING_SET",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.45,
+      "edge_score": 0.26,
+      "edge_heat": 0.33,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.26,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "share enough for consistency vs keep worker contexts lean",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "share pins+task packet only; workers do not clone full parent working set"
+    },
+    {
+      "id": "EDGE_037",
+      "from": "COMPRESS_RATIO",
+      "to": "CONTEXT_ROT",
+      "edge_type": "conflict",
+      "relation_strength": 0.78,
+      "signed_tension": -0.45,
+      "edge_score": 0.28,
+      "edge_heat": 0.35,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.28,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "aggressive ratio targets vs probe fidelity",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "fidelity floor outranks ratio; stop compression when probes fail"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "fidelity_vs_compression",
+      "description": "Preserve decision quality vs free tokens",
+      "poles": [
+        "maximum fidelity",
+        "maximum compression"
+      ],
+      "resolution_hint": "enforce fidelity floor; compress narrative only after verbatim carve-outs",
+      "affected_nodes": [
+        "COMPRESS_RATIO",
+        "SUMMARIZE_POLICY",
+        "VERBATIM_KEEP",
+        "CONTEXT_ROT"
+      ],
+      "id": "CA_01"
+    },
+    {
+      "name": "tail_vs_digest_room",
+      "description": "Recent raw turns vs structured historical digests",
+      "poles": [
+        "long raw tail",
+        "large digest budget"
+      ],
+      "resolution_hint": "token-cap the tail; graduate older turns on schedule",
+      "affected_nodes": [
+        "HISTORY_TAIL",
+        "DIGEST_HIERARCHY",
+        "TOKEN_BUDGET"
+      ],
+      "id": "CA_02"
+    },
+    {
+      "name": "pin_bloat_vs_safety",
+      "description": "More pinned rules vs remaining task capacity",
+      "poles": [
+        "pin everything durable",
+        "minimal pins"
+      ],
+      "resolution_hint": "pin only hard denials and acceptance criteria; KV register for task facts",
+      "affected_nodes": [
+        "SYSTEM_INVARIANT",
+        "PINNED_FACTS",
+        "TOKEN_BUDGET"
+      ],
+      "id": "CA_03"
+    },
+    {
+      "name": "share_vs_isolate_agents",
+      "description": "Consistent shared state vs lean worker contexts",
+      "poles": [
+        "full shared transcript",
+        "fully isolated workers"
+      ],
+      "resolution_hint": "share pins+packet; isolate bulk; merge digests",
+      "affected_nodes": [
+        "MULTI_AGENT_SHARE",
+        "WORKING_SET",
+        "DIGEST_HIERARCHY"
+      ],
+      "id": "CA_04"
+    },
+    {
+      "name": "eager_load_vs_progressive",
+      "description": "Preload context vs load on demand",
+      "poles": [
+        "eager full load",
+        "minimal admit"
+      ],
+      "resolution_hint": "progressive disclosure with read-before-edit and forecast gates",
+      "affected_nodes": [
+        "PROGRESSIVE_DISCLOSURE",
+        "BUDGET_FORECAST",
+        "REHYDRATE_PATH"
+      ],
+      "id": "CA_05"
+    },
+    {
+      "name": "externalize_vs_inline",
+      "description": "Pointers out of band vs everything in prompt",
+      "poles": [
+        "always externalize bulk",
+        "always inline for locality"
+      ],
+      "resolution_hint": "externalize when p90 size > headroom fraction; keep gist+hash inline",
+      "affected_nodes": [
+        "EXTERNALIZE_STORE",
+        "TOKEN_BUDGET",
+        "VERBATIM_KEEP"
+      ],
+      "id": "CA_06"
+    },
+    {
+      "name": "trigger_sensitivity",
+      "description": "Early compact thrash vs late overflow",
+      "poles": [
+        "compact early often",
+        "compact only at hard fail"
+      ],
+      "resolution_hint": "util 80\u201390% plus forecast; avoid every-turn compact",
+      "affected_nodes": [
+        "COMPACTION_TRIGGERS",
+        "HARD_CAP_ENFORCE",
+        "BUDGET_TELEMETRY"
+      ],
+      "id": "CA_07"
+    },
+    {
+      "name": "position_duplication",
+      "description": "Duplicate pins for attention vs token cost",
+      "poles": [
+        "multi-position pin copies",
+        "single placement"
+      ],
+      "resolution_hint": "system + near-tail once each; no mid-prompt-only; avoid 4\u00d7 paste",
+      "affected_nodes": [
+        "ATTENTION_HOTSPOTS",
+        "SYSTEM_INVARIANT",
+        "TOKEN_BUDGET"
+      ],
+      "id": "CA_08"
+    },
+    {
+      "name": "emergency_window_vs_structure",
+      "description": "FIFO emergency drop vs ordered eviction",
+      "poles": [
+        "bare sliding window",
+        "structured eviction only"
+      ],
+      "resolution_hint": "structured first; emergency window only with mandatory re-pin",
+      "affected_nodes": [
+        "SLIDING_WINDOW",
+        "EVICTION_ORDER",
+        "SYSTEM_INVARIANT"
+      ],
+      "id": "CA_09"
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "Tool returns 40k JSON when headroom is 8k",
+      "trigger": "p90 tool size unknown or underestimated",
+      "affected_nodes": [
+        "BUDGET_FORECAST",
+        "HARD_CAP_ENFORCE",
+        "EXTERNALIZE_STORE"
+      ],
+      "mitigation": "preflight forecast; stream/truncate tool to store; gist+hash only in prompt",
+      "severity": "high",
+      "id": "EC_01"
+    },
+    {
+      "description": "Provider silently truncates middle of prompt",
+      "trigger": "no local hard cap; rely on API",
+      "affected_nodes": [
+        "HARD_CAP_ENFORCE",
+        "SLIDING_WINDOW",
+        "SYSTEM_INVARIANT"
+      ],
+      "mitigation": "local token preflight; refuse or compact before send",
+      "severity": "high",
+      "id": "EC_02"
+    },
+    {
+      "description": "Subagent spawned with full parent transcript",
+      "trigger": "default clone spawn",
+      "affected_nodes": [
+        "MULTI_AGENT_SHARE",
+        "TOKEN_BUDGET",
+        "WORKING_SET"
+      ],
+      "mitigation": "task packet policy; cap worker budget; return digest",
+      "severity": "high",
+      "id": "EC_03"
+    },
+    {
+      "description": "Compaction paraphrases commit SHA",
+      "trigger": "verbatim policy missing for hex ids",
+      "affected_nodes": [
+        "VERBATIM_KEEP",
+        "PINNED_FACTS",
+        "SUMMARIZE_POLICY"
+      ],
+      "mitigation": "carve SHAs; store in register; test with probe",
+      "severity": "high",
+      "id": "EC_04"
+    },
+    {
+      "description": "Context rot with utilization only at 50%",
+      "trigger": "noisy redundant tool logs dominate attention",
+      "affected_nodes": [
+        "CONTEXT_ROT",
+        "EVICTION_ORDER",
+        "ATTENTION_HOTSPOTS"
+      ],
+      "mitigation": "evict duplicates; re-place pins; measure probes not just size",
+      "severity": "medium",
+      "id": "EC_05"
+    },
+    {
+      "description": "Rehydrate locator points at deleted /tmp file",
+      "trigger": "ephemeral paths externalized",
+      "affected_nodes": [
+        "EXTERNALIZE_STORE",
+        "REHYDRATE_PATH"
+      ],
+      "mitigation": "use repo or durable store paths; include hash; fail loud on miss",
+      "severity": "medium",
+      "id": "EC_06"
+    },
+    {
+      "description": "32k model with 12k pinned boilerplate",
+      "trigger": "pin bloat",
+      "affected_nodes": [
+        "SYSTEM_INVARIANT",
+        "PINNED_FACTS",
+        "TOKEN_BUDGET"
+      ],
+      "mitigation": "split true invariants from task KV; trim style tips from pins",
+      "severity": "medium",
+      "id": "EC_07"
+    },
+    {
+      "description": "Every-turn compaction thrash",
+      "trigger": "threshold set at 50% util",
+      "affected_nodes": [
+        "COMPACTION_TRIGGERS",
+        "COMPRESS_RATIO",
+        "BUDGET_TELEMETRY"
+      ],
+      "mitigation": "raise threshold; min turns between compacts; track thrash metric",
+      "severity": "medium",
+      "id": "EC_08"
+    },
+    {
+      "description": "Emergency FIFO drops system message",
+      "trigger": "overflow handler uses drop-oldest",
+      "affected_nodes": [
+        "SLIDING_WINDOW",
+        "SYSTEM_INVARIANT",
+        "HARD_CAP_ENFORCE"
+      ],
+      "mitigation": "ban bare FIFO; re-pin path mandatory",
+      "severity": "high",
+      "id": "EC_09"
+    },
+    {
+      "description": "Progressive disclosure skips read-before-edit",
+      "trigger": "lazy admit extreme",
+      "affected_nodes": [
+        "PROGRESSIVE_DISCLOSURE",
+        "WORKING_SET",
+        "REHYDRATE_PATH"
+      ],
+      "mitigation": "gate edits on file read; budget for read",
+      "severity": "medium",
+      "id": "EC_10"
+    },
+    {
+      "description": "Multi-day session with no telemetry",
+      "trigger": "cannot tune thresholds after incidents",
+      "affected_nodes": [
+        "BUDGET_TELEMETRY",
+        "COMPACTION_TRIGGERS",
+        "CONTEXT_ROT"
+      ],
+      "mitigation": "enable segment telemetry; review weekly",
+      "severity": "low",
+      "id": "EC_11"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "measure_ledger",
+      "node_ref": "TOKEN_BUDGET",
+      "description": "Count tokens per segment with model tokenizer",
+      "artifact": "token ledger",
+      "gate": "sum and headroom recorded",
+      "id": "WF_01",
+      "step": 1
+    },
+    {
+      "action": "refresh_working_set",
+      "node_ref": "WORKING_SET",
+      "description": "Update goal, paths, open decisions, last plan step",
+      "artifact": "working set block",
+      "gate": "goal non-empty and paths exist",
+      "id": "WF_02",
+      "step": 2
+    },
+    {
+      "action": "verify_pins",
+      "node_ref": "SYSTEM_INVARIANT",
+      "description": "Ensure hard denials and acceptance criteria present verbatim",
+      "artifact": "pin checklist",
+      "gate": "all invariants present",
+      "id": "WF_03",
+      "step": 3
+    },
+    {
+      "action": "forecast_next",
+      "node_ref": "BUDGET_FORECAST",
+      "description": "Estimate p90 tool/retrieval growth + reply reserve",
+      "artifact": "forecast record",
+      "gate": "go or compact decision explicit",
+      "id": "WF_04",
+      "step": 4
+    },
+    {
+      "action": "compact_if_triggered",
+      "node_ref": "COMPACTION_TRIGGERS",
+      "description": "If thresholds hit, run ordered eviction and digest promotion",
+      "artifact": "compact event",
+      "gate": "util below threshold or refuse",
+      "id": "WF_05",
+      "step": 5
+    },
+    {
+      "action": "carve_verbatim",
+      "node_ref": "VERBATIM_KEEP",
+      "description": "Extract SHAs paths errors before summarize",
+      "artifact": "verbatim span list",
+      "gate": "character-critical classes covered",
+      "id": "WF_06",
+      "step": 6
+    },
+    {
+      "action": "update_digests",
+      "node_ref": "DIGEST_HIERARCHY",
+      "description": "Promote narrative to L0/L1/L2 with ids",
+      "artifact": "digest layers",
+      "gate": "L0 has concrete facts",
+      "id": "WF_07",
+      "step": 7
+    },
+    {
+      "action": "externalize_bulk",
+      "node_ref": "EXTERNALIZE_STORE",
+      "description": "Write bulky artifacts out; leave locator+hash+gist",
+      "artifact": "locator entries",
+      "gate": "each bulk item has durable locator",
+      "id": "WF_08",
+      "step": 8
+    },
+    {
+      "action": "probe_rot",
+      "node_ref": "CONTEXT_ROT",
+      "description": "Run constraint-recall and decision consistency probes",
+      "artifact": "probe scores",
+      "gate": "invariant probe \u2265 fidelity floor",
+      "id": "WF_09",
+      "step": 9
+    },
+    {
+      "action": "layout_positions",
+      "node_ref": "ATTENTION_HOTSPOTS",
+      "description": "Place pins in system and working set near tail",
+      "artifact": "layout checklist",
+      "gate": "no mid-only critical rules",
+      "id": "WF_10",
+      "step": 10
+    },
+    {
+      "action": "emit_telemetry",
+      "node_ref": "BUDGET_TELEMETRY",
+      "description": "Log segment sizes, compact reasons, probes",
+      "artifact": "telemetry records",
+      "gate": "records written without secrets",
+      "id": "WF_11",
+      "step": 11
+    }
+  ],
+  "priority_order": [
+    "SYSTEM_INVARIANT",
+    "TOKEN_BUDGET",
+    "WORKING_SET",
+    "HARD_CAP_ENFORCE",
+    "DIGEST_HIERARCHY",
+    "CONTEXT_ROT",
+    "VERBATIM_KEEP",
+    "EVICTION_ORDER",
+    "MULTI_AGENT_SHARE",
+    "COMPACTION_TRIGGERS",
+    "REHYDRATE_PATH",
+    "PINNED_FACTS",
+    "EXTERNALIZE_STORE",
+    "BUDGET_FORECAST",
+    "SLIDING_WINDOW",
+    "SUMMARIZE_POLICY",
+    "ATTENTION_HOTSPOTS",
+    "PROGRESSIVE_DISCLOSURE",
+    "COMPRESS_RATIO",
+    "HISTORY_TAIL",
+    "BUDGET_TELEMETRY"
+  ],
+  "priority_rationale": "Token metering, invariants, and working set outrank digest polish; enforcement and eviction safety outrank aggressive compression ratios.",
+  "dominance_rules": [
+    {
+      "rule": "hard_cap_over_convenience",
+      "rationale": "undefined truncation is worse than delayed work",
+      "trigger": "prompt would exceed model limit",
+      "action": "compact/externalize or refuse; never silent truncate",
+      "id": "DR_01",
+      "priority": 1
+    },
+    {
+      "rule": "invariants_over_history",
+      "rationale": "lost safety/scope rules beat lost chatter",
+      "trigger": "eviction under pressure",
+      "action": "protect pins; drop duplicates and aged L2 first",
+      "id": "DR_02",
+      "priority": 2
+    },
+    {
+      "rule": "fidelity_floor_over_ratio",
+      "rationale": "high compression with failed probes is a defect",
+      "trigger": "ratio targets conflict with probe scores",
+      "action": "stop at floor; keep more narrative",
+      "id": "DR_03",
+      "priority": 3
+    },
+    {
+      "rule": "working_set_over_tail_chatter",
+      "rationale": "next action needs goal/paths more than old acks",
+      "trigger": "tail and working set compete",
+      "action": "preserve working set; shorten tail",
+      "id": "DR_04",
+      "priority": 1
+    },
+    {
+      "rule": "structured_eviction_over_fifo",
+      "rationale": "FIFO drops system and early acceptance criteria",
+      "trigger": "overflow handler design",
+      "action": "ordered eviction; emergency window only with re-pin",
+      "id": "DR_05",
+      "priority": 2
+    },
+    {
+      "rule": "task_packet_over_full_clone",
+      "rationale": "N full clones exhaust budgets and leak irrelevancies",
+      "trigger": "spawning subagents",
+      "action": "lean packet + digest return",
+      "id": "DR_06",
+      "priority": 3
+    },
+    {
+      "rule": "durable_locator_over_ephemeral",
+      "rationale": "rehydrate must work hours later",
+      "trigger": "externalizing logs/diffs",
+      "action": "repo/store paths with hash; no bare /tmp",
+      "id": "DR_07",
+      "priority": 1
+    },
+    {
+      "rule": "measure_before_tuning",
+      "rationale": "threshold changes without telemetry thrash",
+      "trigger": "adjusting compact thresholds",
+      "action": "require segment telemetry sample first",
+      "id": "DR_08",
+      "priority": 2
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "no_bare_sliding_window",
+      "prevents": "dropping system invariants on overflow",
+      "id": "ARR_01"
+    },
+    {
+      "rule": "no_paraphrase_of_shas_paths_errors",
+      "prevents": "acting on wrong artifacts",
+      "id": "ARR_02"
+    },
+    {
+      "rule": "no_spawn_full_transcript_by_default",
+      "prevents": "multi-agent budget explosion",
+      "id": "ARR_03"
+    },
+    {
+      "rule": "no_compact_without_probe_or_checklist",
+      "prevents": "invisible constraint loss",
+      "id": "ARR_04"
+    },
+    {
+      "rule": "no_externalize_without_locator_hash",
+      "prevents": "unrecoverable bulk",
+      "id": "ARR_05"
+    },
+    {
+      "rule": "no_pin_style_tips_as_invariants",
+      "prevents": "pin bloat",
+      "id": "ARR_06"
+    },
+    {
+      "rule": "no_every_turn_compaction",
+      "prevents": "thrash and nuance loss",
+      "id": "ARR_07"
+    },
+    {
+      "rule": "no_secrets_in_telemetry_or_exchange",
+      "prevents": "credential leakage",
+      "id": "ARR_08"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "context_length_exceeded or local preflight fail",
+      "action": "ordered eviction + externalize; re-pin; retry once; else refuse",
+      "nodes": [
+        "HARD_CAP_ENFORCE",
+        "EVICTION_ORDER",
+        "EXTERNALIZE_STORE"
+      ],
+      "priority": 1,
+      "id": "IP_01"
+    },
+    {
+      "trigger": "invariant probe fails after compact",
+      "action": "restore pins from register; reduce compression; re-place positions",
+      "nodes": [
+        "CONTEXT_ROT",
+        "SYSTEM_INVARIANT",
+        "ATTENTION_HOTSPOTS"
+      ],
+      "priority": 1,
+      "id": "IP_02"
+    },
+    {
+      "trigger": "tool overflow repeats",
+      "action": "update p90 priors; force externalize path for that tool",
+      "nodes": [
+        "BUDGET_FORECAST",
+        "EXTERNALIZE_STORE",
+        "BUDGET_TELEMETRY"
+      ],
+      "priority": 2,
+      "id": "IP_03"
+    },
+    {
+      "trigger": "agent reopens settled decisions",
+      "action": "strengthen L0/register; extend working set; check eviction logs",
+      "nodes": [
+        "WORKING_SET",
+        "PINNED_FACTS",
+        "EVICTION_ORDER"
+      ],
+      "priority": 2,
+      "id": "IP_04"
+    },
+    {
+      "trigger": "subagents overflow on spawn",
+      "action": "shrink packet; remove parent history; raise worker-side compact",
+      "nodes": [
+        "MULTI_AGENT_SHARE",
+        "DIGEST_HIERARCHY",
+        "TOKEN_BUDGET"
+      ],
+      "priority": 2,
+      "id": "IP_05"
+    },
+    {
+      "trigger": "rehydrate misses",
+      "action": "fix locators; migrate ephemeral to durable store",
+      "nodes": [
+        "REHYDRATE_PATH",
+        "EXTERNALIZE_STORE"
+      ],
+      "priority": 3,
+      "id": "IP_06"
+    },
+    {
+      "trigger": "compact thrash",
+      "action": "raise util threshold; set min turns between compacts",
+      "nodes": [
+        "COMPACTION_TRIGGERS",
+        "BUDGET_TELEMETRY",
+        "COMPRESS_RATIO"
+      ],
+      "priority": 3,
+      "id": "IP_07"
+    }
+  ],
+  "validation_protocol": {
+    "required_checks": [
+      "all node ids unique",
+      "all edge ids unique EDGE_XXX format",
+      "all from/to in edges reference valid node ids",
+      "all competency_question_refs resolve to valid CQ ids",
+      "all evidence_refs resolve to valid source_registry ids",
+      "all priority_order entries are valid node ids with no duplicates",
+      "high_risk_nodes (risk_if_wrong>=0.80) have non-empty acceptance_tests and human_review_required=true",
+      "high_coupling_nodes (cross_topic_coupling>=0.75) have non-empty revisit_triggers",
+      "conflict edges have signed_tension<0 and resolution_rule present",
+      "dependency edges form no cycles",
+      "observed_impact=0.0 for all nodes (no observed data)",
+      "SRC_HEURISTIC_PRIOR in source_registry",
+      "19-24 nodes, 32-40 edges, 8-10 conflict_axes, 10-12 edge_cases, 9-12 workflow steps",
+      "schema_version=1.3"
+    ],
+    "post_formula_checks": [
+      "all derived fields non-zero after compute run",
+      "final_importance in [0,1] for all nodes",
+      "risk_score, confidence_score, revisit_pressure, lock_score in [0,1]",
+      "posterior_importance in [0,1]",
+      "edge_priority, edge_score, edge_heat in [0,1]"
+    ]
+  },
+  "validation_report": {
+    "status": "pending",
+    "last_validated": null,
+    "validator_version": null,
+    "failed_checks": [],
+    "passed_checks": [],
+    "notes": "built by kb_forge.py; run validators/kb_validator.py --mode dense to certify"
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_budget_ledger_pins_compaction_and_rot_probes_hold_under_long_sessions",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "smallest meaningful instance in this domain",
+        "expected_properties": [
+          "highest-priority node engaged first",
+          "obligations enforced"
+        ]
+      }
+    ],
+    "metrics": [
+      "coverage",
+      "consistency",
+      "obligation_adherence"
+    ],
+    "regression_policy": "re-run evaluation suite after any node addition or formula change",
+    "minimum_pass_conditions": [
+      "all required checks pass",
+      "no formula mismatches"
+    ]
+  },
+  "traceability_matrix": [
+    {
+      "node_id": "TOKEN_BUDGET",
+      "workflow_steps": [
+        "WF_01"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_03",
+        "CA_06",
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "WORKING_SET",
+      "workflow_steps": [
+        "WF_02"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SYSTEM_INVARIANT",
+      "workflow_steps": [
+        "WF_03"
+      ],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "conflict_axes": [
+        "CA_03",
+        "CA_08",
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "HISTORY_TAIL",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_02"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "DIGEST_HIERARCHY",
+      "workflow_steps": [
+        "WF_07"
+      ],
+      "competency_questions": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "VERBATIM_KEEP",
+      "workflow_steps": [
+        "WF_06"
+      ],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_06"
+      ],
+      "conflict_axes": [
+        "CA_01",
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SUMMARIZE_POLICY",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "EXTERNALIZE_STORE",
+      "workflow_steps": [
+        "WF_08"
+      ],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "COMPACTION_TRIGGERS",
+      "workflow_steps": [
+        "WF_05"
+      ],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CONTEXT_ROT",
+      "workflow_steps": [
+        "WF_09"
+      ],
+      "competency_questions": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "BUDGET_FORECAST",
+      "workflow_steps": [
+        "WF_04"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_05"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "EVICTION_ORDER",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "REHYDRATE_PATH",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "conflict_axes": [
+        "CA_05"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "COMPRESS_RATIO",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_10",
+        "CQ_12"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "ATTENTION_HOTSPOTS",
+      "workflow_steps": [
+        "WF_10"
+      ],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SLIDING_WINDOW",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_11"
+      ],
+      "conflict_axes": [
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "MULTI_AGENT_SHARE",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_12"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "PROGRESSIVE_DISCLOSURE",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "conflict_axes": [
+        "CA_05"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "BUDGET_TELEMETRY",
+      "workflow_steps": [
+        "WF_11"
+      ],
+      "competency_questions": [
+        "CQ_09",
+        "CQ_12"
+      ],
+      "conflict_axes": [
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "HARD_CAP_ENFORCE",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "conflict_axes": [
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "PINNED_FACTS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_03"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    }
+  ],
+  "change_control": {
+    "version": "1.0.0",
+    "created": "2026-07-13",
+    "change_log": [],
+    "review_required_for": [
+      "node addition",
+      "edge type change",
+      "dominance_rule change",
+      "scope boundary change"
+    ]
+  }
+}

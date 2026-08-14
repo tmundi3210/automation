@@ -1,0 +1,49 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "experiment": "granularity_factor_analysis",
+  "date": "2026-06-23",
+  "question": "What factor actually controls KB output size/depth: input grain, or the density-mode budget? Does decomposing a domain into subdomains add real coverage?",
+  "method": "Hold DENSITY_MODE=dense constant; vary INPUT GRAIN. Compare one domain-grain KB (IR whole) vs three subdomain-grain KBs (IR ranking / indexing / neural). Gate every run.",
+  "runs": {
+    "domain_grain": {"label": "run1_ir", "unit": "information_retrieval (whole domain)",
+      "nodes": 19, "edges": 39, "est_tokens": 37127, "tok_per_node": 1954, "validator": "pass 35/0/0",
+      "node_character": "coarse: each node = a whole IR area (e.g. 'lexical retrieval', 'evaluation')"},
+    "subdomain_grain": [
+      {"label": "runS1_ir_ranking", "unit": "ranking_and_relevance", "nodes": 20, "edges": 39,
+       "est_tokens": 40648, "tok_per_node": 2032, "validator": "pass 35/0/0",
+       "node_character": "fine: each node = one mechanism (BM25 k1, BM25 b, BM25F, JM/Dirichlet smoothing, LambdaMART, IPS debias, MMR)"},
+      {"label": "runS2_ir_indexing", "unit": "indexing_structures", "nodes": 19, "edges": 39,
+       "est_tokens": 27342, "tok_per_node": 1439, "validator": "pass 35/0/0",
+       "node_character": "fine: each node = one structure/method (PForDelta postings, skip pointers, SPIMI, wavelet tree)"},
+      {"label": "runS3_ir_neural", "unit": "neural_and_semantic_search", "nodes": 20, "edges": 38,
+       "est_tokens": 24520, "tok_per_node": 1226, "validator": "pass 35/0/0",
+       "node_character": "fine: each node = one work unit (DPR bi-encoder, ColBERT, HNSW/PQ, hard-neg mining, RRF, HyDE, RAG, BEIR)"}
+    ]
+  },
+  "aggregate_comparison": {
+    "domain_grain_totals": {"kbs": 1, "nodes": 19, "edges": 39, "tokens": 37127},
+    "subdomain_grain_totals": {"kbs": 3, "nodes": 59, "edges": 116, "tokens": 92510},
+    "coverage_gain": "3.1x nodes, 2.5x tokens for 3x the runs; all gate-passing",
+    "per_kb_node_budget": "19-20 at BOTH grains (dense target 19-24) -> budget is INVARIANT to grain"
+  },
+  "factor_analysis": {
+    "controlling_factor": "the density-mode object budget PER RUN (dense=19-24 nodes / 32-40 edges). It is fixed regardless of how broad or narrow the input scope is.",
+    "role_of_grain": "input grain does NOT change how much one KB produces; it sets the RESOLUTION of the fixed budget (what each node represents).",
+    "batching_up_effect": "more scope in one KB (e.g. 2 domains) -> same fixed budget spread thinner -> per-topic depth DROPS (prior run: IR 19->8 nodes).",
+    "breaking_down_effect": "less scope per KB (subdomain) -> same fixed budget at finer resolution -> per-topic depth RISES; TOTAL coverage = (#KBs) x (budget).",
+    "secondary_factors": {
+      "density_mode": "the PRIMARY knob for per-run budget; change mode (compact/standard/dense) to change how much one run yields, NOT scope.",
+      "semantic_richness": "drives tok/node (observed 1226-2032) and thus total tokens, but NOT node count.",
+      "output_ceiling": "max single KB seen = 40648 tokens, no truncation; practical upper band ~40-45k. Units richer than that must be split or use a lighter mode."
+    }
+  },
+  "scaling_law": "Coverage is multiplied by RECURSIVE DECOMPOSITION + FAN-OUT, not by batch size. Choose grain so each unit is rich enough to justify a full dense budget yet small enough to fit one response (<~40k tok). Generate one dense KB per unit; fan out in parallel; gate + commit each.",
+  "revised_decision": {
+    "supersedes": "DECISION.json domains_per_kb=1 (correct but too coarse)",
+    "unit_of_generation": "ONE taxonomy node at SUBDOMAIN (or field) grain per dense KB",
+    "rationale": "domain grain lumps mechanisms into single nodes and loses detail (BM25 became 1 node); subdomain grain captured the same area as ~20 mechanism-level nodes and still passed the gate.",
+    "recommended_grain": "subdomain/field level for high-value areas; drop to standard/compact for narrow/low-value units; split further only if a unit would exceed ~40k tokens at dense",
+    "knowledge_searcher_implication": "do NOT generate 8 domain KBs; generate ~1 dense KB per subdomain across the seed taxonomy (~24 subdomains -> ~24 dense KBs, ~480-570 fine-grained nodes total) as the foundational Knowledge Searcher KB set",
+    "concurrency": "3-6 helpers in parallel observed stable (~10-15 min each)"
+  }
+}

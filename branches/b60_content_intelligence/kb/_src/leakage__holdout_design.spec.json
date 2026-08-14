@@ -1,0 +1,3386 @@
+{
+  "domain": "leakage__holdout_design",
+  "domain_label": "Anti-Leakage Holdout Design (pretraining + designer knowledge)",
+  "purpose": "construct_a_leakage_controlled_strictly_post_cutoff_pre_registered_blind_holdout_that_controls_both_model_pretraining_and_designer_knowledge_contamination",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "the system under test is the LLM together with the human designer; the designer's hindsight is part of the predicting system",
+    "a verifiable training/knowledge cutoff can be determined and empirically corroborated for the model under evaluation",
+    "post-cutoff events whose outcomes resolve after the cutoff are available, though scarcer than historical cases"
+  ],
+  "exclusions": [
+    "model training, fine-tuning, or architecture choices (the evaluation treats the model as fixed)",
+    "the substantive forecasting/prediction method being evaluated (this KB designs the holdout, not the predictor)",
+    "general benchmark construction unrelated to leakage (item difficulty calibration, annotation guidelines)",
+    "downstream statistical modeling beyond the power/sample reconciliation needed to size the holdout"
+  ],
+  "source_description": "heuristic prior estimates for anti-leakage holdout design work units, informed by the data-mining leakage, preregistration, LLM benchmark-contamination, and temporal-validation literatures; no supplied dataset",
+  "source_citation": "Kaufman, Rosset, Perlich & Stitelman 2012 'Leakage in Data Mining: Formulation, Detection, and Avoidance' (ACM TKDD 6(4)); Nosek, Ebersole, DeHaven & Mellor 2018 'The preregistration revolution' (PNAS 115(11)); Sainz, Campos, Garcia-Ferrero, Etxaniz, de Lacalle & Agirre 2023 'NLP Evaluation in Trouble: On the Need to Measure LLM Data Contamination for each Benchmark' (EMNLP Findings); Magar & Schwartz 2022 'Data Contamination: From Memorization to Exploitation' (ACL); Bergmeir & Benitez 2012 'On the use of cross-validation for time series predictor evaluation' (Information Sciences 191)",
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What leakage channels exist, why is 'did not see it during design' necessary but not sufficient, and how is each channel owned by a control?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "THREAT_MODEL enumerates channels; NECESSARY_NOT_SUFFICIENT and the two channel nodes enforce both-channel control",
+      "covered_by": [
+        "THREAT_MODEL",
+        "PRETRAINING_CONTAMINATION",
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "NECESSARY_NOT_SUFFICIENT"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How is the model's (and designer's) effective training/knowledge cutoff determined and corroborated?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "CUTOFF_DETERMINATION fixes and empirically confirms the cutoff that anchors post-cutoff guarantees",
+      "covered_by": [
+        "CUTOFF_DETERMINATION"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How is pretraining contamination controlled and how is a held-out case shown to be unseen by the model?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "PRETRAINING_CONTAMINATION assumes memorization; POST_CUTOFF_HOLDOUT and CONTAMINATION_PROBES establish unseenness",
+      "covered_by": [
+        "PRETRAINING_CONTAMINATION",
+        "POST_CUTOFF_HOLDOUT",
+        "CONTAMINATION_PROBES"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How is designer-knowledge leakage through case selection controlled?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "DESIGNER_KNOWLEDGE_LEAKAGE names the channel; BLIND_SELECTION removes hindsight from selection",
+      "covered_by": [
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "BLIND_SELECTION"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How is the holdout kept strictly post-cutoff, and why is random cross-validation unsafe on time-ordered data so that temporal blocking is required?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "POST_CUTOFF_HOLDOUT enforces post-cutoff timing; TEMPORAL_SPLIT blocks by time with an embargo because random CV leaks future into the past",
+      "covered_by": [
+        "POST_CUTOFF_HOLDOUT",
+        "TEMPORAL_SPLIT"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "What is frozen by pre-registration, how is the holdout sized for power, and how is leakage-driven pool shrinkage reconciled with that power?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "PRE_REGISTRATION freezes cases/metrics/analysis; POWER_AND_SAMPLE sizes the holdout and reconciles the scarce post-cutoff pool against the minimum-detectable-effect",
+      "covered_by": [
+        "PRE_REGISTRATION",
+        "POWER_AND_SAMPLE"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How are post-registration changes kept transparent and how is selection made independent?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PRE_REGISTRATION freezes the plan; BLIND_SELECTION separates selector from evaluator; PREREG_DEVIATION_LOG records changes",
+      "covered_by": [
+        "PRE_REGISTRATION",
+        "BLIND_SELECTION",
+        "PREREG_DEVIATION_LOG"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How are features screened for label leakage and proven knowable strictly before the outcome resolved?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "LABEL_LEAKAGE_SCREEN applies the legitimacy criterion and FEATURE_PROVENANCE attaches as-of dating making it an auditable date check",
+      "covered_by": [
+        "LABEL_LEAKAGE_SCREEN",
+        "FEATURE_PROVENANCE"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How do contamination probes and the audit detect that a model can recite a held-out outcome?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "CONTAMINATION_PROBES run recitation/membership probes; LEAKAGE_AUDIT re-runs them independently",
+      "covered_by": [
+        "CONTAMINATION_PROBES",
+        "RECITATION_BASELINE",
+        "LEAKAGE_AUDIT"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How is memorized recall separated from genuine forecasting skill?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "RECITATION_BASELINE contrasts recall-only and prediction conditions; RESIDUAL_LEAKAGE_ESTIMATE quantifies the gap",
+      "covered_by": [
+        "RECITATION_BASELINE",
+        "RESIDUAL_LEAKAGE_ESTIMATE"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How is residual leakage quantified, hygiene maintained, and the result disclosed?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "RESIDUAL_LEAKAGE_ESTIMATE quantifies the remainder; HOLDOUT_HYGIENE keeps single use; LEAKAGE_DISCLOSURE reports it",
+      "covered_by": [
+        "RESIDUAL_LEAKAGE_ESTIMATE",
+        "HOLDOUT_HYGIENE",
+        "LEAKAGE_DISCLOSURE"
+      ]
+    },
+    {
+      "id": "CQ_15",
+      "question": "How is the holdout kept single-use and delivered to the evaluator without introducing hindsight?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "HOLDOUT_HYGIENE enforces one-time use; SEALED_DELIVERY seals cases and captures outputs pre-outcome",
+      "covered_by": [
+        "HOLDOUT_HYGIENE",
+        "SEALED_DELIVERY"
+      ]
+    },
+    {
+      "id": "CQ_16",
+      "question": "Who independently audits the controls and how are deviations recorded before publication?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "LEAKAGE_AUDIT independently re-checks controls; PREREG_DEVIATION_LOG records every change",
+      "covered_by": [
+        "LEAKAGE_AUDIT",
+        "PREREG_DEVIATION_LOG"
+      ]
+    },
+    {
+      "id": "CQ_17",
+      "question": "Under what criterion may a result be published as leakage-controlled, and what disclosure accompanies it?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "NECESSARY_NOT_SUFFICIENT sets the both-channels bar; LEAKAGE_DISCLOSURE ships the structured disclosure",
+      "covered_by": [
+        "NECESSARY_NOT_SUFFICIENT",
+        "LEAKAGE_DISCLOSURE"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "data_leakage",
+      "definition": "use of information during model building or evaluation that would be unavailable at genuine prediction time, inflating apparent performance",
+      "synonyms": [
+        "leakage",
+        "target leakage",
+        "contamination"
+      ],
+      "not_same_as": [
+        "legitimate_feature_use"
+      ],
+      "used_by_nodes": [
+        "THREAT_MODEL",
+        "LABEL_LEAKAGE_SCREEN"
+      ]
+    },
+    {
+      "term": "pretraining_contamination",
+      "definition": "the held-out outcome was present in the model's pretraining corpus, so the model can recall rather than predict it",
+      "synonyms": [
+        "benchmark_contamination",
+        "training_contamination"
+      ],
+      "not_same_as": [
+        "designer_knowledge_leakage"
+      ],
+      "used_by_nodes": [
+        "PRETRAINING_CONTAMINATION",
+        "CONTAMINATION_PROBES"
+      ]
+    },
+    {
+      "term": "designer_knowledge_leakage",
+      "definition": "hindsight held by the human designer that enters the holdout through case selection, feature choice, or thresholding",
+      "synonyms": [
+        "analyst_leak",
+        "hindsight_leak"
+      ],
+      "not_same_as": [
+        "pretraining_contamination"
+      ],
+      "used_by_nodes": [
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "BLIND_SELECTION"
+      ]
+    },
+    {
+      "term": "training_cutoff",
+      "definition": "the date after which no data entered the model's pretraining; the anchor for every post-cutoff guarantee",
+      "synonyms": [
+        "knowledge_cutoff",
+        "data_cutoff"
+      ],
+      "not_same_as": [
+        "model_release_date"
+      ],
+      "used_by_nodes": [
+        "CUTOFF_DETERMINATION",
+        "POST_CUTOFF_HOLDOUT"
+      ]
+    },
+    {
+      "term": "legitimacy",
+      "definition": "the property that a feature was knowable strictly before the outcome resolved and thus does not leak the label",
+      "synonyms": [
+        "point_in_time_validity"
+      ],
+      "not_same_as": [
+        "post_outcome_information"
+      ],
+      "used_by_nodes": [
+        "LABEL_LEAKAGE_SCREEN",
+        "FEATURE_PROVENANCE"
+      ]
+    },
+    {
+      "term": "preregistration",
+      "definition": "a timestamped, tamper-evident freeze of cases, questions, metrics, and analysis plan recorded before any outcome is observed",
+      "synonyms": [
+        "prereg",
+        "registered_plan"
+      ],
+      "not_same_as": [
+        "post_hoc_analysis"
+      ],
+      "used_by_nodes": [
+        "PRE_REGISTRATION",
+        "PREREG_DEVIATION_LOG"
+      ]
+    },
+    {
+      "term": "recitation_probe",
+      "definition": "a test that asks the model to reproduce or complete a held-out outcome to detect memorization",
+      "synonyms": [
+        "memorization_probe",
+        "contamination_probe"
+      ],
+      "not_same_as": [
+        "forecast_query"
+      ],
+      "used_by_nodes": [
+        "CONTAMINATION_PROBES",
+        "RECITATION_BASELINE"
+      ]
+    },
+    {
+      "term": "temporal_blocking",
+      "definition": "splitting time-ordered data strictly by time with an embargo gap, rather than at random, to prevent look-ahead leakage",
+      "synonyms": [
+        "time_series_split",
+        "forward_chaining"
+      ],
+      "not_same_as": [
+        "random_k_fold"
+      ],
+      "used_by_nodes": [
+        "TEMPORAL_SPLIT"
+      ]
+    },
+    {
+      "term": "adaptive_overfitting",
+      "definition": "leakage that accumulates when a holdout is evaluated repeatedly and the design reacts to prior scores",
+      "synonyms": [
+        "holdout_reuse_leak",
+        "leaderboard_overfitting"
+      ],
+      "not_same_as": [
+        "single_use_holdout"
+      ],
+      "used_by_nodes": [
+        "HOLDOUT_HYGIENE",
+        "LEAKAGE_AUDIT"
+      ]
+    },
+    {
+      "term": "residual_leakage",
+      "definition": "the leakage estimated to remain after all controls are applied, reported with an uncertainty band",
+      "synonyms": [
+        "remaining_contamination"
+      ],
+      "not_same_as": [
+        "zero_leakage_claim"
+      ],
+      "used_by_nodes": [
+        "RESIDUAL_LEAKAGE_ESTIMATE",
+        "LEAKAGE_DISCLOSURE"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "THREAT_MODEL",
+      "topic": "leakage_threat_model",
+      "definition": "Enumerate every channel by which information about a held-out outcome can reach the system under test, treating the system as the LLM PLUS the human designer; classify each channel (pretraining ingestion, designer hindsight, label leakage, leaderboard overfitting) and assign each an owning control node so no channel is left uncovered.",
+      "group": "foundations",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "threat_modeler"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.62,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "a new contamination channel is discovered or the system-under-test boundary changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "channel enumeration",
+          "system-under-test boundary (model+human)",
+          "channel-to-control mapping"
+        ],
+        "excluded": [
+          "statistical power analysis",
+          "operator-level data plumbing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Naming the human designer as part of the predicting system makes designer-knowledge leakage a first-class threat rather than an afterthought",
+          "example": "a threat-model row for 'analyst selected cases knowing which firms later failed' forces a blind-selection control"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "An over-broad threat model can paralyze design by treating every coincidence as contamination",
+          "example": "flagging all pre-2024 world knowledge as fatal even for genuinely novel composite events"
+        }
+      ],
+      "failure_modes": [
+        "a channel exists with no owning control",
+        "the model+human boundary is drawn to exclude the analyst, hiding designer leakage"
+      ],
+      "acceptance_tests": [
+        "every enumerated channel maps to at least one control node and a residual-risk note"
+      ],
+      "revisit_triggers": [
+        "a leakage incident traces to an unlisted channel",
+        "the system-under-test definition changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "CUTOFF_DETERMINATION",
+      "topic": "training_cutoff_determination",
+      "definition": "Establish the model's verifiable training-data cutoff date (and the human designer's knowledge cutoff) from documentation and empirical probing, because every downstream 'strictly post-cutoff' guarantee is anchored to this date; treat vendor-stated cutoffs as upper bounds to be confirmed, not as ground truth.",
+      "group": "foundations",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "llm_red_teamer"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.78,
+        "user_value": 0.74,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.66,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "the model is updated/retrained or new evidence revises the effective cutoff"
+      },
+      "scope_boundary": {
+        "included": [
+          "vendor cutoff documentation review",
+          "empirical cutoff probing",
+          "designer knowledge-cutoff statement"
+        ],
+        "excluded": [
+          "case selection",
+          "metric pre-registration"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Empirically confirming the cutoff (e.g. asking the model about events near the claimed date) guards against silently extended or mid-training data",
+          "example": "the model answers a question about an event two weeks after its claimed cutoff, revealing the true cutoff is later"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Cutoffs can be fuzzy: continued pretraining, RAG, or tool use can inject post-cutoff knowledge the date does not capture",
+          "example": "a model with web-browsing has no meaningful static cutoff for retrievable facts"
+        }
+      ],
+      "failure_modes": [
+        "vendor cutoff trusted without probing",
+        "the cutoff used is the model release date rather than the data cutoff"
+      ],
+      "acceptance_tests": [
+        "the effective cutoff is documented and empirically corroborated against near-boundary events"
+      ],
+      "revisit_triggers": [
+        "the model is retrained or gains retrieval",
+        "near-boundary probing reveals a later effective cutoff"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "PRETRAINING_CONTAMINATION",
+      "topic": "pretraining_contamination_control",
+      "definition": "Control the channel where the LLM ingested the held-out outcome during pretraining: assume any famous, well-documented historical event is memorized, and require that holdout cases be novel composite events or strictly post-cutoff so the answer cannot have been seen in training (per benchmark-contamination findings).",
+      "group": "channels",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "llm_red_teamer",
+        "evaluation_methodologist"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "THREAT_MODEL",
+        "CUTOFF_DETERMINATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.66,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.26,
+          0.62
+        ],
+        "update_signal": "evidence emerges that the model can recite or exploit a supposedly unseen outcome"
+      },
+      "scope_boundary": {
+        "included": [
+          "memorized-event assumption",
+          "novel-composite-event requirement",
+          "famous-outcome exclusion list"
+        ],
+        "excluded": [
+          "human designer hindsight (separate channel)",
+          "feature-level label leakage"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Treating any pre-cutoff famous outcome as memorized-by-default is the conservative assumption that benchmark-contamination studies show is warranted",
+          "example": "Sainz et al. demonstrate models reproduce held test instances verbatim, so a famous 2008 default cannot test 'prediction'"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Memorization is not always exploitation: a model may have seen text yet not use it to answer, so blanket exclusion can discard usable cases",
+          "example": "Magar & Schwartz show contaminated data is sometimes memorized but not exploited, inflating false exclusions"
+        }
+      ],
+      "failure_modes": [
+        "a pre-cutoff outcome used as a test item the model has memorized",
+        "'novelty' assumed from obscurity rather than from post-cutoff timing"
+      ],
+      "acceptance_tests": [
+        "no held-out case has a published outcome at or before the confirmed training cutoff",
+        "candidate famous events are excluded or shown unrecitable by a probe"
+      ],
+      "revisit_triggers": [
+        "a probe shows the model reciting a held-out outcome",
+        "a new contamination study revises the memorization assumption"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "DESIGNER_KNOWLEDGE_LEAKAGE",
+      "topic": "designer_knowledge_leakage_control",
+      "definition": "Control the channel where the human designer already knows the outcomes and leaks that hindsight through case selection, feature choice, or threshold setting; because the human is part of the predicting system, 'the model did not see it' is insufficient if the designer steered the holdout toward outcomes they knew.",
+      "group": "channels",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "leakage_auditor"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "THREAT_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.82,
+        "user_value": 0.82,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.68,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.24,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.28,
+          0.66
+        ],
+        "update_signal": "evidence that case selection or feature choices correlate with known outcomes"
+      },
+      "scope_boundary": {
+        "included": [
+          "hindsight-in-selection control",
+          "hindsight-in-feature-engineering control",
+          "designer-blindness requirement"
+        ],
+        "excluded": [
+          "model pretraining ingestion (separate channel)",
+          "compute/power budgeting"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Kaufman et al. identify the analyst as a leakage source: a designer who knows outcomes leaks them through which cases and features they pick",
+          "example": "an analyst who knows which 2025 startups failed quietly over-samples failures into the 'balanced' holdout"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Full designer blindness is operationally hard: the designer needs domain knowledge to build the task at all",
+          "example": "the same expertise that makes a good forecasting task also carries outcome hindsight"
+        }
+      ],
+      "failure_modes": [
+        "the designer selects cases knowing outcomes",
+        "features are engineered with hindsight (a proxy for the answer)"
+      ],
+      "acceptance_tests": [
+        "case selection and feature definitions are frozen and either outcome-blind or selected by an uninvolved party",
+        "no chosen feature is shown to encode the outcome"
+      ],
+      "revisit_triggers": [
+        "selected cases correlate with known outcomes",
+        "a post-hoc audit finds a hindsight-laden feature"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "POST_CUTOFF_HOLDOUT",
+      "topic": "strictly_post_cutoff_event_pool",
+      "definition": "Assemble the candidate holdout exclusively from events whose outcome was not determined and not publicly knowable until strictly after the confirmed training/knowledge cutoff, so the model could not have ingested the answer and the designer could not have known it when the task was frozen.",
+      "group": "temporal",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "domain_forecaster"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "PRETRAINING_CONTAMINATION",
+        "CUTOFF_DETERMINATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.8,
+        "user_value": 0.8,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.7,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.2,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "the resolution date of an event is found to predate the cutoff"
+      },
+      "scope_boundary": {
+        "included": [
+          "post-cutoff event sourcing",
+          "outcome-resolution-date verification",
+          "leak-by-leading-indicator screening"
+        ],
+        "excluded": [
+          "pre-cutoff historical cases",
+          "designer arbitration of ties"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Strict post-cutoff timing makes the unseen-by-training guarantee a checkable date comparison rather than an assumption of obscurity",
+          "example": "only events whose outcome resolved after the cutoff (e.g. an election, an earnings report) enter the pool"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Post-cutoff events are scarcer and may be unrepresentative of the deployment distribution",
+          "example": "restricting to recent months yields too few cases or a skewed event mix"
+        }
+      ],
+      "failure_modes": [
+        "an event's outcome was knowable before the cutoff via leading indicators",
+        "resolution date confused with announcement date"
+      ],
+      "acceptance_tests": [
+        "every pooled event has an outcome-resolution date strictly after the confirmed cutoff",
+        "no event's outcome was forecastable from pre-cutoff public information"
+      ],
+      "revisit_triggers": [
+        "a pooled event's true resolution date predates the cutoff",
+        "leading-indicator leakage is found for an event class"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "TEMPORAL_SPLIT",
+      "topic": "temporal_train_test_blocking",
+      "definition": "When the evaluation reuses any in-context or fine-tuning data, split strictly by time (a temporal block) rather than at random, and forbid look-ahead, because random cross-validation on time-ordered data leaks future information into the training side.",
+      "group": "temporal",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "time_series_methodologist"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "CUTOFF_DETERMINATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.74,
+        "user_value": 0.72,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.54
+        ],
+        "update_signal": "the evaluation adds an in-context or fine-tuning component that mixes time periods"
+      },
+      "scope_boundary": {
+        "included": [
+          "time-ordered block split",
+          "look-ahead prohibition",
+          "embargo gap between train and test"
+        ],
+        "excluded": [
+          "random k-fold splitting",
+          "pretraining cutoff (handled upstream)"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Bergmeir & Benitez show random CV on time series leaks future into the past; temporal blocking with an embargo removes that leak",
+          "example": "a forecasting eval that fine-tunes on later months and tests on earlier ones leaks the future unless blocked by time"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Temporal blocking reduces effective sample size and can entangle a regime change with the split",
+          "example": "a single split point straddles a market crash, confounding period with regime"
+        }
+      ],
+      "failure_modes": [
+        "random CV used on time-ordered data",
+        "no embargo, so test-adjacent leakage bleeds across the split"
+      ],
+      "acceptance_tests": [
+        "any train/test partition is strictly time-ordered with an embargo gap and no look-ahead feature"
+      ],
+      "revisit_triggers": [
+        "a regime change coincides with the split point",
+        "an in-context example postdates a test item"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "PRE_REGISTRATION",
+      "topic": "case_and_metric_preregistration",
+      "definition": "Freeze the exact case set, the prediction question wording, the scoring metric, and the analysis plan in a timestamped, tamper-evident pre-registration BEFORE any model output or outcome is observed, so the design cannot be silently tuned to the answer after the fact.",
+      "group": "governance",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "open_science_steward"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "POST_CUTOFF_HOLDOUT",
+        "DESIGNER_KNOWLEDGE_LEAKAGE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.78,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.18,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "the case set, question wording, or scoring rule needs to change after registration"
+      },
+      "scope_boundary": {
+        "included": [
+          "frozen case list",
+          "frozen metric and analysis plan",
+          "timestamped tamper-evident registration"
+        ],
+        "excluded": [
+          "exploratory analysis (must be labeled non-confirmatory)",
+          "model internals"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Nosek et al.'s preregistration converts an after-the-fact rationalization into a before-the-fact commitment, removing researcher degrees of freedom",
+          "example": "the scoring threshold is registered before any prediction, so it cannot be moved to flatter the model"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Pre-registration is rigid: a genuine design flaw discovered post-registration forces a logged deviation or a fresh holdout",
+          "example": "a discovered ambiguity in the prediction question cannot be silently reworded after freeze"
+        }
+      ],
+      "failure_modes": [
+        "metrics chosen after seeing results",
+        "case set quietly edited post-registration without a deviation log"
+      ],
+      "acceptance_tests": [
+        "the case set, question, metric, and analysis plan are timestamped and hashed before any output is seen"
+      ],
+      "revisit_triggers": [
+        "a needed change is discovered after registration",
+        "the registry timestamp cannot be independently verified"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "BLIND_SELECTION",
+      "topic": "blind_case_selection_by_uninvolved_party",
+      "definition": "Have the specific holdout cases chosen by a party with no stake in the result and no access to model outputs, ideally outcome-blind, so the selection itself cannot encode the designer's or evaluator's hindsight about which cases the model will get right.",
+      "group": "governance",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "independent_curator"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "PRE_REGISTRATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.78,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.66,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.24,
+          0.58
+        ],
+        "update_signal": "the selecting party gains outcome knowledge or a stake in the result"
+      },
+      "scope_boundary": {
+        "included": [
+          "uninvolved-selector protocol",
+          "outcome-blind selection rule",
+          "selector-evaluator separation"
+        ],
+        "excluded": [
+          "designer-driven hand-picking",
+          "scoring (separate stage)"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An uninvolved selector breaks the link between the designer's outcome knowledge and which cases appear, closing the selection leg of designer leakage",
+          "example": "a librarian draws cases by a pre-registered rule from the post-cutoff pool, with no view of outcomes"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A naive blind selector may pick degenerate or trivially-answerable cases, trading leakage control for low task quality",
+          "example": "random blind sampling yields ten near-identical events that test one narrow skill"
+        }
+      ],
+      "failure_modes": [
+        "the designer hand-picks cases under the guise of blindness",
+        "the selector can see model outputs or outcomes"
+      ],
+      "acceptance_tests": [
+        "cases are drawn by an uninvolved, outcome-blind party following a pre-registered selection rule"
+      ],
+      "revisit_triggers": [
+        "the selector is found to share interests with the evaluator",
+        "selected cases are trivially answerable"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "LABEL_LEAKAGE_SCREEN",
+      "topic": "feature_label_leakage_screening",
+      "definition": "Screen every feature, prompt field, and context document for label leakage: information that is a proxy for, or only available because of, the outcome (post-outcome timestamps, outcome-conditioned text, identifiers that encode the result), and remove or quarantine such legitimacy violations before the case is finalized.",
+      "group": "features",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "leakage_auditor",
+        "data_engineer"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "BLIND_SELECTION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.66,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.26,
+          0.62
+        ],
+        "update_signal": "a new feature, context document, or data source is added to a case"
+      },
+      "scope_boundary": {
+        "included": [
+          "legitimacy check per feature",
+          "post-outcome-information removal",
+          "outcome-proxy detection"
+        ],
+        "excluded": [
+          "temporal split (handled upstream)",
+          "scoring metric choice"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Kaufman et al. formalize legitimacy: a feature is leaking if it would be unavailable at genuine prediction time; screening enforces that boundary",
+          "example": "a news snippet dated after the event that already names the outcome is quarantined from the prompt"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Subtle leakage is hard to catch: an innocuous-looking field can be a near-deterministic outcome proxy",
+          "example": "a record ID assigned only to firms that later filed for bankruptcy silently encodes the label"
+        }
+      ],
+      "failure_modes": [
+        "a post-outcome document leaks into the context",
+        "an identifier or timestamp encodes the result"
+      ],
+      "acceptance_tests": [
+        "every feature is available strictly at prediction time and none is shown to proxy the outcome"
+      ],
+      "revisit_triggers": [
+        "a new data source is added to a case",
+        "an audit finds a high-leverage feature correlates near-perfectly with the label"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "FEATURE_PROVENANCE",
+      "topic": "feature_provenance_and_as_of_dating",
+      "definition": "Attach an as-of timestamp and source provenance to every feature value so each can be proven to have existed and been knowable strictly before the event's resolution, turning leakage screening from a judgment call into a checkable as-of date comparison.",
+      "group": "features",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "data_engineer",
+        "leakage_auditor"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "LABEL_LEAKAGE_SCREEN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.74,
+        "user_value": 0.72,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "a feature's provenance or as-of date is missing or disputed"
+      },
+      "scope_boundary": {
+        "included": [
+          "as-of timestamp per feature",
+          "source provenance record",
+          "point-in-time reconstruction"
+        ],
+        "excluded": [
+          "outcome scoring",
+          "model prompting mechanics"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Point-in-time as-of dating makes 'available at prediction time' an auditable fact, the operational core of the legitimacy criterion",
+          "example": "each feature carries the date it was first publicly available, all strictly before the resolution date"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Point-in-time reconstruction is laborious and many real datasets silently back-fill revised values",
+          "example": "an economic series is revised after the fact, so its stored value is not what was knowable then"
+        }
+      ],
+      "failure_modes": [
+        "a back-filled (revised) value is used as if it were point-in-time",
+        "a feature lacks any as-of date"
+      ],
+      "acceptance_tests": [
+        "every feature value carries an as-of date strictly before its event's resolution date"
+      ],
+      "revisit_triggers": [
+        "a feature is found to be a revised/back-filled value",
+        "provenance for a feature cannot be reconstructed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "CONTAMINATION_PROBES",
+      "topic": "model_recitation_contamination_probes",
+      "definition": "Actively probe whether the model can reproduce the held-out outcome or recognize the test item from pretraining: ask it to complete, recite, or date the event before the evaluation, and treat any successful recitation as evidence the case is contaminated and must be dropped or quarantined.",
+      "group": "probes",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "llm_red_teamer",
+        "evaluation_methodologist"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "POST_CUTOFF_HOLDOUT",
+        "PRETRAINING_CONTAMINATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.78,
+        "user_value": 0.78,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.26,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.3,
+          0.66
+        ],
+        "update_signal": "the probe protocol or the model version changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "recitation/completion probing",
+          "membership-inference style probing",
+          "quarantine-on-recitation rule"
+        ],
+        "excluded": [
+          "human designer hindsight (separate channel)",
+          "metric computation"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Sainz et al. recommend exactly this: measure contamination per benchmark by checking whether the model can reproduce held instances",
+          "example": "prompting the model with the case stem and finding it completes the true outcome flags contamination directly"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Probes have false negatives: a model may exploit contaminated knowledge without verbatim recitation, so a clean probe is not a clean bill",
+          "example": "Magar & Schwartz show exploitation can occur without reproducible memorization, so probes under-detect"
+        }
+      ],
+      "failure_modes": [
+        "a recitable case kept because the probe was too narrow",
+        "probe run on a different model version than the one evaluated"
+      ],
+      "acceptance_tests": [
+        "every retained case passes a recitation probe (model cannot reproduce the outcome) on the exact evaluated model version"
+      ],
+      "revisit_triggers": [
+        "the model version under test changes",
+        "an exploited-but-not-recited contamination case is discovered"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "RECITATION_BASELINE",
+      "topic": "non_predictive_recall_baseline",
+      "definition": "Establish a baseline that measures pure recall versus genuine prediction: give the model the case with and without the discriminating pre-cutoff context, so that score gains attributable to memorized knowledge can be separated from gains attributable to actual forecasting skill.",
+      "group": "probes",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "experiment_designer"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "CONTAMINATION_PROBES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.72,
+        "user_value": 0.72,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.58,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.24,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.28,
+          0.62
+        ],
+        "update_signal": "the baseline conditions or the discriminating-context definition change"
+      },
+      "scope_boundary": {
+        "included": [
+          "recall-only condition",
+          "prediction-with-context condition",
+          "memorization-vs-skill decomposition"
+        ],
+        "excluded": [
+          "sealed delivery mechanics",
+          "audit cadence"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A recall baseline operationalizes Magar & Schwartz's memorization-vs-exploitation split, giving a quantitative handle on how much score is leakage",
+          "example": "if the no-context score already matches the with-context score, the 'skill' is memorized recall"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Designing a truly information-free recall condition is hard; residual cues can leak the answer into the baseline too",
+          "example": "stripping context still leaves a distinctive entity name that the model has memorized"
+        }
+      ],
+      "failure_modes": [
+        "baseline still leaks the answer through residual cues",
+        "recall and prediction conditions differ on more than the target information"
+      ],
+      "acceptance_tests": [
+        "the recall-only baseline isolates memorized recall from forecasting skill within a stated margin"
+      ],
+      "revisit_triggers": [
+        "the discriminating-context definition changes",
+        "the recall baseline scores implausibly high"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "RESIDUAL_LEAKAGE_ESTIMATE",
+      "topic": "residual_leakage_quantification",
+      "definition": "Quantify the leakage that remains after all controls: combine probe hit rates, the recall baseline, and feature-screen residuals into an explicit residual-leakage estimate with an uncertainty band, and attach it to every reported result so consumers can discount the score accordingly.",
+      "group": "quantification",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "statistician"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "RECITATION_BASELINE",
+        "FEATURE_PROVENANCE",
+        "TEMPORAL_SPLIT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.78,
+        "user_value": 0.78,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.62,
+        "confidence": 0.56,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.56,
+        "failure_rate": 0.26,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.32,
+          0.68
+        ],
+        "update_signal": "any control's measured effectiveness or a probe hit-rate changes materially"
+      },
+      "scope_boundary": {
+        "included": [
+          "residual-leakage point estimate",
+          "uncertainty band",
+          "score-discount guidance"
+        ],
+        "excluded": [
+          "selection mechanics",
+          "disclosure formatting"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An explicit residual estimate replaces the false binary 'leak-free vs leaky' with an honest quantified remainder consumers can act on",
+          "example": "reporting 'estimated residual leakage 5-12%, discount accuracy accordingly' instead of claiming zero leakage"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "The residual estimate is itself uncertain and can be falsely reassuring if its own assumptions are wrong",
+          "example": "a low residual estimate built on an under-powered probe gives unwarranted confidence"
+        }
+      ],
+      "failure_modes": [
+        "residual leakage reported as zero",
+        "the estimate's own uncertainty omitted, implying false precision"
+      ],
+      "acceptance_tests": [
+        "a residual-leakage estimate with an uncertainty band accompanies every reported metric"
+      ],
+      "revisit_triggers": [
+        "a control's measured effectiveness changes",
+        "a post-hoc leak exceeds the residual band"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "POWER_AND_SAMPLE",
+      "topic": "statistical_power_and_sample_size",
+      "definition": "Pre-compute the holdout size needed to detect the target effect given that post-cutoff events are scarce, and reconcile the leakage-driven shrinkage of the usable pool with the power requirement, so the holdout is neither contaminated nor too small to conclude anything.",
+      "group": "quantification",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "statistician",
+        "evaluation_methodologist"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "POST_CUTOFF_HOLDOUT",
+        "PRE_REGISTRATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.74,
+        "user_value": 0.7,
+        "technical_complexity": 0.64,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.6,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "the target effect size, scoring rule, or the usable-pool size changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "power analysis",
+          "minimum-detectable-effect",
+          "pool-shrinkage reconciliation"
+        ],
+        "excluded": [
+          "probe design",
+          "disclosure"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Pre-computing power before freezing prevents the common failure of a perfectly clean but uninformatively tiny holdout",
+          "example": "power analysis shows 40 post-cutoff cases are needed to detect a 10-point gap, so the pool is sized accordingly"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Enlarging the pool to gain power can force inclusion of borderline or weaker post-cutoff events, trading purity for size",
+          "example": "reaching the required n means admitting events whose post-cutoff status is only marginally established"
+        }
+      ],
+      "failure_modes": [
+        "holdout too small to detect the target effect",
+        "power chased by admitting contaminated cases"
+      ],
+      "acceptance_tests": [
+        "the holdout meets a pre-computed minimum-detectable-effect at the registered metric"
+      ],
+      "revisit_triggers": [
+        "the target effect size is revised",
+        "the usable post-cutoff pool shrinks below the power requirement"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "HOLDOUT_HYGIENE",
+      "topic": "one_time_use_holdout_hygiene",
+      "definition": "Enforce single-use hygiene: the holdout is scored once, never iterated against, never used to tune prompts or thresholds, and is retired after use, because repeated evaluation against the same holdout re-introduces leakage through adaptive overfitting.",
+      "group": "hygiene",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "ml_ops_engineer"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "RESIDUAL_LEAKAGE_ESTIMATE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13",
+        "CQ_15"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.8,
+        "user_value": 0.8,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.82,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.18,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "the holdout is requested for a second evaluation or for tuning"
+      },
+      "scope_boundary": {
+        "included": [
+          "single-use rule",
+          "no-peeking/no-tuning rule",
+          "retirement-after-use policy"
+        ],
+        "excluded": [
+          "sealed delivery mechanics",
+          "audit cadence"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "One-time use closes the adaptive-overfitting channel: re-running against the same holdout leaks via the analyst's reaction to prior scores",
+          "example": "a team that retunes a prompt after a failing run has leaked the holdout into their prompt, even though the model never 'saw' new data"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Single-use is costly: a fresh leakage-controlled holdout must be built for every new evaluation cycle",
+          "example": "each model release needs a newly assembled post-cutoff holdout, which is expensive to source"
+        }
+      ],
+      "failure_modes": [
+        "the holdout reused to tune a prompt",
+        "scores from a prior run inform the next design without retiring the set"
+      ],
+      "acceptance_tests": [
+        "the holdout is scored exactly once and retired; no tuning decision references its results"
+      ],
+      "revisit_triggers": [
+        "a second evaluation against the same holdout is requested",
+        "prompt tuning is observed to reference holdout scores"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "SEALED_DELIVERY",
+      "topic": "sealed_blind_delivery_to_evaluator",
+      "definition": "Deliver the frozen holdout to the model under a sealed, blind protocol: the evaluator runs the model without the ability to inspect or amend cases, and outputs are captured before any outcome is revealed, so the act of evaluation cannot itself introduce hindsight or selection.",
+      "group": "hygiene",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "ml_ops_engineer",
+        "evaluation_methodologist"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "PRE_REGISTRATION",
+        "HOLDOUT_HYGIENE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_15"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.74,
+        "user_value": 0.74,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.66,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "the delivery or output-capture protocol changes"
+      },
+      "scope_boundary": {
+        "included": [
+          "sealed case delivery",
+          "output capture before outcome reveal",
+          "evaluator no-amend rule"
+        ],
+        "excluded": [
+          "case authoring",
+          "residual estimation"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Sealing the cases and capturing outputs before outcomes are revealed prevents the evaluator from quietly dropping hard cases",
+          "example": "model outputs are hashed and stored before the real-world outcomes resolve, so nothing can be retrofitted"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A fully sealed pipeline reduces the evaluator's ability to catch a genuine case-construction bug mid-run",
+          "example": "a malformed prompt cannot be fixed without breaking the seal and logging a deviation"
+        }
+      ],
+      "failure_modes": [
+        "the evaluator edits cases during the run",
+        "outputs captured only after outcomes are known"
+      ],
+      "acceptance_tests": [
+        "all model outputs are captured and hashed before any outcome resolves, with no evaluator amendment"
+      ],
+      "revisit_triggers": [
+        "the delivery protocol changes",
+        "an output is found to have been captured post-outcome"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "LEAKAGE_AUDIT",
+      "topic": "standing_leakage_audit",
+      "definition": "Run a standing, independent leakage audit over the finished holdout and its evaluation: re-check cutoffs, re-run probes, re-screen features, and verify pre-registration integrity, producing a sign-off (or a list of defects) before any result is published.",
+      "group": "audit",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "leakage_auditor",
+        "evaluation_methodologist"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "CONTAMINATION_PROBES",
+        "LABEL_LEAKAGE_SCREEN",
+        "SEALED_DELIVERY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_16"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.8,
+        "user_value": 0.8,
+        "technical_complexity": 0.66,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.7,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.62,
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.24,
+        "downside_weight": 0.64,
+        "uncertainty_interval": [
+          0.3,
+          0.66
+        ],
+        "update_signal": "any control is changed, or a published result is challenged on leakage grounds"
+      },
+      "scope_boundary": {
+        "included": [
+          "independent re-check of every control",
+          "audit sign-off or defect list",
+          "pre-registration integrity verification"
+        ],
+        "excluded": [
+          "case sourcing",
+          "model internals"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An independent standing audit catches control failures the designer is blind to, closing the loop on the analyst-as-leak problem",
+          "example": "the auditor re-runs the recitation probe on the exact evaluated model and finds two contaminated cases the designer missed"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Audits add latency and can become a rubber stamp if the auditor lacks independence or teeth",
+          "example": "an under-resourced audit signs off without re-running the expensive probes"
+        }
+      ],
+      "failure_modes": [
+        "the audit is not independent of the designer",
+        "controls passed at design time but drifted by evaluation time"
+      ],
+      "acceptance_tests": [
+        "an independent auditor re-verifies every control and signs off or files defects before publication"
+      ],
+      "revisit_triggers": [
+        "a control is modified after sign-off",
+        "a published result is challenged on leakage grounds"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "PREREG_DEVIATION_LOG",
+      "topic": "preregistration_deviation_log",
+      "definition": "Maintain a transparent, append-only log of every deviation from the pre-registration (dropped cases, reworded questions, metric changes) with timestamp and justification, so post-registration changes are visible and cannot covertly tune the design toward the outcome.",
+      "group": "audit",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "open_science_steward",
+        "leakage_auditor"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "PRE_REGISTRATION",
+        "LEAKAGE_AUDIT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_16"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.74,
+        "user_value": 0.74,
+        "technical_complexity": 0.56,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.7,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.46
+        ],
+        "update_signal": "any deviation from the registered plan occurs"
+      },
+      "scope_boundary": {
+        "included": [
+          "append-only deviation log",
+          "per-deviation justification",
+          "timestamped change record"
+        ],
+        "excluded": [
+          "case selection",
+          "scoring"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "An append-only deviation log preserves the credibility of pre-registration even when changes are unavoidable, per the preregistration revolution",
+          "example": "dropping three contaminated cases is logged with the probe evidence and timestamp, not done silently"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "A deviation log can be abused to legitimize so many changes that the pre-registration becomes meaningless",
+          "example": "twenty post-hoc deviations effectively rebuild the design after seeing results"
+        }
+      ],
+      "failure_modes": [
+        "a change made without a logged justification",
+        "deviations so numerous the registration is gutted"
+      ],
+      "acceptance_tests": [
+        "every post-registration change is recorded append-only with timestamp and justification"
+      ],
+      "revisit_triggers": [
+        "a silent (unlogged) deviation is discovered",
+        "the count of deviations exceeds a credibility threshold"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "NECESSARY_NOT_SUFFICIENT",
+      "topic": "necessary_not_sufficient_finding",
+      "definition": "State and enforce the core finding: 'the model/designer did not see this case during design' is NECESSARY but NOT SUFFICIENT for a leakage-free evaluation; a result may be published as leakage-controlled only if BOTH the pretraining channel and the designer-knowledge channel are demonstrably controlled, not merely the design-time visibility.",
+      "group": "reporting",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "research_integrity_officer"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "PRETRAINING_CONTAMINATION",
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "LEAKAGE_AUDIT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_17"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.84,
+        "user_value": 0.84,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.86,
+        "irreversibility": 0.78,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.6,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.2,
+        "downside_weight": 0.66,
+        "uncertainty_interval": [
+          0.22,
+          0.54
+        ],
+        "update_signal": "a claim of leakage-freedom rests on design-time blindness alone"
+      },
+      "scope_boundary": {
+        "included": [
+          "necessary-not-sufficient gate",
+          "both-channels-controlled requirement",
+          "publishability criterion"
+        ],
+        "excluded": [
+          "operator data plumbing",
+          "power analysis"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Making the sufficiency gap explicit prevents the most common evaluation error: declaring a test clean because nobody peeked, while the model memorized the answer",
+          "example": "a benchmark called 'held-out' because the team kept it private still leaks if the model pretrained on the underlying events"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Holding results to the both-channels bar will block some otherwise interesting evaluations from claiming leakage-freedom",
+          "example": "a compelling result must be downgraded to 'leakage-suspected' because the designer channel was not fully controlled"
+        }
+      ],
+      "failure_modes": [
+        "a result published as leak-free on design-time blindness alone",
+        "only one of the two channels is controlled but the claim is unqualified"
+      ],
+      "acceptance_tests": [
+        "no result is labeled leakage-controlled unless both the pretraining and designer-knowledge channels are demonstrably controlled"
+      ],
+      "revisit_triggers": [
+        "a published claim rests on visibility alone",
+        "an audit finds one channel uncontrolled behind a leak-free claim"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    },
+    {
+      "id": "LEAKAGE_DISCLOSURE",
+      "topic": "leakage_controls_disclosure_statement",
+      "definition": "Emit a structured disclosure that travels with every reported result: the confirmed cutoff, which channels were controlled and how, the probe and audit findings, the residual-leakage estimate, and the deviation log, so a consumer can independently judge the evaluation's leakage standing.",
+      "group": "reporting",
+      "node_type": "work_unit",
+      "academic_fields": [
+        "experimental_methodology",
+        "machine_learning_evaluation"
+      ],
+      "subfields": [
+        "data_leakage_control",
+        "holdout_design"
+      ],
+      "specialists": [
+        "evaluation_methodologist",
+        "research_integrity_officer"
+      ],
+      "contradictors": [
+        "did_not_see_it_is_enough_advocate"
+      ],
+      "inputs": [
+        "capability under test",
+        "candidate event pool"
+      ],
+      "outputs": [
+        "leakage-controlled holdout artifact"
+      ],
+      "dependencies": [
+        "RESIDUAL_LEAKAGE_ESTIMATE",
+        "NECESSARY_NOT_SUFFICIENT",
+        "PREREG_DEVIATION_LOG"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13",
+        "CQ_17"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.54,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.72,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.18,
+          0.46
+        ],
+        "update_signal": "any control, residual estimate, or deviation changes after disclosure"
+      },
+      "scope_boundary": {
+        "included": [
+          "structured leakage disclosure",
+          "channel-by-channel control statement",
+          "residual + deviation reporting"
+        ],
+        "excluded": [
+          "internal probe mechanics",
+          "case sourcing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "A disclosure that carries cutoff, controls, probes, residual estimate, and deviations lets consumers replicate the leakage judgment rather than trust it",
+          "example": "the result ships with 'cutoff 2024-03, both channels controlled, residual 5-12%, two logged deviations'"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Disclosure can be gamed by burying weak control coverage in dense boilerplate that few readers parse",
+          "example": "a long disclosure that technically lists every channel but hides that the designer channel was uncontrolled"
+        }
+      ],
+      "failure_modes": [
+        "a result published without its leakage disclosure",
+        "disclosure omits the residual estimate or the deviation log"
+      ],
+      "acceptance_tests": [
+        "every published result carries a structured disclosure naming cutoff, both channels, probes, residual, and deviations"
+      ],
+      "revisit_triggers": [
+        "a control changes after disclosure",
+        "a consumer cannot reconstruct the leakage judgment from the disclosure"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft"
+    }
+  ],
+  "edges": [
+    {
+      "from": "THREAT_MODEL",
+      "to": "PRETRAINING_CONTAMINATION",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "PRETRAINING_CONTAMINATION depends on THREAT_MODEL",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "THREAT_MODEL finalized before PRETRAINING_CONTAMINATION"
+    },
+    {
+      "from": "CUTOFF_DETERMINATION",
+      "to": "PRETRAINING_CONTAMINATION",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "PRETRAINING_CONTAMINATION depends on CUTOFF_DETERMINATION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "CUTOFF_DETERMINATION finalized before PRETRAINING_CONTAMINATION"
+    },
+    {
+      "from": "THREAT_MODEL",
+      "to": "DESIGNER_KNOWLEDGE_LEAKAGE",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "DESIGNER_KNOWLEDGE_LEAKAGE depends on THREAT_MODEL",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "THREAT_MODEL finalized before DESIGNER_KNOWLEDGE_LEAKAGE"
+    },
+    {
+      "from": "PRETRAINING_CONTAMINATION",
+      "to": "POST_CUTOFF_HOLDOUT",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "POST_CUTOFF_HOLDOUT depends on PRETRAINING_CONTAMINATION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "PRETRAINING_CONTAMINATION finalized before POST_CUTOFF_HOLDOUT"
+    },
+    {
+      "from": "CUTOFF_DETERMINATION",
+      "to": "TEMPORAL_SPLIT",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "TEMPORAL_SPLIT depends on CUTOFF_DETERMINATION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "CUTOFF_DETERMINATION finalized before TEMPORAL_SPLIT"
+    },
+    {
+      "from": "POST_CUTOFF_HOLDOUT",
+      "to": "PRE_REGISTRATION",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "PRE_REGISTRATION depends on POST_CUTOFF_HOLDOUT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "POST_CUTOFF_HOLDOUT finalized before PRE_REGISTRATION"
+    },
+    {
+      "from": "DESIGNER_KNOWLEDGE_LEAKAGE",
+      "to": "BLIND_SELECTION",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "BLIND_SELECTION depends on DESIGNER_KNOWLEDGE_LEAKAGE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DESIGNER_KNOWLEDGE_LEAKAGE finalized before BLIND_SELECTION"
+    },
+    {
+      "from": "PRE_REGISTRATION",
+      "to": "BLIND_SELECTION",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "BLIND_SELECTION depends on PRE_REGISTRATION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "PRE_REGISTRATION finalized before BLIND_SELECTION"
+    },
+    {
+      "from": "BLIND_SELECTION",
+      "to": "LABEL_LEAKAGE_SCREEN",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "LABEL_LEAKAGE_SCREEN depends on BLIND_SELECTION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "BLIND_SELECTION finalized before LABEL_LEAKAGE_SCREEN"
+    },
+    {
+      "from": "LABEL_LEAKAGE_SCREEN",
+      "to": "FEATURE_PROVENANCE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "FEATURE_PROVENANCE depends on LABEL_LEAKAGE_SCREEN",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "LABEL_LEAKAGE_SCREEN finalized before FEATURE_PROVENANCE"
+    },
+    {
+      "from": "POST_CUTOFF_HOLDOUT",
+      "to": "CONTAMINATION_PROBES",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "CONTAMINATION_PROBES depends on POST_CUTOFF_HOLDOUT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "POST_CUTOFF_HOLDOUT finalized before CONTAMINATION_PROBES"
+    },
+    {
+      "from": "CONTAMINATION_PROBES",
+      "to": "RECITATION_BASELINE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "RECITATION_BASELINE depends on CONTAMINATION_PROBES",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "CONTAMINATION_PROBES finalized before RECITATION_BASELINE"
+    },
+    {
+      "from": "RECITATION_BASELINE",
+      "to": "RESIDUAL_LEAKAGE_ESTIMATE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "RESIDUAL_LEAKAGE_ESTIMATE depends on RECITATION_BASELINE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "RECITATION_BASELINE finalized before RESIDUAL_LEAKAGE_ESTIMATE"
+    },
+    {
+      "from": "FEATURE_PROVENANCE",
+      "to": "RESIDUAL_LEAKAGE_ESTIMATE",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "RESIDUAL_LEAKAGE_ESTIMATE depends on FEATURE_PROVENANCE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "FEATURE_PROVENANCE finalized before RESIDUAL_LEAKAGE_ESTIMATE"
+    },
+    {
+      "from": "POST_CUTOFF_HOLDOUT",
+      "to": "POWER_AND_SAMPLE",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "POWER_AND_SAMPLE depends on POST_CUTOFF_HOLDOUT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "POST_CUTOFF_HOLDOUT finalized before POWER_AND_SAMPLE"
+    },
+    {
+      "from": "RESIDUAL_LEAKAGE_ESTIMATE",
+      "to": "HOLDOUT_HYGIENE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "HOLDOUT_HYGIENE depends on RESIDUAL_LEAKAGE_ESTIMATE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "RESIDUAL_LEAKAGE_ESTIMATE finalized before HOLDOUT_HYGIENE"
+    },
+    {
+      "from": "HOLDOUT_HYGIENE",
+      "to": "SEALED_DELIVERY",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "SEALED_DELIVERY depends on HOLDOUT_HYGIENE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "HOLDOUT_HYGIENE finalized before SEALED_DELIVERY"
+    },
+    {
+      "from": "CONTAMINATION_PROBES",
+      "to": "LEAKAGE_AUDIT",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "LEAKAGE_AUDIT depends on CONTAMINATION_PROBES",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "CONTAMINATION_PROBES finalized before LEAKAGE_AUDIT"
+    },
+    {
+      "from": "SEALED_DELIVERY",
+      "to": "LEAKAGE_AUDIT",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "LEAKAGE_AUDIT depends on SEALED_DELIVERY",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "SEALED_DELIVERY finalized before LEAKAGE_AUDIT"
+    },
+    {
+      "from": "LEAKAGE_AUDIT",
+      "to": "PREREG_DEVIATION_LOG",
+      "edge_type": "dependency",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "PREREG_DEVIATION_LOG depends on LEAKAGE_AUDIT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "LEAKAGE_AUDIT finalized before PREREG_DEVIATION_LOG"
+    },
+    {
+      "from": "PRETRAINING_CONTAMINATION",
+      "to": "NECESSARY_NOT_SUFFICIENT",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "NECESSARY_NOT_SUFFICIENT depends on PRETRAINING_CONTAMINATION",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "PRETRAINING_CONTAMINATION finalized before NECESSARY_NOT_SUFFICIENT"
+    },
+    {
+      "from": "DESIGNER_KNOWLEDGE_LEAKAGE",
+      "to": "NECESSARY_NOT_SUFFICIENT",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "NECESSARY_NOT_SUFFICIENT depends on DESIGNER_KNOWLEDGE_LEAKAGE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "DESIGNER_KNOWLEDGE_LEAKAGE finalized before NECESSARY_NOT_SUFFICIENT"
+    },
+    {
+      "from": "NECESSARY_NOT_SUFFICIENT",
+      "to": "LEAKAGE_DISCLOSURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "LEAKAGE_DISCLOSURE depends on NECESSARY_NOT_SUFFICIENT",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "NECESSARY_NOT_SUFFICIENT finalized before LEAKAGE_DISCLOSURE"
+    },
+    {
+      "from": "RESIDUAL_LEAKAGE_ESTIMATE",
+      "to": "LEAKAGE_DISCLOSURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.82,
+      "conflict_probability": 0.14,
+      "expected_rework_cost": 0.28,
+      "why_related": "LEAKAGE_DISCLOSURE depends on RESIDUAL_LEAKAGE_ESTIMATE",
+      "benefit_of_coupling": "ordered prerequisite",
+      "risk_of_conflict": "downstream rework if upstream changes",
+      "example": "RESIDUAL_LEAKAGE_ESTIMATE finalized before LEAKAGE_DISCLOSURE"
+    },
+    {
+      "from": "CONTAMINATION_PROBES",
+      "to": "POST_CUTOFF_HOLDOUT",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a probe hit feeds back to drop the case from the post-cutoff pool",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "CONTAMINATION_PROBES/POST_CUTOFF_HOLDOUT feedback relation"
+    },
+    {
+      "from": "LEAKAGE_AUDIT",
+      "to": "CUTOFF_DETERMINATION",
+      "edge_type": "feedback",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "the audit can revise the effective cutoff if near-boundary probing reveals a later one",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "LEAKAGE_AUDIT/CUTOFF_DETERMINATION feedback relation"
+    },
+    {
+      "from": "FEATURE_PROVENANCE",
+      "to": "POST_CUTOFF_HOLDOUT",
+      "edge_type": "constraint",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "as-of dating of features constrains which post-cutoff events can be fully reconstructed",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "FEATURE_PROVENANCE/POST_CUTOFF_HOLDOUT constraint relation"
+    },
+    {
+      "from": "POWER_AND_SAMPLE",
+      "to": "BLIND_SELECTION",
+      "edge_type": "constraint",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "the power-driven target size constrains the blind selector's sampling rule",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "POWER_AND_SAMPLE/BLIND_SELECTION constraint relation"
+    },
+    {
+      "from": "RECITATION_BASELINE",
+      "to": "NECESSARY_NOT_SUFFICIENT",
+      "edge_type": "causal",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "a high recall baseline is direct evidence the necessary-not-sufficient gate must block a leak-free claim",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "RECITATION_BASELINE/NECESSARY_NOT_SUFFICIENT causal relation"
+    },
+    {
+      "from": "PREREG_DEVIATION_LOG",
+      "to": "HOLDOUT_HYGIENE",
+      "edge_type": "constraint",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "reusing or re-tuning the holdout would generate deviations the log must capture",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "PREREG_DEVIATION_LOG/HOLDOUT_HYGIENE constraint relation"
+    },
+    {
+      "from": "TEMPORAL_SPLIT",
+      "to": "LABEL_LEAKAGE_SCREEN",
+      "edge_type": "similarity",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "temporal look-ahead and feature label leakage are two forms of the same prediction-time-availability violation",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "TEMPORAL_SPLIT/LABEL_LEAKAGE_SCREEN similarity relation"
+    },
+    {
+      "from": "THREAT_MODEL",
+      "to": "LEAKAGE_AUDIT",
+      "edge_type": "similarity",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "why_related": "the audit checklist is the threat model re-applied independently at the end",
+      "benefit_of_coupling": "coordinated behavior",
+      "risk_of_conflict": "inconsistency if uncoordinated",
+      "example": "THREAT_MODEL/LEAKAGE_AUDIT similarity relation"
+    },
+    {
+      "from": "POST_CUTOFF_HOLDOUT",
+      "to": "POWER_AND_SAMPLE",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.6,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "purity dominates: never admit borderline-cutoff cases to reach power; instead lower the target effect or report an under-powered result with widened confidence intervals",
+      "why_related": "strict post-cutoff sourcing shrinks the pool, conflicting with the sample size needed for statistical power",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades leakage control",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "DESIGNER_KNOWLEDGE_LEAKAGE",
+      "to": "POST_CUTOFF_HOLDOUT",
+      "edge_type": "conflict",
+      "relation_strength": 0.7,
+      "signed_tension": -0.5,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "post-cutoff timing controls the model channel but not the designer channel; require BLIND_SELECTION on the post-cutoff pool so neither channel is left open",
+      "why_related": "post-cutoff events can still be designer-leaked through which post-cutoff cases the designer picks",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades leakage control",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "BLIND_SELECTION",
+      "to": "POWER_AND_SAMPLE",
+      "edge_type": "conflict",
+      "relation_strength": 0.68,
+      "signed_tension": -0.45,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "constrain the blind selector with a pre-registered stratified rule so blindness yields enough informative cases to meet power without hand-picking",
+      "why_related": "fully blind random selection can produce too few or degenerate cases to satisfy the power requirement",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades leakage control",
+      "example": "see resolution_rule"
+    },
+    {
+      "from": "HOLDOUT_HYGIENE",
+      "to": "POWER_AND_SAMPLE",
+      "edge_type": "conflict",
+      "relation_strength": 0.66,
+      "signed_tension": -0.4,
+      "causal_confidence": 0.6,
+      "conflict_probability": 0.5,
+      "expected_rework_cost": 0.5,
+      "resolution_rule": "single-use forbids reusing the holdout to chase power; build a larger or fresh holdout rather than re-scoring the retired one",
+      "why_related": "one-time-use hygiene conflicts with the temptation to reuse a scarce holdout to accumulate statistical power",
+      "benefit_of_coupling": "tension surfaced and resolved by rule",
+      "risk_of_conflict": "unmanaged tension degrades leakage control",
+      "example": "see resolution_rule"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "purity_vs_statistical_power",
+      "description": "Strict post-cutoff sourcing maximizes leakage control but shrinks the pool below the size needed to detect the target effect.",
+      "poles": [
+        "maximal_purity",
+        "adequate_power"
+      ],
+      "resolution_hint": "lower the target effect or widen intervals rather than admitting borderline-cutoff cases",
+      "tension_score": 0.75,
+      "affected_nodes": [
+        "POST_CUTOFF_HOLDOUT",
+        "POWER_AND_SAMPLE",
+        "BLIND_SELECTION"
+      ]
+    },
+    {
+      "name": "pretraining_channel_vs_designer_channel",
+      "description": "Controlling pretraining ingestion does not control designer hindsight, and vice versa; both must be closed independently.",
+      "poles": [
+        "model_channel_focus",
+        "designer_channel_focus"
+      ],
+      "resolution_hint": "require demonstrable control of BOTH channels before any leak-free claim",
+      "tension_score": 0.78,
+      "affected_nodes": [
+        "PRETRAINING_CONTAMINATION",
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "NECESSARY_NOT_SUFFICIENT"
+      ]
+    },
+    {
+      "name": "designer_expertise_vs_designer_blindness",
+      "description": "The domain expertise needed to build a good forecasting task carries the very outcome hindsight that must be excluded.",
+      "poles": [
+        "expert_designer",
+        "outcome_blind_designer"
+      ],
+      "resolution_hint": "separate task authoring from blind case selection by an uninvolved party",
+      "tension_score": 0.7,
+      "affected_nodes": [
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "BLIND_SELECTION",
+        "THREAT_MODEL"
+      ]
+    },
+    {
+      "name": "preregistration_rigidity_vs_correctability",
+      "description": "Freezing the design prevents post-hoc tuning but blocks fixing a genuine flaw discovered after registration.",
+      "poles": [
+        "strict_freeze",
+        "logged_correction"
+      ],
+      "resolution_hint": "allow only append-only logged deviations with justification",
+      "tension_score": 0.65,
+      "affected_nodes": [
+        "PRE_REGISTRATION",
+        "PREREG_DEVIATION_LOG",
+        "LEAKAGE_AUDIT"
+      ]
+    },
+    {
+      "name": "memorization_vs_exploitation",
+      "description": "A model can ingest a contaminated item yet not exploit it; treating all memorization as fatal over-excludes, ignoring it under-detects.",
+      "poles": [
+        "exclude_all_memorized",
+        "exclude_only_exploited"
+      ],
+      "resolution_hint": "use a recall baseline to measure exploitation, not just memorization",
+      "tension_score": 0.68,
+      "affected_nodes": [
+        "PRETRAINING_CONTAMINATION",
+        "RECITATION_BASELINE",
+        "CONTAMINATION_PROBES"
+      ]
+    },
+    {
+      "name": "probe_sensitivity_vs_false_negatives",
+      "description": "Recitation probes detect verbatim memorization but miss non-recited exploitation, so a clean probe can falsely reassure.",
+      "poles": [
+        "trust_clean_probe",
+        "assume_probe_under_detects"
+      ],
+      "resolution_hint": "pair probes with a recall baseline and report residual leakage, never zero",
+      "tension_score": 0.66,
+      "affected_nodes": [
+        "CONTAMINATION_PROBES",
+        "RECITATION_BASELINE",
+        "RESIDUAL_LEAKAGE_ESTIMATE"
+      ]
+    },
+    {
+      "name": "single_use_vs_holdout_reuse",
+      "description": "One-time use prevents adaptive overfitting but forces rebuilding a scarce holdout for every cycle.",
+      "poles": [
+        "single_use",
+        "reuse_for_power"
+      ],
+      "resolution_hint": "build fresh holdouts; never re-score a retired one to chase power",
+      "tension_score": 0.64,
+      "affected_nodes": [
+        "HOLDOUT_HYGIENE",
+        "POWER_AND_SAMPLE",
+        "SEALED_DELIVERY"
+      ]
+    },
+    {
+      "name": "point_in_time_fidelity_vs_data_availability",
+      "description": "Proving features were knowable before the outcome requires point-in-time data that many sources silently back-fill.",
+      "poles": [
+        "strict_point_in_time",
+        "use_available_revised_values"
+      ],
+      "resolution_hint": "require an as-of date per feature; quarantine values that cannot be reconstructed",
+      "tension_score": 0.62,
+      "affected_nodes": [
+        "FEATURE_PROVENANCE",
+        "LABEL_LEAKAGE_SCREEN",
+        "POST_CUTOFF_HOLDOUT"
+      ]
+    },
+    {
+      "name": "disclosure_completeness_vs_readability",
+      "description": "A complete leakage disclosure is long and can bury weak control coverage that few readers parse.",
+      "poles": [
+        "exhaustive_disclosure",
+        "concise_headline"
+      ],
+      "resolution_hint": "lead with a channel-by-channel control summary and residual estimate, detail in appendix",
+      "tension_score": 0.55,
+      "affected_nodes": [
+        "LEAKAGE_DISCLOSURE",
+        "RESIDUAL_LEAKAGE_ESTIMATE",
+        "NECESSARY_NOT_SUFFICIENT"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "A held-out case is a famous historical event the model memorized verbatim during pretraining, so a high score reflects recall, not prediction.",
+      "trigger": "a pre-cutoff famous outcome is used as a test item",
+      "affected_nodes": [
+        "PRETRAINING_CONTAMINATION",
+        "POST_CUTOFF_HOLDOUT",
+        "CONTAMINATION_PROBES"
+      ],
+      "mitigation": "restrict to strictly post-cutoff events and drop any case the model can recite",
+      "severity": "critical"
+    },
+    {
+      "description": "The designer, knowing which firms later failed, quietly over-samples failures into a nominally balanced holdout.",
+      "trigger": "the designer selects cases while knowing outcomes",
+      "affected_nodes": [
+        "DESIGNER_KNOWLEDGE_LEAKAGE",
+        "BLIND_SELECTION"
+      ],
+      "mitigation": "have an uninvolved, outcome-blind party draw cases by a pre-registered rule",
+      "severity": "critical"
+    },
+    {
+      "description": "The team declares a benchmark 'held-out' because they kept it private, while the underlying events were in pretraining.",
+      "trigger": "a leak-free claim rests on design-time blindness alone",
+      "affected_nodes": [
+        "NECESSARY_NOT_SUFFICIENT",
+        "PRETRAINING_CONTAMINATION"
+      ],
+      "mitigation": "enforce the both-channels bar: control pretraining AND designer channels, not just visibility",
+      "severity": "critical"
+    },
+    {
+      "description": "Random k-fold cross-validation is used on time-ordered evaluation data, leaking future periods into the training side.",
+      "trigger": "random CV applied to time-ordered data",
+      "affected_nodes": [
+        "TEMPORAL_SPLIT",
+        "RESIDUAL_LEAKAGE_ESTIMATE"
+      ],
+      "mitigation": "split strictly by time with an embargo gap and forbid look-ahead features",
+      "severity": "high"
+    },
+    {
+      "description": "A context document dated after the event already names the outcome and is fed into the model's prompt.",
+      "trigger": "a post-outcome document leaks into the case context",
+      "affected_nodes": [
+        "LABEL_LEAKAGE_SCREEN",
+        "FEATURE_PROVENANCE"
+      ],
+      "mitigation": "screen every feature for as-of date strictly before resolution; quarantine post-outcome text",
+      "severity": "high"
+    },
+    {
+      "description": "An identifier or back-filled timestamp silently encodes the label (e.g. an ID assigned only to firms that later failed).",
+      "trigger": "a feature is a near-deterministic outcome proxy",
+      "affected_nodes": [
+        "LABEL_LEAKAGE_SCREEN",
+        "FEATURE_PROVENANCE"
+      ],
+      "mitigation": "apply the legitimacy criterion and point-in-time reconstruction to every feature",
+      "severity": "high"
+    },
+    {
+      "description": "A recitation probe comes back clean, yet the model still exploits contaminated knowledge without reproducing it verbatim.",
+      "trigger": "a clean probe is taken as proof of zero contamination",
+      "affected_nodes": [
+        "CONTAMINATION_PROBES",
+        "RECITATION_BASELINE",
+        "RESIDUAL_LEAKAGE_ESTIMATE"
+      ],
+      "mitigation": "pair probes with a recall baseline and report a non-zero residual-leakage estimate",
+      "severity": "high"
+    },
+    {
+      "description": "After a failing run, the team re-tunes the prompt and re-scores the same holdout, leaking it via adaptive overfitting.",
+      "trigger": "the holdout is reused to tune prompts or thresholds",
+      "affected_nodes": [
+        "HOLDOUT_HYGIENE",
+        "SEALED_DELIVERY"
+      ],
+      "mitigation": "enforce single-use and retire the holdout after one scoring",
+      "severity": "high"
+    },
+    {
+      "description": "The usable post-cutoff pool is too small to detect the target effect, so the clean holdout is uninformative.",
+      "trigger": "leakage control shrinks the pool below the power requirement",
+      "affected_nodes": [
+        "POWER_AND_SAMPLE",
+        "POST_CUTOFF_HOLDOUT"
+      ],
+      "mitigation": "pre-compute power; lower the target effect or widen intervals rather than admitting contaminated cases",
+      "severity": "medium"
+    },
+    {
+      "description": "A vendor-stated cutoff is trusted, but continued pretraining or retrieval injects post-cutoff knowledge the date does not capture.",
+      "trigger": "the cutoff is taken from documentation without empirical probing",
+      "affected_nodes": [
+        "CUTOFF_DETERMINATION",
+        "CONTAMINATION_PROBES"
+      ],
+      "mitigation": "empirically corroborate the cutoff against near-boundary events and account for retrieval",
+      "severity": "high"
+    },
+    {
+      "description": "Cases are silently dropped after results are seen, with no record, quietly tuning the design toward a flattering outcome.",
+      "trigger": "post-registration changes are made without a deviation log",
+      "affected_nodes": [
+        "PRE_REGISTRATION",
+        "PREREG_DEVIATION_LOG"
+      ],
+      "mitigation": "record every change append-only with timestamp and justification before publication",
+      "severity": "high"
+    },
+    {
+      "description": "The evaluation audit is performed by the same person who designed the holdout, so designer blind spots survive into publication.",
+      "trigger": "the leakage audit is not independent of the designer",
+      "affected_nodes": [
+        "LEAKAGE_AUDIT",
+        "THREAT_MODEL"
+      ],
+      "mitigation": "assign an independent auditor to re-run probes and re-screen features before sign-off",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "model_threats",
+      "node_ref": "THREAT_MODEL",
+      "description": "Enumerate every leakage channel treating the system as model PLUS designer; map each channel to an owning control.",
+      "artifact": "leakage_threat_model",
+      "gate": "every channel has an owning control and a residual-risk note"
+    },
+    {
+      "action": "fix_cutoff",
+      "node_ref": "CUTOFF_DETERMINATION",
+      "description": "Determine and empirically corroborate the model and designer knowledge cutoff.",
+      "artifact": "confirmed_cutoff_record",
+      "gate": "the cutoff is documented and probed against near-boundary events"
+    },
+    {
+      "action": "control_channels",
+      "node_ref": "DESIGNER_KNOWLEDGE_LEAKAGE",
+      "description": "Stand up controls for both the pretraining and designer-knowledge channels.",
+      "artifact": "channel_control_plan",
+      "gate": "both channels have an assigned, instantiated control"
+    },
+    {
+      "action": "source_post_cutoff_pool",
+      "node_ref": "POST_CUTOFF_HOLDOUT",
+      "description": "Assemble candidate events whose outcomes resolved strictly after the confirmed cutoff.",
+      "artifact": "post_cutoff_event_pool",
+      "gate": "every pooled event resolves strictly after the cutoff"
+    },
+    {
+      "action": "preregister",
+      "node_ref": "PRE_REGISTRATION",
+      "description": "Freeze cases, question wording, metric, and analysis plan in a timestamped tamper-evident registration before any output is seen.",
+      "artifact": "preregistration_record",
+      "gate": "cases, metric, and analysis plan are hashed and timestamped"
+    },
+    {
+      "action": "blind_select",
+      "node_ref": "BLIND_SELECTION",
+      "description": "Have an uninvolved, outcome-blind party draw the final cases by the pre-registered rule.",
+      "artifact": "blind_selection_record",
+      "gate": "selection is made by an uninvolved outcome-blind party"
+    },
+    {
+      "action": "screen_features",
+      "node_ref": "LABEL_LEAKAGE_SCREEN",
+      "description": "Screen every feature and context document for label leakage and attach as-of provenance.",
+      "artifact": "feature_legitimacy_report",
+      "gate": "every feature is knowable strictly before resolution"
+    },
+    {
+      "action": "probe_contamination",
+      "node_ref": "CONTAMINATION_PROBES",
+      "description": "Probe the exact evaluated model for recitation of each held-out outcome; quarantine any recitable case.",
+      "artifact": "contamination_probe_report",
+      "gate": "no retained case is recitable by the evaluated model"
+    },
+    {
+      "action": "size_and_baseline",
+      "node_ref": "POWER_AND_SAMPLE",
+      "description": "Verify the holdout meets the pre-computed minimum-detectable-effect and set the recall baseline.",
+      "artifact": "power_and_baseline_record",
+      "gate": "the holdout meets its minimum-detectable-effect"
+    },
+    {
+      "action": "estimate_residual",
+      "node_ref": "RESIDUAL_LEAKAGE_ESTIMATE",
+      "description": "Combine probe, baseline, and feature-screen residuals into a residual-leakage estimate with an uncertainty band.",
+      "artifact": "residual_leakage_estimate",
+      "gate": "a residual estimate with an uncertainty band exists"
+    },
+    {
+      "action": "seal_and_evaluate",
+      "node_ref": "SEALED_DELIVERY",
+      "description": "Deliver the sealed holdout, run the model once under hygiene rules, and capture outputs before outcomes resolve.",
+      "artifact": "sealed_evaluation_outputs",
+      "gate": "outputs are captured and hashed before any outcome resolves"
+    },
+    {
+      "action": "audit_and_disclose",
+      "node_ref": "LEAKAGE_AUDIT",
+      "description": "Run the independent leakage audit, log deviations, and publish only with the structured leakage disclosure.",
+      "artifact": "audit_signoff_and_disclosure",
+      "gate": "an independent audit signs off and a disclosure ships with the result"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "CUTOFF_DETERMINATION must be confirmed before any case is admitted to the post-cutoff pool",
+      "rationale": "every post-cutoff guarantee is anchored to the confirmed cutoff; an unconfirmed cutoff invalidates the whole pool",
+      "trigger": "cases are sourced before the cutoff is empirically corroborated",
+      "action": "block pool assembly until the cutoff is confirmed"
+    },
+    {
+      "rule": "Both the pretraining and designer-knowledge channels must be controlled before any result is labeled leakage-controlled",
+      "rationale": "design-time blindness is necessary but not sufficient; one open channel leaks regardless of the other",
+      "trigger": "a leak-free claim rests on only one channel or on visibility alone",
+      "action": "block the leak-free label until both channels are demonstrably controlled"
+    },
+    {
+      "rule": "Case selection and metrics must be pre-registered before any model output or outcome is observed",
+      "rationale": "selecting or scoring after seeing results reintroduces researcher degrees of freedom",
+      "trigger": "metric or case set chosen after an output is seen",
+      "action": "reject the result and require a fresh pre-registration"
+    },
+    {
+      "rule": "Final case selection must be performed by an uninvolved outcome-blind party",
+      "rationale": "a designer who knows outcomes leaks them through which cases appear",
+      "trigger": "the designer hand-picks the final cases",
+      "action": "void the selection and re-draw blindly"
+    },
+    {
+      "rule": "Every feature must pass the legitimacy (as-of date) check before its case is finalized",
+      "rationale": "a feature unavailable at prediction time is label leakage",
+      "trigger": "a feature lacks an as-of date strictly before resolution",
+      "action": "quarantine the feature or drop the case"
+    },
+    {
+      "rule": "Any case the evaluated model can recite must be dropped or quarantined",
+      "rationale": "a recitable outcome is memorized, not predicted",
+      "trigger": "a recitation probe succeeds on a retained case",
+      "action": "drop the case from the scored set"
+    },
+    {
+      "rule": "Residual leakage must be reported as a non-zero estimate with an uncertainty band; zero-leakage claims are forbidden",
+      "rationale": "probes under-detect non-recited exploitation, so zero leakage cannot be asserted",
+      "trigger": "a result claims zero or unstated residual leakage",
+      "action": "require a residual estimate with its uncertainty before publication"
+    },
+    {
+      "rule": "The holdout must be scored exactly once and retired; reuse for tuning is prohibited",
+      "rationale": "repeated evaluation leaks the holdout through adaptive overfitting",
+      "trigger": "a second scoring or a tuning decision references holdout results",
+      "action": "retire the holdout and require a fresh one"
+    },
+    {
+      "rule": "The leakage audit must be independent of the designer and complete before publication",
+      "rationale": "a self-audit preserves the designer's blind spots",
+      "trigger": "the auditor is the designer or lacks independence",
+      "action": "assign an independent auditor and block publication until sign-off"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Do not source the candidate pool before confirming the cutoff; a revised cutoff invalidates every sourced case",
+      "prevents": "re-sourcing the entire pool after the effective cutoff is found to be later than assumed"
+    },
+    {
+      "rule": "Do not let the designer pick cases; reconstructing a blind selection after the fact requires discarding the contaminated set",
+      "prevents": "rebuilding the holdout after a hindsight-laden selection is discovered"
+    },
+    {
+      "rule": "Do not finalize features without as-of provenance; retrofitting point-in-time dating forces re-screening every case",
+      "prevents": "re-screening all features after a back-filled value is found to leak the label"
+    },
+    {
+      "rule": "Do not run probes on a different model version than the one evaluated; a version change voids the probe evidence",
+      "prevents": "re-running the full contamination probe suite after the evaluated model version changes"
+    },
+    {
+      "rule": "Do not choose the metric or threshold after seeing outputs; post-hoc metric changes require a fresh pre-registration and holdout",
+      "prevents": "scrapping a result and rebuilding the holdout because the metric was tuned to the answer"
+    },
+    {
+      "rule": "Do not reuse the holdout to chase statistical power; a reused holdout is leaked and cannot be un-leaked",
+      "prevents": "discarding adaptive-overfit results and assembling a fresh holdout under deadline"
+    },
+    {
+      "rule": "Do not make post-registration changes without a deviation log; unlogged edits force re-justifying the whole design",
+      "prevents": "reconstructing the change history to defend a challenged result"
+    },
+    {
+      "rule": "Do not publish before the independent audit signs off; a post-publication leak finding forces a retraction",
+      "prevents": "retracting a published result after an independent audit finds an uncontrolled channel"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "near-boundary probing reveals the effective cutoff is later than assumed",
+      "action": "revise CUTOFF_DETERMINATION and re-source POST_CUTOFF_HOLDOUT against the corrected date",
+      "nodes": [
+        "CUTOFF_DETERMINATION",
+        "POST_CUTOFF_HOLDOUT"
+      ],
+      "priority": "critical"
+    },
+    {
+      "trigger": "a recitation probe shows the evaluated model can reproduce a held-out outcome",
+      "action": "drop the case in CONTAMINATION_PROBES and re-estimate residual leakage",
+      "nodes": [
+        "CONTAMINATION_PROBES",
+        "POST_CUTOFF_HOLDOUT",
+        "RESIDUAL_LEAKAGE_ESTIMATE"
+      ],
+      "priority": "critical"
+    },
+    {
+      "trigger": "a result is claimed leakage-free on design-time blindness alone",
+      "action": "apply the NECESSARY_NOT_SUFFICIENT gate and verify both channels are controlled before any leak-free label",
+      "nodes": [
+        "NECESSARY_NOT_SUFFICIENT",
+        "PRETRAINING_CONTAMINATION",
+        "DESIGNER_KNOWLEDGE_LEAKAGE"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "selected cases are found to correlate with known outcomes",
+      "action": "void the selection and re-draw blindly in BLIND_SELECTION under the pre-registered rule",
+      "nodes": [
+        "BLIND_SELECTION",
+        "DESIGNER_KNOWLEDGE_LEAKAGE"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "a feature is found to be a back-filled or post-outcome value",
+      "action": "quarantine it in LABEL_LEAKAGE_SCREEN and reconstruct point-in-time provenance in FEATURE_PROVENANCE",
+      "nodes": [
+        "LABEL_LEAKAGE_SCREEN",
+        "FEATURE_PROVENANCE"
+      ],
+      "priority": "high"
+    },
+    {
+      "trigger": "the usable post-cutoff pool shrinks below the power requirement",
+      "action": "lower the target effect or widen intervals in POWER_AND_SAMPLE rather than admitting contaminated cases",
+      "nodes": [
+        "POWER_AND_SAMPLE",
+        "POST_CUTOFF_HOLDOUT"
+      ],
+      "priority": "medium"
+    },
+    {
+      "trigger": "the holdout is requested for a second evaluation or for tuning",
+      "action": "retire it under HOLDOUT_HYGIENE and assemble a fresh holdout instead of re-scoring",
+      "nodes": [
+        "HOLDOUT_HYGIENE",
+        "SEALED_DELIVERY"
+      ],
+      "priority": "medium"
+    },
+    {
+      "trigger": "an independent audit files a leakage defect after sign-off was assumed",
+      "action": "log the deviation in PREREG_DEVIATION_LOG and update the disclosure before publication",
+      "nodes": [
+        "LEAKAGE_AUDIT",
+        "PREREG_DEVIATION_LOG",
+        "LEAKAGE_DISCLOSURE"
+      ],
+      "priority": "high"
+    }
+  ],
+  "priority_rationale": "THREAT_MODEL and CUTOFF_DETERMINATION are foundational; the two channel-control nodes and POST_CUTOFF_HOLDOUT establish the core guarantees; pre-registration, blind selection, feature screening, and probes operationalize them; residual estimation, hygiene, audit, and the necessary-not-sufficient gate close the method before disclosure.",
+  "eval_objective": "verify_dual_channel_leakage_control_post_cutoff_sourcing_preregistration_contamination_probing_and_necessary_not_sufficient_publishability_of_leakage__holdout_design_kb"
+}

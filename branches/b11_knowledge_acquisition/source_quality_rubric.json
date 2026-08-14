@@ -1,0 +1,53 @@
+{
+  "_directive": "machine-facing parameterized source-quality rubric; deterministic scoring over a source object.",
+  "rubric_id": "b11_source_quality_rubric",
+  "purpose": "Score a single source object on a 0..1 quality scale combining CRAAP-style dimensions (authority, recency, relevance), plus a corroboration credit and an independence guard. Used by acquisition_ledger.py score-source and as advisory input when deciding evidence_label legality.",
+  "dimensions": {
+    "authority": {
+      "weight": 0.30,
+      "source_field": "authority",
+      "range": [0.0, 1.0],
+      "description": "Expertise/credentials/standing of the source (CRAAP Authority). Read directly from source.authority."
+    },
+    "recency": {
+      "weight": 0.20,
+      "source_field": "recency",
+      "range": [0.0, 1.0],
+      "description": "Currency of the source for the topic's volatility (CRAAP Currency). Read directly from source.recency."
+    },
+    "relevance": {
+      "weight": 0.25,
+      "source_field": "relevance",
+      "range": [0.0, 1.0],
+      "description": "Topical fit to the competency question (CRAAP Relevance). Read directly from source.relevance."
+    },
+    "independence": {
+      "weight": 0.15,
+      "computed": true,
+      "range": [0.0, 1.0],
+      "description": "Independence credit. When scoring a source IN CONTEXT of a ledger entry, a source sharing its independence_group with another source on the same CQ is dependent corroboration and earns 0.0 here; a source in a singleton independence_group earns 1.0. When scored standalone (no context), defaults to 1.0."
+    },
+    "corroboration": {
+      "weight": 0.10,
+      "computed": true,
+      "range": [0.0, 1.0],
+      "description": "Corroboration credit = (count of DISTINCT independence_groups on the same CQ minus 1), clamped to [0,1]. Standalone scoring (no context) yields 0.0 (a lone source cannot be corroborated)."
+    }
+  },
+  "scoring_rule": {
+    "formula": "score = clamp01( 0.30*authority + 0.20*recency + 0.25*relevance + 0.15*independence + 0.10*corroboration )",
+    "weights_sum_to": 1.0,
+    "clamp": [0.0, 1.0],
+    "bands": [
+      {"label": "strong", "min": 0.75, "max": 1.0},
+      {"label": "adequate", "min": 0.55, "max": 0.7499999},
+      {"label": "weak", "min": 0.35, "max": 0.5499999},
+      {"label": "poor", "min": 0.0, "max": 0.3499999}
+    ]
+  },
+  "notes": [
+    "This rubric scores SOURCE quality (an admissibility/weighting signal). It does NOT by itself set a claim's evidence_label.",
+    "evidence_label legality is enforced separately in acquisition_ledger.py validate: a 'high' label needs >=2 sources in DISTINCT independence_groups; 'moderate' needs >=1 source.",
+    "independence mirrors argue's rule: items sharing a common upstream source are collapsed before counting corroboration."
+  ]
+}

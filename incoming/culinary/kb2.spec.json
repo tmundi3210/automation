@@ -1,0 +1,2574 @@
+{
+  "domain": "culinary_formulation_math",
+  "domain_label": "Culinary Formulation Math",
+  "purpose": "Compute and close baker's percentages, hydration/fat/sugar/leavening budgets, pan geometry, scaling laws, and bake-time priors so formulas are quantitative and reproducible.",
+  "assumptions": [
+    "mass in grams is the native unit; volume inputs carry density assumptions",
+    "product-class bands are heuristic priors not laws of nature",
+    "no lab titration of acid or DSC of starch unless user supplies data"
+  ],
+  "exclusions": [
+    "industrial continuous-mix plant control",
+    "clinical dietetics calculations for medical conditions",
+    "full finite-element oven simulation",
+    "legal nutrition label compliance engineering"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "How is this formula expressed in baker's percentages and what is the flour base?",
+      "must_be_answerable_from": [
+        "BAKERS_PCT",
+        "FLOUR_BASE",
+        "VOL_TO_MASS"
+      ],
+      "acceptance_condition": "lists flour base membership and each ingredient as % flour in grams",
+      "covered_by": [
+        "BAKERS_PCT",
+        "FLOUR_BASE",
+        "VOL_TO_MASS",
+        "TOTAL_MASS"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What are the hydration, fat, sugar, and salt budgets as % flour?",
+      "must_be_answerable_from": [
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "SALT_BUDGET"
+      ],
+      "acceptance_condition": "reports each budget with sources itemized for water and fat especially",
+      "covered_by": [
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "SALT_BUDGET"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "Is total hydration closed including eggs, milk, and purees, and is it in band?",
+      "must_be_answerable_from": [
+        "HYDRATION_BAND",
+        "BUDGET_CLOSE"
+      ],
+      "acceptance_condition": "shows water fraction sum and product-class band comparison",
+      "covered_by": [
+        "HYDRATION_BAND",
+        "BUDGET_CLOSE",
+        "ENRICH_THRESH",
+        "LEAVEN_DOSE"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What is true fat % accounting for butter water and chocolate cocoa butter?",
+      "must_be_answerable_from": [
+        "FAT_BUDGET",
+        "INCLUSION_MASS"
+      ],
+      "acceptance_condition": "butter counted as ~80-82% fat; inclusions' fat noted if material",
+      "covered_by": [
+        "FAT_BUDGET",
+        "INCLUSION_MASS",
+        "ENRICH_THRESH"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "What is the sugar budget including liquid sweetener solids and assembled components?",
+      "must_be_answerable_from": [
+        "SUGAR_BUDGET",
+        "LAYER_RATIO"
+      ],
+      "acceptance_condition": "liquid sweeteners split solids/water; layer assembly averages if multi-component",
+      "covered_by": [
+        "SUGAR_BUDGET",
+        "LAYER_RATIO",
+        "INCLUSION_MASS"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How should chemical leavener or yeast be dosed for this flour base and schedule?",
+      "must_be_answerable_from": [
+        "LEAVEN_DOSE",
+        "YEAST_DOSE",
+        "TOLERANCE"
+      ],
+      "acceptance_condition": "gives % flour, format conversions if needed, and tight tolerance on minors",
+      "covered_by": [
+        "LEAVEN_DOSE",
+        "YEAST_DOSE",
+        "TOLERANCE"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do you scale this formula to a new yield without breaking pans or budgets?",
+      "must_be_answerable_from": [
+        "SCALE_LAWS",
+        "TOTAL_MASS",
+        "PAN_GEOM"
+      ],
+      "acceptance_condition": "uniform gram scale, pan revalidation, loss-aware portions",
+      "covered_by": [
+        "SCALE_LAWS",
+        "TOTAL_MASS",
+        "PAN_GEOM",
+        "PROCESS_LOSS",
+        "COST_BATCH",
+        "LAYER_RATIO"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "Given pan dimensions, batter mass, and a product-class density prior, what depth and fill fraction result?",
+      "must_be_answerable_from": [
+        "PAN_GEOM",
+        "BATTER_DEPTH",
+        "TOTAL_MASS"
+      ],
+      "acceptance_condition": "computes pan volume, states density prior (creamed cake 0.85\u20131.0, foam 0.45\u20130.6, bread dough 1.1\u20131.2, cookie 1.0\u20131.1 g/mL), converts mass\u2192volume\u2192depth, and reports fill fraction",
+      "covered_by": [
+        "PAN_GEOM",
+        "BATTER_DEPTH",
+        "TOTAL_MASS"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How should bake time priors change when depth or pan shape changes?",
+      "must_be_answerable_from": [
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH"
+      ],
+      "acceptance_condition": "adjusts time prior from depth/composition and requires doneness checks",
+      "covered_by": [
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH",
+        "PAN_GEOM"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "Does the formula pass full budget closure for its product class?",
+      "must_be_answerable_from": [
+        "BUDGET_CLOSE",
+        "SCALE_LAWS"
+      ],
+      "acceptance_condition": "checklist pass/waive per hydration fat sugar salt leaven mass pan",
+      "covered_by": [
+        "BUDGET_CLOSE",
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "Given dietary constraints, can the product class survive after budget reclosure?",
+      "must_be_answerable_from": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ],
+      "acceptance_condition": "feasibility verdict and redesign or class change if needed",
+      "covered_by": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE",
+        "COST_BATCH"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How are volumetric inputs converted and what uncertainty remains?",
+      "must_be_answerable_from": [
+        "VOL_TO_MASS",
+        "TOLERANCE"
+      ],
+      "acceptance_condition": "density assumptions stated; flour variance acknowledged",
+      "covered_by": [
+        "VOL_TO_MASS",
+        "TOLERANCE",
+        "BAKERS_PCT"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "bakers_percent",
+      "definition": "Ingredient mass divided by total flour mass \u00d7 100, with flour defined as 100%"
+    },
+    {
+      "term": "hydration",
+      "definition": "Total water mass from all sources as % of flour base"
+    },
+    {
+      "term": "flour_base",
+      "definition": "The declared set of flours/powders that constitute the 100% denominator"
+    },
+    {
+      "term": "enrichment",
+      "definition": "Material fat, sugar, and dairy load that shifts a dough/batter out of lean-bread behavior"
+    },
+    {
+      "term": "fill_fraction",
+      "definition": "Batter or dough volume as a fraction of pan volumetric capacity before bake"
+    },
+    {
+      "term": "batter_depth",
+      "definition": "Vertical thickness of raw mass in the pan; primary driver of center bake time"
+    },
+    {
+      "term": "budget_closure",
+      "definition": "State where hydration, fat, sugar, salt, leavener, mass, and pan feasibility are all checked"
+    },
+    {
+      "term": "process_loss",
+      "definition": "Mass not reaching saleable portions due to adhesion, evaporation, or trim"
+    },
+    {
+      "term": "scale_factor",
+      "definition": "Multiplier applied uniformly to all baker % gram quantities to change yield"
+    },
+    {
+      "term": "true_fat_percent",
+      "definition": "Fat mass after adjusting butter, cream, egg yolk, and cocoa butter contributions as % flour"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "BAKERS_PCT",
+      "topic": "bakers_percentage_system",
+      "definition": "Express every ingredient as percent of total flour mass (flour = 100%). Baker's percent makes formulas comparable across batch sizes and reveals hydration, fat, sugar, and salt bands independent of yield. Convert cups to grams before computing; volume is not a baker % input.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "base": {
+        "criticality": 0.95,
+        "business_value": 0.9,
+        "user_value": 0.92,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.95,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.12,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.12,
+          0.35
+        ],
+        "update_signal": "ingredient density table revision or flour blend changes the 100% baseline definition"
+      },
+      "scope_boundary": {
+        "included": [
+          "flour as 100% baseline",
+          "mass-only inputs",
+          "cross-formula comparison"
+        ],
+        "excluded": [
+          "volume-only home recipes without conversion",
+          "restaurant plate costing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Baker % normalizes formulas so a 70% hydration dough is meaningful at any batch size",
+          "example": "500 g flour + 350 g water is 70% hydration whether or not eggs are present"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Multi-flour blends require a defined total flour basis; purees are not flour",
+          "example": "100 g AP + 50 g cocoa: decide if cocoa counts in flour base or as separate dry"
+        }
+      ],
+      "failure_modes": [
+        "computing % on total batter weight and calling it baker %",
+        "using cup measures as if they were mass"
+      ],
+      "acceptance_tests": [
+        "all ingredients listed in grams and as % of declared flour base"
+      ],
+      "revisit_triggers": [
+        "flour blend definition changes",
+        "user supplies only volumetric recipe"
+      ]
+    },
+    {
+      "id": "FLOUR_BASE",
+      "topic": "flour_baseline_and_blend_definition",
+      "definition": "Declare what counts as the flour 100% base: wheat flour only, or flour+cocoa+nut meal policy. Consistency of the base is mandatory for hydration and enrichment math. Changing the base mid-project invalidates all percentages.",
+      "group": "foundations",
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.75,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.75,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.45
+        ],
+        "update_signal": "nut flour or cocoa added to dry base without rebasing percentages"
+      },
+      "scope_boundary": {
+        "included": [
+          "single vs multi-component flour base policy",
+          "rebasing rules when dry substitutes enter"
+        ],
+        "excluded": [
+          "brand marketing claims"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Explicit flour-base policy prevents silent percent drift when cocoa or almond meal is added",
+          "example": "treat cocoa as separate dry at 10% of wheat flour, not as part of 100% base, for a devil's food"
+        }
+      ],
+      "cons": [
+        {
+          "claim": "mixing conventions across collaborators (wheat-only vs all dry powders in the 100% base) silently corrupts every baker % comparison",
+          "example": "team A bases on wheat only while team B folds rye and cocoa into 100%, so both report '70% hydration' for different doughs",
+          "weight": 0.64
+        }
+      ],
+      "failure_modes": [
+        "adding almond flour or cocoa without restating what is in the flour base",
+        "switching base definition between mix notes and bake notes",
+        "comparing two formulas that use different base membership without reconciling"
+      ],
+      "acceptance_tests": [
+        "flour base membership is explicitly listed",
+        "all baker % values use the same base definition"
+      ],
+      "revisit_triggers": [
+        "dry composition change",
+        "cross-team formula handoff with different base convention"
+      ]
+    },
+    {
+      "id": "HYDRATION_BAND",
+      "topic": "hydration_budget_bands",
+      "definition": "Set total water (including water fractions of eggs, milk, purees) as % of flour. Typical bands: stiff cookie doughs ~20-40% free liquid, cake batters ~60-100%+, lean bread 60-75%, high-hydration ciabatta 75-85%+. Band depends on flour protein and enrichment. Closing hydration means summing all water sources, not only the water line. Reference hidden-water constants used unless better data is given: whole egg ~75% water, cow's milk ~87\u201388% water, butter ~16% water (butter is also ~80\u201382% fat).",
+      "group": "budgets",
+      "dependencies": [
+        "BAKERS_PCT",
+        "FLOUR_BASE"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "base": {
+        "criticality": 0.93,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.5,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "wet ingredient substitution changes hidden water fraction"
+      },
+      "scope_boundary": {
+        "included": [
+          "total water sum method",
+          "product-class hydration bands",
+          "hidden water in eggs/dairy/fruit"
+        ],
+        "excluded": [
+          "steam injection oven engineering"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Closed hydration predicts dough feel and starch set window better than the water line alone",
+          "example": "eggs at 50 g on 250 g flour add ~15% hydration-equivalent water"
+        }
+      ],
+      "cons": [
+        {
+          "claim": "purees and fruit bind some water in fiber so effective free water is lower than mass suggests; milk and eggs hide large water fractions if only the water line is counted",
+          "example": "100% banana bread is not a 100% hydration bread dough; eggs at 50 g on 250 g flour add ~15% hydration-equivalent water",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "ignoring milk and egg water when claiming a hydration target",
+        "targeting lean-bread hydration feel on a high-fat brioche without enrichment adjustment",
+        "treating puree mass as fully free water for dough feel predictions"
+      ],
+      "acceptance_tests": [
+        "hydration includes itemized water fractions",
+        "product-class band cited"
+      ],
+      "revisit_triggers": [
+        "wet substitution",
+        "chronic slack or stiff dough relative to target"
+      ]
+    },
+    {
+      "id": "FAT_BUDGET",
+      "topic": "fat_budget_as_percent_flour",
+      "definition": "Track total fat (butter water-adjusted, oil, egg yolk fat, cream fat, chocolate cocoa butter) as baker % of flour. Bands: lean bread <5%, enriched dough 10-50%+, pound cake ~50%+, shortbread very high. Fat budget predicts tenderness, spread, and emulsion difficulty. Reference constants: butter ~80\u201382% fat and ~16% water; whole egg fat is mostly yolk (~30% of whole egg mass as fat fraction varies by size \u2014 prefer weighed yolk when precision matters); cream and chocolate cocoa butter must be itemized separately.",
+      "group": "budgets",
+      "dependencies": [
+        "BAKERS_PCT",
+        "FLOUR_BASE"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "update_signal": "butter vs oil swap or chocolate addition changes true fat %"
+      },
+      "scope_boundary": {
+        "included": [
+          "fat mass from multi-ingredient sources",
+          "product-class fat bands",
+          "butter is ~80-82% fat not 100%"
+        ],
+        "excluded": [
+          "dietary fat policy counseling"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "True fat % explains why European butter formulas differ from oil muffins at equal butter mass",
+          "example": "100 g butter \u2248 81 g fat + 16 g water + solids on 250 g flour"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Label 'butter' vs 'baking sticks' fat fraction can differ slightly by brand",
+          "example": "cultured butter water content varies"
+        }
+      ],
+      "failure_modes": [
+        "counting butter mass as 100% fat in hydration and fat budgets",
+        "adding chocolate without cocoa-butter fat line"
+      ],
+      "acceptance_tests": [
+        "fat budget itemizes sources and reports total fat % flour"
+      ],
+      "revisit_triggers": [
+        "fat type swap",
+        "greasy or dry mouthfeel shift"
+      ]
+    },
+    {
+      "id": "SUGAR_BUDGET",
+      "topic": "sugar_budget_as_percent_flour",
+      "definition": "Sum sucrose, brown sugar (as mass), honey/syrups (as solids + water split), and chocolate sugar into baker % sugar. Bands: bread 0-10%, enriched 10-25%, cookies 30-80%+, high-ratio cakes ~100% sugar on flour. Sugar budget couples to hydration (hygroscopy) and bake time (browning/set delay).",
+      "group": "budgets",
+      "dependencies": [
+        "BAKERS_PCT",
+        "FLOUR_BASE"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.9,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.45,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "update_signal": "liquid sweetener swap changes solids vs water split"
+      },
+      "scope_boundary": {
+        "included": [
+          "crystalline vs liquid sweetener accounting",
+          "high-ratio cake threshold",
+          "browning/set coupling"
+        ],
+        "excluded": [
+          "non-nutritive sweetener pharmacokinetics"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Sugar % band is a product-class fingerprint useful for reverse-engineering recipes",
+          "example": "~50-70% sugar cookies vs ~100% sugar high-ratio layer cakes"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Polyols and rare sugars do not map 1:1 to sucrose bulk or browning",
+          "example": "erythritol cools and crystallizes differently"
+        }
+      ],
+      "failure_modes": [
+        "treating honey grams as pure sugar solids",
+        "sugar-free claim without bulk rebuild plan"
+      ],
+      "acceptance_tests": [
+        "sugar budget lists sources with solids fraction for liquids"
+      ],
+      "revisit_triggers": [
+        "sweetener type change",
+        "spread or browning shift"
+      ]
+    },
+    {
+      "id": "SALT_BUDGET",
+      "topic": "salt_budget_bands",
+      "definition": "Salt as baker % of flour: bread ~1.8-2.2%, enriched sweet doughs often 1.2-1.8%, cookies variable. Convert crystal types by mass not volume. Salt budget is small but high leverage on gluten and fermentation rate.",
+      "group": "budgets",
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.75,
+        "user_value": 0.8,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.35,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.12,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.12,
+          0.35
+        ],
+        "update_signal": "kosher vs table salt density confusion or low-sodium request"
+      },
+      "scope_boundary": {
+        "included": [
+          "mass-based salt %",
+          "product-class bands",
+          "crystal density trap"
+        ],
+        "excluded": [
+          "clinical sodium restriction meal plans"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Weighed salt keeps rheology stable across crystal brands",
+          "example": "2.0% salt on flour regardless of flake size"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Low-sodium reformulation needs flavor rebuild beyond % cut",
+          "example": "simply halving salt tastes flat without acid/umami compensation"
+        }
+      ],
+      "failure_modes": [
+        "tablespoon scaling when batch doubles",
+        "forgetting salt in preferment and final dough double-salting"
+      ],
+      "acceptance_tests": [
+        "salt % by mass in band for product class"
+      ],
+      "revisit_triggers": [
+        "salt crystal type change",
+        "low-sodium constraint"
+      ]
+    },
+    {
+      "id": "LEAVEN_DOSE",
+      "topic": "chemical_leavening_dose_math",
+      "definition": "Dose baking powder/soda as baker % of flour and against acid load. Heuristic bands: baking powder ~1-5% of flour depending on product; soda paired to acid milliequivalents when known. Scale leavener with flour, not with eggs alone. At altitude, reduce dose.",
+      "group": "budgets",
+      "dependencies": [
+        "BAKERS_PCT",
+        "HYDRATION_BAND"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_03"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.5,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "altitude change or acid ingredient change invalidates prior dose"
+      },
+      "scope_boundary": {
+        "included": [
+          "powder vs soda dose bands",
+          "scaling with flour base",
+          "altitude adjustment"
+        ],
+        "excluded": [
+          "yeast cell biology"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Flour-relative dosing prevents runaway gas when batch size changes",
+          "example": "same 3% powder on flour at 200 g or 2 kg flour"
+        }
+      ],
+      "cons": [
+        {
+          "claim": "acid variability and altitude change effective gas yield so flour-relative dose still needs acid pairing and elevation notes; spent powder cannot be fixed by raising grams",
+          "example": "homemade cultured dairy varies batch to batch; at 5000 ft the same 3% powder over-domes then collapses",
+          "weight": 0.68
+        }
+      ],
+      "failure_modes": [
+        "scaling powder with sugar instead of flour when batch size changes",
+        "doubling powder to fix dense crumb without checking acid load or powder freshness",
+        "using sea-level dose unchanged at high altitude"
+      ],
+      "acceptance_tests": [
+        "leavener % of flour recorded",
+        "altitude note if elevation material"
+      ],
+      "revisit_triggers": [
+        "leavening failure",
+        "acid system substitution"
+      ]
+    },
+    {
+      "id": "YEAST_DOSE",
+      "topic": "yeast_dose_and_time_temperature",
+      "definition": "Yeast mass as % flour interacts with dough temperature and ferment time. Instant yeast ~0.5-1.5% for direct doughs; preferments use less commercial yeast. Conversion: instant \u2248 active dry \u00d7 0.75; fresh \u2248 instant \u00d7 3. Time-temperature substitutes for mass within limits.",
+      "group": "budgets",
+      "dependencies": [
+        "BAKERS_PCT",
+        "HYDRATION_BAND"
+      ],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "yeast format change or proof box temperature process change"
+      },
+      "scope_boundary": {
+        "included": [
+          "yeast format conversions",
+          "dose vs time-temperature tradeoff",
+          "enriched dough dose uplift"
+        ],
+        "excluded": [
+          "wild capture starter microbiology lab methods"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Trading lower yeast for longer cool ferment improves flavor at controlled schedule",
+          "example": "0.2% yeast overnight cold bulk vs 1% same-day"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Too little yeast with cold dough and short schedule underproofs",
+          "example": "fridge dough pulled early looks dense"
+        }
+      ],
+      "failure_modes": [
+        "applying bread yeast % to sweet dough without time increase",
+        "confusing instant and active dry 1:1"
+      ],
+      "acceptance_tests": [
+        "yeast type, % flour, target dough temp, and endpoint criterion listed"
+      ],
+      "revisit_triggers": [
+        "schedule compression request",
+        "chronic underproof"
+      ]
+    },
+    {
+      "id": "TOTAL_MASS",
+      "topic": "total_formula_mass_and_yield",
+      "definition": "Sum all ingredient grams to total formula mass; yield is total mass minus process loss (mixing bowl left-back, bake evaporation, trim). Predicted baked yield needs an evaporation factor by product class (cookies lower loss %, lean bread higher crust loss).",
+      "group": "scaling",
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_01"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "update_signal": "evaporation factor revised from weigh-before/after bake data"
+      },
+      "scope_boundary": {
+        "included": [
+          "total mass sum",
+          "bowl loss",
+          "evaporation factor bands",
+          "saleable yield"
+        ],
+        "excluded": [
+          "packaging line checkweighers"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Mass balance catches missing ingredients and predicts pan fill",
+          "example": "sum to 1200 g batter; 10 pans \u00d7 100 g + 200 g reserve"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Evaporation factors are product- and oven-specific priors",
+          "example": "convection vs deck ovens differ"
+        }
+      ],
+      "failure_modes": [
+        "assuming baked weight equals raw weight",
+        "forgetting inclusions added after % calculation"
+      ],
+      "acceptance_tests": [
+        "total mass and expected baked yield with stated loss factor"
+      ],
+      "revisit_triggers": [
+        "new oven or pan changes loss",
+        "portion count mismatch"
+      ]
+    },
+    {
+      "id": "PAN_GEOM",
+      "topic": "pan_geometry_volume_and_surface",
+      "definition": "Pan volume (L\u00d7W\u00d7H for rectangular; \u03c0r\u00b2h for round) and batter fill fraction determine depth. Surface-to-volume ratio drives browning and bake time. Bundt vs sheet pan at equal mass bake very differently. Always match formula mass to pan volume capacity (~50-67% fill typical for cakes to allow rise). When fill height is estimated from batter mass, state the density prior used (see BATTER_DEPTH product-class bands) so mass\u2192volume\u2192depth is reproducible.",
+      "group": "geometry",
+      "dependencies": [
+        "TOTAL_MASS"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "pan brand dimensions differ from nominal size labels"
+      },
+      "scope_boundary": {
+        "included": [
+          "volume calculation",
+          "fill fraction",
+          "surface-to-volume effects"
+        ],
+        "excluded": [
+          "decorative pan aesthetics alone"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Matching batter mass to pan volume prevents overflow and collapsed underfill",
+          "example": "8-inch round ~6 cup capacity; fill ~1/2 to 2/3 with layer-cake batter"
+        }
+      ],
+      "cons": [
+        {
+          "claim": "nominal pan sizes vary by brand wall angle and true volume so labeled inches are not interchangeable without measuring",
+          "example": "two '9-inch' rounds differ by 10%+ volume; a bundt of unknown volume overflows a loaf formula",
+          "weight": 0.63
+        }
+      ],
+      "failure_modes": [
+        "moving a loaf formula to a sheet pan without rewriting time and depth",
+        "overfilling a bundt causing spill and a dense ring",
+        "assuming brand A 8-inch equals brand B 8-inch capacity"
+      ],
+      "acceptance_tests": [
+        "pan volume and fill fraction stated",
+        "batter mass matches capacity band"
+      ],
+      "revisit_triggers": [
+        "pan brand change",
+        "overflow or chronic underfill"
+      ]
+    },
+    {
+      "id": "BATTER_DEPTH",
+      "topic": "batter_depth_and_heat_path",
+      "definition": "Depth (cm) of batter or dough in the pan controls heat path to the center. Deeper masses need lower temperature and longer time; thin sheet cakes finish fast. Depth is the bridge from pan geometry and mass to bake-time models. Convert mass to depth only with an explicit batter density prior by product class: creamed cake ~0.85\u20131.0 g/mL, foam batter ~0.45\u20130.6 g/mL, bread dough ~1.1\u20131.2 g/mL, cookie dough ~1.0\u20131.1 g/mL. volume_mL \u2248 mass_g / density; depth_cm \u2248 volume_mL / pan_area_cm2.",
+      "group": "geometry",
+      "dependencies": [
+        "PAN_GEOM",
+        "TOTAL_MASS"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.52,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "update_signal": "same mass loaded into different footprint pan changes depth"
+      },
+      "scope_boundary": {
+        "included": [
+          "depth estimate from mass/area",
+          "center heat-path implications",
+          "thin vs deep product classes"
+        ],
+        "excluded": [
+          "microwave volumetric heating models"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Depth predicts why a cupcake and a 9x13 of the same batter need different times",
+          "example": "3 cm sheet vs 6 cm loaf center lag"
+        }
+      ],
+      "cons": [
+        {
+          "claim": "dense fruit-laden or high-inclusion batters conduct heat slower at the same depth so depth alone underpredicts center lag",
+          "example": "banana bread at 6 cm lags more than plain butter cake at 6 cm; blueberry heat sinks delay set",
+          "weight": 0.65
+        }
+      ],
+      "failure_modes": [
+        "scaling mass up in the same pan without changing time or temperature",
+        "assuming bake time scales linearly with mass regardless of footprint",
+        "ignoring density when converting mass to fill height"
+      ],
+      "acceptance_tests": [
+        "depth or fill height estimated before bake-time set",
+        "depth estimate states the product-class density prior used to convert mass to volume",
+        "estimated depth band stated for bake-time plan"
+      ],
+      "revisit_triggers": [
+        "pan change",
+        "center lag failures",
+        "pan footprint change at constant mass",
+        "raw center with dark exterior",
+        "density prior challenged by measured pan fill height"
+      ]
+    },
+    {
+      "id": "SCALE_LAWS",
+      "topic": "batch_scaling_laws",
+      "definition": "Scale all ingredients by the same factor on flour base to change yield. Do not scale pan count without checking depth. Yeast and chemical leaveners generally scale with flour; spices and salt scale with flour but taste-check at extremes. Mixing time does not scale linearly with mass \u2014 dough development is energy and geometry dependent.",
+      "group": "scaling",
+      "dependencies": [
+        "BAKERS_PCT",
+        "TOTAL_MASS",
+        "PAN_GEOM"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.48,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "scale factor >3\u00d7 or equipment change (home mixer to spiral)"
+      },
+      "scope_boundary": {
+        "included": [
+          "uniform mass scaling",
+          "what not to scale linearly (mix time, bake time)",
+          "equipment limits"
+        ],
+        "excluded": [
+          "factory CAPEX planning"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Flour-base scaling keeps all budgets invariant when only yield changes",
+          "example": "2\u00d7 flour and 2\u00d7 every ingredient preserves 65% hydration"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "10\u00d7 home recipes can fail from mixer underpower and different heat transfer",
+          "example": "double batch in same pan is a depth change not a pure scale"
+        }
+      ],
+      "failure_modes": [
+        "scaling bake time by the same factor as mass",
+        "scaling eggs by count rounding error without gram correction"
+      ],
+      "acceptance_tests": [
+        "scaled formula remains in baker % identity with original",
+        "pan and bake plan revisited after scale"
+      ],
+      "revisit_triggers": [
+        "equipment change",
+        "quality drift post scale"
+      ]
+    },
+    {
+      "id": "BAKE_TIME_MODEL",
+      "topic": "bake_time_versus_depth_model",
+      "definition": "Heuristic prior for the same batter and oven: bake time scales approximately with depth to the power 0.8\u20131.1 (near-linear, often slightly sublinear) \u2014 doubling depth is roughly 1.7\u20132.1\u00d7 time, not a super-linear jump. Higher sugar and fat delay set and can stretch the prior; convection vs still air changes effective time. Never publish a clock time without a doneness signal hierarchy; internal temperature confirmation dominates when a product-class target exists.",
+      "group": "scaling",
+      "dependencies": [
+        "BATTER_DEPTH",
+        "SUGAR_BUDGET",
+        "FAT_BUDGET"
+      ],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.92,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.86,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.65,
+        "failure_rate": 0.24,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.28,
+          0.6
+        ],
+        "update_signal": "oven type change or sugar/fat budget shift invalidates prior time curve"
+      },
+      "scope_boundary": {
+        "included": [
+          "depth-based time priors",
+          "oven mode factors",
+          "composition delay factors",
+          "must pair with doneness checks"
+        ],
+        "excluded": [
+          "exact finite-element heat simulations"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Depth-aware near-linear time priors reduce raw centers when pans change",
+          "example": "cupcakes to 8-inch layers: depth roughly doubles \u2192 about 1.7\u20132.1\u00d7 time, then confirm with internal temp"
+        }
+      ],
+      "cons": [
+        {
+          "claim": "priors mislead across very different formulations at the same depth; sugar/fat delay and inclusion heat sinks stretch time beyond the depth exponent alone",
+          "example": "brownie vs sponge at 3 cm depth need different times; copying a box time after doubling pan depth underbakes the center",
+          "weight": 0.7
+        }
+      ],
+      "failure_modes": [
+        "scaling bake time by the same factor as mass when only depth changed",
+        "using wall clock as the sole doneness criterion",
+        "applying a super-linear depth exponent that over-extends thin products or under-extends deep ones"
+      ],
+      "acceptance_tests": [
+        "bake plan includes depth, time prior, and non-time doneness checks"
+      ],
+      "revisit_triggers": [
+        "raw center or overbake edge failures",
+        "new oven calibration"
+      ]
+    },
+    {
+      "id": "BUDGET_CLOSE",
+      "topic": "budget_closure_checklist",
+      "definition": "Close the formula: hydration, fat, sugar, salt, leavener within product-class bands; total mass equals sum of parts; pan fill and depth feasible; scale factor consistent. Open budgets (unknown water in a mystery puree) must be flagged before bake advice locks.",
+      "group": "closure",
+      "dependencies": [
+        "HYDRATION_BAND",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "SALT_BUDGET",
+        "LEAVEN_DOSE",
+        "TOTAL_MASS",
+        "PAN_GEOM"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_10",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.94,
+        "business_value": 0.9,
+        "user_value": 0.92,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.6,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.24,
+          0.55
+        ],
+        "update_signal": "any single budget line edited without re-running full closure"
+      },
+      "scope_boundary": {
+        "included": [
+          "multi-budget checklist",
+          "open-item flags",
+          "lock criteria before bake plan"
+        ],
+        "excluded": [
+          "marketing copy approval"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Full closure catches incompatible targets (e.g., 40% hydration pound cake)",
+          "example": "checklist fails until water sources added for cake band"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Bands are priors; regional styles may sit outside house bands intentionally",
+          "example": "some focaccia hydrations exceed 85%"
+        }
+      ],
+      "failure_modes": [
+        "locking a bake schedule with an open hydration line",
+        "closing mass but not pan fill"
+      ],
+      "acceptance_tests": [
+        "closure checklist completed with pass/waive per budget line",
+        "pan mass and depth feasible"
+      ],
+      "revisit_triggers": [
+        "ingredient edit after lock",
+        "failed bake suggesting mis-closure"
+      ]
+    },
+    {
+      "id": "VOL_TO_MASS",
+      "topic": "volume_to_mass_conversion",
+      "definition": "Convert cups/spoons to grams with ingredient-specific densities (flour sifted vs spooned differs ~20%+). Prefer weighing. When only volume given, state density assumptions and uncertainty. Flour is the highest-variance common conversion.",
+      "group": "foundations",
+      "dependencies": [
+        "BAKERS_PCT"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.9,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "density table update or flour brand packing behavior change"
+      },
+      "scope_boundary": {
+        "included": [
+          "ingredient density table use",
+          "flour packing variance",
+          "uncertainty labeling"
+        ],
+        "excluded": [
+          "legal metrology certification"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Stating conversion assumptions makes volumetric recipes debuggable",
+          "example": "AP flour 120 g/cup spooned vs 140 g/cup scooped \u2014 pick one and declare"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Internet density tables disagree; variance remains",
+          "example": "brown sugar packed vs loose"
+        }
+      ],
+      "failure_modes": [
+        "mixing density sources mid-formula",
+        "treating 1 cup all ingredients as 240 g"
+      ],
+      "acceptance_tests": [
+        "volume inputs converted with named density assumptions"
+      ],
+      "revisit_triggers": [
+        "high batch variance",
+        "flour brand change"
+      ]
+    },
+    {
+      "id": "PREF_CONSTRAINT",
+      "topic": "preference_and_diet_constraints_as_math",
+      "definition": "Encode allergies, vegan, sugar-reduction, and gluten-free as hard constraints on allowed ingredients, then reclose budgets. Constraints are not flavor notes \u2014 they remove mass that must be replaced on functional axes. Multi-constraint sets may be infeasible at original product class.",
+      "group": "closure",
+      "dependencies": [
+        "BUDGET_CLOSE",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.92,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.9,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58,
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.26,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.3,
+          0.62
+        ],
+        "update_signal": "new hard constraint added after first closure"
+      },
+      "scope_boundary": {
+        "included": [
+          "hard vs soft constraints",
+          "infeasibility detection",
+          "product-class change recommendation"
+        ],
+        "excluded": [
+          "medical nutrition therapy"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Treating vegan+GF+sugar-free as simultaneous hard constraints surfaces infeasibility early",
+          "example": "angel food cannot keep identity under all three without becoming a different dessert"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Users may reject product-class change even when math requires it",
+          "example": "insisting on identical pound cake texture egg-free and fat-free"
+        }
+      ],
+      "failure_modes": [
+        "applying constraints only to shopping list not to structure math",
+        "silent drop of salt for 'healthy' without flavor plan"
+      ],
+      "acceptance_tests": [
+        "constraints listed as hard/soft",
+        "if infeasible, alternative product class proposed"
+      ],
+      "revisit_triggers": [
+        "constraint change",
+        "acceptance failure of redesign"
+      ]
+    },
+    {
+      "id": "LAYER_RATIO",
+      "topic": "component_and_layer_ratios",
+      "definition": "For multi-component products (cake + filling + frosting, laminated dough layers), budget each component separately then assemble mass ratios (e.g., frosting : cake crumb 0.3\u20130.6). Assembled product hydration and sweetness are weighted averages of components.",
+      "group": "scaling",
+      "dependencies": [
+        "TOTAL_MASS",
+        "SUGAR_BUDGET",
+        "FAT_BUDGET"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.86,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "filling type change alters assembled sugar/fat averages"
+      },
+      "scope_boundary": {
+        "included": [
+          "per-component baker %",
+          "assembly mass ratios",
+          "weighted average composition"
+        ],
+        "excluded": [
+          "wedding cake structural engineering beyond mass ratios"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Separate component budgets prevent frosting sugar from polluting cake flour % math",
+          "example": "cake at 100% sugar on flour; frosting budgeted per gram of cake"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "User-facing slices care about assembled sweetness not component baker %",
+          "example": "a low-sugar cake with heavy ganache still tastes sweet"
+        }
+      ],
+      "failure_modes": [
+        "mixing frosting sugar into cake flour base percentages",
+        "ignoring soak syrup as a water+sugar addition"
+      ],
+      "acceptance_tests": [
+        "each component closed; assembly ratios stated"
+      ],
+      "revisit_triggers": [
+        "component swap",
+        "assembled taste imbalance"
+      ]
+    },
+    {
+      "id": "ENRICH_THRESH",
+      "topic": "enrichment_threshold_bands",
+      "definition": "Classify doughs/batters as lean vs enriched by fat+sugar+dairy thresholds (e.g., brioche enrichment when butter >20% flour and eggs present). Enrichment changes expected hydration feel, yeast dose, and mix method. Misclassification applies wrong bands.",
+      "group": "budgets",
+      "dependencies": [
+        "FAT_BUDGET",
+        "SUGAR_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_03"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "added butter or sugar pushes formula across enrichment threshold"
+      },
+      "scope_boundary": {
+        "included": [
+          "lean vs enriched classification rules",
+          "band set selection by class"
+        ],
+        "excluded": [
+          "legal standards of identity for enriched flour fortification"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Classifying enrichment selects the correct hydration and yeast priors",
+          "example": "brioche at 50% butter uses different mix and ferment than baguette at 2% fat"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Borderline formulas (10% butter sandwich bread) sit between heuristics",
+          "example": "may need hybrid guidance"
+        }
+      ],
+      "failure_modes": [
+        "applying lean bread hydration feel targets to panettone",
+        "using muffin method priors for laminated dough"
+      ],
+      "acceptance_tests": [
+        "enrichment class labeled with fat+sugar evidence"
+      ],
+      "revisit_triggers": [
+        "fat or sugar budget crosses threshold"
+      ]
+    },
+    {
+      "id": "PROCESS_LOSS",
+      "topic": "process_loss_and_evaporation_factors",
+      "definition": "Account for mix bowl adhesion, divider waste, bake evaporation, and post-bake trim. Use product-class factors as priors (e.g., 8-15% bake mass loss for many breads; less for high-fat cookies). Yield math without loss overpromises portions.",
+      "group": "scaling",
+      "dependencies": [
+        "TOTAL_MASS",
+        "BAKE_TIME_MODEL"
+      ],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.4,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "weigh-before/after data updates loss factor"
+      },
+      "scope_boundary": {
+        "included": [
+          "loss categories",
+          "empirical update path",
+          "portion planning"
+        ],
+        "excluded": [
+          "industrial scrap reclaim systems"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Loss-aware yield prevents shorting a party tray of 24 cookies",
+          "example": "plan 10% extra dough mass for scoop loss and spread trim"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Over-applying bread evaporation factors to brownies overproduces",
+          "example": "high-fat dense products lose less moisture"
+        }
+      ],
+      "failure_modes": [
+        "quoting raw batter portions as finished servings",
+        "ignoring soak-up of syrups that add mass after bake"
+      ],
+      "acceptance_tests": [
+        "loss factor stated by category for yield claims"
+      ],
+      "revisit_triggers": [
+        "portion complaints",
+        "oven humidity change"
+      ]
+    },
+    {
+      "id": "TOLERANCE",
+      "topic": "tolerance_bands_and_rounding",
+      "definition": "Define acceptable variance: home scale \u00b11-2 g on minor ingredients, tighter on leavener and salt relative to their small masses. Rounding eggs to whole units requires gram compensation with water or omitting elsewhere. Tolerance bands prevent false precision theater while protecting high-leverage minors.",
+      "group": "closure",
+      "dependencies": [
+        "BAKERS_PCT",
+        "LEAVEN_DOSE",
+        "SALT_BUDGET"
+      ],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.16,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.45
+        ],
+        "update_signal": "scale precision class changes (0.1 g vs 1 g home scale)"
+      },
+      "scope_boundary": {
+        "included": [
+          "absolute vs relative tolerance",
+          "egg rounding compensation",
+          "leavener/salt criticality"
+        ],
+        "excluded": [
+          "ISO laboratory uncertainty frameworks"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Tighter absolute tolerance on 5 g soda than on 200 g flour matches leverage",
+          "example": "\u00b10.5 g on soda vs \u00b15 g on flour"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Obsessive 0.01 g precision on flour does not improve home cakes",
+          "example": "false precision wastes time"
+        }
+      ],
+      "failure_modes": [
+        "rounding 1.5 eggs to 2 without removing ~25 g elsewhere",
+        "measuring soda by volume loosely"
+      ],
+      "acceptance_tests": [
+        "tolerance policy stated for flour, water, minors"
+      ],
+      "revisit_triggers": [
+        "equipment precision change",
+        "batch variance complaints"
+      ]
+    },
+    {
+      "id": "COST_BATCH",
+      "topic": "optional_cost_per_batch_overlay",
+      "definition": "Optional overlay: unit costs \u00d7 grams for batch cost and cost per baked portion after loss. Cost never overrides food-safety or structure closure. Used when user asks for cheaper swaps \u2014 still reclose functional budgets after cheaper ingredient substitution.",
+      "group": "overlay",
+      "dependencies": [
+        "TOTAL_MASS",
+        "PROCESS_LOSS",
+        "BUDGET_CLOSE"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.7,
+        "business_value": 0.85,
+        "user_value": 0.75,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.6,
+        "irreversibility": 0.3,
+        "confidence": 0.75,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.75,
+        "failure_rate": 0.12,
+        "downside_weight": 0.35,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "update_signal": "ingredient unit prices change or cheaper substitute proposed"
+      },
+      "scope_boundary": {
+        "included": [
+          "unit cost \u00d7 mass",
+          "portion cost after loss",
+          "cheap-swap still needs budget closure"
+        ],
+        "excluded": [
+          "full managerial accounting"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Portion cost after loss gives honest catering quotes",
+          "example": "raw dough cost / (count \u00d7 (1-loss)) "
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Cheapest fat may be rancid risk or wrong plastic range",
+          "example": "price-only shortening choice fails creaming"
+        }
+      ],
+      "failure_modes": [
+        "optimizing cost before structure closure",
+        "ignoring loss in per-serving cost"
+      ],
+      "acceptance_tests": [
+        "if cost used, structure budgets still closed first"
+      ],
+      "revisit_triggers": [
+        "price-driven substitution request"
+      ]
+    },
+    {
+      "id": "INCLUSION_MASS",
+      "topic": "inclusions_and_mix_ins_mass_rules",
+      "definition": "Chocolate chips, nuts, fruit, and seeds are often budgeted as % flour on top of base formula (e.g., 20-40% chips). They add mass and local heat sinks but usually are outside hydration flour base. Fold-in timing does not change mass math but changes distribution.",
+      "group": "budgets",
+      "dependencies": [
+        "BAKERS_PCT",
+        "TOTAL_MASS",
+        "FAT_BUDGET",
+        "SUGAR_BUDGET"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.84,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.16,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.45
+        ],
+        "update_signal": "inclusion type change (dried vs wet fruit) alters water and sugar"
+      },
+      "scope_boundary": {
+        "included": [
+          "inclusion % flour bands",
+          "wet vs dry fruit water accounting",
+          "heat-sink bake effect note"
+        ],
+        "excluded": [
+          "allergen labeling legal copy"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Budgeting inclusions separately keeps base crumb math clean",
+          "example": "cookie dough base closed, then +30% chips on flour"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Wet fruit bleeds water and sugar into base during bake",
+          "example": "blueberry muffins need base adjustment or coated fruit"
+        }
+      ],
+      "failure_modes": [
+        "dumping inclusions into flour base % and wrecking hydration interpretation",
+        "scaling chips with pan size only ignoring flour base"
+      ],
+      "acceptance_tests": [
+        "inclusion % and wet/dry class recorded"
+      ],
+      "revisit_triggers": [
+        "wet fruit swap",
+        "sink or bleed issues"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "BAKERS_PCT",
+      "to": "FLOUR_BASE",
+      "edge_type": "dependency",
+      "why_related": "baseline definition uses baker % language",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "HYDRATION_BAND",
+      "edge_type": "dependency",
+      "why_related": "hydration is water % of flour base",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "FAT_BUDGET",
+      "edge_type": "dependency",
+      "why_related": "fat budget is fat % of flour base",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "SUGAR_BUDGET",
+      "edge_type": "dependency",
+      "why_related": "sugar budget is sugar % of flour base",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "SALT_BUDGET",
+      "edge_type": "dependency",
+      "why_related": "salt budget is salt % of flour base",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "LEAVEN_DOSE",
+      "edge_type": "dependency",
+      "why_related": "chemical leavener dosed as % flour",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "YEAST_DOSE",
+      "edge_type": "dependency",
+      "why_related": "yeast dosed as % flour",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "TOTAL_MASS",
+      "edge_type": "dependency",
+      "why_related": "mass sum starts from baker % gram conversion",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "VOL_TO_MASS",
+      "edge_type": "dependency",
+      "why_related": "volume conversion feeds baker % inputs",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "TOLERANCE",
+      "edge_type": "dependency",
+      "why_related": "tolerances apply to baker % gram quantities",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "BAKERS_PCT",
+      "to": "INCLUSION_MASS",
+      "edge_type": "dependency",
+      "why_related": "inclusions budgeted as % flour",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "FLOUR_BASE",
+      "to": "HYDRATION_BAND",
+      "edge_type": "dependency",
+      "why_related": "hydration denominator is the declared flour base",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "FLOUR_BASE",
+      "to": "ENRICH_THRESH",
+      "edge_type": "dependency",
+      "why_related": "enrichment judged on flour-base percentages",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "HYDRATION_BAND",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "why_related": "closure requires hydration line closed",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "HYDRATION_BAND",
+      "to": "LEAVEN_DOSE",
+      "edge_type": "dependency",
+      "why_related": "hydration context affects gas retention assumptions",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "HYDRATION_BAND",
+      "to": "YEAST_DOSE",
+      "edge_type": "dependency",
+      "why_related": "dough hydration interacts with fermentation schedule",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "FAT_BUDGET",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "why_related": "closure requires fat line closed",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "FAT_BUDGET",
+      "to": "BAKE_TIME_MODEL",
+      "edge_type": "dependency",
+      "why_related": "fat delays set and influences time priors",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "FAT_BUDGET",
+      "to": "ENRICH_THRESH",
+      "edge_type": "dependency",
+      "why_related": "fat level is an enrichment classifier",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "FAT_BUDGET",
+      "to": "LAYER_RATIO",
+      "edge_type": "dependency",
+      "why_related": "component fat contributes to assembly averages",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SUGAR_BUDGET",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "why_related": "closure requires sugar line closed",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "SUGAR_BUDGET",
+      "to": "BAKE_TIME_MODEL",
+      "edge_type": "dependency",
+      "why_related": "sugar delays gelatinization affecting time",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SUGAR_BUDGET",
+      "to": "ENRICH_THRESH",
+      "edge_type": "dependency",
+      "why_related": "sugar level is an enrichment classifier",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SUGAR_BUDGET",
+      "to": "LAYER_RATIO",
+      "edge_type": "dependency",
+      "why_related": "component sugar contributes to assembly averages",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SALT_BUDGET",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "why_related": "closure requires salt line closed",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "LEAVEN_DOSE",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "why_related": "closure requires leavener line closed",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "TOTAL_MASS",
+      "to": "PAN_GEOM",
+      "edge_type": "dependency",
+      "why_related": "pan fill uses total batter/dough mass",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "TOTAL_MASS",
+      "to": "SCALE_LAWS",
+      "edge_type": "dependency",
+      "why_related": "scaling changes total mass by a factor",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "TOTAL_MASS",
+      "to": "PROCESS_LOSS",
+      "edge_type": "dependency",
+      "why_related": "loss factors apply to total mass for yield",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "TOTAL_MASS",
+      "to": "LAYER_RATIO",
+      "edge_type": "dependency",
+      "why_related": "assembly ratios need component masses",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "TOTAL_MASS",
+      "to": "COST_BATCH",
+      "edge_type": "dependency",
+      "why_related": "cost multiplies mass lines",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "PAN_GEOM",
+      "to": "BATTER_DEPTH",
+      "edge_type": "dependency",
+      "why_related": "depth derives from mass and pan footprint",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "BATTER_DEPTH",
+      "to": "BAKE_TIME_MODEL",
+      "edge_type": "dependency",
+      "why_related": "time priors depend on depth",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SCALE_LAWS",
+      "to": "BUDGET_CLOSE",
+      "edge_type": "dependency",
+      "why_related": "after scale, reclose pans and feasibility",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "BUDGET_CLOSE",
+      "to": "PREF_CONSTRAINT",
+      "edge_type": "dependency",
+      "why_related": "constraints re-enter closure loop",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "BUDGET_CLOSE",
+      "to": "COST_BATCH",
+      "edge_type": "dependency",
+      "why_related": "cost overlay only after structure closure",
+      "relation_strength": 0.84
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "precision_vs_practicality",
+      "description": "Lab-grade gram precision vs home cooking speed",
+      "poles": [
+        "0.1 g obsession",
+        "cup convenience"
+      ],
+      "resolution_hint": "weigh high-leverage minors; allow coarser flour tolerance",
+      "affected_nodes": [
+        "TOLERANCE",
+        "VOL_TO_MASS",
+        "LEAVEN_DOSE"
+      ]
+    },
+    {
+      "name": "mass_scale_vs_bake_time_scale",
+      "description": "Users scale time with mass factor incorrectly",
+      "poles": [
+        "time \u221d mass",
+        "time from depth+doneness"
+      ],
+      "resolution_hint": "recompute depth; use doneness hierarchy",
+      "affected_nodes": [
+        "SCALE_LAWS",
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH"
+      ]
+    },
+    {
+      "name": "band_purity_vs_regional_style",
+      "description": "House bands vs legitimate style outliers",
+      "poles": [
+        "strict band gate",
+        "style-exception waive"
+      ],
+      "resolution_hint": "allow explicit waives with reason",
+      "affected_nodes": [
+        "BUDGET_CLOSE",
+        "HYDRATION_BAND",
+        "ENRICH_THRESH"
+      ]
+    },
+    {
+      "name": "component_math_vs_assembled_taste",
+      "description": "Baker % per layer vs eaten slice sweetness/fat",
+      "poles": [
+        "component purity",
+        "assembled sensory"
+      ],
+      "resolution_hint": "report both component budgets and weighted assembly",
+      "affected_nodes": [
+        "LAYER_RATIO",
+        "SUGAR_BUDGET",
+        "FAT_BUDGET"
+      ]
+    },
+    {
+      "name": "cost_vs_structure",
+      "description": "Cheaper ingredients vs functional closure",
+      "poles": [
+        "minimum cost",
+        "structure first"
+      ],
+      "resolution_hint": "structure closure dominates cost overlay",
+      "affected_nodes": [
+        "COST_BATCH",
+        "BUDGET_CLOSE",
+        "PREF_CONSTRAINT"
+      ]
+    },
+    {
+      "name": "constraint_fidelity_vs_product_identity",
+      "description": "Hard diet constraints vs keeping original product class",
+      "poles": [
+        "keep identity",
+        "change class to stay feasible"
+      ],
+      "resolution_hint": "state infeasibility; propose nearest feasible class",
+      "affected_nodes": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ]
+    },
+    {
+      "name": "single_pan_deep_vs_multi_pan_shallow",
+      "description": "One deep pan convenience vs even bake",
+      "poles": [
+        "one pan simplicity",
+        "shallow even bake"
+      ],
+      "resolution_hint": "prefer depth in band for product; split pans if needed",
+      "affected_nodes": [
+        "PAN_GEOM",
+        "BATTER_DEPTH",
+        "BAKE_TIME_MODEL"
+      ]
+    },
+    {
+      "name": "yeast_mass_vs_schedule",
+      "description": "More yeast for speed vs flavor from time",
+      "poles": [
+        "same-day high yeast",
+        "long cool low yeast"
+      ],
+      "resolution_hint": "pick schedule first then dose",
+      "affected_nodes": [
+        "YEAST_DOSE",
+        "HYDRATION_BAND"
+      ]
+    },
+    {
+      "name": "inclusion_load_vs_base_structure",
+      "description": "Heavy mix-ins vs crumb integrity",
+      "poles": [
+        "maximum chips/fruit",
+        "clean base crumb"
+      ],
+      "resolution_hint": "cap inclusions % flour; adjust bake for heat sinks",
+      "affected_nodes": [
+        "INCLUSION_MASS",
+        "TOTAL_MASS",
+        "BAKE_TIME_MODEL"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "Only volumetric recipe available with packed brown sugar and scooped flour",
+      "trigger": "cups-only input with high flour variance risk",
+      "affected_nodes": [
+        "VOL_TO_MASS",
+        "TOLERANCE",
+        "BAKERS_PCT"
+      ],
+      "mitigation": "declare density assumptions; widen uncertainty; recommend scale for next iteration",
+      "severity": "medium"
+    },
+    {
+      "description": "Double batch left in a single original pan",
+      "trigger": "scale factor 2 with unchanged pan",
+      "affected_nodes": [
+        "SCALE_LAWS",
+        "BATTER_DEPTH",
+        "BAKE_TIME_MODEL",
+        "PAN_GEOM"
+      ],
+      "mitigation": "treat as depth change; lower temp extend time; or split pans",
+      "severity": "high"
+    },
+    {
+      "description": "Altitude above 3000 ft",
+      "trigger": "user elevation or chronic dome-and-collapse",
+      "affected_nodes": [
+        "LEAVEN_DOSE",
+        "HYDRATION_BAND",
+        "BAKE_TIME_MODEL"
+      ],
+      "mitigation": "reduce chemical leavener slightly; increase liquid; adjust temp/time; trial",
+      "severity": "high"
+    },
+    {
+      "description": "Butter measured as fat 100% in spreadsheet",
+      "trigger": "fat budget overstated, water understated",
+      "affected_nodes": [
+        "FAT_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "mitigation": "apply ~81% fat / ~16% water split for butter; reclose",
+      "severity": "medium"
+    },
+    {
+      "description": "Honey swapped 1:1 for sucrose by grams",
+      "trigger": "liquid sweetener without solids/water split",
+      "affected_nodes": [
+        "SUGAR_BUDGET",
+        "HYDRATION_BAND"
+      ],
+      "mitigation": "count ~80% sugar solids ~17% water; reduce other liquid; reclose",
+      "severity": "medium"
+    },
+    {
+      "description": "Vegan + gluten-free + deep sugar cut on angel food",
+      "trigger": "multi hard constraints on foam cake identity",
+      "affected_nodes": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ],
+      "mitigation": "declare infeasible identity; propose different dessert class",
+      "severity": "high"
+    },
+    {
+      "description": "Bundt pan volume unknown",
+      "trigger": "decorative pan without dimensions",
+      "affected_nodes": [
+        "PAN_GEOM",
+        "BATTER_DEPTH"
+      ],
+      "mitigation": "water-fill measure pan volume; set fill fraction; then depth estimate",
+      "severity": "medium"
+    },
+    {
+      "description": "Catering count short after bake",
+      "trigger": "yield planned on raw mass only",
+      "affected_nodes": [
+        "PROCESS_LOSS",
+        "TOTAL_MASS",
+        "COST_BATCH"
+      ],
+      "mitigation": "apply loss factor and bake a buffer tray",
+      "severity": "medium"
+    },
+    {
+      "description": "Mixer cannot develop double dough mass",
+      "trigger": "scale-up beyond equipment",
+      "affected_nodes": [
+        "SCALE_LAWS",
+        "TOTAL_MASS"
+      ],
+      "mitigation": "split batches; do not fake scale in one underpowered mix",
+      "severity": "high"
+    },
+    {
+      "description": "Sheet cake to cupcake conversion",
+      "trigger": "same batter new depth class",
+      "affected_nodes": [
+        "BATTER_DEPTH",
+        "BAKE_TIME_MODEL",
+        "PAN_GEOM"
+      ],
+      "mitigation": "recompute depth; cut time drastically; watch doneness signals",
+      "severity": "low"
+    },
+    {
+      "description": "Wet fruit inclusions at 40% flour",
+      "trigger": "berries bleed and sink",
+      "affected_nodes": [
+        "INCLUSION_MASS",
+        "HYDRATION_BAND",
+        "BAKE_TIME_MODEL"
+      ],
+      "mitigation": "coat fruit, reduce other liquid slightly, fold late; accept some bleed",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "convert_to_grams",
+      "node_ref": "VOL_TO_MASS",
+      "description": "Convert all volume inputs to grams with declared densities",
+      "artifact": "gram formula",
+      "gate": "every line has grams"
+    },
+    {
+      "action": "declare_flour_base",
+      "node_ref": "FLOUR_BASE",
+      "description": "List what is in the 100% flour base",
+      "artifact": "base definition",
+      "gate": "base membership explicit"
+    },
+    {
+      "action": "compute_bakers_pct",
+      "node_ref": "BAKERS_PCT",
+      "description": "Express all ingredients as % flour",
+      "artifact": "baker % table",
+      "gate": "flour line is 100%"
+    },
+    {
+      "action": "close_hydration_fat_sugar_salt",
+      "node_ref": "HYDRATION_BAND",
+      "description": "Itemize water/fat/sugar/salt budgets",
+      "artifact": "budget sheet",
+      "gate": "primary budgets numeric"
+    },
+    {
+      "action": "dose_leavening",
+      "node_ref": "LEAVEN_DOSE",
+      "description": "Set chemical or yeast dose from flour base and schedule",
+      "artifact": "leavener line",
+      "gate": "dose as % flour present"
+    },
+    {
+      "action": "classify_enrichment",
+      "node_ref": "ENRICH_THRESH",
+      "description": "Label lean vs enriched and select band set",
+      "artifact": "class label",
+      "gate": "class matches fat+sugar evidence"
+    },
+    {
+      "action": "sum_mass_and_loss",
+      "node_ref": "TOTAL_MASS",
+      "description": "Total mass and process loss yield estimate",
+      "artifact": "yield estimate",
+      "gate": "total mass equals sum of parts"
+    },
+    {
+      "action": "match_pan_geometry",
+      "node_ref": "PAN_GEOM",
+      "description": "Choose pans; compute fill and depth",
+      "artifact": "pan plan",
+      "gate": "fill fraction in safe band"
+    },
+    {
+      "action": "set_bake_time_prior",
+      "node_ref": "BAKE_TIME_MODEL",
+      "description": "Depth- and composition-aware time prior with doneness checks",
+      "artifact": "bake plan",
+      "gate": "time not sole doneness criterion"
+    },
+    {
+      "action": "run_budget_closure",
+      "node_ref": "BUDGET_CLOSE",
+      "description": "Full closure checklist including constraints",
+      "artifact": "closure report",
+      "gate": "all lines pass or waived with reason"
+    },
+    {
+      "action": "apply_constraints_and_cost",
+      "node_ref": "PREF_CONSTRAINT",
+      "description": "Apply diet constraints and optional cost overlay",
+      "artifact": "constraint+cost note",
+      "gate": "structure still closed after any swap"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "structure_budgets_over_cost",
+      "rationale": "cheap broken product is worthless",
+      "trigger": "cost cut proposal",
+      "action": "reclose budgets after any cheaper swap"
+    },
+    {
+      "rule": "depth_doneness_over_mass_proportional_time",
+      "rationale": "heat path is geometric",
+      "trigger": "user scales time by mass factor",
+      "action": "recompute depth-based prior"
+    },
+    {
+      "rule": "declared_flour_base_consistency",
+      "rationale": "shifting denominator corrupts all %",
+      "trigger": "cocoa or nut meal added",
+      "action": "restate base policy before new %"
+    },
+    {
+      "rule": "hard_constraints_over_identity_nostalgia",
+      "rationale": "infeasible identity should be renamed not faked",
+      "trigger": "multi-constraint impossibility",
+      "action": "propose new product class"
+    },
+    {
+      "rule": "mass_over_volume_for_leavener_and_salt",
+      "rationale": "high leverage minors",
+      "trigger": "volume-only minor ingredients",
+      "action": "require grams for salt and leavener"
+    },
+    {
+      "rule": "itemized_water_over_water_line_alone",
+      "rationale": "hidden water dominates errors",
+      "trigger": "hydration dispute",
+      "action": "sum all wet fractions"
+    },
+    {
+      "rule": "pan_feasibility_over_single_pan_convenience",
+      "rationale": "overflow and raw centers are failures",
+      "trigger": "overfill or extreme depth",
+      "action": "split pans or redesign mass"
+    },
+    {
+      "rule": "loss_aware_yield_over_raw_mass_portions",
+      "rationale": "honest counts need loss factors",
+      "trigger": "catering portion planning",
+      "action": "apply process loss before promising counts"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "do_not_scale_bake_time_by_mass_factor",
+      "prevents": "raw deep centers or burnt thin trays"
+    },
+    {
+      "rule": "do_not_count_butter_as_100_percent_fat",
+      "prevents": "hydration and fat budget errors"
+    },
+    {
+      "rule": "do_not_close_without_pan_fill_check",
+      "prevents": "overflow disasters"
+    },
+    {
+      "rule": "do_not_change_flour_base_silently",
+      "prevents": "corrupt baker % comparisons"
+    },
+    {
+      "rule": "do_not_apply_cost_swap_without_reclosure",
+      "prevents": "structure regressions"
+    },
+    {
+      "rule": "do_not_treat_cups_of_flour_as_precise",
+      "prevents": "hidden hydration swings"
+    },
+    {
+      "rule": "do_not_ignore_wet_inclusion_water",
+      "prevents": "gummy fruit zones and wrong hydration"
+    },
+    {
+      "rule": "do_not_promise_portions_on_raw_mass_only",
+      "prevents": "short catering counts"
+    },
+    {
+      "rule": "do_not_mix_density_tables_mid_formula",
+      "prevents": "inconsistent gram conversions"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "raw center with dark exterior",
+      "action": "reduce depth or temp; extend time; recheck sugar/fat delay",
+      "nodes": [
+        "BAKE_TIME_MODEL",
+        "BATTER_DEPTH",
+        "SUGAR_BUDGET"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "overflow or crater from overfill",
+      "action": "reduce fill fraction; split mass",
+      "nodes": [
+        "PAN_GEOM",
+        "TOTAL_MASS",
+        "BATTER_DEPTH"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "dough feel mismatches claimed hydration",
+      "action": "recompute hidden water; verify flour base",
+      "nodes": [
+        "HYDRATION_BAND",
+        "FLOUR_BASE",
+        "VOL_TO_MASS"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "scale-up quality drop",
+      "action": "check mixer energy, pan depth, loss factors",
+      "nodes": [
+        "SCALE_LAWS",
+        "PROCESS_LOSS",
+        "BAKE_TIME_MODEL"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "constraint added",
+      "action": "rerun PREF_CONSTRAINT and BUDGET_CLOSE",
+      "nodes": [
+        "PREF_CONSTRAINT",
+        "BUDGET_CLOSE"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "portion shortage",
+      "action": "update PROCESS_LOSS and TOTAL_MASS yield",
+      "nodes": [
+        "PROCESS_LOSS",
+        "TOTAL_MASS",
+        "COST_BATCH"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "soapy or flat quick bread",
+      "action": "revisit LEAVEN_DOSE and acid assumptions",
+      "nodes": [
+        "LEAVEN_DOSE",
+        "HYDRATION_BAND"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "batch variance on cups recipes",
+      "action": "move flour and minors to weighed grams",
+      "nodes": [
+        "VOL_TO_MASS",
+        "TOLERANCE",
+        "BAKERS_PCT"
+      ],
+      "priority": 2
+    }
+  ],
+  "priority_rationale": "Baker % and flour base unlock all budgets; mass and pan geometry unlock depth and time; closure and constraints finish the formula before cost overlays.",
+  "eval_objective": "verify_core_properties_of_culinary_formulation_math_kb"
+}

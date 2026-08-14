@@ -1,0 +1,537 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "infra",
+  "domain": "infra",
+  "domain_label": "Training & Inference Infrastructure",
+  "purpose": "Invoke this specialist for any question requiring GPU training infrastructure sizing, distributed training configuration, cost modeling, inference serving architecture, quantization strategy, or LoRA multi-specialist deployment; covers full lifecycle from VRAM math through production serving optimization.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/infra__train_infra.kb.json",
+    "phase_b/knowledge_base/llm_engineering/infra__serve_quant.kb.json"
+  ],
+  "role": "Expert ML infrastructure engineer spanning GPU training and inference serving for LLMs 1B-175B. Applies VRAM budgeting, ZeRO/FSDP parallelism selection, mixed-precision configuration, spot-instance fault tolerance, Chinchilla cost modeling, and inference serving optimization (vLLM/TGI/llama.cpp, continuous batching, KV cache, GPTQ/AWQ/GGUF quantization, LoRA hot-swap, speculative decoding). Produces concrete, actionable configurations with acceptance gates rather than architectural opinions.",
+  "capabilities": [
+    {
+      "capability": "gpu_instance_sizing",
+      "subdomain": "infra__train_infra",
+      "method": "Match model parameter count, dtype, batch size, and sequence length to VRAM budget using VRAM_MATH formula; compare A100-40/80GB, H100-80GB, L40S, consumer GPU on cost-per-token metric; output instance type, count, and VRAM utilization estimate",
+      "when_to_use": "Any new training or fine-tuning project before GPU fleet commitment; when sequence length, batch size, or model size changes",
+      "inputs": ["model_parameter_count", "sequence_length", "batch_size_target", "dtype", "cloud_provider_pricing_sheet"],
+      "outputs": ["instance_type_recommendation", "vram_utilization_estimate", "cost_per_token_estimate"]
+    },
+    {
+      "capability": "vram_memory_math",
+      "subdomain": "infra__train_infra",
+      "method": "Compute peak VRAM = param_bytes(dtype x params) + optimizer_states(Adam: 8x params fp32) + gradient_bytes + activation_checkpoint_footprint + KV_cache(seq_len x hidden x layers x 2 x dtype_bytes); break down each component; derive safe batch size upper bound",
+      "when_to_use": "Before any GPU purchase or run launch; when dtype, optimizer, batch size, or sequence length changes; to prevent OOM at runtime",
+      "inputs": ["model_parameter_count", "dtype_fp16_bf16_fp8", "optimizer_choice", "batch_size", "sequence_length"],
+      "outputs": ["peak_vram_estimate", "memory_breakdown_table", "safe_batch_size_upper_bound"]
+    },
+    {
+      "capability": "zero_optimizer_sharding",
+      "subdomain": "infra__train_infra",
+      "method": "Select DeepSpeed ZeRO stage: stage-1 (optimizer shards only), stage-2 (+gradients), stage-3 (+parameters); estimate per-GPU VRAM reduction factor = 1/N_ranks per stage; account for all-gather communication overhead (ZeRO-3: 10-30% throughput cost); configure CPU/NVMe offload if needed",
+      "when_to_use": "Model exceeds single-GPU VRAM; when choosing between ZeRO stages for distributed training; prefer ZeRO-3 before tensor/pipeline parallelism",
+      "inputs": ["deepspeed_or_fsdp_config", "model_parameter_count", "gpu_rank_count", "nvme_bandwidth_if_offloading"],
+      "outputs": ["zero_stage_config", "per_gpu_vram_reduction_factor", "communication_overhead_estimate"]
+    },
+    {
+      "capability": "fsdp_sharding_configuration",
+      "subdomain": "infra__train_infra",
+      "method": "Configure PyTorch FSDP sharding policy: FULL_SHARD (ZeRO-3 equivalent) vs SHARD_GRAD_OP (ZeRO-2) vs NO_SHARD; set transformer auto-wrap policy per block; configure mixed-precision compute/reduce dtypes; set backward-prefetch strategy; optionally enable CPU offload",
+      "when_to_use": "PyTorch-native distributed training without DeepSpeed dependency; composing with torch.compile; when FSDP preferred over ZeRO for ecosystem reasons",
+      "inputs": ["pytorch_fsdp_api", "transformer_model_code", "gpu_topology"],
+      "outputs": ["fsdp_config_file", "wrapping_policy_spec", "throughput_benchmark_result"]
+    },
+    {
+      "capability": "tensor_pipeline_parallelism",
+      "subdomain": "infra__train_infra",
+      "method": "Combine TP (column/row weight matrix splitting within node via NVLink) and PP (layer splitting across nodes via IB, 1F1B schedule); configure micro-batch count for pipeline depth; estimate bubble fraction (PP=8: ~15%); require MFU >40% on >4-node jobs",
+      "when_to_use": "Models exceeding ZeRO-3 VRAM on single node; clusters with NVLink intra-node and InfiniBand inter-node; >100B parameter models",
+      "inputs": ["megatron_or_nemo_config", "gpu_topology_nvlink_vs_ib", "model_architecture_layer_plan"],
+      "outputs": ["3d_parallelism_config", "pipeline_bubble_analysis", "mfu_report"]
+    },
+    {
+      "capability": "mixed_precision_configuration",
+      "subdomain": "infra__train_infra",
+      "method": "Configure AMP: master weights fp32, compute bf16 (preferred over fp16 for >7B models due to larger dynamic range), gradient scaling for fp16, optional fp8 via Transformer Engine on H100; verify no NaN/Inf in 1000 steps; loss curve within 1% of fp32 baseline",
+      "when_to_use": "All LLM training; mandatory before any distributed training setup; choose bf16 over fp16 for models >7B params",
+      "inputs": ["gpu_architecture_a100_h100", "model_numerical_stability_profile", "amp_library"],
+      "outputs": ["amp_config", "loss_scale_log", "training_stability_report"]
+    },
+    {
+      "capability": "activation_gradient_checkpointing",
+      "subdomain": "infra__train_infra",
+      "method": "Enable selective recomputation during backward: full checkpointing reduces activation memory by 5-10x at ~33% compute overhead; selective checkpointing targets non-FlashAttn layers for 5-10% overhead; set checkpoint segment granularity per transformer block",
+      "when_to_use": "Activation memory exceeds VRAM budget; long sequence lengths (>4K); when FlashAttention already integrated (avoid double-checkpointing attention layers)",
+      "inputs": ["model_layer_structure", "activation_memory_profile", "compute_budget"],
+      "outputs": ["checkpointing_config", "recompute_overhead_measurement_pct_throughput_loss"]
+    },
+    {
+      "capability": "flash_attention_integration_training",
+      "subdomain": "infra__train_infra",
+      "method": "Replace standard O(N^2) attention with FlashAttention-2/3 IO-aware tiled kernel; mandatory for seq_len >2048; supports causal/bidirectional masks, variable-length sequence packing, sliding window; verify output within 1e-3 of standard attention; confirm O(N) memory scaling",
+      "when_to_use": "Any training with sequence_length >2048; long-context LLM training; when activation memory is bottleneck",
+      "inputs": ["attention_implementation", "gpu_architecture_compute_capability", "sequence_length_distribution"],
+      "outputs": ["flash_attn_integration", "memory_reduction_measurement", "throughput_improvement_benchmark"]
+    },
+    {
+      "capability": "checkpoint_save_restore",
+      "subdomain": "infra__train_infra",
+      "method": "Design checkpoint system: async save overlapping with training (adds <2% overhead on NVMe), atomic write-then-rename protocol, sharded format for large models, restore validation (loss on held-out batch must match), delete all-but-last-3 to control storage cost; checkpoint every 500-1000 steps for spot jobs",
+      "when_to_use": "All training jobs; mandatory for spot/preemptible instances; when training duration >2 hours",
+      "inputs": ["storage_backend_nvme_s3_gcs", "model_size", "training_duration_estimate", "spot_preemption_risk"],
+      "outputs": ["checkpoint_config", "restore_test_report", "storage_cost_estimate"]
+    },
+    {
+      "capability": "spot_preemptible_cloud_strategy",
+      "subdomain": "infra__train_infra",
+      "method": "Exploit spot GPU instances (60-90% discount) via: preemption hook registering checkpoint-on-SIGTERM, restart automation, mixed on-demand fallback for jobs <4hr or deadline-critical; use on-demand for >8-node gang jobs where spot market depth insufficient; test preemption recovery within 60s checkpoint + 5min restart",
+      "when_to_use": "Training jobs >72 hours; cost-sensitive workloads; single-node or 2-4 node distributed jobs",
+      "inputs": ["cloud_provider_spot_api", "checkpointing_system", "job_scheduler"],
+      "outputs": ["spot_aware_training_script", "preemption_handler", "expected_cost_savings_estimate"]
+    },
+    {
+      "capability": "training_cost_modeling",
+      "subdomain": "infra__train_infra",
+      "method": "Compute total_cost = GPU_hours x $/hr; GPU_hours = tokens / (MFU x peak_FLOP x 6P) where P=parameter count; apply Chinchilla scaling law: N_opt proportional D_opt proportional sqrt(C) for compute-optimal sizing; compare cost-per-quality-point across GPU types; optimize combined training+inference cost not training alone",
+      "when_to_use": "Budget planning for any training run >10^21 FLOP; GPU type selection; scaling law projections; post-run cost review",
+      "inputs": ["mfu_measurement", "gpu_price_sheet", "target_token_count", "chinchilla_compute_optimal_ratio"],
+      "outputs": ["cost_projection_spreadsheet", "cost_per_token_estimate", "provider_recommendation"]
+    },
+    {
+      "capability": "mfu_throughput_monitoring",
+      "subdomain": "infra__train_infra",
+      "method": "Instrument training loop: MFU = achieved_FLOP_per_sec / peak_hardware_FLOP_per_sec; log tokens/sec; use nsight/kineto to attribute bottlenecks (compute vs memory-bandwidth vs communication); alert on >20% MFU drop within 10 min; measure before scaling GPU count (low MFU <30% indicates config bug)",
+      "when_to_use": "All training runs from launch; before scaling to more GPUs; after any config change to detect regressions",
+      "inputs": ["training_framework_hooks", "hardware_peak_flop_spec", "profiling_tooling_nsight_kineto"],
+      "outputs": ["mfu_dashboard", "throughput_regression_alerts", "bottleneck_report"]
+    },
+    {
+      "capability": "loss_monitoring_and_divergence_recovery",
+      "subdomain": "infra__train_infra",
+      "method": "Monitor training loss curve; detect divergence (sudden spike >2x baseline or NaN) via rolling window; recover by restoring from last valid checkpoint and reducing LR or batch size; compare against scaling law projection; alert within 30 min of spike",
+      "when_to_use": "All training runs continuously; when loss spikes, plateaus, or shows NaN; before and after config changes",
+      "inputs": ["experiment_tracking_system", "loss_time_series", "scaling_law_projection"],
+      "outputs": ["loss_monitoring_dashboard", "divergence_alerts", "recovery_action_log"]
+    },
+    {
+      "capability": "training_data_pipeline_optimization",
+      "subdomain": "infra__train_infra",
+      "method": "Shard dataset to WebDataset/MDS format; tune prefetch buffer and worker count until GPU idle time <5% (add workers until idle time stops decreasing); ensure pre-tokenized data (no online tokenization); benchmark pipeline throughput vs GPU consumption rate; require pipeline throughput >120% GPU consumption",
+      "when_to_use": "Any GPU training setup; when MFU is low despite correct parallelism config; when dataset size or storage backend changes",
+      "inputs": ["dataset_size_and_sharding", "tokenizer", "cpu_core_count", "network_storage_bandwidth"],
+      "outputs": ["data_pipeline_config", "throughput_benchmark_samples_per_sec", "bottleneck_report"]
+    },
+    {
+      "capability": "multi_model_cluster_scheduling",
+      "subdomain": "infra__train_infra",
+      "method": "Configure cluster scheduler for concurrent fine-tuning: gang scheduling with GPU-memory-aware bin-packing; spatial partitioning vs time-slicing tradeoff; fair-share priority with reservation windows for large jobs; preempt low-priority jobs only after 2x expected queue time; test 24h deadlock-free simulation",
+      "when_to_use": "Shared GPU cluster with multiple concurrent training jobs; when cluster utilization <70%; when job queue deadlocks occur",
+      "inputs": ["gpu_cluster_topology", "job_vram_requirements", "training_durations", "priority_policies"],
+      "outputs": ["scheduler_config", "cluster_utilization_dashboard", "job_queue_sla_report"]
+    },
+    {
+      "capability": "gpu_cluster_network_topology",
+      "subdomain": "infra__train_infra",
+      "method": "Configure intra-node NVLink/NVSwitch (600 GB/s) for tensor parallelism; inter-node InfiniBand 400Gb or RoCE for ZeRO-3/PP all-reduce; generate NCCL topology file; run NCCL bandwidth test (must achieve >80% theoretical peak); rail-optimized fabric for IB multi-rail",
+      "when_to_use": "Multi-node distributed training setup; when communication overhead exceeds 20% of step time; when cluster topology changes",
+      "inputs": ["parallelism_strategy", "gpu_count", "model_communication_volume", "cloud_provider_network_options"],
+      "outputs": ["nccl_topology_file", "bandwidth_test_results", "communication_overhead_estimate"]
+    },
+    {
+      "capability": "quantization_aware_training_qlora",
+      "subdomain": "infra__train_infra",
+      "method": "Apply QLoRA: quantize base model to 4-bit NF4, train LoRA adapters in bf16; enables 70B fine-tuning on single 80GB GPU; use only when model does not fit in bf16 full fine-tuning; measure accuracy gap on validation set before committing; expect 1-3% accuracy penalty vs bf16 full fine-tuning",
+      "when_to_use": "Fine-tuning models that exceed bf16 VRAM budget; resource-constrained fine-tuning of 70B+ models; when single-GPU fine-tuning is required",
+      "inputs": ["base_model_checkpoint", "lora_rank_alpha_config", "4bit_nf4_quantization_config", "target_dataset"],
+      "outputs": ["qlora_trained_adapter", "accuracy_gap_report", "vram_reduction_factor"]
+    },
+    {
+      "capability": "serving_framework_selection",
+      "subdomain": "infra__serve_quant",
+      "method": "Select serving framework by priority: vLLM for GPU high-throughput (continuous batching, PagedAttention, 10-24x vs HuggingFace generate); TGI for HuggingFace-native with streaming; llama.cpp/GGUF for CPU/hybrid or <16GB GPU; custom for non-standard attention; validate: throughput >=target tok/s at p50 latency, OOM-free at 2x concurrent requests",
+      "when_to_use": "Any new LLM serving deployment; when framework lacks quantization format support; when SLA breach occurs; when model size class changes",
+      "inputs": ["model_checkpoint", "hardware_spec", "sla_targets", "expected_qps"],
+      "outputs": ["serving_stack_config", "benchmark_report", "capacity_plan"]
+    },
+    {
+      "capability": "continuous_batching_scheduling",
+      "subdomain": "infra__serve_quant",
+      "method": "Configure iteration-level scheduling: dynamically fill batch slots as sequences complete; set max_batch_tokens and scheduler preemption policy; prevent head-of-line blocking by long sequences via priority; target p99 latency <3x p50; scheduler throughput >=95% theoretical peak",
+      "when_to_use": "GPU serving with variable-length requests; when static batching creates GPU idle time; to maximize throughput within latency SLA",
+      "inputs": ["request_queue", "gpu_memory_budget", "sequence_length_distribution"],
+      "outputs": ["scheduled_batch", "throughput_latency_telemetry"]
+    },
+    {
+      "capability": "kv_cache_paged_attention",
+      "subdomain": "infra__serve_quant",
+      "method": "Implement PagedAttention virtual paging: partition KV cache into fixed-size blocks, maintain page table per sequence; achieves <4% KV memory fragmentation (vs ~70% contiguous); enables 2-4x more concurrent sequences; validate KV memory utilization >85% under target concurrency; eviction/swap rate <5% normal load",
+      "when_to_use": "Any vLLM deployment; variable-length sequence serving; when KV memory fragmentation causes OOM at target concurrency",
+      "inputs": ["attention_mechanism_spec", "gpu_vram_budget", "max_sequence_length", "concurrency_target"],
+      "outputs": ["paged_block_pool", "prefix_cache_hit_rate", "eviction_telemetry"]
+    },
+    {
+      "capability": "kv_prefix_caching",
+      "subdomain": "infra__serve_quant",
+      "method": "Enable radix-tree or hash-based prefix caching to reuse computed KV states for shared system prompts; measure cache hit rate (>60% required to justify); TTFT reduction >80% on cache hit; disable if hit rate <30%; separate pool for shared vs user-specific prefixes",
+      "when_to_use": "Workloads with shared system prompts >1024 tokens; prefix reuse rate >50%; specialist serving with fixed per-domain system prompts",
+      "inputs": ["request_stream_with_system_prompts", "kv_block_pool", "prefix_diversity_analysis"],
+      "outputs": ["prefix_cache_hit_rate", "ttft_telemetry", "memory_pressure_report"]
+    },
+    {
+      "capability": "gptq_post_training_quantization",
+      "subdomain": "infra__serve_quant",
+      "method": "Apply GPTQ (Frantar et al. 2022) layer-wise second-order OBQ weight quantization: 4-bit (4x VRAM reduction, <1 PPL loss on 7B+) or 8-bit; select calibration dataset matching deployment domain (critical for specialist tasks); validate PPL delta <1.0 and task accuracy delta <3% vs fp16",
+      "when_to_use": "Reducing VRAM to serve large models on fewer GPUs; when 4-bit quality is acceptable per QUANT_QUALITY evaluation; when AWQ is unavailable for target GPU",
+      "inputs": ["fp16_model_weights", "calibration_dataset", "target_bit_width", "hardware_kernel_support"],
+      "outputs": ["quantized_model_checkpoint", "ppl_delta_report", "accuracy_delta_report"]
+    },
+    {
+      "capability": "awq_activation_aware_quantization",
+      "subdomain": "infra__serve_quant",
+      "method": "Apply AWQ (activation-aware weight quantization): identify salient channels by activation magnitude calibration, apply per-channel scaling before 4-bit groupwise quantization; outperforms GPTQ on instruction-following (+2-3% MT-Bench at same bit-width); validate task accuracy delta <2% vs fp16",
+      "when_to_use": "When GPTQ quality is insufficient for specialist task; instruction-following or chat specialists; when AWQ kernels available for target GPU",
+      "inputs": ["fp16_model", "activation_calibration_data", "target_bit_width"],
+      "outputs": ["awq_quantized_model", "accuracy_delta_report"]
+    },
+    {
+      "capability": "gguf_llama_cpp_quantization",
+      "subdomain": "infra__serve_quant",
+      "method": "Convert model to GGUF k-quant format for llama.cpp: Q4_K_M (recommended, PPL delta <1.0), Q5_K_M (quality-sensitive tasks), Q8_0 (near-lossless); supports CPU+GPU hybrid; throughput 5-20x lower than GPU vLLM; validate GGUF loads and generates on target hardware; PPL delta <1.5 vs fp16",
+      "when_to_use": "CPU or hybrid CPU+GPU targets with <16GB GPU VRAM; local/edge deployment; developer machines; when vLLM is unavailable",
+      "inputs": ["safetensors_or_ggml_checkpoint", "k_quant_tier_selection", "hardware_target_spec"],
+      "outputs": ["gguf_model_file", "ppl_comparison_report"]
+    },
+    {
+      "capability": "quantization_quality_evaluation",
+      "subdomain": "infra__serve_quant",
+      "method": "Systematically evaluate PPL delta and task accuracy delta per quantization scheme (GPTQ/AWQ/GGUF) and bit-width for each specialist domain; build quality-vs-precision matrix; select minimum compression meeting quality SLA; avoid PPL-only evaluation (Goodhart effect); domain-specific calibration required per specialist",
+      "when_to_use": "Before committing to any quantization scheme; when adding new specialist domain; when quantization kernel updated; when base model updated",
+      "inputs": ["quantized_model_variants", "specialist_task_benchmarks", "quality_sla_targets"],
+      "outputs": ["quality_vs_precision_matrix", "recommended_quantization_config_per_specialist"]
+    },
+    {
+      "capability": "quantized_inference_kernel_selection",
+      "subdomain": "infra__serve_quant",
+      "method": "Select hardware-specific fused dequant+GEMM kernels: ExLlamaV2 (Q4 achieves 95% A100 fp16 MFU), CUTLASS INT4/INT8, AutoGPTQ-Triton; verify no fallback to slow dequant loop; kernel throughput >=80% fp16 baseline; numerical output within float32 tolerance of fp16 reference",
+      "when_to_use": "After quantization; when throughput from quantized model falls below 80% fp16 baseline; when GPU architecture changes",
+      "inputs": ["quantized_model_format", "gpu_architecture", "cuda_version", "groupsize_config"],
+      "outputs": ["kernel_benchmark", "mfu_report", "kernel_selection_recommendation"]
+    },
+    {
+      "capability": "tensor_parallelism_serving",
+      "subdomain": "infra__serve_quant",
+      "method": "Shard model weights across GPUs: column/row weight splitting with NCCL all-reduce per layer; require NVLink for TP>4 (InfiniBand causes 30% degradation beyond TP=8); validate throughput scales >=70% linear up to TP=4; output matches single-GPU reference within fp16 tolerance",
+      "when_to_use": "Model exceeds single-GPU VRAM at required quality (quantization quality unacceptable); NVLink-connected multi-GPU serving; 70B+ models at fp16 quality",
+      "inputs": ["model_architecture", "gpu_count", "nvlink_pcie_topology", "vram_budget"],
+      "outputs": ["tp_pp_config", "multi_gpu_serving_deployment", "throughput_benchmark"]
+    },
+    {
+      "capability": "flash_attention_serving",
+      "subdomain": "infra__serve_quant",
+      "method": "Deploy Flash Attention 2/3 IO-aware exact attention for serving: O(N) memory vs O(N^2), 2-4x speedup for seq>1k tokens, GQA/MQA support; requires SM80+ (A100/H100); validate attention output within 1e-3 of naive, memory scales sub-quadratically beyond 4k tokens",
+      "when_to_use": "All serving on A100/H100 GPUs; context length >1024 tokens; GQA/MQA models; when memory bandwidth is serving bottleneck",
+      "inputs": ["model_attention_spec", "gpu_sm_version", "pytorch_version", "sequence_length_targets"],
+      "outputs": ["flash_attention_serving_config", "memory_latency_benchmark"]
+    },
+    {
+      "capability": "lora_adapter_hot_swap",
+      "subdomain": "infra__serve_quant",
+      "method": "Deploy single base model server with LRU-cached LoRA adapters (S-LoRA/vLLM LoRA serving); adapter swap latency <20ms p95 with warm cache; validate 100 unique adapters cycle without OOM; output matches standalone specialist within 1% on eval set; consolidate low-traffic specialists when adapter count exceeds cache",
+      "when_to_use": "N>10 specialist models sharing same base model family; to collapse N specialist GPU deployments to shared pool; when per-specialist dedicated GPU is cost-prohibitive",
+      "inputs": ["base_model_server", "lora_adapter_registry", "routing_labels_per_request"],
+      "outputs": ["multi_adapter_serving_endpoint", "per_adapter_throughput_telemetry", "adapter_cache_hit_rate"]
+    },
+    {
+      "capability": "specialist_request_routing",
+      "subdomain": "infra__serve_quant",
+      "method": "Implement domain classifier dispatching requests to specialist LoRA adapter or endpoint; routing accuracy >90% on held-out set; include fallback to generalist when classifier confidence below threshold; measure routing latency as separate budget component; validate per-adapter accuracy",
+      "when_to_use": "Multi-specialist serving with LoRA hot-swap; when requests span multiple domain specialists; to prevent adapter mismatch silent quality degradation",
+      "inputs": ["request_stream", "domain_classifier", "specialist_adapter_registry", "fallback_policy"],
+      "outputs": ["routing_decision_log", "accuracy_metrics", "latency_breakdown"]
+    },
+    {
+      "capability": "speculative_decoding",
+      "subdomain": "infra__serve_quant",
+      "method": "Deploy draft-model or Medusa-head/EAGLE self-speculation: target model verifies multiple draft tokens in parallel; achieves 2-3x TPOT reduction when acceptance rate >70%; use Medusa heads (same model family) to avoid distribution mismatch; validate acceptance rate >70% and TPOT reduction >=1.5x on target task distribution",
+      "when_to_use": "Interactive specialist serving where TPOT dominates latency; low-entropy outputs (code completion, structured generation); when draft model acceptance rate >70% measured on domain traffic",
+      "inputs": ["target_model", "draft_model_or_medusa_heads", "acceptance_rate_budget", "latency_target"],
+      "outputs": ["speculative_serving_config", "acceptance_rate_telemetry", "tpot_benchmark"]
+    },
+    {
+      "capability": "inference_latency_profiling",
+      "subdomain": "infra__serve_quant",
+      "method": "Profile TTFT (prefill phase latency) and TPOT (decode phase inter-token latency) separately using NVTX/nsight-systems under representative load; TTFT-dominated: KV cache miss or long prefill bottleneck; TPOT-dominated: memory bandwidth bottleneck; profiling overhead must be <5% measured latency",
+      "when_to_use": "Before any serving optimization; on SLA breach; after major config change or hardware upgrade; to identify optimization priority",
+      "inputs": ["serving_endpoint", "representative_request_distribution", "profiling_tooling"],
+      "outputs": ["ttft_tpot_baseline_report", "bottleneck_analysis", "optimization_priority_list"]
+    },
+    {
+      "capability": "serving_benchmark_and_sla_validation",
+      "subdomain": "infra__serve_quant",
+      "method": "Run throughput benchmark at target QPS; measure p50/p99 TTFT and TPOT; validate OOM-free at 2x expected concurrency; confirm output quality within tolerance of fp16 reference; gate production promotion on all SLA checks passing with human sign-off",
+      "when_to_use": "Before any production deployment; after serving config changes; as final gate before promoting to production",
+      "inputs": ["serving_endpoint", "sla_targets_ttft_tpot_throughput", "load_profile"],
+      "outputs": ["benchmark_report", "sla_pass_fail_matrix", "production_readiness_sign_off"]
+    },
+    {
+      "capability": "autoscaling_and_cost_optimization_serving",
+      "subdomain": "infra__serve_quant",
+      "method": "Configure HPA/KEDA autoscaling: maintain minimum 1 warm replica for interactive traffic; scale-to-zero only for batch/async endpoints (cold-start 30-120s); compute TCO including MLOps FTE cost; set volume crossover for self-hosted vs hosted API (~1-2M tokens/day for 7-13B models); scale-up <90s from zero",
+      "when_to_use": "Serving deployment with variable traffic; when idle GPU cost is significant; when deciding self-hosted vs hosted API; when traffic pattern shifts",
+      "inputs": ["traffic_forecasts", "gpu_pricing", "sla_targets", "model_load_time"],
+      "outputs": ["autoscaling_policy", "cost_model", "capacity_runbook"]
+    },
+    {
+      "capability": "local_vs_hosted_serving_decision",
+      "subdomain": "infra__serve_quant",
+      "method": "Compute TCO: self-hosted (GPU capex/opex + MLOps FTE) vs hosted API (per-token pricing); breakeven ~1-2M tokens/day for 7-13B models on A10G spot; always evaluate privacy/compliance requirements explicitly; self-hosted dominates when volume >breakeven OR data must not leave perimeter; re-evaluate quarterly",
+      "when_to_use": "New specialist deployment decision; when volume grows 5x; when privacy/compliance requirements change; when GPU pricing changes >20%",
+      "inputs": ["expected_token_volume", "privacy_requirements", "gpu_pricing", "mlops_fte_cost"],
+      "outputs": ["serving_decision_doc", "tco_comparison", "breakeven_model"]
+    }
+  ],
+  "decision_procedure": [
+    "1. CLASSIFY_NEED: Determine if query is training infrastructure (VRAM, parallelism, cost, checkpointing, data pipeline) or inference serving (framework, quantization, KV cache, LoRA, latency). Route to appropriate subdomain capabilities.",
+    "2. TRAINING_PATH: If training — (a) run VRAM_MATH before any GPU commitment; (b) select ZeRO/FSDP over TP/PP until model exceeds ZeRO-3 single-node VRAM; (c) configure bf16 (mandatory for >7B) + FlashAttn (mandatory for >2048 seq_len); (d) establish MFU baseline before scaling GPU count; (e) apply Chinchilla for compute-optimal N,D on runs >10^21 FLOP.",
+    "3. SERVING_PATH: If serving — (a) start with SLA definition (TTFT, TPOT, throughput); (b) assess model VRAM vs GPU and decide quantization vs TP (prefer 4-bit quantization when quality delta <3%); (c) select framework (vLLM/TGI for GPU, llama.cpp for CPU); (d) enable continuous batching + PagedAttention; (e) run QUANT_QUALITY per specialist before committing to bit-width.",
+    "4. APPLY_DOMINANCE_RULES: (a) VRAM_MATH always before GPU_SIZING commitment; (b) bf16 over fp16 for >7B params; (c) ZeRO-3 before TP/PP; (d) FlashAttn mandatory for seq >2048; (e) Chinchilla mandatory for >10^21 FLOP; (f) checkpoint-on-preemption mandatory for spot; (g) MFU monitoring before scaling; (h) quantization over TP when quality delta <3%; (i) hosted API when volume <1M tokens/day; (j) LoRA hot-swap when N>10 specialists share base model.",
+    "5. CONFLICT_RESOLUTION: If memory vs throughput tradeoff — use VRAM floor from GPU_SIZING then optimize throughput within constraint. If cost vs reliability — spot for >72hr jobs with checkpointing; on-demand for <4hr or deadline-critical. If quantization vs quality — evaluate per specialist task independently, use minimum compression meeting SLA.",
+    "6. ESCALATE_IF: Node human_review_required=true AND uncertainty_interval >0.35 AND multiple conflict axes activate simultaneously; OR cost projection error >25%; OR VRAM formula deviation >20% from profiled actual; OR MFU <20% despite correct config.",
+    "7. VALIDATE: Apply acceptance tests from relevant nodes; confirm all SLA gates pass; produce handoff artifact for each human_review_required=true node."
+  ],
+  "workflow": [
+    {
+      "phase": "training_compute_planning",
+      "objective": "Define model size, GPU type/count, VRAM budget, and cost projection before any infrastructure commitment",
+      "entry": ["compute_budget_defined", "capability_target_specified"],
+      "exit": ["vram_estimate_within_10pct_profiled", "cost_per_token_within_budget", "gpu_type_and_count_selected"],
+      "gates": ["Chinchilla projection within 20% pilot measurements", "VRAM estimate reproduced", "cost within budget"]
+    },
+    {
+      "phase": "training_distributed_configuration",
+      "objective": "Configure parallelism strategy, mixed precision, and kernel optimizations for target model size and GPU topology",
+      "entry": ["gpu_type_and_count_selected", "model_code_available"],
+      "exit": ["nccl_bandwidth_test_gt_80pct_peak", "mfu_gt_35pct_pilot", "no_nan_in_500_steps"],
+      "gates": ["NCCL bandwidth >80% peak", "MFU >35% on pilot run", "loss matches fp32 baseline within 1%"]
+    },
+    {
+      "phase": "training_reliability_and_data",
+      "objective": "Set up checkpoint-on-preemption, fault tolerance, data pipeline, and observability before production launch",
+      "entry": ["parallelism_config_validated", "storage_backend_available"],
+      "exit": ["preemption_recovery_within_10min", "data_pipeline_throughput_gt_120pct_gpu_consumption", "mfu_alert_configured"],
+      "gates": ["Simulated preemption recovers within 10 min", "checkpoint restore produces identical loss", "GPU idle <5% during data loading"]
+    },
+    {
+      "phase": "training_launch_and_validation",
+      "objective": "Launch training run; validate first 1000 steps for loss trajectory, MFU, VRAM, cost burn rate",
+      "entry": ["all_configs_deployed", "monitoring_active"],
+      "exit": ["loss_on_track_with_scaling_projection", "mfu_gt_35pct", "cost_burn_within_budget"],
+      "gates": ["Loss on track with Chinchilla projection", "MFU >35%", "cost burn within 25% of budget"]
+    },
+    {
+      "phase": "serving_sla_and_architecture",
+      "objective": "Define serving SLA, select framework, assess quantization vs TP strategy, and produce architecture decision record",
+      "entry": ["model_checkpoint_available", "sla_targets_defined"],
+      "exit": ["framework_selected", "vram_budget_verified", "architecture_decision_recorded"],
+      "gates": ["SLA signed by product owner", "VRAM budget verified per GPU", "serving starts without error"]
+    },
+    {
+      "phase": "serving_quantization_and_kernel",
+      "objective": "Convert model to target format, evaluate quality per specialist, validate quantization kernels",
+      "entry": ["architecture_decision_recorded", "specialist_benchmarks_available"],
+      "exit": ["quality_vs_precision_matrix_complete", "kernel_mfu_gt_80pct_fp16_baseline", "no_kernel_fallback"],
+      "gates": ["All specialist quality deltas within SLA", "kernel MFU >=80% fp16 baseline", "no kernel fallback warning in production logs"]
+    },
+    {
+      "phase": "serving_optimization_and_routing",
+      "objective": "Enable KV cache, prefix caching, LoRA hot-swap, request routing, and optional speculative decoding",
+      "entry": ["serving_framework_configured", "adapter_registry_populated"],
+      "exit": ["routing_accuracy_gt_90pct", "adapter_swap_lt_20ms_p95", "ttft_tpot_within_sla"],
+      "gates": ["routing accuracy >90% on held-out set", "adapter swap <20ms p95", "p99 TTFT and TPOT within SLA"]
+    },
+    {
+      "phase": "serving_production_and_scaling",
+      "objective": "Configure autoscaling, cost model, and conduct final SLA validation before production promotion",
+      "entry": ["serving_config_validated", "load_testing_complete"],
+      "exit": ["scale_up_latency_lt_90s", "cost_within_budget", "human_sign_off_obtained"],
+      "gates": ["scale-up latency <90s from zero", "cost per 1M tokens within budget", "all SLA checks pass with human sign-off"]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "VRAM formula estimate deviates >20% from profiled actual allocation",
+      "action": "human_review",
+      "reason": "Activation memory model may be wrong for this architecture; profiling required before GPU fleet commitment"
+    },
+    {
+      "condition": "MFU <20% after correct parallelism configuration applied",
+      "action": "human_review",
+      "reason": "Low MFU indicates systemic config bug (topology file, wrap policy, compute-communication overlap) that requires expert diagnosis before scaling"
+    },
+    {
+      "condition": "Cost projection error >25% vs actual spend on pilot run",
+      "action": "human_review",
+      "reason": "MFU assumptions compound; budget miss requires updated cost model and stakeholder notification before full run"
+    },
+    {
+      "condition": "Training loss diverges (NaN or >2x spike) and recovery from last checkpoint fails",
+      "action": "human_review",
+      "reason": "Numerical instability not resolved by checkpoint restore may indicate fp16 overflow, gradient explosion, or data corruption requiring architecture review"
+    },
+    {
+      "condition": "GPU_SIZING node triggered AND human_review_required=true AND uncertainty_interval >0.35",
+      "action": "human_review",
+      "reason": "GPU pricing volatility or novel hardware generation; heuristic priors may be stale; cloud pricing validation required"
+    },
+    {
+      "condition": "ZeRO-3 + FSDP exhausted and model still exceeds VRAM requiring 3D parallelism on >8 nodes",
+      "action": "human_review",
+      "reason": "3D parallelism debugging complexity high; pipeline bubble and tensor-parallel communication tradeoffs require experienced distributed training review"
+    },
+    {
+      "condition": "Specialist task accuracy delta >5% after quantization despite GPTQ/AWQ calibration tuning",
+      "action": "human_review",
+      "reason": "Quality collapse may indicate calibration dataset mismatch or outlier channel issue requiring quantization specialist review"
+    },
+    {
+      "condition": "LoRA adapter swap latency consistently >50ms p95 under target load",
+      "action": "flag",
+      "reason": "Adapter cache thrashing; may require cache size expansion, specialist consolidation, or migration to dedicated per-specialist serving"
+    },
+    {
+      "condition": "Spot preemption rate exceeds 20%/hr on multi-node job",
+      "action": "flag",
+      "reason": "Spot market depth insufficient for gang-scheduling requirements; switch to on-demand or reduce node count below 8"
+    },
+    {
+      "condition": "Routing classifier accuracy falls below 85% on production traffic",
+      "action": "human_review",
+      "reason": "Silent wrong-adapter serving causes quality degradation; classifier retraining or fallback policy redesign required"
+    }
+  ],
+  "validation_checklist": [
+    "VRAM estimate formula verified against profiled actual peak allocation; deviation <10%",
+    "GPU type and count selected from VRAM_MATH output; not from parameter count rule-of-thumb alone",
+    "bf16 configured for all models >7B parameters; no fp16 without gradient scaling on large models",
+    "FlashAttention integrated for all training/serving with sequence_length >2048",
+    "ZeRO/FSDP configuration selected before considering TP or PP",
+    "MFU measured and logged before scaling to more GPUs; MFU >35% required for training, >30% for serving kernels",
+    "Checkpoint-on-preemption implemented and tested (simulated preemption recovers within 10 min) before spot instance use",
+    "Chinchilla scaling law applied for compute budget allocation on runs >10^21 FLOP",
+    "Data pipeline throughput verified >120% GPU consumption rate; GPU idle time <5%",
+    "QUANT_QUALITY evaluation completed per specialist domain before committing to quantization bit-width",
+    "Quantization kernel throughput validated >=80% fp16 baseline; no dequant fallback in production",
+    "Serving SLA (TTFT, TPOT, throughput) documented and signed before framework selection",
+    "KV memory utilization >85% under target concurrency with PagedAttention enabled",
+    "Routing classifier accuracy >90% on held-out set before production LoRA hot-swap deployment",
+    "TCO model includes GPU capex/opex AND MLOps FTE cost for local vs hosted serving decision",
+    "Human reviewer sign-off obtained for all nodes with human_review_required=true before production promotion",
+    "NCCL bandwidth test achieves >80% theoretical peak before multi-node training launch",
+    "Cost estimate within 25% of actual spend on pilot run before full training commitment"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "memory_vs_throughput",
+      "resolution": "Use VRAM floor from GPU_SIZING as hard constraint; optimize throughput within that constraint; prefer gradient checkpointing over reducing batch size; FlashAttention reduces both memory and compute"
+    },
+    {
+      "tradeoff": "cost_vs_reliability_spot_vs_ondemand",
+      "resolution": "Spot for >72hr training with checkpoint-on-preemption; on-demand for <4hr or deadline-critical jobs; on-demand for >8 node gang jobs where spot market depth insufficient"
+    },
+    {
+      "tradeoff": "parallelism_complexity_vs_scale",
+      "resolution": "Prefer ZeRO-3 data-parallel until model exceeds 2x GPU VRAM; add tensor parallelism only within NVLink node; add pipeline parallelism last; 3D parallelism only for >100B models on >16 nodes"
+    },
+    {
+      "tradeoff": "quantization_accuracy_vs_vram_training",
+      "resolution": "Use QLoRA only when model does not fit bf16 full fine-tuning; measure accuracy gap on validation set before committing; expect 1-3% penalty"
+    },
+    {
+      "tradeoff": "checkpoint_frequency_vs_storage_cost",
+      "resolution": "Checkpoint every 500-1000 steps for spot jobs; delete all-but-last-3 checkpoints; async atomic writes mandatory; NVMe staging for large models"
+    },
+    {
+      "tradeoff": "scaling_law_training_vs_inference_cost",
+      "resolution": "Optimize combined cost = training_cost + inference_cost x expected_requests; Chinchilla-optimal may not minimize total cost when inference volume is high"
+    },
+    {
+      "tradeoff": "quantization_vs_tensor_parallelism_serving",
+      "resolution": "Default to 4-bit quantization when quality delta <3% per QUANT_QUALITY; use TP only when quantization quality is unacceptable for specialist task; TP costs proportionally more"
+    },
+    {
+      "tradeoff": "throughput_vs_latency_serving",
+      "resolution": "Set TTFT and TPOT SLAs first; tune continuous batching scheduler to meet latency SLA while maximizing throughput within bounds; separate pools for latency-sensitive and throughput-optimized workloads"
+    },
+    {
+      "tradeoff": "kv_memory_vs_context_length",
+      "resolution": "Separate serving pools for long-context (KV quantization fp8) and short-context (high concurrency) workloads; KV quantization dominates for >16k context on memory-bandwidth-bound GPUs"
+    },
+    {
+      "tradeoff": "lora_adapter_count_vs_cache_efficiency",
+      "resolution": "Limit hot adapters to LRU cache capacity; measure hit rate; consolidate low-traffic specialists; expand cache before adding specialists beyond cache size"
+    },
+    {
+      "tradeoff": "local_serving_cost_vs_hosted_api",
+      "resolution": "Self-hosted breaks even at ~1-2M tokens/day for 7-13B models; hosted API preferred below breakeven or when MLOps burden exceeds savings; always include FTE cost in TCO; re-evaluate quarterly"
+    },
+    {
+      "tradeoff": "speculative_decoding_draft_quality_vs_overhead",
+      "resolution": "Measure acceptance rate on domain traffic before deploying; use Medusa/EAGLE heads on same model family to avoid distribution mismatch; only deploy when acceptance rate >70%"
+    },
+    {
+      "tradeoff": "prefix_cache_memory_vs_prompt_diversity",
+      "resolution": "Enable prefix caching only when hit rate >30% on target traffic; disable for high-diversity user prompts; use separate KV pool for shared system prompts"
+    },
+    {
+      "tradeoff": "autoscale_cost_vs_cold_start_latency",
+      "resolution": "Maintain minimum 1 warm replica for interactive endpoints; scale-to-zero only for batch/async endpoints; cold-start 30-120s is incompatible with interactive SLAs"
+    }
+  ],
+  "glossary": [
+    {"term": "MFU", "definition": "Model Flop Utilization: ratio of achieved FLOP/s to theoretical peak hardware FLOP/s; measures training/serving efficiency; distinct from GPU utilization (nvidia-smi)"},
+    {"term": "ZeRO", "definition": "Zero Redundancy Optimizer (DeepSpeed): partitions optimizer states (stage-1), gradients (stage-2), and parameters (stage-3) across data-parallel ranks to reduce per-GPU memory"},
+    {"term": "FSDP", "definition": "Fully Sharded Data Parallel: PyTorch-native equivalent of ZeRO-3; FULL_SHARD policy shards parameters+gradients+optimizer states; composable with torch.compile"},
+    {"term": "bf16", "definition": "bfloat16: 16-bit float with 8-bit exponent matching fp32 dynamic range; preferred over fp16 for LLM training >7B params due to resistance to overflow"},
+    {"term": "QLoRA", "definition": "Quantized LoRA: 4-bit NF4 quantized base model with bf16 LoRA adapters; enables 70B fine-tuning on single 80GB GPU at 1-3% accuracy penalty vs bf16 full fine-tuning"},
+    {"term": "Chinchilla", "definition": "DeepMind 2022 scaling law: compute-optimal training requires N_opt proportional D_opt proportional sqrt(C); mandatory for runs >10^21 FLOP to avoid under/over-training"},
+    {"term": "spot_instance", "definition": "Cloud GPU instance at 60-90% discount with preemption risk; requires checkpoint-on-preemption; unsuitable for >8-node gang jobs or deadline-critical runs"},
+    {"term": "FlashAttention", "definition": "IO-aware attention (Dao et al.) using tiling to reduce KV memory from O(N^2) to O(N); 2-4x speedup for seq>1k; mandatory for seq_len>2048; requires SM80+ (A100/H100)"},
+    {"term": "NVLink", "definition": "NVIDIA high-bandwidth intra-node GPU interconnect (600 GB/s); required for efficient tensor parallelism within node; vs InfiniBand (inter-node) and PCIe (64 GB/s, too slow for TP)"},
+    {"term": "TTFT", "definition": "Time-to-first-token: latency from request arrival to first output token; dominated by prefill compute and KV cache miss; distinct from TPOT"},
+    {"term": "TPOT", "definition": "Time-per-output-token: inter-token latency during decode phase; dominated by memory bandwidth; reduced by speculative decoding when acceptance rate >70%"},
+    {"term": "PagedAttention", "definition": "Virtual memory paging for KV cache blocks (Kwon et al. 2023); reduces KV fragmentation from ~70% to <4%; enables 2-4x more concurrent sequences"},
+    {"term": "continuous_batching", "definition": "Iteration-level scheduling: dynamically fills batch slots as sequences complete; eliminates GPU idle between static batches; doubles to triples effective throughput vs static batching"},
+    {"term": "GPTQ", "definition": "Post-training quantization using layer-wise second-order OBQ (Frantar et al. 2022); 4-bit achieves <1 PPL loss on 7B+ models; calibration dataset domain must match deployment"},
+    {"term": "AWQ", "definition": "Activation-aware weight quantization: protects salient channels by activation magnitude calibration; outperforms GPTQ on instruction-following +2-3% MT-Bench at same bit-width"},
+    {"term": "GGUF", "definition": "llama.cpp binary format for quantized weights supporting CPU and hybrid CPU+GPU inference; k-quant tiers Q4_K_M/Q5_K_M/Q8_0; 5-20x lower throughput than GPU vLLM"},
+    {"term": "LoRA", "definition": "Low-rank adaptation: lightweight fine-tune adding rank-decomposed weight matrices to frozen base model; enables hot-swap multi-specialist serving from single base model server"},
+    {"term": "speculative_decoding", "definition": "Draft model proposes multiple tokens per step; target model verifies in parallel; identical output distribution; 2-3x TPOT reduction when acceptance rate >70%"},
+    {"term": "tensor_parallelism", "definition": "Sharding individual weight matrices across GPUs via column/row splitting with NCCL all-reduce per layer; effective within NVLink node (TP<=8); degrades >TP=8 cross-node"}
+  ],
+  "competency_questions_covered": [
+    "What GPU type and count is required to train a 70B parameter model with 8K context in bf16?",
+    "What is the total training cost estimate for a 7B model trained on 140B tokens on H100 spot instances?",
+    "How is peak VRAM calculated for a 13B model with ZeRO-2 and gradient checkpointing enabled?",
+    "What checkpoint strategy minimizes recovery loss from spot preemption at minimum storage cost?",
+    "When should spot instances be avoided in favour of on-demand for distributed training?",
+    "What is the recommended parallelism strategy for a 65B model on 32 H100 GPUs connected via InfiniBand?",
+    "How does QLoRA reduce VRAM and what accuracy tradeoff should be expected vs bf16 full fine-tuning?",
+    "How is training loss divergence detected and recovered in a long-running training job?",
+    "How is model FLOP utilization (MFU) computed and what does a low value indicate?",
+    "What makes a training data pipeline GPU-bound vs data-bound and how is the bottleneck resolved?",
+    "How should concurrent fine-tuning jobs be scheduled on a shared GPU cluster to avoid deadlocks?",
+    "How does Chinchilla scaling law inform the choice between training a larger model for fewer tokens vs smaller model for more tokens?",
+    "How is the serving framework selected for specialist LLM deployment?",
+    "What latency metrics are measured and what are the SLA validation criteria?",
+    "How does PagedAttention and continuous batching increase serving throughput?",
+    "What is the mechanism and memory benefit of KV cache paging and quantization?",
+    "How are GPTQ and AWQ post-training quantization applied and how is quality degradation evaluated?",
+    "When is GGUF/llama.cpp appropriate vs vLLM, and what quality/throughput tradeoffs apply?",
+    "How are many LoRA specialist adapters served on a single base model without per-specialist GPU?",
+    "How is request routing to the correct specialist adapter implemented and validated?",
+    "When does self-hosted serving become more cost-effective than hosted API for specialists?",
+    "How is autoscaling configured to balance cost and cold-start latency for specialist endpoints?",
+    "What quantized inference kernels are needed and how is throughput recovery from quantization validated?"
+  ]
+}

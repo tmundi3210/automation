@@ -1,0 +1,496 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "code",
+  "domain": "code",
+  "domain_label": "Code-Generation Specialization",
+  "purpose": "Invoke when the task requires selecting, evaluating, fine-tuning, or operating LLM-based code generation systems; covers execution-based evaluation, feedback loops, security gates, stack specialization, compact code/library representation, and retrieval-augmented generation for code APIs.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/code__codegen.kb.json",
+    "phase_b/knowledge_base/llm_engineering/code__code_repr.kb.json"
+  ],
+  "role": "Expert code-generation LLM engineer operating across two subdomains: (1) code-gen models and execution feedback — model selection, SFT, RLEF, test-driven generation, sandbox infrastructure, stack specialization, benchmark evaluation, security scanning, and orchestration; (2) compact code/library representation — encode-generate-decode pipeline, token budget management, signature compression, type-aware repr, docstring distillation, retrieval-augmented generation, hallucination grounding, and version management. Applies execution-based pass@k as primary correctness signal; enforces security-first ordering; gates every benchmark claim with contamination checks; manages token budgets for repr injection.",
+  "capabilities": [
+    {
+      "capability": "code_llm_base_model_selection",
+      "subdomain": "code__codegen",
+      "method": "Evaluate candidate models (StarCoder2, DeepSeek-Coder, CodeLlama, etc.) on HumanEval/MBPP pass@1, verify license/ToS, profile VRAM fit, confirm target-language stack coverage; produce selected model + fallback with justification",
+      "when_to_use": "When choosing a pre-trained code LLM before fine-tuning or deployment",
+      "inputs": ["HumanEval/MBPP benchmark scores", "license docs", "hardware VRAM budget", "target language list"],
+      "outputs": ["selected base model", "justification doc", "fallback model"]
+    },
+    {
+      "capability": "pass_at_k_metric_computation",
+      "subdomain": "code__codegen",
+      "method": "Apply Chen et al. 2021 unbiased hypergeometric estimator with n>=k samples per problem; report pass@1 at T=0.2 and pass@100 at T=0.8 separately; provide confidence intervals",
+      "when_to_use": "When measuring code generation functional correctness on any benchmark",
+      "inputs": ["n samples per problem (n>=k)", "k target", "binary correctness per sample"],
+      "outputs": ["pass@k score", "confidence interval", "temperature-stratified report"]
+    },
+    {
+      "capability": "benchmark_contamination_and_goodhart_mitigation",
+      "subdomain": "code__codegen",
+      "method": "Run n-gram and semantic deduplication of training data against benchmark problems; hold out internal eval suite; report contamination risk score; require held-out internal results alongside public benchmark",
+      "when_to_use": "Before reporting any HumanEval/MBPP benchmark result or selecting a model based on leaderboard scores",
+      "inputs": ["training data corpus", "benchmark problem set", "model outputs", "internal task suite"],
+      "outputs": ["contamination report", "Goodhart risk score", "held-out eval results"]
+    },
+    {
+      "capability": "execution_sandbox_design_and_operation",
+      "subdomain": "code__codegen",
+      "method": "Deploy container/gVisor sandbox with network isolation, syscall allowlist, 10s CPU / 256MB RAM per execution limits; verify no escape path; instrument pass/fail + stderr capture",
+      "when_to_use": "Before activating test-driven generation loop, RLEF, or any automated code execution in the pipeline",
+      "inputs": ["generated code snippets", "test harness", "container runtime"],
+      "outputs": ["sandbox runtime", "pass/fail signals", "stderr/stdout per attempt", "security spec"]
+    },
+    {
+      "capability": "test_driven_generation_loop",
+      "subdomain": "code__codegen",
+      "method": "Iterative generate-execute-repair: inject stderr + failing test context back to model, cap at max_iterations (default 5) with hard token budget stop; track per-iteration pass traces",
+      "when_to_use": "When improving initial code generation quality via automated repair cycles",
+      "inputs": ["initial problem spec", "test cases", "sandbox runtime", "LLM API"],
+      "outputs": ["repaired code solution", "per-iteration pass traces", "token cost log"]
+    },
+    {
+      "capability": "code_llm_finetuning_for_domain_specialization",
+      "subdomain": "code__codegen",
+      "method": "SFT on curated domain code dataset; mix with general coding data to prevent catastrophic forgetting; track HumanEval regression (<2pp threshold); deduplicate against eval benchmarks; verify improvement on held-out internal tasks",
+      "when_to_use": "When generic code LLM underperforms on domain-specific codebase tasks",
+      "inputs": ["base code LLM", "domain code dataset", "HumanEval/internal eval suite", "GPU cluster"],
+      "outputs": ["fine-tuned model checkpoint", "eval delta report", "data card"]
+    },
+    {
+      "capability": "rl_from_execution_feedback",
+      "subdomain": "code__codegen",
+      "method": "PPO/REINFORCE with execution pass/fail reward; reward shaping from test subsets; KL penalty to base policy to prevent collapse; mutation testing audit to detect reward hacking (try/except wrappers, oracle leakage)",
+      "when_to_use": "When SFT baseline is stable and further pass@k improvement beyond behavioral cloning is required",
+      "inputs": ["SFT code model", "execution sandbox", "reward function", "RL training framework"],
+      "outputs": ["RLEF-trained model", "reward curve logs", "policy drift metrics", "mutation kill rate audit"]
+    },
+    {
+      "capability": "repo_level_context_injection",
+      "subdomain": "code__codegen",
+      "method": "BM25 + dense retrieval from repo file tree; inject imports, type stubs, related functions into prompt with 20% context headroom; validate retrieval precision >70% on held-out tasks",
+      "when_to_use": "When generating code requiring cross-file dependency awareness or library-specific imports",
+      "inputs": ["repo file tree", "embedding retrieval index", "target function signature", "context window budget"],
+      "outputs": ["augmented prompt with repo snippets", "retrieved file list", "token count"]
+    },
+    {
+      "capability": "api_library_grounding",
+      "subdomain": "code__codegen",
+      "method": "Retrieve version-pinned API documentation matching production runtime; filter deprecated APIs; inject current signatures and deprecation status; validate against installed package version",
+      "when_to_use": "When code generation must use correct API signatures and avoid deprecated methods",
+      "inputs": ["API documentation corpus", "deprecation database", "embedding retrieval index", "target API list"],
+      "outputs": ["grounded prompt with correct signatures", "API usage accuracy report"]
+    },
+    {
+      "capability": "stack_specific_prompt_specialization",
+      "subdomain": "code__codegen",
+      "method": "Author per-stack system prompts with language idioms, few-shot examples, output format constraints; version prompts per framework major release; sandbox-validate all examples; detect staleness via release monitoring",
+      "when_to_use": "When generating code for a specific language/framework stack (Python/pandas, TypeScript/React, HTML/CSS, SQL)",
+      "inputs": ["target stack idiom guide", "few-shot example bank", "style constraints", "model API"],
+      "outputs": ["per-stack system prompt", "few-shot example set", "format constraint spec"]
+    },
+    {
+      "capability": "web_html_generation_specialization",
+      "subdomain": "code__codegen",
+      "method": "Inject component library docs (shadcn/ui etc.); validate HTML against W3C; WCAG 2.1 AA accessibility audit; headless browser render test; specialized prompt with React hooks idioms",
+      "when_to_use": "When generating HTML/CSS/JS/React front-end components",
+      "inputs": ["UI spec / wireframe", "stack-specific prompt", "component library docs", "accessibility guidelines"],
+      "outputs": ["generated components", "DOM validity report", "accessibility audit"]
+    },
+    {
+      "capability": "python_datascience_generation_specialization",
+      "subdomain": "code__codegen",
+      "method": "Versioned pandas/numpy doc grounding; DataFrame shape assertion tests; vectorization audit (no explicit Python loops on large arrays); reproducibility seed enforcement",
+      "when_to_use": "When generating Python data-science code with pandas/numpy/sklearn",
+      "inputs": ["data science task spec", "pandas/numpy version docs", "sample DataFrames for testing"],
+      "outputs": ["generated data pipeline code", "shape assertion tests", "vectorization audit"]
+    },
+    {
+      "capability": "functional_correctness_evaluation_beyond_pass_at_k",
+      "subdomain": "code__codegen",
+      "method": "Mutation testing (kill rate >60% required); property-based testing (>=3 per category); fuzz testing for string/IO handlers; detect oracle gap where tests pass but logic is wrong",
+      "when_to_use": "When pass@k alone is insufficient to certify code correctness for production use",
+      "inputs": ["generated code solutions", "property specs", "mutation testing framework", "fuzz corpus"],
+      "outputs": ["mutation kill rate", "property test pass rate", "fuzz crash report"]
+    },
+    {
+      "capability": "generated_code_security_scanning",
+      "subdomain": "code__codegen",
+      "method": "Semgrep/SAST integration covering OWASP Top-10; secret/credential detection; injection pattern checks; run before returning code to user; track false-positive rate; alert on new CVE patterns",
+      "when_to_use": "Before every generated code output is returned to user or committed",
+      "inputs": ["generated code", "SAST tooling", "vulnerability pattern database", "secret scanning rules"],
+      "outputs": ["security scan report", "blocked/flagged generation log", "vulnerability class distribution"]
+    },
+    {
+      "capability": "synthetic_code_data_generation",
+      "subdomain": "code__codegen",
+      "method": "LLM self-play problem-solution generation; execution-filter to select passing solutions; deduplication against eval benchmarks; diversity audit on problem type distribution",
+      "when_to_use": "When labeled domain code data is scarce and training data augmentation is needed",
+      "inputs": ["seed problem bank", "generation model", "execution sandbox", "dedup index"],
+      "outputs": ["synthetic code dataset", "quality metrics", "data card"]
+    },
+    {
+      "capability": "diversity_sampling_best_of_n_selection",
+      "subdomain": "code__codegen",
+      "method": "Temperature/top-p sampling for candidate diversity; verifier scoring, majority vote, or test-weighted ranking for best-of-n selection; adaptive n based on verifier confidence",
+      "when_to_use": "When maximizing functional correctness through diverse candidate generation and selection",
+      "inputs": ["code LLM", "sampling hyperparameters", "optional verifier model", "test suite"],
+      "outputs": ["ranked candidate solutions", "diversity metrics", "selected best solution"]
+    },
+    {
+      "capability": "code_repr_schema_definition",
+      "subdomain": "code__code_repr",
+      "method": "Define canonical compact repr schema: include signatures, type annotations, distilled docstrings, usage examples, dependency edges; elide implementation bodies, comments, redundant boilerplate; enforce round-trip semantic fidelity <5% error on held-out set",
+      "when_to_use": "When establishing the foundational schema for library representation before any encoding work begins",
+      "inputs": ["library source code", "API surface documentation", "type stubs"],
+      "outputs": ["canonical repr schema", "field inclusion/exclusion policy"]
+    },
+    {
+      "capability": "token_budget_management_for_repr",
+      "subdomain": "code__code_repr",
+      "method": "Measure token counts per library; set per-function and per-library budget; allocate across signature/type/docstring/example components; enforce 90% signature coverage within context window; document compression ratio",
+      "when_to_use": "When balancing repr completeness against LLM context window constraints",
+      "inputs": ["encoded repr samples", "target model context window size", "compression ratio targets"],
+      "outputs": ["token budget spec", "per-library token allocation table", "compression ratio report"]
+    },
+    {
+      "capability": "api_signature_compression",
+      "subdomain": "code__code_repr",
+      "method": "Overload deduplication via delta encoding (40-60% reduction for polymorphic APIs); generic notation shorthand; preserve Optional/Union/nullable annotations; achieve 3x+ compression on overloaded APIs; zero type errors on round-trip decode",
+      "when_to_use": "When encoding API signatures into token-efficient compact form for repr index",
+      "inputs": ["raw API signatures", "type stubs", "overload sets"],
+      "outputs": ["compressed signature tokens", "signature compression codec"]
+    },
+    {
+      "capability": "type_aware_code_representation",
+      "subdomain": "code__code_repr",
+      "method": "Encode generics, ADTs, protocols, structural types (up to 2 nesting levels); always encode nullability and top-level generics; elide deeply nested TypeVar constraints; enable type-directed generation with <10% type errors on held-out API call tasks",
+      "when_to_use": "When repr must support type-safe code generation without external type checker at inference time",
+      "inputs": ["type stubs", "mypy/pyright output", "generic definitions"],
+      "outputs": ["type-annotated repr tokens", "type encoding spec"]
+    },
+    {
+      "capability": "docstring_distillation",
+      "subdomain": "code__code_repr",
+      "method": "Extract param semantics, return value semantics, raised exceptions, behavioral constraints; discard examples, formatting, redundant prose; achieve 5x+ token reduction; validate 95%+ behavioral constraint recall on eval set; normalize docstring style (ReST/Google) before distillation",
+      "when_to_use": "When encoding verbose docstrings into minimal semantic-preserving form for repr",
+      "inputs": ["raw docstrings", "API documentation"],
+      "outputs": ["distilled docstring tokens", "distillation quality report"]
+    },
+    {
+      "capability": "naturalness_guided_repr_compression",
+      "subdomain": "code__code_repr",
+      "method": "Apply Allamanis et al. 2018 naturalness hypothesis: use entropy-guided elision (compress low-entropy idiomatic patterns, retain high-entropy unique identifiers); validate naturalness stats on domain-specific code before applying; override with fixed minimum rules for library internals",
+      "when_to_use": "When optimizing elision policy for a code corpus using statistical compression guidance",
+      "inputs": ["code corpus statistics", "token frequency distributions", "idiom databases"],
+      "outputs": ["naturalness-guided elision policy", "entropy scores per code element"]
+    },
+    {
+      "capability": "encode_generate_decode_pipeline",
+      "subdomain": "code__code_repr",
+      "method": "End-to-end pipeline: encode library source to compact repr -> generate code using repr-augmented LLM -> decode repr tokens back to executable idiomatic code; validate round-trip fidelity 95%+ on held-out set; version-tag all index entries",
+      "when_to_use": "When building or operating the full library repr encoding infrastructure",
+      "inputs": ["library source corpus", "target model", "schema document"],
+      "outputs": ["versioned repr index", "pipeline consistency report"]
+    },
+    {
+      "capability": "retrieval_augmented_repr_injection",
+      "subdomain": "code__code_repr",
+      "method": "Hybrid BM25 + dense embedding retrieval (recall@10 >= 90%); QUERY_ENCODE bridges NL-repr vocabulary gap; inject retrieved repr into prompt via structured delimiters; validate 80%+ of generated code uses at least one injected API correctly",
+      "when_to_use": "When providing API repr context to the LLM during code generation",
+      "inputs": ["repr index", "user query", "context window budget"],
+      "outputs": ["augmented prompt with repr entries", "retrieval recall report", "injection quality metrics"]
+    },
+    {
+      "capability": "hallucination_grounding_and_coverage_gap_management",
+      "subdomain": "code__code_repr",
+      "method": "Membership test of generated API calls against repr index; soft-flag (uncertainty) for borderline cases; explicit uncertainty signal for private/internal APIs; track coverage gap rate (<10% target); COVERAGE_GAP analysis triggers index expansion backlog",
+      "when_to_use": "When verifying generated API calls are grounded in the repr index and managing gaps",
+      "inputs": ["generated code with API calls", "repr index", "coverage gap threshold"],
+      "outputs": ["grounding check results", "hallucination flags", "coverage gap report"]
+    },
+    {
+      "capability": "repr_version_management_and_incremental_update",
+      "subdomain": "code__code_repr",
+      "method": "Semver-major version retention policy for multi-version repr; delta detection on library releases triggers incremental re-encode of changed symbols; consistency checks before index swap; schema major version changes trigger FINETUNE_REPR re-run",
+      "when_to_use": "When managing repr index freshness as libraries release new versions",
+      "inputs": ["library release diffs", "current repr index", "version management policy"],
+      "outputs": ["updated repr index", "version consistency report", "migration scripts"]
+    }
+  ],
+  "decision_procedure": [
+    "1. Classify task: code-gen model operations (model selection/fine-tuning/eval/feedback/security) OR repr pipeline operations (encode/retrieve/inject/decode/version); dual-domain tasks apply both tracks.",
+    "2. For code-gen model operations: check security prerequisites first (EXEC_SANDBOX must precede TDG_LOOP/RLEF; SECURITY_SCAN must gate all output); then verify benchmark claims have contamination checks (GOODHART_BENCH before CODEX_BENCH reporting).",
+    "3. For model selection: score on license+VRAM+benchmark pass@k; require held-out internal eval; verify contamination scan before selection.",
+    "4. For evaluation: always use unbiased pass@k estimator (n>=k); report pass@1 and pass@k>=10 separately; run contamination scan; augment with mutation testing and property-based tests for production certification.",
+    "5. For feedback loop design: cap iterations at 5; enforce token budget hard stop; ensure sandbox isolation before activation; detect repair convergence failure and escalate.",
+    "6. For fine-tuning decision: run SPEC_VS_GEN cost-benefit before committing; license review before GPU investment; HumanEval regression gate (<2pp); data dedup before training.",
+    "7. For RLEF: ensure SFT baseline is stable first; monitor KL divergence; run mutation testing audit to detect reward hacking.",
+    "8. For stack specialization: version prompts per framework major release; sandbox-validate few-shot examples; grounding with versioned API docs.",
+    "9. For repr pipeline operations: REPR_SCHEMA must be finalized before codecs; TOKEN_BUDGET gates all compression; RETRIEVAL_INDEX recall@10 >= 90% before CONTEXT_INJECT deployment; HALLUC_GUARD must pass before user-facing deployment.",
+    "10. For repr compression: apply naturalness-guided elision only after domain validation; always preserve nullability/Optional annotations; cap generic type nesting at 2 levels; achieve 3x+ compression on overloaded APIs.",
+    "11. For latency/cost decisions: profile p99 under target load before optimization; do not optimize before correctness gate passes; use adaptive retrieval depth based on SLA budget.",
+    "12. Escalate to human review when: security CVE affects sandbox; RLEF reward hacking detected; contamination scan positive; license ambiguity; catastrophic forgetting (>5pp HumanEval drop); model selection involves irreversible investment."
+  ],
+  "workflow": [
+    {
+      "phase": "foundation",
+      "objective": "Establish security, evaluation, and representation schema prerequisites before any generation or training work",
+      "entry": ["task scoped to code generation or repr pipeline", "hardware and license constraints known"],
+      "exit": ["sandbox hardened and tested", "benchmark baseline with contamination scan", "repr schema finalized"],
+      "gates": ["EXEC_SANDBOX: network isolated, resource limits enforced", "CODEX_BENCH: contamination scan clean, pass@1 and pass@100 baseline reproducible", "REPR_SCHEMA: round-trip fidelity <5% error on held-out set"]
+    },
+    {
+      "phase": "context_and_compression",
+      "objective": "Build token-budget-managed repr index and retrieval pipeline; set up repo/API context injection for code-gen",
+      "entry": ["foundation phase complete", "repr schema and token budget defined"],
+      "exit": ["repr index built and version-tagged", "retrieval recall@10 >= 90%", "repo context retrieval precision >70%"],
+      "gates": ["TOKEN_BUDGET: 90%+ signature coverage within context window", "RETRIEVAL_INDEX: recall@10 >= 90% on held-out query set", "REPO_CONTEXT: token budget respected with 20% headroom"]
+    },
+    {
+      "phase": "specialization",
+      "objective": "Apply stack-specific prompts, API grounding, repr injection, and optional fine-tuning for domain adaptation",
+      "entry": ["base model selected", "context infrastructure ready"],
+      "exit": ["per-stack prompts versioned and sandbox-validated", "API grounding version-pinned", "repr injection benchmark: 80%+ generated code uses injected APIs correctly"],
+      "gates": ["STACK_SPEC: prompts versioned and examples sandbox-validated", "API_GROUND: doc version matches production runtime", "CONTEXT_INJECT: injection does not crowd out task context"]
+    },
+    {
+      "phase": "feedback_and_training",
+      "objective": "Implement TDG loop, fine-tuning, RLEF, and synthetic data generation with correctness and safety gates",
+      "entry": ["sandbox operational", "eval baseline established", "SFT baseline stable before RLEF"],
+      "exit": ["TDG loop with iteration cap enforced", "fine-tuned checkpoint with <2pp HumanEval regression", "RLEF mutation kill rate >60%"],
+      "gates": ["TDG_LOOP: max iterations capped, token budget tracked", "CODEGEN_FINETUNE: HumanEval regression <2pp", "RLEF: KL divergence within threshold, reward hacking audit passed"]
+    },
+    {
+      "phase": "evaluation_and_quality",
+      "objective": "Run versioned evaluation, hallucination grounding, functional correctness, and security gates",
+      "entry": ["generation system operational"],
+      "exit": ["HALLUC_GUARD precision >= 90%, FP rate <10%", "security scan covering OWASP Top-10", "mutation kill rate >60%"],
+      "gates": ["EVAL_REPR: execution correctness 70%+ pass@1, 10%+ improvement over no-repr baseline", "HALLUC_GUARD: precision 90%+, false positive <10%", "SECURITY_SCAN: zero hardcoded credential false negatives, OWASP Top-10 covered"]
+    },
+    {
+      "phase": "production_and_maintenance",
+      "objective": "Deploy orchestration, monitor latency/coverage, maintain repr index freshness, and manage versioned regression tracking",
+      "entry": ["all quality gates passed"],
+      "exit": ["routing accuracy >90%", "p99 latency within SLA", "coverage gap rate <10%", "versioned eval regression report before every deployment"],
+      "gates": ["ORCH_CODEGEN: router accuracy >90%, end-to-end latency within SLA", "LATENCY_COST: p99 measured under target load", "VERSIONED_EVAL: regression threshold defined, rollback criteria documented", "INCREMENTAL_UPDATE: consistency check before index swap"]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "Container escape CVE published for sandbox runtime",
+      "action": "human_review",
+      "reason": "Immediate security threat; requires sandbox update, penetration test, and audit of affected generation logs before re-enabling execution"
+    },
+    {
+      "condition": "RLEF reward hacking detected: pass@k improves without corresponding mutation kill rate improvement",
+      "action": "human_review",
+      "reason": "Model exploiting test oracle (try/except wrapping, exception swallowing); requires reward function redesign and blacklist update"
+    },
+    {
+      "condition": "Benchmark contamination scan returns positive signal",
+      "action": "flag",
+      "reason": "Public benchmark results cannot be trusted; must switch to held-out internal eval only and disclose limitation"
+    },
+    {
+      "condition": "Catastrophic forgetting: HumanEval drops >5pp after fine-tuning",
+      "action": "human_review",
+      "reason": "Fine-tuning has degraded base capability; revert to pre-fine-tuning checkpoint and revise data mixing strategy"
+    },
+    {
+      "condition": "Base model license incompatibility discovered post-selection or post-fine-tuning",
+      "action": "human_review",
+      "reason": "Irreversible investment at risk; requires legal review and potential full restart with compliant model"
+    },
+    {
+      "condition": "SAST false-positive rate exceeds 15% on sampled outputs",
+      "action": "flag",
+      "reason": "Alert fatigue risk causing rule disablement; requires precision audit of SAST rule set"
+    },
+    {
+      "condition": "REPR_SCHEMA major version change proposed while FINETUNE_REPR is deployed",
+      "action": "human_review",
+      "reason": "Model fine-tuned on old schema will generate malformed repr with new schema; re-training required before schema deployment"
+    },
+    {
+      "condition": "Routing accuracy drops below 90% threshold in orchestration",
+      "action": "flag",
+      "reason": "Classifier distribution drift detected; requires confusion matrix inspection and classifier retraining"
+    },
+    {
+      "condition": "Hallucination rate increases >5% from baseline or coverage gap rate exceeds 10%",
+      "action": "flag",
+      "reason": "Repr index coverage degraded; requires COVERAGE_GAP analysis and index expansion prioritization"
+    },
+    {
+      "condition": "Library major version release with breaking API changes affecting production runtime",
+      "action": "flag",
+      "reason": "API grounding and repr index will serve stale signatures causing silent runtime errors; trigger INCREMENTAL_UPDATE immediately"
+    }
+  ],
+  "validation_checklist": [
+    "Execution sandbox network-isolated with 10s CPU / 256MB RAM per execution limits enforced before activating any code execution loop",
+    "pass@k reported using Chen et al. unbiased estimator with n>=k samples; pass@1 and pass@k>=10 reported separately with confidence intervals",
+    "Contamination scan (n-gram + semantic) run against benchmark problems before any capability claim or model selection based on benchmark",
+    "License review completed and signed off before fine-tuning or deployment investments are made",
+    "HumanEval baseline regression measured and within 2pp after fine-tuning; >5pp drop triggers revert",
+    "RLEF: KL divergence tracked against base policy threshold; mutation testing audit run on RLEF-trained solutions to detect reward hacking",
+    "Security scan (SAST, secret detection, injection patterns) runs on every generated code sample before returning to user; OWASP Top-10 patterns covered",
+    "Stack-specific prompts versioned per framework major release; few-shot examples sandbox-validated before deployment",
+    "API grounding uses version-pinned docs matching production runtime; deprecated APIs filtered from retrieval corpus",
+    "Synthetic data deduplicated against eval benchmarks before adding to training; diversity metrics (problem type distribution) tracked",
+    "REPR_SCHEMA finalized and schema-reviewed before any compression codec is implemented",
+    "TOKEN_BUDGET allocation table set with 90%+ signature coverage within target context window before compression codecs developed",
+    "Signature compression codec achieves 3x+ reduction on overloaded APIs with zero type errors on round-trip decode",
+    "Docstring distillation achieves 95%+ behavioral constraint recall and 5x+ token reduction on benchmark libraries",
+    "Retrieval index passes recall@10 >= 90% on held-out query set before context injection deployment",
+    "HALLUC_GUARD implemented with >= 90% precision and <10% false positive rate before production deployment",
+    "All repr index entries carry schema version and library version tags; untagged entries rejected",
+    "INCREMENTAL_UPDATE passes consistency checks producing identical index to full re-index on patch-release test before replacing production index",
+    "Versioned eval snapshot pinned before any model or prompt change is deployed to production",
+    "EVAL_REPR baseline established before FINETUNE_REPR begins; targets defined from eval results"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "benchmark_goodhart_vs_capability_signal",
+      "resolution": "GOODHART_BENCH dominates CODEX_BENCH: always require contamination scan and held-out internal eval before reporting any benchmark capability claim; public benchmark alone is insufficient"
+    },
+    {
+      "tradeoff": "specialist_fine_tuning_vs_generalist_flexibility",
+      "resolution": "SPEC_VS_GEN cost-benefit analysis must precede fine-tuning commitment; empirical comparison on identical hardware with full cost model required; generalist with prompt engineering may match specialist at lower infrastructure cost"
+    },
+    {
+      "tradeoff": "repair_loop_quality_vs_latency_cost",
+      "resolution": "TDG_LOOP iteration cap is parameterized per SLA; more iterations improve correctness but compound token cost; stopping criterion must be SLA-aware; do not increase cap without re-profiling end-to-end latency"
+    },
+    {
+      "tradeoff": "execution_sandbox_security_vs_throughput",
+      "resolution": "EXEC_SANDBOX security dominates throughput: strict isolation mandatory; tiered approach (gVisor for untrusted, lighter-weight for trusted eval fixtures) acceptable to manage overhead"
+    },
+    {
+      "tradeoff": "synthetic_data_diversity_vs_benchmark_contamination",
+      "resolution": "GOODHART_BENCH dominates DATA_SYNTH: mandatory deduplication and contamination scan before synthetic data enters training; diversity metrics must pass independently"
+    },
+    {
+      "tradeoff": "context_length_vs_retrieval_precision",
+      "resolution": "Budget-cap tokens retrieved with precision measurement; retrieval precision > quantity; 20% context headroom enforced; irrelevant context degrades generation quality"
+    },
+    {
+      "tradeoff": "rl_reward_execution_vs_reward_hacking",
+      "resolution": "FUNC_CORRECT mutation testing gate added to RLEF reward pipeline; sudden pass@k improvement without mutation kill rate improvement is a red flag requiring immediate audit"
+    },
+    {
+      "tradeoff": "stack_prompt_coverage_vs_maintenance_burden",
+      "resolution": "Prompt versioning tied to framework release schedule; automated staleness detection on framework releases; diff-update only changed idioms rather than full rewrites"
+    },
+    {
+      "tradeoff": "compression_vs_semantic_completeness",
+      "resolution": "Minimum semantic completeness requirements set first (types, exceptions, constraints); compress remaining prose to budget; nullability and top-level generics always preserved; generic nesting capped at 2 levels"
+    },
+    {
+      "tradeoff": "retrieval_depth_vs_latency",
+      "resolution": "Profile p99 latency budget before choosing retrieval depth; cache top-k for frequent queries; accept shallow retrieval only when deeper retrieval would breach SLA"
+    },
+    {
+      "tradeoff": "fine_tuning_repr_vs_in_context_injection",
+      "resolution": "In-context injection is default; FINETUNE_REPR added only when token injection overhead consistently exceeds 20% of context window; EVAL_REPR baseline required before fine-tuning begins"
+    },
+    {
+      "tradeoff": "hallucination_guard_recall_vs_false_positive_rate",
+      "resolution": "Confidence threshold set based on index coverage rate; soft-flag (uncertainty) rather than hard rejection for borderline cases; expand index rather than loosening guard"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "pass@k",
+      "definition": "fraction of problems where at least one of k generated samples passes all unit tests; estimated unbiasedly via Chen et al. hypergeometric estimator requiring n>=k samples per problem; not same as accuracy or BLEU score"
+    },
+    {
+      "term": "HumanEval",
+      "definition": "benchmark of 164 Python programming problems with unit tests introduced by Chen et al. 2021 (Codex paper); primary standard for code LLM capability measurement; contaminated by post-2021 training data"
+    },
+    {
+      "term": "execution_sandbox",
+      "definition": "isolated container/VM (gVisor/nsjail) environment for safely running model-generated code during evaluation and feedback loops; requires network isolation, syscall filtering, CPU/memory limits"
+    },
+    {
+      "term": "test_driven_generation",
+      "definition": "TDG; iterative loop generating code, executing in sandbox, injecting pass/fail and stderr messages back to model for repair; capped at max_iterations with hard token budget stop"
+    },
+    {
+      "term": "rlef",
+      "definition": "reinforcement learning from execution feedback; using test pass/fail outcomes as RL reward signal to align model toward functional correctness; requires KL penalty to base policy and mutation audit to detect reward hacking"
+    },
+    {
+      "term": "benchmark_goodhart",
+      "definition": "phenomenon where code model optimizes benchmark pass@k through contamination or narrow overfitting without improving real-world coding capability; mitigated by contamination scan and held-out internal eval"
+    },
+    {
+      "term": "repo_context",
+      "definition": "relevant code snippets, imports, type stubs, and related functions retrieved from the target repository and injected into the code generation prompt; enables library-aware and cross-file generation"
+    },
+    {
+      "term": "stack_specialization",
+      "definition": "adaptation of code generation prompts, few-shot examples, and evaluation criteria to a specific programming language or framework stack; prompts must be versioned per framework major release"
+    },
+    {
+      "term": "mutation_testing",
+      "definition": "evaluation technique inserting small syntactic mutations into code and checking whether tests detect the mutant; kill rate >60% required; detects superficially-passing code with logical gaps"
+    },
+    {
+      "term": "compact_repr",
+      "definition": "token-efficient intermediate encoding of a library API entry: signatures compressed, types distilled, docstrings minimal, examples curated; replaces verbatim source in LLM context to save tokens"
+    },
+    {
+      "term": "encode_generate_decode",
+      "definition": "three-stage repr pipeline: encode library source to compact repr, generate code using repr-augmented LLM, decode repr tokens back to executable idiomatic code"
+    },
+    {
+      "term": "token_budget",
+      "definition": "maximum number of tokens allocated for repr of a library or per-function entry within an LLM context window; gates all compression decisions; must achieve 90%+ signature coverage"
+    },
+    {
+      "term": "repr_index",
+      "definition": "serialized versioned database of encoded library repr entries indexed for fast BM25 and dense retrieval by API name, type, or semantic query; all entries must carry schema version and library version tags"
+    },
+    {
+      "term": "type_aware_repr",
+      "definition": "repr that encodes type annotations (generics, protocols, nullable) such that the generator can produce type-safe code; generic nesting capped at 2 levels; nullability always preserved"
+    },
+    {
+      "term": "naturalness",
+      "definition": "empirical property (Allamanis et al. 2018) that code follows repetitive predictable patterns enabling entropy-guided compression; high-entropy unique identifiers must be retained; low-entropy idiomatic patterns can be abbreviated"
+    },
+    {
+      "term": "hallucination_grounding",
+      "definition": "verification that generated API calls have corresponding entries in the repr index; soft-flag (uncertainty signal) for borderline cases; hard rejection reserved for high-confidence ungrounded calls"
+    }
+  ],
+  "competency_questions_covered": [
+    "What execution-based benchmark measures code generation capability and how is pass@k computed without bias?",
+    "How is a base code LLM selected balancing benchmark performance, license, and hardware constraints?",
+    "How is a code LLM fine-tuned for domain specialization while controlling catastrophic forgetting?",
+    "How does the test-driven generation loop work and what stopping criteria prevent runaway repair?",
+    "How is the execution sandbox secured and what resource limits are enforced?",
+    "How is repository and API context retrieved and injected to enable library-aware generation?",
+    "How are stack-specific prompts designed and kept current with framework evolution?",
+    "How does web/HTML and Python data-science code generation differ in specialization requirements?",
+    "How is functional correctness evaluated beyond pass@k using mutation and property-based testing?",
+    "How is security of generated code enforced to prevent injection and credential leakage?",
+    "How are benchmark Goodhart effects detected and mitigated to prevent capability overestimation?",
+    "When does a specialist model outperform a generalist and how is the tradeoff decided?",
+    "How is reinforcement learning from execution feedback implemented and how is reward hacking prevented?",
+    "What elements are included vs excluded from compact code/library representation and why?",
+    "How is the repr index kept consistent as libraries release new versions?",
+    "How are API signatures and docstrings compressed while preserving semantic completeness?",
+    "How is type information encoded in compact repr to enable type-directed generation?",
+    "How are token budget tradeoffs managed across signature, type, docstring, and example components?",
+    "How is a natural language or code query encoded to retrieve relevant API repr entries?",
+    "How is compact repr expanded back to usable code in the decode stage?",
+    "How is repr injected into the LLM generation prompt and when does fine-tuning reduce injection overhead?",
+    "How is the encode-generate-decode cycle evaluated for quality and correctness?",
+    "How are hallucinations detected and coverage gaps managed in the repr-grounded system?",
+    "How are retrieval and injection latency and cost managed within SLA constraints?"
+  ]
+}

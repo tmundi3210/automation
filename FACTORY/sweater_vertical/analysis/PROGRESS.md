@@ -1,0 +1,36 @@
+# Sweater Vertical — Orchestrator Progress (running state)
+
+State lives here so the orchestrator can `/compact` and re-inject from this file.
+
+## Status board
+
+| Seg | Title | Stage | Output |
+|----|-------|-------|--------|
+| T0 | Scope & Glossary / Organizer | **DONE** (glossary, 9 sections, ~95 terms); organizer specialist folded into T11 | analysis/SCOPE_GLOSSARY.md |
+| T1 | Ludhiana cluster | **SPECIALIST DONE & verified** — `ludhiana_sourcing_strategist`, 3 dense KBs, build.sh ALL GREEN, critic PASS (no honesty/templating issues) | specialists/ludhiana/ |
+| T2 | Yarn & fibre | **SPECIALIST DONE & verified** — `yarn_sourcing_strategist`, 3 dense KBs, build.sh ALL GREEN, critic PASS | specialists/yarn/ |
+| T3 | Machines | **SPECIALIST DONE & verified** — `knit_machine_strategist`, 3 dense KBs, build.sh ALL GREEN, critic PASS (1 templating fix applied: false template-as-source ref removed) | specialists/machines/ |
+| T4 | Manufacturing economics | **SPECIALIST DONE & verified** — `mfg_economics_strategist`, 3 dense KBs, ALL GREEN. Adversarial analyst-B written (make-vs-buy now a tested A/B B1/B2/B3 verdict); critic caught+fixed a stale "analyst-B absent" claim in kb1 + I corrected the upstream DEEPDIVE/reconciled erratum | specialists/mfg_economics/ |
+| T5 | Quality & thread checker | **SPECIALIST DONE & verified** — `quality_qc_strategist`, 3 dense KBs, ALL GREEN, critic PASS (no fixes) | specialists/quality_checker/ |
+| T6 | Post-treatment / finishing | **SPECIALIST DONE & verified** — `finishing_strategist`, 3 dense KBs, ALL GREEN, critic PASS (1 missing-tag fix) | specialists/finishing/ |
+| T7 | Brand & CA/Turlock market | **SPECIALIST DONE & verified** — `brand_market_strategist`, 3 dense KBs, ALL GREEN, critic PASS (no fixes) | specialists/brand_market/ |
+| T8 | Design specialist (AI/Flux) | **SPECIALIST DONE & verified** — `design_strategist`, 3 dense KBs (design-line / sizing-grading / flux-method), ALL GREEN, critic PASS (no fixes); prompting-spec only per owner | specialists/design/ |
+| T9 | Logistics & unit economics | **deep-dive DONE** (CRITICAL: cotton duty is 16.5% not ~7%; acrylic A2 hit by 32% MMF duty; de-minimis repealed Aug-2025; viable led by A3+bundles at CAC<~$35, NOT as paid-social acrylic value brand). **SPECIALIST DONE & verified** — `unit_economics_strategist`, 3 dense KBs + adversarial analyst-C viability cross-exam, ALL GREEN, critic PASS; duty trio corrected (16.5/16/32) with anti-revert guardrails | specialists/unit_economics/ |
+| T10 | Macro / neutralize brain | **DONE** — DECISION_MEMO via advocate ‖ neutralize → compare → memo over all 9 dives. Verdict: **GATED conditional GO, do NOT launch** until 4 gates clear (live CAC<~$35, real knit+LINK rate, fundable working-capital cycle, PPS anti-pill ICI≥3-4); best config = A3 merino hero + 2-unit bundles, organic-led; "no load-bearing joint carries a FACT" | analysis/macro/DECISION_MEMO.md |
+| T11 | BRAIN controller | **DONE & verified** — `sweater_vertical_brain`: router.json (9 specialists wired, all paths resolve, 12 dominance rules, 7-item neutralize gate, macro standing verdict) + BRAIN.md (routing table, dominance rules, paste-prompt, value-chain map). Final sweep: 9/9 ALL GREEN, 27 dense KBs | specialists/BRAIN/ |
+| T12 | Self-improvement loop | **DONE & verified** — reflection loop (base unit = FRESH agent context): R1 questioner → R2 answerer (the specialist itself) → R3 judge → R4 synthesizer, dry-stop ≤2 rounds. Ran all 9 (65 agents, one transient 529 on unit_economics:synth re-run separately). **Zero fabrication failures brain-wide**; one content HIGH fixed (yarn USTER-lab over-attribution → [ESTIMATE]/[UNKNOWN] at the KB layer); dominant family = under-referencing (guardrails inlined into standalone specialist files). Independently re-gated **9/9 ALL GREEN**, residue clean. Protocol in BRAIN/ (SELF_LOOP.md + self_improvement_loop.json, wired into router.json) | specialists/BRAIN/ + analysis/self_loop/ |
+
+---
+
+## BUILD COMPLETE
+All 12 segments done. **Glossary + 9 gated specialists + macro decision memo + BRAIN controller.** 27 dense KBs, 9/9 ALL GREEN, every wave adversarially critiqued, full duty `[FACT]` correction propagated + re-verified. Verdict: **GATED conditional GO** — best config A3-merino-hero + bundles, organic-led; do NOT spend inventory cash until the 4 gates clear (live CAC<~$35, real knit+LINK rate, fundable working-capital cycle, PPS anti-pill ICI≥3-4); de-risk in order: $1-2k CAC test → knit+LINK quote → dye-MOQ quote → PPS swatch.
+
+## Pipeline per segment (recipe)
+2 analysts → reconcile → writer DEEPDIVE → 3 KB-authors (forge+dense-gate) → distiller (specialist+gate)
+→ neutralize critic (question + re-gate). Template: `FACTORY/turlock_business/sectors/food_dining/`.
+Honesty tags [FACT]/[ESTIMATE]/[UNKNOWN]; off-paper economy = mechanism not accusation; no named-firm
+revenue/bribery as fact.
+
+## Log
+- Scaffold + MASTER_PLAN + PROGRESS created (orchestrator).
+- Wave 1 launched: T0 glossary + T1 Ludhiana deep-dive (analysis only; KBs/specialists follow).

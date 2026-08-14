@@ -1,0 +1,5480 @@
+{
+  "domain": "eval_artifact_quality",
+  "domain_label": "Artifact Quality Evaluation",
+  "purpose": "Score multi-agent artifacts with multi-axis rubrics, de-biased judging, calibration, and an implementable post-gate composite Q.",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "Deterministic gates exist",
+    "Non-author judges available for high stakes",
+    "Ledger stores components"
+  ],
+  "exclusions": [
+    "HR performance systems",
+    "RLHF model training",
+    "Consumer review spam as primary scope",
+    "Sports ops"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What rubric axes and FAIL/REVISE/ACCEPT thresholds apply after gates?",
+      "must_be_answerable_from": [
+        "RUBRIC_DESIGN",
+        "GATES_FIRST",
+        "OUTCOME_LABELS"
+      ],
+      "acceptance_condition": "lists >=4 axes and Q floor 6.0 with gate FAIL path",
+      "covered_by": [
+        "RUBRIC_DESIGN",
+        "GATES_FIRST",
+        "OUTCOME_LABELS",
+        "CONTENT_COMPOSITE"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How do density anchors counter verbosity bias?",
+      "must_be_answerable_from": [
+        "VERBOSITY_BIAS",
+        "AXIS_ANCHORS",
+        "RUBRIC_DESIGN"
+      ],
+      "acceptance_condition": "states density-3 clone example vs implementable high anchor",
+      "covered_by": [
+        "VERBOSITY_BIAS",
+        "AXIS_ANCHORS",
+        "RUBRIC_DESIGN",
+        "PAIRWISE_PROTOCOL"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "Which bias controls are mandatory before final panel scores?",
+      "must_be_answerable_from": [
+        "BLIND_JUDGING",
+        "POSITION_BIAS",
+        "SELF_PREF_BIAS"
+      ],
+      "acceptance_condition": "blind + both-order if pairwise + no self-grade",
+      "covered_by": [
+        "BLIND_JUDGING",
+        "POSITION_BIAS",
+        "SELF_PREF_BIAS",
+        "DEBIAS_PIPELINE"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How are pairwise comparisons aggregated?",
+      "must_be_answerable_from": [
+        "PAIRWISE_PROTOCOL",
+        "POSITION_BIAS",
+        "REVIEW_PACKET"
+      ],
+      "acceptance_condition": "BT or Elo; both orders; packet present",
+      "covered_by": [
+        "PAIRWISE_PROTOCOL",
+        "POSITION_BIAS",
+        "REVIEW_PACKET"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How do self-preference controls and adversarial review catch clones?",
+      "must_be_answerable_from": [
+        "SELF_PREF_BIAS",
+        "ADVERSARIAL_CONTENT",
+        "PANEL_COMPOSITION"
+      ],
+      "acceptance_condition": "no self-grade; cross-family; cross-KB structural diff",
+      "covered_by": [
+        "SELF_PREF_BIAS",
+        "ADVERSARIAL_CONTENT",
+        "PANEL_COMPOSITION",
+        "VERBOSITY_BIAS"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What agreement stats and anchor responses apply?",
+      "must_be_answerable_from": [
+        "INTERJUDGE_AGREE",
+        "AXIS_ANCHORS",
+        "GOLD_SET"
+      ],
+      "acceptance_condition": "kappa/alpha thresholds and anchor rewrite when low",
+      "covered_by": [
+        "INTERJUDGE_AGREE",
+        "AXIS_ANCHORS",
+        "GOLD_SET"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do gold and ECE keep scores calibrated?",
+      "must_be_answerable_from": [
+        "GOLD_SET",
+        "CALIBRATION_ECE",
+        "CANARY_REJUDGE"
+      ],
+      "acceptance_condition": "gold>=6; ECE>0.15 blocks confidence weighting",
+      "covered_by": [
+        "GOLD_SET",
+        "CALIBRATION_ECE",
+        "CANARY_REJUDGE",
+        "SCORE_LOGGING"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "When is multi-family odd jury required?",
+      "must_be_answerable_from": [
+        "PANEL_COMPOSITION",
+        "INTERJUDGE_AGREE",
+        "REVIEW_PACKET"
+      ],
+      "acceptance_condition": "high-stakes N>=3 >=2 families vs low-stakes single cross-family",
+      "covered_by": [
+        "PANEL_COMPOSITION",
+        "INTERJUDGE_AGREE",
+        "REVIEW_PACKET",
+        "BLIND_JUDGING"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How are gate fails and factual errors handled numerically?",
+      "must_be_answerable_from": [
+        "GATES_FIRST",
+        "ERROR_DOCK",
+        "ADVERSARIAL_CONTENT"
+      ],
+      "acceptance_condition": "gate fail no Q; major/minor dock weights; adversarial finds errors",
+      "covered_by": [
+        "GATES_FIRST",
+        "ERROR_DOCK",
+        "ADVERSARIAL_CONTENT",
+        "REVISE_CHURN"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What is the Q formula and logging requirement?",
+      "must_be_answerable_from": [
+        "CONTENT_COMPOSITE",
+        "REVISE_CHURN",
+        "SCORE_LOGGING"
+      ],
+      "acceptance_condition": "states 0.55/0.20/error terms and component log requirement",
+      "covered_by": [
+        "CONTENT_COMPOSITE",
+        "REVISE_CHURN",
+        "SCORE_LOGGING",
+        "OUTCOME_LABELS",
+        "DEBIAS_PIPELINE"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "axis_rubric",
+      "definition": "Multi-dimensional 0-10 scoring with written anchors"
+    },
+    {
+      "term": "blind_packet",
+      "definition": "Review materials with author identity removed"
+    },
+    {
+      "term": "bradley_terry",
+      "definition": "Pairwise model aggregating preferences into latent strength"
+    },
+    {
+      "term": "position_bias",
+      "definition": "Preference for first-shown item in a pair"
+    },
+    {
+      "term": "self_preference_bias",
+      "definition": "Preference for own-style or own-authored text"
+    },
+    {
+      "term": "verbosity_bias",
+      "definition": "Score inflation from length independent of substance"
+    },
+    {
+      "term": "cohens_kappa",
+      "definition": "Chance-corrected agreement for two raters"
+    },
+    {
+      "term": "krippendorff_alpha",
+      "definition": "Agreement coefficient for ordinal ratings and 2+ raters"
+    },
+    {
+      "term": "ECE",
+      "definition": "Expected Calibration Error of confidences vs outcomes"
+    },
+    {
+      "term": "artifact_Q",
+      "definition": "Post-gate composite quality 0..10 with logged components"
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model"
+    ],
+    "probabilistic_modeling": [
+      "nodes"
+    ],
+    "risk_analysis": [
+      "edge_cases"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic priors for artifact quality evaluation aligned with EXCHANGE scoring scaffold",
+      "citation_or_locator": "heuristic prior; operational scoring practice; no external dataset supplied",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "RUBRIC_DESIGN",
+      "topic": "multi_axis_rubric_design",
+      "definition": "Design multi-axis rubrics (density, implementability, correctness, gaming-resistance, lane-fit) scored 0-10 with written anchors at 3/6/9. Single holistic scores hide tradeoffs; axis scores make revise actionable. Axes must be observable without knowing the author.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "axis definitions with anchors",
+          "observable without author identity"
+        ],
+        "excluded": [
+          "HR employee rubrics"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.9,
+        "user_value": 0.88,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.65,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.24,
+        "lock_score": 0.7,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.91,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.71,
+        "update_signal": "verdict uses one vague quality number with no axis breakdown",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Axis rubrics make revise actionable",
+          "example": "density=3 implementability=3 pinpoints thin clones"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Too many axes overload raters",
+          "example": "12 axes per artifact exhausts jury"
+        }
+      ],
+      "failure_modes": [
+        "single holistic score only",
+        "axes requiring author identity"
+      ],
+      "acceptance_tests": [
+        "rubric lists >=4 axes with 3/6/9 anchors"
+      ],
+      "revisit_triggers": [
+        "vague revise notes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "BLIND_JUDGING",
+      "topic": "blind_authorship_stripping",
+      "definition": "Strip author ids, model-family hints, and self-praise before judging. Blind packets are mandatory for ledger quality scores. Authorship leakage reintroduces affiliation and self-preference bias.",
+      "node_type": "work_unit",
+      "group": "judging",
+      "scope_boundary": {
+        "included": [
+          "authorship strip",
+          "remove self-scores"
+        ],
+        "excluded": [
+          "anonymous code review products"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "RUBRIC_DESIGN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.52,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.64,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.22,
+        "lock_score": 0.71,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.9,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "posterior_importance": 0.71,
+        "update_signal": "judge packet includes author name and prior self-score",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.89,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Blind packets cut affiliation bias",
+          "example": "score without knowing builder"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-scrub can remove task-type context",
+          "example": "strip TASK id needed for lane rubric"
+        }
+      ],
+      "failure_modes": [
+        "judge sees author and trust",
+        "self-grade allowed"
+      ],
+      "acceptance_tests": [
+        "packet checklist: no author id, no self-score, task-type kept"
+      ],
+      "revisit_triggers": [
+        "affiliation bias incidents"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PAIRWISE_PROTOCOL",
+      "topic": "blind_pairwise_comparison",
+      "definition": "Use blind pairwise comparisons when ranking candidates; aggregate with Bradley-Terry or Elo. Absolute 0-10 still used for ledger Q. Gates always run before pairs. Sample pairs if n is large.",
+      "node_type": "work_unit",
+      "group": "judging",
+      "scope_boundary": {
+        "included": [
+          "pairwise tournament",
+          "Bradley-Terry or Elo",
+          "gates before pairs"
+        ],
+        "excluded": [
+          "sports brackets only"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BLIND_JUDGING",
+        "RUBRIC_DESIGN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.42,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.63,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.27,
+        "lock_score": 0.68,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "posterior_importance": 0.64,
+        "update_signal": "three candidates ranked with uncalibrated absolute scores only",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "BT/Elo stabilizes relative ranks",
+          "example": "six pairs rank revise candidates consistently"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Full tournaments cost O(n^2)",
+          "example": "10 artifacts imply 45 pairs"
+        }
+      ],
+      "failure_modes": [
+        "uncalibrated absolute only",
+        "pairs without gate precondition"
+      ],
+      "acceptance_tests": [
+        "protocol: gates first; both orders; BT or Elo aggregate"
+      ],
+      "revisit_triggers": [
+        "rank instability"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "POSITION_BIAS",
+      "topic": "position_order_bias_control",
+      "definition": "Judges show first-slot bias in pairs (large effects reported in LLM studies). Run every pair in BOTH orders and average. Never finalize a one-order pairwise result.",
+      "node_type": "work_unit",
+      "group": "bias_controls",
+      "scope_boundary": {
+        "included": [
+          "both-order presentation",
+          "average preference"
+        ],
+        "excluded": [
+          "UI A/B order effects"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "PAIRWISE_PROTOCOL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.91,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.48,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.64,
+        "confidence_score": 0.62,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.71,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.8,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "posterior_importance": 0.72,
+        "update_signal": "A beats B at 80% but only A-first order was run",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Both-order averaging neutralizes first-slot bias",
+          "example": "true ties land near 50/50"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Doubles judge cost per pair",
+          "example": "may sample fewer pairs"
+        }
+      ],
+      "failure_modes": [
+        "single-order finals",
+        "ignore order when obvious"
+      ],
+      "acceptance_tests": [
+        "every counted pair has both orders or explicit waiver"
+      ],
+      "revisit_triggers": [
+        "order effect >15%"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SELF_PREF_BIAS",
+      "topic": "self_preference_bias_control",
+      "definition": "Agents prefer text like their own (self-preference/self-enhancement). Never self-grade; prefer cross-family judges; flag same-family-only juries with confidence <=0.6. Distinct from position bias.",
+      "node_type": "work_unit",
+      "group": "bias_controls",
+      "scope_boundary": {
+        "included": [
+          "no self-grade",
+          "cross-family preference",
+          "confidence downweight"
+        ],
+        "excluded": [
+          "human egocentrism only"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BLIND_JUDGING",
+        "PAIRWISE_PROTOCOL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.86,
+        "user_value": 0.89,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.89,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.46,
+        "risk_score": 0.67,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.68,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.68,
+        "update_signal": "author family scores own delivery 9.5 while cross-family scores 5",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "No-self-grade plus cross-family cuts self-enhancement",
+          "example": "xverify by other family"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Single available family forces imperfect downweight",
+          "example": "must flag confidence"
+        }
+      ],
+      "failure_modes": [
+        "author scores own artifact",
+        "unflagged homogeneous jury"
+      ],
+      "acceptance_tests": [
+        "forbid self-grade; same-family-only confidence<=0.6"
+      ],
+      "revisit_triggers": [
+        "self-grade incidents"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "VERBOSITY_BIAS",
+      "topic": "verbosity_length_bias_control",
+      "definition": "Longer answers often score higher independent of substance. Weight density and implementability over length; log token lengths for audits; cap pure length credit.",
+      "node_type": "work_unit",
+      "group": "bias_controls",
+      "scope_boundary": {
+        "included": [
+          "density over length",
+          "implementability weight",
+          "token-length logs"
+        ],
+        "excluded": [
+          "SEO length heuristics"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "PAIRWISE_PROTOCOL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.87,
+        "business_value": 0.84,
+        "user_value": 0.88,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.63,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.69,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.65,
+        "update_signal": "12k filler outscores 4k implementable spec holistically",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Density axes punish template filler",
+          "example": "thin long clone scores density=3"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Harsh length penalties can ding necessary long specs",
+          "example": "valid triple-KB long form"
+        }
+      ],
+      "failure_modes": [
+        "score tracks tokens only",
+        "no length logging"
+      ],
+      "acceptance_tests": [
+        "rubric includes density/implementability; length logged"
+      ],
+      "revisit_triggers": [
+        "length-quality correlation spike"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "GOLD_SET",
+      "topic": "gold_set_anchoring",
+      "definition": "Maintain >=6 gold artifacts with locked scores spanning fail/revise/accept (include known-bad clones and known-good accepts). Rejudge gold on a schedule to detect drift. Gold calibrates judges; it is not builder training fodder for gaming.",
+      "node_type": "work_unit",
+      "group": "calibration",
+      "scope_boundary": {
+        "included": [
+          "locked gold scores",
+          "periodic rejudge",
+          "span outcomes"
+        ],
+        "excluded": [
+          "ML train/test pedagogy only"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "BLIND_JUDGING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.88,
+        "user_value": 0.84,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.55,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.67,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.26,
+        "lock_score": 0.67,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "posterior_importance": 0.63,
+        "update_signal": "known-bad clone mean drifts from 3 to 7 over a month",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Gold rejudge detects scale drift",
+          "example": "known-bad stays <=4 or alert"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.56,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Small gold overfits few failure modes",
+          "example": "only one clone style covered"
+        }
+      ],
+      "failure_modes": [
+        "no gold set",
+        "builders optimize against gold"
+      ],
+      "acceptance_tests": [
+        "gold >=6 locked; rejudge schedule defined"
+      ],
+      "revisit_triggers": [
+        "drift alerts"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "INTERJUDGE_AGREE",
+      "topic": "inter_judge_agreement",
+      "definition": "Compute Cohen's kappa (2 raters) or Krippendorff's alpha (>=2, ordinal). Operational target >=0.6; <0.4 triggers anchor rewrite. Measure on axis scores after blinding, not niceness prose.",
+      "node_type": "work_unit",
+      "group": "calibration",
+      "scope_boundary": {
+        "included": [
+          "Cohen kappa",
+          "Krippendorff alpha",
+          "0.4/0.6 thresholds"
+        ],
+        "excluded": [
+          "ASR WER metrics"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "PAIRWISE_PROTOCOL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.86,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.66,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.29,
+        "lock_score": 0.66,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.63,
+        "update_signal": "two judges differ by 4 density points with no agreement metric",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Named agreement stats falsify jury quality",
+          "example": "kappa=0.35 forces rubric fix"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "High agreement can be shared bias",
+          "example": "both verbosity-biased"
+        }
+      ],
+      "failure_modes": [
+        "no agreement metric",
+        "maximize kappa ignoring gold"
+      ],
+      "acceptance_tests": [
+        "multi-judge verdicts report kappa or alpha"
+      ],
+      "revisit_triggers": [
+        "kappa<0.4 recurring"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CALIBRATION_ECE",
+      "topic": "calibration_and_ece",
+      "definition": "When confidence is used, compute Expected Calibration Error over bins. If ECE>0.15 on the rolling window, disable confidence-weighted routing until recalibrated. Ranking skill does not imply calibration.",
+      "node_type": "work_unit",
+      "group": "calibration",
+      "scope_boundary": {
+        "included": [
+          "ECE bins",
+          "recalibration trigger 0.15"
+        ],
+        "excluded": [
+          "forecast calibration essays"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "GOLD_SET",
+        "INTERJUDGE_AGREE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.84,
+        "user_value": 0.83,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.48,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.46,
+        "risk_score": 0.68,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.29,
+        "lock_score": 0.64,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "90% confidence accepts only pass 50% of the time",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "ECE blocks unsafe confidence routing",
+          "example": "ECE=0.22 disables conf weights"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Small n makes ECE noisy",
+          "example": "need ~30+ labeled confidences"
+        }
+      ],
+      "failure_modes": [
+        "raw confidence as probability",
+        "ignore miscalibration"
+      ],
+      "acceptance_tests": [
+        "ECE method documented; conf-weight blocked if ECE>0.15"
+      ],
+      "revisit_triggers": [
+        "ECE regressions"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "GATES_FIRST",
+      "topic": "deterministic_gates_before_llm",
+      "definition": "Run forge/dense/scope/re-forge before any LLM judge. Gate failure => FAIL label, no content Q. Gates close many failures cheaply; content review still required after pass to catch clones.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "gate precondition",
+          "no Q on gate fail",
+          "re-forge identity"
+        ],
+        "excluded": [
+          "CI aesthetics"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "RUBRIC_DESIGN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.94,
+        "business_value": 0.9,
+        "user_value": 0.88,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.55,
+        "confidence": 0.86,
+        "node_conflict_pressure": 0.3,
+        "risk_score": 0.63,
+        "confidence_score": 0.66,
+        "revisit_pressure": 0.18,
+        "lock_score": 0.73,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.9,
+        "dependency_gate_pass_rate": 0.92,
+        "uncertainty_range_width": 0.18,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.86,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.1,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.1,
+          0.28
+        ],
+        "posterior_importance": 0.81,
+        "update_signal": "LLM scores a dense-fail KB at 8 for prose",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.94,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Gates-first blocks ungateable eloquence",
+          "example": "FAIL not 3/10 on forge error"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Gates miss template clones that pass shape",
+          "example": "need adversarial content next"
+        }
+      ],
+      "failure_modes": [
+        "judge before gates",
+        "score hand-edited non-reforgeable KB"
+      ],
+      "acceptance_tests": [
+        "verdict flow requires gates+reforge before Q"
+      ],
+      "revisit_triggers": [
+        "gate-skip incidents"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "ERROR_DOCK",
+      "topic": "factual_error_docking",
+      "definition": "Dock Q for confirmed factual errors and fabricated citations (default \u22120.25 minor / \u22120.5 to \u22121.0 major on 0-10). Canary-discovered errors may retro-dock. Docks are ledger numbers.",
+      "node_type": "work_unit",
+      "group": "scoring",
+      "scope_boundary": {
+        "included": [
+          "severity weights",
+          "ledger error counts",
+          "retro canary docks"
+        ],
+        "excluded": [
+          "retraction policies"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "GATES_FIRST",
+        "RUBRIC_DESIGN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.82,
+        "user_value": 0.85,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.62,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.24,
+        "lock_score": 0.7,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "fabricated citations leave score unchanged",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Numeric docks deter fake anchors",
+          "example": "fake author-year costs major dock"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-docking nits demoralizes",
+          "example": "\u22121 for typo"
+        }
+      ],
+      "failure_modes": [
+        "no error accounting",
+        "qualitative issues only"
+      ],
+      "acceptance_tests": [
+        "error dock table applied at verdict"
+      ],
+      "revisit_triggers": [
+        "undocked fabrications"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "REVISE_CHURN",
+      "topic": "revise_round_churn_penalty",
+      "definition": "Include ~0.20 weight for low revise churn in composite. First-pass accepts score higher than same final after many revises. Churn is ledger fact; nit-farming is discouraged.",
+      "node_type": "work_unit",
+      "group": "scoring",
+      "scope_boundary": {
+        "included": [
+          "churn weight ~0.20",
+          "revise_count ledger"
+        ],
+        "excluded": [
+          "story-point inflation"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "GATES_FIRST",
+        "ERROR_DOCK"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.4,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.56,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.24,
+        "lock_score": 0.71,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.81,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.62,
+        "update_signal": "five cosmetic revises to chase tiny axis nits",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Churn term rewards first-pass quality",
+          "example": "round0 accept > round3"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Can feel harsh on legitimately hard MED tasks",
+          "example": "one substantive revise common"
+        }
+      ],
+      "failure_modes": [
+        "ignore revise_count",
+        "infinite free score revises"
+      ],
+      "acceptance_tests": [
+        "composite documents churn term"
+      ],
+      "revisit_triggers": [
+        "farming behavior"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CONTENT_COMPOSITE",
+      "topic": "artifact_quality_composite",
+      "definition": "After gates: Q = clamp_0_10(0.55*panel_axis_mean + 0.20*churn_score - 0.25*major_error_count). panel_axis_mean is de-biased panel mean; churn_score maps revise_count (0->10, 1->8, 2->6, 3+->4). Log all components. Integrator may change weights only with changelog.",
+      "node_type": "work_unit",
+      "group": "scoring",
+      "scope_boundary": {
+        "included": [
+          "explicit weights",
+          "component logging",
+          "post-gate only"
+        ],
+        "excluded": [
+          "portfolio composites"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "ERROR_DOCK",
+        "REVISE_CHURN",
+        "POSITION_BIAS",
+        "SELF_PREF_BIAS",
+        "VERBOSITY_BIAS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.93,
+        "business_value": 0.92,
+        "user_value": 0.9,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.68,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.24,
+        "lock_score": 0.69,
+        "final_importance": 0.81
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "posterior_importance": 0.72,
+        "update_signal": "scores store vibes number without components",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.93,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Auditable Q is implementable",
+          "example": "reproduce from components"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fixed weights may misfit some lanes",
+          "example": "code vs content axes"
+        }
+      ],
+      "failure_modes": [
+        "opaque holistic only",
+        "Q before gates"
+      ],
+      "acceptance_tests": [
+        "Q formula + components in scores schema"
+      ],
+      "revisit_triggers": [
+        "irreproducible scores"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PANEL_COMPOSITION",
+      "topic": "odd_jury_and_diversity",
+      "definition": "High-stakes: odd N>=3, >=2 families/lenses, majority+tie-break. Prefer diversity over identical judges. Low-stakes: single cross-family judge after gates may suffice.",
+      "node_type": "work_unit",
+      "group": "judging",
+      "scope_boundary": {
+        "included": [
+          "odd N",
+          "multi-family",
+          "majority rules"
+        ],
+        "excluded": [
+          "court size debates"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BLIND_JUDGING",
+        "SELF_PREF_BIAS",
+        "INTERJUDGE_AGREE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.61,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.7,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.64,
+        "update_signal": "three same-family judges all score 9 on thin build",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Diverse odd jury reduces sycophancy",
+          "example": "family disagreement surfaces clones"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Cost/latency rise with N",
+          "example": "nit gets 5 judges"
+        }
+      ],
+      "failure_modes": [
+        "N=2 no tie-break",
+        "same-family high-stakes unflagged"
+      ],
+      "acceptance_tests": [
+        "high-stakes policy documented"
+      ],
+      "revisit_triggers": [
+        "homogeneous panels"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CANARY_REJUDGE",
+      "topic": "canary_rejudge_sampling",
+      "definition": "Rejudge a sample of past accepts (example 10% or >=1/week) to catch gaming and drift. Confirmed major issues may retro-dock Q and update gold.",
+      "node_type": "work_unit",
+      "group": "calibration",
+      "scope_boundary": {
+        "included": [
+          "sample rate",
+          "retro dock policy"
+        ],
+        "excluded": [
+          "QA canary lots"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "GOLD_SET",
+        "ERROR_DOCK",
+        "CALIBRATION_ECE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.83,
+        "business_value": 0.84,
+        "user_value": 0.82,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.5,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.64,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.27,
+        "lock_score": 0.67,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "posterior_importance": 0.61,
+        "update_signal": "accepted thin clone never rechecked",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Canaries deter hide-then-accept",
+          "example": "retro dock on late fabrication"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Clawback anxiety for authors",
+          "example": "fear score edits"
+        }
+      ],
+      "failure_modes": [
+        "no canaries",
+        "canary without retro policy"
+      ],
+      "acceptance_tests": [
+        "canary rate + retro-dock written"
+      ],
+      "revisit_triggers": [
+        "zero canaries 30d"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "AXIS_ANCHORS",
+      "topic": "score_anchor_examples",
+      "definition": "Write 3/6/9 anchors per axis. Density-3 example: three KBs share identical node ids/definitions. Density-9: distinct nodes, numeric methods, domain failure modes. Anchors raise kappa.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "3/6/9 examples",
+          "shared with judges"
+        ],
+        "excluded": [
+          "exam rubric training"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "RUBRIC_DESIGN",
+        "GOLD_SET"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.83,
+        "user_value": 0.86,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.59,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.7,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.64,
+        "update_signal": "judges disagree what implementability 6 means",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Anchors align judges",
+          "example": "clone equals density3 written"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Anchors overfit past fails",
+          "example": "miss novel modes"
+        }
+      ],
+      "failure_modes": [
+        "adjectives only",
+        "secret anchors"
+      ],
+      "acceptance_tests": [
+        "each axis has 3/6/9 examples"
+      ],
+      "revisit_triggers": [
+        "persistent kappa fails"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "DEBIAS_PIPELINE",
+      "topic": "end_to_end_debias_pipeline",
+      "definition": "Order: gates+reforge -> blind packet -> axis scores with anchors -> both-order pairs if ranking -> agreement -> verbosity/self-pref flags -> composite Q -> log. Skipping reintroduces known biases.",
+      "node_type": "work_unit",
+      "group": "judging",
+      "scope_boundary": {
+        "included": [
+          "ordered steps",
+          "waiver log"
+        ],
+        "excluded": [
+          "ETL pipelines"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "GATES_FIRST",
+        "BLIND_JUDGING",
+        "POSITION_BIAS",
+        "SELF_PREF_BIAS",
+        "VERBOSITY_BIAS",
+        "CONTENT_COMPOSITE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.89,
+        "business_value": 0.86,
+        "user_value": 0.87,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.65,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.69,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "posterior_importance": 0.67,
+        "update_signal": "team jumps from gates to holistic vibe score",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.89,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fixed pipeline makes scores comparable",
+          "example": "same steps every accept"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rigid path slows tiny hotfix docs",
+          "example": "typo waits full jury"
+        }
+      ],
+      "failure_modes": [
+        "ad-hoc judging",
+        "skip blinding for speed"
+      ],
+      "acceptance_tests": [
+        "pipeline checklist in verdict notes"
+      ],
+      "revisit_triggers": [
+        "skipped steps in audit"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "OUTCOME_LABELS",
+      "topic": "accept_revise_fail_labels",
+      "definition": "Map outcomes: FAIL if gates fail; REVISE if gates pass and (Q<6.0 or blocking issue); ACCEPT if gates pass and Q>=6.0 and no blocking. Blocking issues (identical KBs, no formulas) override Q floor.",
+      "node_type": "work_unit",
+      "group": "scoring",
+      "scope_boundary": {
+        "included": [
+          "thresholds",
+          "blocking override"
+        ],
+        "excluded": [
+          "triage categories metaphor"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CONTENT_COMPOSITE",
+        "GATES_FIRST"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.86,
+        "user_value": 0.85,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.5,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.34,
+        "risk_score": 0.6,
+        "confidence_score": 0.64,
+        "revisit_pressure": 0.21,
+        "lock_score": 0.73,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "uncertainty_range_width": 0.2,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.82,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.12,
+          0.32
+        ],
+        "posterior_importance": 0.72,
+        "update_signal": "REVISE/ACCEPT used inconsistently at same Q",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit thresholds remove verdict roulette",
+          "example": "Q=5.5 => REVISE"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "May need later task-type variants",
+          "example": "S vs M floors"
+        }
+      ],
+      "failure_modes": [
+        "gut only",
+        "ACCEPT despite gate fail"
+      ],
+      "acceptance_tests": [
+        "threshold table documented"
+      ],
+      "revisit_triggers": [
+        "high waiver rate"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "REVIEW_PACKET",
+      "topic": "standard_review_packet",
+      "definition": "Packet: task brief, scope, gate logs, artifact list, blinded content samples, rubric, anchors. Budget size via progressive disclosure for large KBs (sample nodes + specialist).",
+      "node_type": "work_unit",
+      "group": "judging",
+      "scope_boundary": {
+        "included": [
+          "manifest",
+          "size budget",
+          "sampling rule"
+        ],
+        "excluded": [
+          "e-discovery bundles"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "BLIND_JUDGING",
+        "AXIS_ANCHORS",
+        "GATES_FIRST"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.38,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.59,
+        "confidence_score": 0.59,
+        "revisit_pressure": 0.25,
+        "lock_score": 0.71,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.24,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.76,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "posterior_importance": 0.61,
+        "update_signal": "judge only gets specialist JSON without KB samples or gate log",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Standard packets raise kappa",
+          "example": "gate log+samples always present"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Overfull packets recreate verbosity bias",
+          "example": "dump 180k JSON"
+        }
+      ],
+      "failure_modes": [
+        "empty see branch",
+        "no gate log"
+      ],
+      "acceptance_tests": [
+        "manifest checklist + sampling rule"
+      ],
+      "revisit_triggers": [
+        "under-informed judges"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ADVERSARIAL_CONTENT",
+      "topic": "adversarial_content_review",
+      "definition": "After gates, attack for template-cloning (cross-KB node id/definition equality), fabricated citations, non-implementable prose, missing domain failures. Distinct from cheerleading summary.",
+      "node_type": "work_unit",
+      "group": "judging",
+      "scope_boundary": {
+        "included": [
+          "clone structural diff",
+          "citation check",
+          "implementability probes"
+        ],
+        "excluded": [
+          "red team pentest only"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "GATES_FIRST",
+        "ERROR_DOCK",
+        "VERBOSITY_BIAS"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.46,
+        "risk_score": 0.67,
+        "confidence_score": 0.58,
+        "revisit_pressure": 0.27,
+        "lock_score": 0.67,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "review is praise summary with no clone check",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adversarial pass catches shape-pass filler",
+          "example": "0/20 differentiation found"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Infinite proof demands block shipping",
+          "example": "rare edge nit forever"
+        }
+      ],
+      "failure_modes": [
+        "summary-only review",
+        "skip cross-KB diff"
+      ],
+      "acceptance_tests": [
+        "checklist includes cross-KB node/definition diff"
+      ],
+      "revisit_triggers": [
+        "missed clones"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SCORE_LOGGING",
+      "topic": "score_component_logging",
+      "definition": "Persist gate bits, axis vector, kappa, Q, errors, revise_count, timestamps. No components => no ledger score. Enables trust updates and ECE.",
+      "node_type": "work_unit",
+      "group": "scoring",
+      "scope_boundary": {
+        "included": [
+          "component schema",
+          "append-only"
+        ],
+        "excluded": [
+          "telemetry products"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "CONTENT_COMPOSITE",
+        "INTERJUDGE_AGREE",
+        "CALIBRATION_ECE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.86,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.59,
+        "confidence_score": 0.61,
+        "revisit_pressure": 0.23,
+        "lock_score": 0.72,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "uncertainty_range_width": 0.22,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.16,
+          0.38
+        ],
+        "posterior_importance": 0.66,
+        "update_signal": "scores.json has final number only",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Logs make Q reproducible",
+          "example": "replay formula anytime"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Notes can leak author if careless",
+          "example": "judge names builder"
+        }
+      ],
+      "failure_modes": [
+        "final number only",
+        "silent score edits"
+      ],
+      "acceptance_tests": [
+        "schema requires components for each Q"
+      ],
+      "revisit_triggers": [
+        "missing components"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "RUBRIC_DESIGN",
+      "to": "BLIND_JUDGING",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "rubric after blind context",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_002",
+      "from": "RUBRIC_DESIGN",
+      "to": "PAIRWISE_PROTOCOL",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "pairs use axes",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_003",
+      "from": "RUBRIC_DESIGN",
+      "to": "AXIS_ANCHORS",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "anchors instantiate axes",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_004",
+      "from": "RUBRIC_DESIGN",
+      "to": "CONTENT_COMPOSITE",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "Q uses axes",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_005",
+      "from": "RUBRIC_DESIGN",
+      "to": "GATES_FIRST",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "gates before rubric",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_006",
+      "from": "BLIND_JUDGING",
+      "to": "PAIRWISE_PROTOCOL",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "pairs need blind packets",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_007",
+      "from": "BLIND_JUDGING",
+      "to": "SELF_PREF_BIAS",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "blind removes self cues",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_008",
+      "from": "BLIND_JUDGING",
+      "to": "REVIEW_PACKET",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.85,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "packet is blind",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_009",
+      "from": "PAIRWISE_PROTOCOL",
+      "to": "POSITION_BIAS",
+      "edge_type": "dependency",
+      "relation_strength": 0.92,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.92,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "both-order required",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_010",
+      "from": "GATES_FIRST",
+      "to": "ERROR_DOCK",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "errors after gates",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_011",
+      "from": "GATES_FIRST",
+      "to": "ADVERSARIAL_CONTENT",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "adversarial after gates",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_012",
+      "from": "GATES_FIRST",
+      "to": "OUTCOME_LABELS",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "FAIL is gate path",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_013",
+      "from": "ERROR_DOCK",
+      "to": "CONTENT_COMPOSITE",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "dock in Q",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_014",
+      "from": "REVISE_CHURN",
+      "to": "CONTENT_COMPOSITE",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "churn in Q",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_015",
+      "from": "GOLD_SET",
+      "to": "CALIBRATION_ECE",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "gold helps calibration",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_016",
+      "from": "GOLD_SET",
+      "to": "CANARY_REJUDGE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "canary updates gold",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_017",
+      "from": "INTERJUDGE_AGREE",
+      "to": "PANEL_COMPOSITION",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "low kappa expands panel",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_018",
+      "from": "CONTENT_COMPOSITE",
+      "to": "OUTCOME_LABELS",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.9,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "Q maps labels",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_019",
+      "from": "CONTENT_COMPOSITE",
+      "to": "SCORE_LOGGING",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.88,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "log components",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_020",
+      "from": "SELF_PREF_BIAS",
+      "to": "PANEL_COMPOSITION",
+      "edge_type": "dependency",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "drives diversity need",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_021",
+      "from": "VERBOSITY_BIAS",
+      "to": "ADVERSARIAL_CONTENT",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "filler attacked",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_022",
+      "from": "AXIS_ANCHORS",
+      "to": "INTERJUDGE_AGREE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "anchors raise kappa",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_023",
+      "from": "ADVERSARIAL_CONTENT",
+      "to": "ERROR_DOCK",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "findings become docks",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_024",
+      "from": "POSITION_BIAS",
+      "to": "DEBIAS_PIPELINE",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "order control in pipeline",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_025",
+      "from": "GATES_FIRST",
+      "to": "CONTENT_COMPOSITE",
+      "edge_type": "constraint",
+      "relation_strength": 0.94,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.33,
+      "prior_relation_strength": 0.94,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "no Q without gates",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_026",
+      "from": "BLIND_JUDGING",
+      "to": "SELF_PREF_BIAS",
+      "edge_type": "constraint",
+      "relation_strength": 0.92,
+      "signed_tension": 0.0,
+      "edge_score": 0.16,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.92,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.16,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "self-grade forbidden",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_027",
+      "from": "GATES_FIRST",
+      "to": "BLIND_JUDGING",
+      "edge_type": "sequence",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "gates then blind packet",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_028",
+      "from": "BLIND_JUDGING",
+      "to": "PAIRWISE_PROTOCOL",
+      "edge_type": "sequence",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.3,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "blind then pairs",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_029",
+      "from": "CONTENT_COMPOSITE",
+      "to": "SCORE_LOGGING",
+      "edge_type": "sequence",
+      "relation_strength": 0.86,
+      "signed_tension": 0.0,
+      "edge_score": 0.15,
+      "edge_heat": 0.31,
+      "prior_relation_strength": 0.86,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.15,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "compute then log",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_030",
+      "from": "CANARY_REJUDGE",
+      "to": "GOLD_SET",
+      "edge_type": "feedback",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "canary refreshes gold",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_031",
+      "from": "INTERJUDGE_AGREE",
+      "to": "AXIS_ANCHORS",
+      "edge_type": "feedback",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.28,
+      "prior_relation_strength": 0.76,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "low kappa rewrites anchors",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_032",
+      "from": "POSITION_BIAS",
+      "to": "SELF_PREF_BIAS",
+      "edge_type": "similarity",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.7,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.12,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "both systematic biases",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_033",
+      "from": "ERROR_DOCK",
+      "to": "REVISE_CHURN",
+      "edge_type": "similarity",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "edge_score": 0.12,
+      "edge_heat": 0.26,
+      "prior_relation_strength": 0.68,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.12,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "both numeric ledger docks",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_034",
+      "from": "VERBOSITY_BIAS",
+      "to": "REVIEW_PACKET",
+      "edge_type": "conflict",
+      "relation_strength": 0.74,
+      "signed_tension": -0.45,
+      "edge_score": 0.26,
+      "edge_heat": 0.34,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.26,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "complete evidence vs length inflation",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "sample packet; score density not tokens"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "PANEL_COMPOSITION",
+      "to": "PAIRWISE_PROTOCOL",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.45,
+      "edge_score": 0.26,
+      "edge_heat": 0.33,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.26,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "more judges/pairs vs cost",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "full protocol high-stakes; single cross-family low-stakes after gates"
+    },
+    {
+      "id": "EDGE_036",
+      "from": "REVISE_CHURN",
+      "to": "ADVERSARIAL_CONTENT",
+      "edge_type": "conflict",
+      "relation_strength": 0.7,
+      "signed_tension": -0.45,
+      "edge_score": 0.25,
+      "edge_heat": 0.32,
+      "prior_relation_strength": 0.7,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.25,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "punish churn vs thorough fixes",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "one substantive revise soft; cosmetic farms hard"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "cost_vs_debias",
+      "description": "Judge cost vs full bias protocol",
+      "poles": [
+        "minimal judge",
+        "full jury"
+      ],
+      "resolution_hint": "gates always; scale jury with stakes",
+      "affected_nodes": [
+        "PANEL_COMPOSITION",
+        "PAIRWISE_PROTOCOL",
+        "POSITION_BIAS"
+      ],
+      "id": "CA_01"
+    },
+    {
+      "name": "length_vs_completeness",
+      "description": "Fight verbosity vs need evidence",
+      "poles": [
+        "shortest",
+        "full dump"
+      ],
+      "resolution_hint": "sampled packet + density scoring",
+      "affected_nodes": [
+        "VERBOSITY_BIAS",
+        "REVIEW_PACKET",
+        "ADVERSARIAL_CONTENT"
+      ],
+      "id": "CA_02"
+    },
+    {
+      "name": "churn_vs_learning",
+      "description": "Penalize revises vs allow learning",
+      "poles": [
+        "harsh dock",
+        "free revises"
+      ],
+      "resolution_hint": "one substantive soft; farms hard",
+      "affected_nodes": [
+        "REVISE_CHURN",
+        "ADVERSARIAL_CONTENT",
+        "OUTCOME_LABELS"
+      ],
+      "id": "CA_03"
+    },
+    {
+      "name": "agreement_vs_truth",
+      "description": "High kappa vs gold truth",
+      "poles": [
+        "max agreement",
+        "max gold accuracy"
+      ],
+      "resolution_hint": "gold+canary dominate pure agreement",
+      "affected_nodes": [
+        "INTERJUDGE_AGREE",
+        "GOLD_SET",
+        "CANARY_REJUDGE"
+      ],
+      "id": "CA_04"
+    },
+    {
+      "name": "absolute_vs_pairwise",
+      "description": "Ledger Q vs relative ranks",
+      "poles": [
+        "only absolute",
+        "only pairwise"
+      ],
+      "resolution_hint": "absolute Q ledger; pairwise for ranking",
+      "affected_nodes": [
+        "PAIRWISE_PROTOCOL",
+        "CONTENT_COMPOSITE",
+        "RUBRIC_DESIGN"
+      ],
+      "id": "CA_05"
+    },
+    {
+      "name": "blind_vs_context",
+      "description": "Strip identity vs keep context",
+      "poles": [
+        "strip all",
+        "keep author history"
+      ],
+      "resolution_hint": "strip author/self-score; keep task-type and gates",
+      "affected_nodes": [
+        "BLIND_JUDGING",
+        "REVIEW_PACKET",
+        "SELF_PREF_BIAS"
+      ],
+      "id": "CA_06"
+    },
+    {
+      "name": "gate_only_vs_content",
+      "description": "Gates alone vs adversarial content",
+      "poles": [
+        "gates enough",
+        "content only"
+      ],
+      "resolution_hint": "gates necessary not sufficient",
+      "affected_nodes": [
+        "GATES_FIRST",
+        "ADVERSARIAL_CONTENT",
+        "CONTENT_COMPOSITE"
+      ],
+      "id": "CA_07"
+    },
+    {
+      "name": "fixed_weights_vs_lane",
+      "description": "One Q formula vs per-lane",
+      "poles": [
+        "global",
+        "fully custom"
+      ],
+      "resolution_hint": "default formula; changelog variants",
+      "affected_nodes": [
+        "CONTENT_COMPOSITE",
+        "OUTCOME_LABELS",
+        "SCORE_LOGGING"
+      ],
+      "id": "CA_08"
+    },
+    {
+      "name": "canary_finality",
+      "description": "Clawback vs finality",
+      "poles": [
+        "no retro",
+        "aggressive clawback"
+      ],
+      "resolution_hint": "retro only on confirmed major issues",
+      "affected_nodes": [
+        "CANARY_REJUDGE",
+        "ERROR_DOCK",
+        "SCORE_LOGGING"
+      ],
+      "id": "CA_09"
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "KBs pass gates but share node ids",
+      "trigger": "template clone",
+      "affected_nodes": [
+        "ADVERSARIAL_CONTENT",
+        "VERBOSITY_BIAS",
+        "AXIS_ANCHORS"
+      ],
+      "mitigation": "structural diff; density=3; REVISE",
+      "severity": "high",
+      "id": "EC_01"
+    },
+    {
+      "description": "Pairwise only one order",
+      "trigger": "skipped position control",
+      "affected_nodes": [
+        "POSITION_BIAS",
+        "PAIRWISE_PROTOCOL"
+      ],
+      "mitigation": "invalidate; both orders",
+      "severity": "high",
+      "id": "EC_02"
+    },
+    {
+      "description": "Author judges own work",
+      "trigger": "self-grade",
+      "affected_nodes": [
+        "SELF_PREF_BIAS",
+        "BLIND_JUDGING",
+        "PANEL_COMPOSITION"
+      ],
+      "mitigation": "void; reassign",
+      "severity": "high",
+      "id": "EC_03"
+    },
+    {
+      "description": "Fabricated citations",
+      "trigger": "fake author-year",
+      "affected_nodes": [
+        "ERROR_DOCK",
+        "ADVERSARIAL_CONTENT",
+        "SCORE_LOGGING"
+      ],
+      "mitigation": "major dock; real or none",
+      "severity": "high",
+      "id": "EC_04"
+    },
+    {
+      "description": "Gate fail given Q=7",
+      "trigger": "skipped gates-first",
+      "affected_nodes": [
+        "GATES_FIRST",
+        "OUTCOME_LABELS",
+        "CONTENT_COMPOSITE"
+      ],
+      "mitigation": "FAIL; delete Q",
+      "severity": "high",
+      "id": "EC_05"
+    },
+    {
+      "description": "kappa=0.2 on density",
+      "trigger": "unclear anchors",
+      "affected_nodes": [
+        "INTERJUDGE_AGREE",
+        "AXIS_ANCHORS",
+        "GOLD_SET"
+      ],
+      "mitigation": "rewrite anchors; gold session",
+      "severity": "medium",
+      "id": "EC_06"
+    },
+    {
+      "description": "ECE=0.25",
+      "trigger": "miscalibrated confidence",
+      "affected_nodes": [
+        "CALIBRATION_ECE",
+        "SCORE_LOGGING"
+      ],
+      "mitigation": "disable conf weights",
+      "severity": "medium",
+      "id": "EC_07"
+    },
+    {
+      "description": "Long filler beats short implementable",
+      "trigger": "verbosity bias",
+      "affected_nodes": [
+        "VERBOSITY_BIAS",
+        "RUBRIC_DESIGN",
+        "ADVERSARIAL_CONTENT"
+      ],
+      "mitigation": "weight density; adversarial",
+      "severity": "medium",
+      "id": "EC_08"
+    },
+    {
+      "description": "Accept after five cosmetic revises",
+      "trigger": "churn gaming",
+      "affected_nodes": [
+        "REVISE_CHURN",
+        "CONTENT_COMPOSITE"
+      ],
+      "mitigation": "apply churn term",
+      "severity": "medium",
+      "id": "EC_09"
+    },
+    {
+      "description": "Canary finds major error later",
+      "trigger": "hidden defect",
+      "affected_nodes": [
+        "CANARY_REJUDGE",
+        "ERROR_DOCK",
+        "SCORE_LOGGING"
+      ],
+      "mitigation": "retro dock; update gold",
+      "severity": "medium",
+      "id": "EC_10"
+    },
+    {
+      "description": "Packet dumps 200k JSON",
+      "trigger": "packet bloat",
+      "affected_nodes": [
+        "REVIEW_PACKET",
+        "VERBOSITY_BIAS"
+      ],
+      "mitigation": "sample nodes",
+      "severity": "low",
+      "id": "EC_11"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "run_gates",
+      "node_ref": "GATES_FIRST",
+      "description": "Forge dense scope reforge",
+      "artifact": "gate log",
+      "gate": "exit 0 or FAIL",
+      "id": "WF_01",
+      "step": 1
+    },
+    {
+      "action": "blind_packet",
+      "node_ref": "BLIND_JUDGING",
+      "description": "Strip author; attach samples",
+      "artifact": "packet",
+      "gate": "checklist",
+      "id": "WF_02",
+      "step": 2
+    },
+    {
+      "action": "anchors",
+      "node_ref": "AXIS_ANCHORS",
+      "description": "Present 3/6/9 anchors",
+      "artifact": "anchor ack",
+      "gate": "presented",
+      "id": "WF_03",
+      "step": 3
+    },
+    {
+      "action": "score_axes",
+      "node_ref": "RUBRIC_DESIGN",
+      "description": "Fill axis vectors",
+      "artifact": "axes",
+      "gate": "complete",
+      "id": "WF_04",
+      "step": 4
+    },
+    {
+      "action": "bias_controls",
+      "node_ref": "DEBIAS_PIPELINE",
+      "description": "Both-order pairs and flags",
+      "artifact": "bias flags",
+      "gate": "controls applied",
+      "id": "WF_05",
+      "step": 5
+    },
+    {
+      "action": "adversarial",
+      "node_ref": "ADVERSARIAL_CONTENT",
+      "description": "Clone and citation attack",
+      "artifact": "findings",
+      "gate": "checklist done",
+      "id": "WF_06",
+      "step": 6
+    },
+    {
+      "action": "agreement",
+      "node_ref": "INTERJUDGE_AGREE",
+      "description": "Kappa/alpha if multi",
+      "artifact": "stats",
+      "gate": "recorded",
+      "id": "WF_07",
+      "step": 7
+    },
+    {
+      "action": "compute_Q",
+      "node_ref": "CONTENT_COMPOSITE",
+      "description": "Apply formula",
+      "artifact": "Q",
+      "gate": "components set",
+      "id": "WF_08",
+      "step": 8
+    },
+    {
+      "action": "label",
+      "node_ref": "OUTCOME_LABELS",
+      "description": "FAIL/REVISE/ACCEPT",
+      "artifact": "label",
+      "gate": "threshold applied",
+      "id": "WF_09",
+      "step": 9
+    },
+    {
+      "action": "log",
+      "node_ref": "SCORE_LOGGING",
+      "description": "Append ledger",
+      "artifact": "scores entry",
+      "gate": "schema ok",
+      "id": "WF_10",
+      "step": 10
+    },
+    {
+      "action": "canary_mark",
+      "node_ref": "CANARY_REJUDGE",
+      "description": "Sample for rejudge",
+      "artifact": "canary flag",
+      "gate": "policy applied",
+      "id": "WF_11",
+      "step": 11
+    }
+  ],
+  "priority_order": [
+    "CONTENT_COMPOSITE",
+    "ADVERSARIAL_CONTENT",
+    "RUBRIC_DESIGN",
+    "SELF_PREF_BIAS",
+    "POSITION_BIAS",
+    "GOLD_SET",
+    "INTERJUDGE_AGREE",
+    "CALIBRATION_ECE",
+    "GATES_FIRST",
+    "DEBIAS_PIPELINE",
+    "BLIND_JUDGING",
+    "PAIRWISE_PROTOCOL",
+    "VERBOSITY_BIAS",
+    "CANARY_REJUDGE",
+    "ERROR_DOCK",
+    "PANEL_COMPOSITION",
+    "OUTCOME_LABELS",
+    "AXIS_ANCHORS",
+    "REVIEW_PACKET",
+    "SCORE_LOGGING",
+    "REVISE_CHURN"
+  ],
+  "priority_rationale": "Gates and de-bias dominate speed; adversarial checks dominate cheerleading; explicit Q dominates vibes.",
+  "dominance_rules": [
+    {
+      "rule": "gates_before_Q",
+      "rationale": "ungated eloquence is not quality",
+      "trigger": "review start",
+      "action": "gates first; FAIL stops Q",
+      "id": "DR_01",
+      "priority": 1
+    },
+    {
+      "rule": "no_self_grade",
+      "rationale": "self-preference invalidates",
+      "trigger": "judge assign",
+      "action": "forbid author",
+      "id": "DR_02",
+      "priority": 2
+    },
+    {
+      "rule": "both_orders",
+      "rationale": "position bias",
+      "trigger": "pairwise",
+      "action": "require both orders",
+      "id": "DR_03",
+      "priority": 3
+    },
+    {
+      "rule": "density_over_length",
+      "rationale": "verbosity bias",
+      "trigger": "length vs density conflict",
+      "action": "prefer density axes",
+      "id": "DR_04",
+      "priority": 1
+    },
+    {
+      "rule": "adversarial_over_cheerlead",
+      "rationale": "must survive attack",
+      "trigger": "content review",
+      "action": "run clone checks",
+      "id": "DR_05",
+      "priority": 2
+    },
+    {
+      "rule": "gold_over_raw_agreement",
+      "rationale": "shared bias",
+      "trigger": "kappa high gold fail",
+      "action": "trust gold",
+      "id": "DR_06",
+      "priority": 3
+    },
+    {
+      "rule": "explicit_Q",
+      "rationale": "auditability",
+      "trigger": "record score",
+      "action": "store components",
+      "id": "DR_07",
+      "priority": 1
+    },
+    {
+      "rule": "blocking_overrides_floor",
+      "rationale": "structural clone is REVISE",
+      "trigger": "identical KBs",
+      "action": "REVISE even if prose high",
+      "id": "DR_08",
+      "priority": 2
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "no_Q_without_gates",
+      "prevents": "eloquent ungateable accepts",
+      "id": "ARR_01"
+    },
+    {
+      "rule": "no_self_grading",
+      "prevents": "self-preference inflation",
+      "id": "ARR_02"
+    },
+    {
+      "rule": "no_single_order_pairwise_finals",
+      "prevents": "position bias lock-in",
+      "id": "ARR_03"
+    },
+    {
+      "rule": "no_fabricated_citations",
+      "prevents": "false authority",
+      "id": "ARR_04"
+    },
+    {
+      "rule": "no_template_clone_kbs",
+      "prevents": "fake multi-domain coverage",
+      "id": "ARR_05"
+    },
+    {
+      "rule": "no_vibes_only_scores",
+      "prevents": "unauditable ledger",
+      "id": "ARR_06"
+    },
+    {
+      "rule": "no_unflagged_homogeneous_high_stakes",
+      "prevents": "sycophantic convergence",
+      "id": "ARR_07"
+    },
+    {
+      "rule": "no_length_as_quality",
+      "prevents": "verbosity gaming",
+      "id": "ARR_08"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "gates fail",
+      "action": "FAIL; no Q",
+      "nodes": [
+        "GATES_FIRST",
+        "OUTCOME_LABELS"
+      ],
+      "priority": 1,
+      "id": "IP_01"
+    },
+    {
+      "trigger": "cross-KB definitions identical",
+      "action": "REVISE density=3",
+      "nodes": [
+        "ADVERSARIAL_CONTENT",
+        "AXIS_ANCHORS"
+      ],
+      "priority": 1,
+      "id": "IP_02"
+    },
+    {
+      "trigger": "kappa<0.4",
+      "action": "rewrite anchors",
+      "nodes": [
+        "INTERJUDGE_AGREE",
+        "AXIS_ANCHORS",
+        "GOLD_SET"
+      ],
+      "priority": 2,
+      "id": "IP_03"
+    },
+    {
+      "trigger": "ECE>0.15",
+      "action": "disable conf weights",
+      "nodes": [
+        "CALIBRATION_ECE",
+        "SCORE_LOGGING"
+      ],
+      "priority": 2,
+      "id": "IP_04"
+    },
+    {
+      "trigger": "self-grade detected",
+      "action": "void reassign",
+      "nodes": [
+        "SELF_PREF_BIAS",
+        "PANEL_COMPOSITION"
+      ],
+      "priority": 1,
+      "id": "IP_05"
+    },
+    {
+      "trigger": "canary major error",
+      "action": "retro dock",
+      "nodes": [
+        "CANARY_REJUDGE",
+        "ERROR_DOCK"
+      ],
+      "priority": 2,
+      "id": "IP_06"
+    },
+    {
+      "trigger": "blocking issue near Q floor",
+      "action": "REVISE override",
+      "nodes": [
+        "OUTCOME_LABELS",
+        "ADVERSARIAL_CONTENT"
+      ],
+      "priority": 1,
+      "id": "IP_07"
+    }
+  ],
+  "validation_protocol": {
+    "required_checks": [
+      "all node ids unique",
+      "all edge ids unique EDGE_XXX format",
+      "all from/to in edges reference valid node ids",
+      "all competency_question_refs resolve to valid CQ ids",
+      "all evidence_refs resolve to valid source_registry ids",
+      "all priority_order entries are valid node ids with no duplicates",
+      "high_risk_nodes (risk_if_wrong>=0.80) have non-empty acceptance_tests and human_review_required=true",
+      "high_coupling_nodes (cross_topic_coupling>=0.75) have non-empty revisit_triggers",
+      "conflict edges have signed_tension<0 and resolution_rule present",
+      "dependency edges form no cycles",
+      "observed_impact=0.0 for all nodes (no observed data)",
+      "SRC_HEURISTIC_PRIOR in source_registry",
+      "19-24 nodes, 32-40 edges, 8-10 conflict_axes, 10-12 edge_cases, 9-12 workflow steps",
+      "schema_version=1.3"
+    ],
+    "post_formula_checks": [
+      "all derived fields non-zero after compute run",
+      "final_importance in [0,1] for all nodes",
+      "risk_score, confidence_score, revisit_pressure, lock_score in [0,1]",
+      "posterior_importance in [0,1]",
+      "edge_priority, edge_score, edge_heat in [0,1]"
+    ]
+  },
+  "validation_report": {
+    "status": "pending",
+    "last_validated": null,
+    "validator_version": null,
+    "failed_checks": [],
+    "passed_checks": [],
+    "notes": "built by kb_forge.py; run validators/kb_validator.py --mode dense to certify"
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_gates_debias_Q_and_clone_detection",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "smallest meaningful instance in this domain",
+        "expected_properties": [
+          "highest-priority node engaged first",
+          "obligations enforced"
+        ]
+      }
+    ],
+    "metrics": [
+      "coverage",
+      "consistency",
+      "obligation_adherence"
+    ],
+    "regression_policy": "re-run evaluation suite after any node addition or formula change",
+    "minimum_pass_conditions": [
+      "all required checks pass",
+      "no formula mismatches"
+    ]
+  },
+  "traceability_matrix": [
+    {
+      "node_id": "RUBRIC_DESIGN",
+      "workflow_steps": [
+        "WF_04"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "conflict_axes": [
+        "CA_05"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "BLIND_JUDGING",
+      "workflow_steps": [
+        "WF_02"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "conflict_axes": [
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "PAIRWISE_PROTOCOL",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "conflict_axes": [
+        "CA_01",
+        "CA_05"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "POSITION_BIAS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SELF_PREF_BIAS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "VERBOSITY_BIAS",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_05"
+      ],
+      "conflict_axes": [
+        "CA_02"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "GOLD_SET",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "INTERJUDGE_AGREE",
+      "workflow_steps": [
+        "WF_07"
+      ],
+      "competency_questions": [
+        "CQ_06",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_04"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CALIBRATION_ECE",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "GATES_FIRST",
+      "workflow_steps": [
+        "WF_01"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "ERROR_DOCK",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "REVISE_CHURN",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_03"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CONTENT_COMPOSITE",
+      "workflow_steps": [
+        "WF_08"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_05",
+        "CA_07",
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "PANEL_COMPOSITION",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_05",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_01"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "CANARY_REJUDGE",
+      "workflow_steps": [
+        "WF_11"
+      ],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_04",
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "AXIS_ANCHORS",
+      "workflow_steps": [
+        "WF_03"
+      ],
+      "competency_questions": [
+        "CQ_02",
+        "CQ_06"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "DEBIAS_PIPELINE",
+      "workflow_steps": [
+        "WF_05"
+      ],
+      "competency_questions": [
+        "CQ_03",
+        "CQ_10"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "OUTCOME_LABELS",
+      "workflow_steps": [
+        "WF_09"
+      ],
+      "competency_questions": [
+        "CQ_01",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_03",
+        "CA_08"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "REVIEW_PACKET",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_06"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "ADVERSARIAL_CONTENT",
+      "workflow_steps": [
+        "WF_06"
+      ],
+      "competency_questions": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "conflict_axes": [
+        "CA_02",
+        "CA_03",
+        "CA_07"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SCORE_LOGGING",
+      "workflow_steps": [
+        "WF_10"
+      ],
+      "competency_questions": [
+        "CQ_07",
+        "CQ_10"
+      ],
+      "conflict_axes": [
+        "CA_08",
+        "CA_09"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    }
+  ],
+  "change_control": {
+    "version": "1.0.0",
+    "created": "2026-07-13",
+    "change_log": [],
+    "review_required_for": [
+      "node addition",
+      "edge type change",
+      "dominance_rule change",
+      "scope boundary change"
+    ]
+  }
+}

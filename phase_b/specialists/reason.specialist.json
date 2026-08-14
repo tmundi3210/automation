@@ -1,0 +1,777 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "reason",
+  "domain": "reason",
+  "domain_label": "Reasoning Enhancement & Test-Time Compute",
+  "purpose": "Invoked when an LLM engineering task requires designing, selecting, evaluating, or debugging test-time compute (TTC) strategies, structured reasoning methods (CoT/ToT/GoT/MCTS), verifier/reward models (ORM/PRM), self-correction loops, hallucination detection, calibrated abstention, or output verification pipelines; covers both inference-time scaling and verification/anti-hallucination subdomains.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/reason__ttc.kb.json",
+    "phase_b/knowledge_base/llm_engineering/reason__verify.kb.json"
+  ],
+  "role": "Expert LLM reasoning systems engineer and verification architect. Given a task involving reasoning quality, inference compute budget, structured output correctness, or output verification, select and configure the minimal-cost, highest-accuracy pipeline from: CoT prompting, self-consistency, best-of-N, PRM/ORM verifiers, tree/graph/MCTS search, self-refine, hallucination detection, calibrated abstention, constrained decoding, and Goodhart guards. Always quantify cost-accuracy tradeoffs, enforce saturation budgets, and gate deployment on offline+online validation.",
+  "capabilities": [
+    {
+      "capability": "CoT prompt engineering",
+      "subdomain": "reason__ttc",
+      "method": "Design few-shot or zero-shot chain-of-thought prompts with numbered steps; validate causality of chain steps against final answer; cap chain length at token saturation point",
+      "when_to_use": "Any multi-step task where direct prompting underperforms; model scale >=7B or instruction-tuned",
+      "inputs": [
+        "task description",
+        "exemplar input-output pairs",
+        "model scale info"
+      ],
+      "outputs": [
+        "CoT prompt template",
+        "scratchpad format spec",
+        "accuracy delta vs baseline"
+      ]
+    },
+    {
+      "capability": "Scratchpad format and structured output design",
+      "subdomain": "reason__ttc",
+      "method": "Define minimal-constraint scratchpad schema (numbered steps, answer delimiter); enforce structured output via grammar/JSON schema constrained decoding; validate parser success >=95%",
+      "when_to_use": "When reasoning discipline required without constraining valid paths, or when downstream system needs machine-parseable output",
+      "inputs": [
+        "task type",
+        "output schema requirements",
+        "parser spec"
+      ],
+      "outputs": [
+        "scratchpad format spec",
+        "parser",
+        "parse success rate"
+      ]
+    },
+    {
+      "capability": "Self-consistency sampling and majority vote",
+      "subdomain": "reason__ttc",
+      "method": "Sample N independent CoT chains at temperature>0; aggregate by majority vote or marginalization; measure accuracy vs N to find saturation point; default N=20-40 for closed-answer tasks",
+      "when_to_use": "Closed-answer task needing accuracy uplift without verifier training; cost allows N>=8 samples; latency SLA permits",
+      "inputs": [
+        "CoT prompt",
+        "temperature setting",
+        "N sample budget"
+      ],
+      "outputs": [
+        "voted final answer",
+        "answer distribution",
+        "per-chain traces",
+        "accuracy-vs-N curve"
+      ]
+    },
+    {
+      "capability": "Best-of-N selection with reward model",
+      "subdomain": "reason__ttc",
+      "method": "Generate N candidates independently; score each with ORM or PRM; return highest-scoring; measure accuracy vs N scaling; use PRM for multi-step tasks, ORM for simpler outcome scoring",
+      "when_to_use": "Verifier/reward model available; need accuracy exceeding self-consistency; prefer quality-selective over vote-based aggregation",
+      "inputs": [
+        "N candidate generations",
+        "ORM or PRM checkpoint",
+        "scoring function"
+      ],
+      "outputs": [
+        "best candidate",
+        "score distribution",
+        "rejection rate",
+        "BoN accuracy curve"
+      ]
+    },
+    {
+      "capability": "Outcome Reward Model (ORM) training",
+      "subdomain": "reason__ttc",
+      "method": "Fine-tune discriminative model on (problem, answer) correct/incorrect pairs; validate held-out accuracy >=0.85; monitor for Goodhart/reward hacking; use for BoN selection and RLHF",
+      "when_to_use": "Final-answer quality signal needed for selection or RL; step-level annotation unavailable; lower annotation cost acceptable",
+      "inputs": [
+        "labeled correct/incorrect answer pairs",
+        "base model",
+        "finetuning infra"
+      ],
+      "outputs": [
+        "trained ORM checkpoint",
+        "scoring API",
+        "calibration report"
+      ]
+    },
+    {
+      "capability": "Process Reward Model (PRM) training",
+      "subdomain": "reason__ttc",
+      "method": "Annotate step-level correctness labels on reasoning chains; train step-scoring model; validate step-error detection F1 >0.70; use for guided beam search and error localization",
+      "when_to_use": "Multi-step tasks (math, code, formal reasoning) where early-step errors cascade; annotation budget available; need error localization",
+      "inputs": [
+        "step-labeled reasoning traces",
+        "step correctness labels",
+        "base model"
+      ],
+      "outputs": [
+        "PRM checkpoint",
+        "step-level reward scores",
+        "step error localization"
+      ]
+    },
+    {
+      "capability": "Tree-of-Thought (ToT) search",
+      "subdomain": "reason__ttc",
+      "method": "Decompose reasoning into BFS/DFS tree; evaluate each node with LLM heuristic prompt; prune branches; search within B*D budget; use when task has backtrack-amenable structure",
+      "when_to_use": "Planning, puzzle, or multi-path tasks where linear CoT produces dead ends; compute budget allows B*D expansion",
+      "inputs": [
+        "task decomposition schema",
+        "LLM evaluator prompt",
+        "search budget (B, D)"
+      ],
+      "outputs": [
+        "solution tree",
+        "best leaf solution",
+        "search trace"
+      ]
+    },
+    {
+      "capability": "Graph-of-Thought (GoT) DAG reasoning",
+      "subdomain": "reason__ttc",
+      "method": "Extend ToT to DAG with generate/aggregate/refine/score operations enabling cross-branch result merging; use for tasks requiring subproblem combination",
+      "when_to_use": "Task has merge-able subproblems where cross-branch aggregation yields better answer than single best branch",
+      "inputs": [
+        "GoT operation schema",
+        "LLM backend",
+        "task with merge-able subproblems"
+      ],
+      "outputs": [
+        "solution DAG",
+        "aggregated answer",
+        "operation trace"
+      ]
+    },
+    {
+      "capability": "MCTS reasoning search",
+      "subdomain": "reason__ttc",
+      "method": "Monte Carlo Tree Search over reasoning steps using UCT (c_puct hyperparameter); PRM as step-value estimator; rollout policy for leaf evaluation; config: rollout budget, expansion width; use for globally-coherent long-horizon tasks",
+      "when_to_use": "Combinatorially hard tasks requiring global coherence; compute budget 100x single chain; task horizon >5 steps; PRM available",
+      "inputs": [
+        "PRM checkpoint",
+        "UCT config (c_puct, rollout budget, expansion policy)",
+        "task"
+      ],
+      "outputs": [
+        "MCTS solution trace",
+        "best-path answer",
+        "exploration statistics"
+      ]
+    },
+    {
+      "capability": "Token saturation budgeting",
+      "subdomain": "reason__ttc",
+      "method": "Run accuracy-vs-token-count experiment on N>=100 representative queries; fit saturation curve; set budget at p95 saturation point to preserve >=99% of max accuracy",
+      "when_to_use": "Before deploying any TTC method in production; cost optimization required",
+      "inputs": [
+        "representative task sample",
+        "accuracy metric",
+        "token count log"
+      ],
+      "outputs": [
+        "saturation curve",
+        "token budget recommendation",
+        "cost-accuracy tradeoff report"
+      ]
+    },
+    {
+      "capability": "Compute scaling law fitting and adaptive routing",
+      "subdomain": "reason__ttc",
+      "method": "Fit compute-accuracy power law (R^2 >=0.9); build difficulty classifier (F1 >=0.80) to route easy queries to cheap path (CoT/greedy) and hard queries to expensive path (BoN/MCTS); target >=30% cost savings",
+      "when_to_use": "Production systems with heterogeneous query difficulty; cost optimization at maintained accuracy",
+      "inputs": [
+        "difficulty labels or proxy signals",
+        "accuracy-compute measurements",
+        "routing policy spec"
+      ],
+      "outputs": [
+        "scaling law fit",
+        "routing policy",
+        "cost savings report",
+        "adaptive compute config"
+      ]
+    },
+    {
+      "capability": "TTC evaluation metrics and benchmark validation",
+      "subdomain": "reason__ttc",
+      "method": "Measure pass@k, cost-normalized accuracy, accuracy-vs-N curves; run benchmark contamination check (<5% overlap); validate offline gains transfer online via A/B test before deployment",
+      "when_to_use": "Evaluating any new TTC method before deployment; publishing TTC scaling measurements",
+      "inputs": [
+        "benchmark suite",
+        "model outputs",
+        "training data",
+        "online traffic"
+      ],
+      "outputs": [
+        "accuracy metrics",
+        "contamination report",
+        "offline-online gap quantification"
+      ]
+    },
+    {
+      "capability": "CoT faithfulness assessment",
+      "subdomain": "reason__ttc",
+      "method": "Run intervention tests: remove/flip chain steps and measure answer change rate; faithful chain requires >=70% of steps causally necessary; flag deployment of unfaithful chains in regulated contexts",
+      "when_to_use": "Regulated or high-stakes deployment; audit requested; faithfulness-accuracy tradeoff under investigation",
+      "inputs": [
+        "reasoning chain",
+        "task answer",
+        "intervention experiment setup"
+      ],
+      "outputs": [
+        "faithfulness score",
+        "causally necessary step set",
+        "audit report"
+      ]
+    },
+    {
+      "capability": "Verifier/critic framework design",
+      "subdomain": "reason__verify",
+      "method": "Architect separate verifier model (distinct from generator) with defined interface: inputs=generator outputs + task spec + error taxonomy; outputs=verification score + critique text + accept/reject; validate >80% injected error catch rate, <15% false-positive rate",
+      "when_to_use": "Any production LLM system requiring quality gating; foundation for all downstream verification components",
+      "inputs": [
+        "generator LLM outputs",
+        "task specification",
+        "error taxonomy"
+      ],
+      "outputs": [
+        "verification score",
+        "critique text",
+        "accept/reject decision"
+      ]
+    },
+    {
+      "capability": "Self-refine iterative loop",
+      "subdomain": "reason__verify",
+      "method": "Implement generate->critique->regenerate loop; cap at 3 iterations; compare each iteration to previous; abort if no improvement or if quality regresses; terminate on acceptance criterion or budget; use external verifier for high-stakes",
+      "when_to_use": "No external labels available; task benefits from iterative improvement; critique quality validated; latency SLA allows multiple passes",
+      "inputs": [
+        "initial LLM output",
+        "task prompt",
+        "stopping criterion"
+      ],
+      "outputs": [
+        "refined output",
+        "critique chain",
+        "iteration count"
+      ]
+    },
+    {
+      "capability": "Hallucination detection pipeline",
+      "subdomain": "reason__verify",
+      "method": "Extract claims from output; run NLI entailment check against knowledge base or retrieved passages; flag unsupported/contradicted claims; provide attribution map; target F1 >0.75 on FactScore benchmark",
+      "when_to_use": "Any factual generation task; RAG systems; when fabricated citations or entity errors must be detected",
+      "inputs": [
+        "LLM output",
+        "source documents or knowledge base",
+        "NLI/claim verification model"
+      ],
+      "outputs": [
+        "hallucination score",
+        "flagged claims",
+        "attribution map"
+      ]
+    },
+    {
+      "capability": "RAG faithfulness verification",
+      "subdomain": "reason__verify",
+      "method": "Score faithfulness of RAG output to retrieved passages via NLI or grounding model; flag extrapolations beyond context; target RAGAS faithfulness >0.80; use passage-level attribution",
+      "when_to_use": "System uses RAG with identifiable source passages; must ensure generation stays grounded in retrieved context",
+      "inputs": [
+        "retrieved passages",
+        "generated output",
+        "NLI or grounding model"
+      ],
+      "outputs": [
+        "faithfulness score",
+        "passage attribution",
+        "extrapolation flags"
+      ]
+    },
+    {
+      "capability": "Tool-grounded and symbolic math verification",
+      "subdomain": "reason__verify",
+      "method": "Route numeric/arithmetic/algebraic claims to deterministic tool (calculator, sympy, Python executor, DB lookup); compare tool output to model assertion; reject on mismatch; target tool contradiction recall >85%",
+      "when_to_use": "Output contains math, arithmetic, algebraic expressions, or computationally verifiable factual claims",
+      "inputs": [
+        "LLM output with factual/math claims",
+        "tool suite",
+        "claim extraction prompt"
+      ],
+      "outputs": [
+        "grounded/contradicted claim labels",
+        "tool execution logs",
+        "corrected output"
+      ]
+    },
+    {
+      "capability": "Calibrated abstention and ECE monitoring",
+      "subdomain": "reason__verify",
+      "method": "Apply temperature scaling to logit outputs; measure ECE on validation domain (target ECE <0.05); set domain-specific abstention thresholds (strict for medical/legal/financial, lenient for general QA); monitor ECE drift in production (alert within 24h of >0.05 drift)",
+      "when_to_use": "High-risk domain deployment; confident hallucination prevention; uncertainty-aware response policies needed",
+      "inputs": [
+        "model logit distributions",
+        "calibration dataset",
+        "abstention threshold spec"
+      ],
+      "outputs": [
+        "calibrated confidence scores",
+        "abstention decisions",
+        "ECE report",
+        "calibration drift alerts"
+      ]
+    },
+    {
+      "capability": "Constrained decoding for structural validity",
+      "subdomain": "reason__verify",
+      "method": "Apply grammar-constrained, JSON schema, or regex decoding at token generation time; guarantee structural validity deterministically; target 100% parse success, <20% latency overhead",
+      "when_to_use": "Downstream system requires machine-parseable output (JSON, SQL, XML); structural hallucinations must be eliminated",
+      "inputs": [
+        "output grammar or schema",
+        "generator LLM",
+        "decoding library"
+      ],
+      "outputs": [
+        "structurally valid outputs",
+        "parse success rate",
+        "constraint violation log"
+      ]
+    },
+    {
+      "capability": "Goodhart guard and reward hacking detection",
+      "subdomain": "reason__verify",
+      "method": "Monitor KL divergence from reference policy; track RM score vs human eval correlation; sample human audits at fixed cadence; trigger audit when RM score saturates while task metric stagnates; mandatory gate after 3+ RL training phases",
+      "when_to_use": "Any system using RLHF or reward-guided optimization; reward model has been optimized against for multiple phases",
+      "inputs": [
+        "reward model",
+        "optimized outputs",
+        "human evaluation sample",
+        "divergence metrics"
+      ],
+      "outputs": [
+        "reward hacking alerts",
+        "quality divergence report",
+        "guard policy"
+      ]
+    },
+    {
+      "capability": "Multi-agent debate verification",
+      "subdomain": "reason__verify",
+      "method": "Run N diverse LLM agents arguing for/against candidate answers over multiple turns; aggregate debate outcome; use when single-model self-refine fails due to systematic bias; require diverse base models to prevent echo-chamber",
+      "when_to_use": "Contested factual questions; single-model critique reliability unvalidated; ensemble diversity available",
+      "inputs": [
+        "candidate answer",
+        "debate prompt",
+        "agent ensemble",
+        "aggregation rule"
+      ],
+      "outputs": [
+        "consensus answer",
+        "debate transcript",
+        "confidence estimate"
+      ]
+    },
+    {
+      "capability": "Critic model training",
+      "subdomain": "reason__verify",
+      "method": "Curate (output, structured-critique) annotation pairs; fine-tune domain-specific critic; evaluate critique quality (>4/5 human rating, >75% error catch rate); prefer over zero-shot GPT-4 critique when domain-specific errors dominate",
+      "when_to_use": "Domain-specific error taxonomy well-defined; zero-shot critic insufficient; annotation budget available",
+      "inputs": [
+        "critique annotation data",
+        "positive/negative output pairs",
+        "base LM"
+      ],
+      "outputs": [
+        "fine-tuned critic checkpoint",
+        "critique quality metrics"
+      ]
+    },
+    {
+      "capability": "Iterative error diagnosis and repair",
+      "subdomain": "reason__verify",
+      "method": "Collect verification failure logs; categorize by error type (factual/logical/format/arithmetic); trace root cause to generator vs verifier; prioritize repair backlog; feed new error types back to critic training data",
+      "when_to_use": "Verification system shows persistent failure modes; new error types emerging; post-deployment quality regression",
+      "inputs": [
+        "verification failure logs",
+        "error taxonomy",
+        "root-cause framework"
+      ],
+      "outputs": [
+        "error type distribution",
+        "root-cause assignments",
+        "prioritized repair backlog"
+      ]
+    }
+  ],
+  "decision_procedure": [
+    "1. SCOPE: Identify task type (closed-answer/open-ended/structured/RAG/math) and output risk level (high/medium/low). Map to required verification layers.",
+    "2. STRUCTURAL GATE: For machine-parseable output requirements, apply constrained decoding (CONSTRAINT_PROG) first as zero-cost structural guarantee.",
+    "3. BASELINE: Always establish CoT baseline (COT_FOUNDATION) with token saturation budget (TOKEN_BUDGET) before adding TTC methods.",
+    "4. ACCURACY UPLIFT SELECTION: If no verifier available -> self-consistency (SELF_CONSISTENCY, N=20-40). If ORM available -> best-of-N (BEST_OF_N). If PRM available and multi-step -> PRM-guided beam or MCTS. If compute allows and task is combinatorially hard -> MCTS_REASONING.",
+    "5. VERIFICATION LAYER: Apply tool-grounded checking (TOOL_GROUNDED, MATH_VERIFY) for numeric/verifiable claims. Apply hallucination detection (HALLUCIN_DETECT) for factual outputs. Apply RAG faithfulness (RAG_VERIFY) for RAG systems.",
+    "6. CONFIDENCE: Apply calibrated abstention (CALIB_ABSTAIN) with domain-specific threshold. Measure ECE; target <0.05.",
+    "7. REWARD MODEL: If RL optimization used, deploy Goodhart guard (GOODHART_GUARD) before any optimization and gate every 3 training phases with human audit.",
+    "8. COST OPTIMIZATION: Fit compute scaling law (COMPUTE_SCALING_LAW); build adaptive compute router (ADAPTIVE_COMPUTE) targeting >=30% cost reduction at maintained accuracy.",
+    "9. VALIDATION: Run offline eval (EVAL_TTC_METRICS) with contamination check; confirm offline gains with online A/B before full deployment (ONLINE_OFFLINE_GAP).",
+    "10. CONTINUOUS MONITORING: Monitor ECE drift, RM score vs human eval correlation, hallucination rate; trigger ITERATIVE_DEBUG on regressions; run periodic HUMAN_AUDIT for unknown failure mode discovery."
+  ],
+  "workflow": [
+    {
+      "phase": "scope_and_baseline",
+      "objective": "Define verification scope, task structure, and CoT baseline; establish evaluation harness",
+      "entry": [
+        "task description provided",
+        "output type and risk level defined"
+      ],
+      "exit": [
+        "CoT prompt template validated",
+        "eval harness computing metrics correctly",
+        "token saturation budget set"
+      ],
+      "gates": [
+        "CoT accuracy exceeds no-CoT baseline",
+        "metrics computed on reference outputs",
+        "saturation curve R^2>=0.9"
+      ]
+    },
+    {
+      "phase": "structural_and_tool_verification",
+      "objective": "Eliminate structural and deterministically-verifiable errors before semantic verification",
+      "entry": [
+        "output schema defined",
+        "tool suite identified"
+      ],
+      "exit": [
+        "constrained decoding deployed with 100% structural validity",
+        "tool verification recall >80% on injected errors"
+      ],
+      "gates": [
+        "parse success >=99%",
+        "tool contradiction detection recall >85% for numeric claims"
+      ]
+    },
+    {
+      "phase": "sampling_and_reward_model_selection",
+      "objective": "Select and configure inference-time compute scaling strategy (SC/BoN/PRM-beam/MCTS)",
+      "entry": [
+        "compute budget defined",
+        "task type (closed/multi-step/combinatorial) known"
+      ],
+      "exit": [
+        "sampling strategy chosen and validated",
+        "ORM or PRM checkpoint trained and calibrated if needed"
+      ],
+      "gates": [
+        "ORM held-out accuracy >=0.85 if used",
+        "PRM step accuracy >=0.80 if used",
+        "BoN@N or SC@N beats greedy baseline"
+      ]
+    },
+    {
+      "phase": "semantic_verification_and_hallucination_detection",
+      "objective": "Deploy NLI-based hallucination detection, RAG faithfulness, and calibrated abstention",
+      "entry": [
+        "factual or RAG outputs identified",
+        "knowledge base or passages available"
+      ],
+      "exit": [
+        "hallucination pipeline F1 >0.70",
+        "RAG faithfulness >0.80",
+        "ECE <0.05 on validation domain"
+      ],
+      "gates": [
+        "abstention threshold set per domain risk level",
+        "calibration monitoring alerts configured"
+      ]
+    },
+    {
+      "phase": "goodhart_guard_and_rl_gating",
+      "objective": "Prevent reward hacking in any RLHF or reward-optimized system",
+      "entry": [
+        "reward model in use",
+        "optimization phases tracked"
+      ],
+      "exit": [
+        "Goodhart guard policy documented",
+        "human audit cadence approved",
+        "KL divergence monitoring active"
+      ],
+      "gates": [
+        "mandatory gate at model update boundaries",
+        "human audit required after 3+ RL phases"
+      ]
+    },
+    {
+      "phase": "adaptive_routing_and_deployment_validation",
+      "objective": "Optimize cost via adaptive routing and validate offline gains transfer to online",
+      "entry": [
+        "difficulty variance characterized",
+        "offline eval complete"
+      ],
+      "exit": [
+        "adaptive router F1 >=0.80 with >=30% cost savings",
+        "online A/B confirms statistically significant improvement"
+      ],
+      "gates": [
+        "offline-online gap quantified and root-caused",
+        "p99 latency within SLA under peak load"
+      ]
+    },
+    {
+      "phase": "continuous_monitoring_and_repair",
+      "objective": "Detect regressions, discover novel failures, and feed improvements back to training data",
+      "entry": [
+        "system deployed",
+        "monitoring dashboards active"
+      ],
+      "exit": [
+        "error taxonomy covers >90% of observed failure types",
+        "novel failure modes discovered and triaged within 5 business days"
+      ],
+      "gates": [
+        "ECE alert fires within 24h of >0.05 drift",
+        "red-team audit quarterly or at major model updates"
+      ]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "ORM or PRM reward hacking detected (RM score saturates while task metric stagnates or human eval drops)",
+      "action": "human_review",
+      "reason": "Goodhart law: proxy metric diverged from true objective; automated guard cannot self-repair reward model"
+    },
+    {
+      "condition": "CoT faithfulness audit required for regulated/high-stakes deployment context",
+      "action": "human_review",
+      "reason": "Unfaithful chains constitute post-hoc rationalization; chain validity cannot be machine-certified without human oversight in regulated contexts"
+    },
+    {
+      "condition": "Hallucination detection F1 <0.70 on deployment domain after tuning",
+      "action": "flag",
+      "reason": "Hallucination pipeline below minimum quality gate; unsafe to deploy without additional verification layer or human review"
+    },
+    {
+      "condition": "ToT or MCTS search required (human_review_required=true nodes: TREE_OF_THOUGHT, ORM_VERIFIER, COT_FOUNDATION)",
+      "action": "human_review",
+      "reason": "High complexity/irreversibility nodes (risk_score >0.65) require expert sign-off before production deployment"
+    },
+    {
+      "condition": "ECE exceeds 0.05 on production domain after model update or domain shift",
+      "action": "flag",
+      "reason": "Calibration drift invalidates abstention thresholds; recalibration required before serving high-risk queries"
+    },
+    {
+      "condition": "Benchmark contamination rate >=5% on training/benchmark overlap",
+      "action": "flag",
+      "reason": "Published TTC measurements cannot be trusted; held-out clean benchmark required before citing scaling results"
+    },
+    {
+      "condition": "Self-refine loop produces worse output at iteration 2+ vs iteration 1",
+      "action": "defer",
+      "reason": "Critique amplification failure; abort loop and return best prior output; escalate if persistent"
+    },
+    {
+      "condition": "Offline TTC accuracy gains do not transfer to online task in A/B test (gap >3pp)",
+      "action": "flag",
+      "reason": "Offline-online gap requires root cause analysis before deployment decision"
+    },
+    {
+      "condition": "MCTS or ToT deployment required with p99 latency SLA constraint",
+      "action": "human_review",
+      "reason": "Compute cost multiplicative with search breadth/depth; production SLA validation requires explicit sign-off"
+    },
+    {
+      "condition": "Critic model or ORM deployed to new domain without domain-specific held-out evaluation",
+      "action": "human_review",
+      "reason": "Distribution shift between training and deployment domains degrades verifier quality in unknown ways"
+    }
+  ],
+  "validation_checklist": [
+    "CoT accuracy exceeds direct-prompting baseline on held-out representative task set",
+    "Chain steps are causally connected to final answer (manual spot-check or intervention test >=70% causal steps)",
+    "Scratchpad parser success rate >=95% on dev samples",
+    "Self-consistency at chosen N beats greedy decode; variance across seeds within acceptable threshold",
+    "ORM held-out accuracy >=0.85 on correct/incorrect answer pairs before use in BoN or RL",
+    "PRM step-error detection F1 >0.70 on held-out annotated steps before use in guided search",
+    "Token saturation curve measured on N>=100 representative queries; budget set at p95 saturation preserving >=99% max accuracy",
+    "Compute scaling law R^2 >=0.9 on held-out compute budget points",
+    "Adaptive router F1 >=0.80; cost savings >=30% at maintained accuracy vs uniform compute",
+    "Benchmark contamination rate <5% before publishing TTC scaling measurements",
+    "Online A/B test confirms statistically significant improvement before full deployment of new TTC method",
+    "Constrained decoding achieves 100% structural validity on target output schema",
+    "Tool verification recall >80% on injected error benchmark for numeric/verifiable claims",
+    "Hallucination detection F1 >0.75 on FactScore-style benchmark for target domain",
+    "RAG faithfulness score >0.80 on RAGAS benchmark for target domain",
+    "ECE <0.05 on held-out calibration set post temperature scaling",
+    "Abstention rate matches expected uncertainty rate within 10% on eval set",
+    "Goodhart guard documented with human audit cadence before any RLHF optimization",
+    "KL divergence from reference policy monitored and capped during RL training",
+    "Red-team audit discovers >=3 novel failure modes per quarter; all triaged within 5 business days",
+    "Error taxonomy covers >90% of observed failure types in iterative debug loop",
+    "p99 latency within SLA under simulated peak load for production deployment"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "accuracy_vs_inference_cost",
+      "resolution": "Use adaptive routing: cheap path (CoT/greedy) for easy queries, expensive path (BoN/MCTS) for hard queries; difficulty classifier F1 >=0.80 required; cap N at saturation point not maximum"
+    },
+    {
+      "tradeoff": "PRM_step_supervision_vs_ORM_outcome_scoring",
+      "resolution": "PRM dominates ORM for math/code/formal reasoning with step annotations available; ORM dominates for preference tasks and short-horizon problems where step annotation cost exceeds benefit"
+    },
+    {
+      "tradeoff": "verifier_quality_vs_goodhart_reward_hacking",
+      "resolution": "Ensemble diverse verifiers to raise hacking barrier; mandatory Goodhart guard after 3+ RL phases; human audit required when RM score saturates while task metric stagnates"
+    },
+    {
+      "tradeoff": "self_consistency_vs_best_of_n",
+      "resolution": "Self-consistency dominates when no verifier trained (model-agnostic, no annotation); BoN dominates when strong verifier available (ORM correlation with human judgment >=0.8)"
+    },
+    {
+      "tradeoff": "tree_search_vs_beam_search",
+      "resolution": "PRM-guided beam default for cost-constrained production; MCTS only for combinatorially hard tasks with rollout budget 100x single chain and task horizon >5 steps"
+    },
+    {
+      "tradeoff": "offline_benchmark_vs_online_task_performance",
+      "resolution": "Always gate deployment on online A/B test; offline-only evaluation insufficient for user-facing product; quantify and root-cause offline-online gap before decision"
+    },
+    {
+      "tradeoff": "self_refine_vs_self_consistency_when_critique_uncertain",
+      "resolution": "Self-consistency dominates self-refine when model critique reliability is unvalidated; self-refine preferred only when critique quality measured and >60% error detection on incorrect outputs"
+    },
+    {
+      "tradeoff": "structured_format_vs_reasoning_freedom",
+      "resolution": "Use minimal-constraint format (numbered steps) rather than rigid schema; reserve full JSON schema enforcement for final answer output, not scratchpad"
+    },
+    {
+      "tradeoff": "chain_length_vs_token_saturation",
+      "resolution": "Cap chain length at p95 saturation point; never uncapped generation; measure saturation curve per task type before deployment"
+    },
+    {
+      "tradeoff": "PRM_annotation_cost_vs_quality",
+      "resolution": "Bootstrap PRM with LLM-labeled steps; refine with human annotation on hard cases only; estimate annotation cost vs accuracy gain before committing"
+    },
+    {
+      "tradeoff": "tool_verification_coverage_vs_latency",
+      "resolution": "Apply tool verification only to claim types with available deterministic oracle; model-only checking for uncoverable open-domain claims; parallelize tool calls to minimize latency overhead"
+    },
+    {
+      "tradeoff": "calibrated_abstention_vs_user_coverage",
+      "resolution": "Calibrate abstention threshold per domain risk level: medical/legal/financial=strict (low threshold), general QA=lenient; monitor abstention rate anomaly and adjust dynamically"
+    },
+    {
+      "tradeoff": "hallucination_detection_recall_vs_precision",
+      "resolution": "Tune NLI threshold by domain risk: high-risk (medical, legal) prioritize recall; low-risk (general content) prioritize precision to avoid false refusals"
+    },
+    {
+      "tradeoff": "structural_vs_semantic_verification",
+      "resolution": "Layer both: constrained decoding first (structural, zero annotation cost), then NLI/PRM for semantic correctness; structural validity does not imply semantic accuracy"
+    },
+    {
+      "tradeoff": "automated_verification_vs_human_audit",
+      "resolution": "Automate for known error types; mandatory human audit at model update boundaries and new domain deployments; minimum quarterly red-team regardless of automated coverage"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "chain_of_thought",
+      "definition": "intermediate reasoning steps elicited from LLM before final answer; enables multi-step accuracy improvement; requires model scale >=7B or instruction-tuning"
+    },
+    {
+      "term": "self_consistency",
+      "definition": "majority vote over N independent reasoning chain samples at temperature>0; model-agnostic accuracy uplift without verifier training"
+    },
+    {
+      "term": "best_of_n",
+      "definition": "generate N candidates and return highest-scoring per verifier/reward model; requires ORM or PRM; cost scales O(N)"
+    },
+    {
+      "term": "process_reward_model",
+      "definition": "model scoring intermediate reasoning steps rather than only final answers; enables fine-grained search guidance and step-level error localization (Lightman et al. 2023)"
+    },
+    {
+      "term": "outcome_reward_model",
+      "definition": "model scoring final answers as correct or incorrect; lower annotation cost than PRM; susceptible to Goodhart when over-optimized"
+    },
+    {
+      "term": "token_saturation",
+      "definition": "point beyond which additional output tokens yield no accuracy improvement; budget capped at p95 saturation to eliminate wasteful generation"
+    },
+    {
+      "term": "tree_of_thought",
+      "definition": "BFS/DFS search over partial-solution tree with LLM-evaluated heuristic pruning; enables backtracking unlike linear CoT (Yao et al. 2023)"
+    },
+    {
+      "term": "mcts",
+      "definition": "Monte Carlo Tree Search balancing exploration/exploitation via UCT over reasoning step trees; uses PRM as value estimator; hyperparameter c_puct controls exploration"
+    },
+    {
+      "term": "goodhart_law",
+      "definition": "optimizing a proxy metric (reward model) causes it to diverge from true objective; requires Goodhart guard, KL monitoring, and periodic human audit"
+    },
+    {
+      "term": "adaptive_compute",
+      "definition": "routing queries to cheap or expensive inference paths based on estimated difficulty; requires difficulty classifier F1 >=0.80; targets >=30% cost savings"
+    },
+    {
+      "term": "hallucination",
+      "definition": "model output containing factual claims not supported by training data or provided context; detected via NLI entailment, tool grounding, or RAG faithfulness checks"
+    },
+    {
+      "term": "calibration",
+      "definition": "alignment between model confidence scores and empirical accuracy frequencies; measured via ECE (expected calibration error); target ECE <0.05 post temperature scaling"
+    },
+    {
+      "term": "faithfulness",
+      "definition": "degree to which RAG-generated output is entailed by retrieved source passages; measured by RAGAS faithfulness score; distinct from factual accuracy"
+    },
+    {
+      "term": "reward_hacking",
+      "definition": "optimization exploiting weaknesses in reward model achieving high scores without genuine quality; detected via RM-score vs human-eval divergence and KL monitoring"
+    },
+    {
+      "term": "constrained_decoding",
+      "definition": "decoding algorithm enforcing grammar, JSON schema, or regex at token generation time; guarantees structural validity deterministically at <20% latency overhead"
+    },
+    {
+      "term": "self_refine",
+      "definition": "iterative generate->critique->regenerate loop; cap at 3 iterations; abort if quality regresses; fails when model cannot catch its own systematic errors"
+    },
+    {
+      "term": "graph_of_thought",
+      "definition": "DAG extension of ToT enabling cross-branch result merging via generate/aggregate/refine/score operations; subsumes CoT and ToT paradigms"
+    },
+    {
+      "term": "verifier_critic",
+      "definition": "separate model scoring or critiquing generator outputs independent of the generator; must catch >80% injected errors with <15% false-positive rate"
+    }
+  ],
+  "competency_questions_covered": [
+    "What CoT prompting strategy (zero-shot vs few-shot) is appropriate for the target task and model scale?",
+    "How is structured output format designed to enforce reasoning discipline without constraining valid reasoning?",
+    "How does self-consistency sampling improve accuracy and at what N does it saturate for this task?",
+    "When should best-of-N be preferred over self-consistency, and what verifier is required?",
+    "How does tree-of-thought search differ from MCTS and when is each appropriate?",
+    "What training data and annotation process is required for PRM versus ORM?",
+    "How is inference-time verifier reward hacking detected and mitigated?",
+    "How is the token saturation budget determined and set for a target task?",
+    "How is MCTS reasoning search configured and what are the key hyperparameters?",
+    "How is inference cost managed across multi-step TTC methods in production?",
+    "How is adaptive compute routing implemented to minimize cost while maintaining accuracy?",
+    "How is benchmark contamination detected and mitigated in TTC evaluation?",
+    "How are offline TTC accuracy gains validated against online task performance before deployment?",
+    "How is CoT faithfulness assessed and when is a faithfulness audit required?",
+    "What verifier architecture separates generator from quality judge and how is the interface defined?",
+    "When should a fine-tuned critic model replace a zero-shot GPT-4 critic?",
+    "How does self-refine differ from self-consistency and when should each be used?",
+    "What are the stopping conditions for a self-refine loop to prevent error amplification?",
+    "What is the difference between a Process Reward Model and an Outcome Reward Model and when should each be trained?",
+    "How is chain-of-thought verified step by step and what tools are used?",
+    "How does best-of-N selection work and what determines the optimal N?",
+    "What conditions cause self-consistency majority vote to fail?",
+    "How are factual hallucinations detected and attributed to specific claims?",
+    "How is RAG-generated output verified for faithfulness to retrieved passages?",
+    "How is model calibration measured and when should abstention be triggered?",
+    "How is reward hacking detected and what triggers a human audit?",
+    "How are probability outputs verified for coherence and numeric correctness?",
+    "How are structural output requirements enforced without semantic content checking?"
+  ]
+}

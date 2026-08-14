@@ -1,0 +1,907 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "ftune",
+  "domain": "ftune",
+  "domain_label": "Model Adaptation & Fine-Tuning",
+  "purpose": "Invoked when an LLM engineering task requires selecting methods, synthesizing authoritative guidance, or resolving tradeoffs across supervised fine-tuning (SFT), parameter-efficient fine-tuning (PEFT: LoRA/QLoRA/DoRA), preference alignment (RLHF/DPO/IPO/KTO/ORPO/RLVR), or monitored training-loop control (eval cadence, early stopping, checkpointing, rollback, lineage); covers full pipeline from base model selection through production deployment and monitoring.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/ftune__sft_peft.kb.json",
+    "phase_b/knowledge_base/llm_engineering/ftune__pref_align.kb.json",
+    "phase_b/knowledge_base/llm_engineering/ftune__train_loop.kb.json"
+  ],
+  "role": "Expert ML engineer operating across three fine-tuning subdomains: (1) SFT+PEFT: selects base models, curates instruction data, applies chat templates with correct loss masking, configures LoRA/QLoRA/DoRA adapters, and deploys merged or multi-adapter checkpoints; (2) preference alignment: designs preference data collection, trains reward models, orchestrates RLHF-PPO or DPO/IPO/KTO/ORPO pipelines, applies RLVR for verifiable domains, and monitors reward hacking and Goodhart drift; (3) monitored training loop: defines eval metrics and cadence, implements patience-based early stopping, manages checkpoint storage/retention, executes stall-triggered rollback, prunes neutral tails, sweeps hyperparameters, tracks experiment lineage for audit and reproducibility. Applies dominance rules and escalates to human review when safety, license, or reward hacking conditions are triggered.",
+  "capabilities": [
+    {
+      "capability": "base_model_selection",
+      "subdomain": "ftune__sft_peft",
+      "method": "Score candidate models on task benchmark capability, license classification (Apache-2.0/LLAMA-style/proprietary), compute footprint (size-tier vs VRAM budget), and ToS compatibility for target deployment; output license audit report before training begins",
+      "when_to_use": "Prior to any fine-tuning pipeline; gate on legal sign-off before data tokenization",
+      "inputs": [
+        "task spec",
+        "compute budget",
+        "license constraints"
+      ],
+      "outputs": [
+        "selected base model",
+        "license audit report"
+      ]
+    },
+    {
+      "capability": "sft_data_curation",
+      "subdomain": "ftune__sft_peft",
+      "method": "Collect instruction-completion pairs from curated sources; apply deduplication (MinHash n-gram), PII redaction, quality filtering by rubric; check benchmark contamination via n-gram overlap with eval sets; produce data card documenting sources and filter thresholds",
+      "when_to_use": "Before tokenization; when raw data sources are noisy, mixed-format, or internet-scraped",
+      "inputs": [
+        "raw text corpora",
+        "annotation guidelines",
+        "quality rubric",
+        "benchmark test sets"
+      ],
+      "outputs": [
+        "curated SFT dataset",
+        "data card",
+        "contamination report"
+      ]
+    },
+    {
+      "capability": "chat_template_and_loss_masking",
+      "subdomain": "ftune__sft_peft",
+      "method": "Apply model-family chat template (system/user/assistant role tokens, special tokens per tokenizer); set prompt token labels to -100 to exclude from cross-entropy loss; verify EOS token presence; lock template version in model card for inference parity",
+      "when_to_use": "After data curation, before training; whenever base model changes tokenizer spec",
+      "inputs": [
+        "curated SFT dataset",
+        "tokenizer",
+        "chat template spec"
+      ],
+      "outputs": [
+        "tokenized dataset",
+        "loss mask config"
+      ]
+    },
+    {
+      "capability": "lora_adapter_configuration",
+      "subdomain": "ftune__sft_peft",
+      "method": "Select target modules (q_proj, v_proj, k_proj, o_proj + MLP gates for generative tasks); set rank r (start r=16, ablate to r=64, return minimal rank at plateau); set alpha=2r as default scaling; freeze base model params; verify module names against model.named_modules()",
+      "when_to_use": "When full fine-tuning exceeds VRAM budget; when task complexity suggests low-to-moderate rank suffices",
+      "inputs": [
+        "base model architecture",
+        "target task",
+        "compute budget"
+      ],
+      "outputs": [
+        "LoRA adapter config",
+        "trainable parameter count"
+      ]
+    },
+    {
+      "capability": "qlora_quantized_training",
+      "subdomain": "ftune__sft_peft",
+      "method": "Quantize base model to 4-bit NF4 with double quantization via bitsandbytes; set compute_dtype=bf16/fp16; attach LoRA adapters; enable paged Adam optimizer; validate on 100-step pilot that gradient norms are stable and no OOM occurs",
+      "when_to_use": "When GPU VRAM budget precludes fp16 LoRA; for models >13B on single consumer GPU",
+      "inputs": [
+        "base model",
+        "GPU memory budget",
+        "bitsandbytes config"
+      ],
+      "outputs": [
+        "quantized+LoRA model",
+        "memory usage profile"
+      ]
+    },
+    {
+      "capability": "dora_weight_decomposition",
+      "subdomain": "ftune__sft_peft",
+      "method": "Apply DoRA: decompose weight into magnitude vector and direction matrix; apply LoRA low-rank update to direction; train separate magnitude scaling per layer; use when standard LoRA underfits and full FT is infeasible",
+      "when_to_use": "When LoRA at feasible rank underperforms and NaN/collapse issues are absent; compare to LoRA baseline",
+      "inputs": [
+        "base model weights",
+        "LoRA adapter config"
+      ],
+      "outputs": [
+        "DoRA adapter",
+        "per-layer magnitude vectors"
+      ]
+    },
+    {
+      "capability": "sft_training_loop_execution",
+      "subdomain": "ftune__sft_peft",
+      "method": "Execute cross-entropy training on completion tokens with loss masking; use cosine LR schedule with linear warmup (100 steps); run 100-200 step pilot confirming gradient norm stability; apply catastrophic forgetting mitigation (5-10% general instruction replay); monitor val loss and task metric",
+      "when_to_use": "Core SFT execution phase; after data, template, adapter, and hyperparameter decisions are finalized",
+      "inputs": [
+        "tokenized dataset",
+        "base model weights",
+        "optimizer config"
+      ],
+      "outputs": [
+        "fine-tuned model checkpoint",
+        "training loss curves"
+      ]
+    },
+    {
+      "capability": "catastrophic_forgetting_mitigation",
+      "subdomain": "ftune__sft_peft",
+      "method": "Monitor MMLU/HellaSwag alongside task metric during SFT; include 5-10% general instruction replay in training mix; reduce LR if forgetting detected; gate promotion on general benchmarks within 2pp of base model",
+      "when_to_use": "When SFT task dataset is narrow; when production system requires general instruction following",
+      "inputs": [
+        "SFT training config",
+        "general benchmark eval suite"
+      ],
+      "outputs": [
+        "forgetting report",
+        "replay-augmented training config"
+      ]
+    },
+    {
+      "capability": "eval_harness_and_benchmark",
+      "subdomain": "ftune__sft_peft",
+      "method": "Run task-specific metric (F1, ROUGE, exact-match, pass@k), general capability benchmarks (MMLU, HellaSwag), private held-out eval set, and human eval with agreement >0.7; decontaminate benchmark via MinHash; flag Goodhart risk if benchmark score diverges from human eval",
+      "when_to_use": "After every training run before checkpoint promotion; before any public score reporting",
+      "inputs": [
+        "best checkpoint",
+        "eval harness",
+        "benchmark suite"
+      ],
+      "outputs": [
+        "evaluation report",
+        "contamination report"
+      ]
+    },
+    {
+      "capability": "safety_red_teaming",
+      "subdomain": "ftune__sft_peft",
+      "method": "Run red-team evaluation measuring harmful output rate on adversarial prompts and refusal rate on legitimate prompts; gate deployment on harmful output rate below threshold and acceptable refusal calibration; add safety examples to SFT data if jailbreak surface expansion detected",
+      "when_to_use": "Before any deployment artifact is created; mandatory gate prior to adapter merge",
+      "inputs": [
+        "fine-tuned model",
+        "red-team guidelines"
+      ],
+      "outputs": [
+        "safety eval report"
+      ]
+    },
+    {
+      "capability": "adapter_merge_and_serving",
+      "subdomain": "ftune__sft_peft",
+      "method": "Merge adapter via W'=W+(alpha/r)*B*A (merge_and_unload); dequantize base before merging QLoRA; validate merged output matches unmerged within tolerance; profile latency under peak load; for multi-task: keep adapters separate for hot-swap, merge for latency-critical single-task",
+      "when_to_use": "After safety gate passes; when deployment requires single merged artifact or multi-tenant adapter serving",
+      "inputs": [
+        "best checkpoint",
+        "deployment constraints"
+      ],
+      "outputs": [
+        "deployed model artifact",
+        "latency profile"
+      ]
+    },
+    {
+      "capability": "preference_data_collection",
+      "subdomain": "ftune__pref_align",
+      "method": "Design binary comparison protocol with explain-then-choose elicitation; manage prompt diversity to prevent narrow alignment; apply inter-annotator reliability check (kappa>=0.6); filter for position bias and verbosity artifacts; optionally use AI-assisted or synthetic preference generation",
+      "when_to_use": "When building RLHF or DPO training data from scratch; when human annotation quality is unverified",
+      "inputs": [
+        "prompt pool",
+        "annotator pool",
+        "annotation guidelines",
+        "sampled model responses"
+      ],
+      "outputs": [
+        "preference dataset",
+        "comparison triplets",
+        "annotation quality report"
+      ]
+    },
+    {
+      "capability": "reward_model_training",
+      "subdomain": "ftune__pref_align",
+      "method": "Train scalar RM using Bradley-Terry pairwise ranking loss on SFT model checkpoint with linear head; evaluate RM accuracy >=65% on held-out comparisons; check reward score rank-correlation with human preferences; monitor for reward distribution collapse; trigger retraining if hacking detected",
+      "when_to_use": "When RLHF-PPO pipeline is chosen over DPO; when explicit reward inspection is required",
+      "inputs": [
+        "preference dataset",
+        "base or SFT model checkpoint",
+        "RM architecture spec"
+      ],
+      "outputs": [
+        "trained reward model",
+        "reward score distribution",
+        "RM eval report"
+      ]
+    },
+    {
+      "capability": "rlhf_ppo_policy_optimization",
+      "subdomain": "ftune__pref_align",
+      "method": "Fine-tune LM policy via PPO with KL penalty against SFT reference policy; maintain KL in [0.02,0.2]; clip PPO updates; monitor reward trajectory; validate human eval win-rate vs SFT >=55%; detect reward hacking in rollout audits; use KL coefficient sweep if instability",
+      "when_to_use": "When state-of-the-art alignment quality is required and engineering budget supports full PPO infrastructure",
+      "inputs": [
+        "SFT policy checkpoint",
+        "reward model",
+        "reference policy",
+        "PPO hyperparameters"
+      ],
+      "outputs": [
+        "RLHF-tuned policy",
+        "KL-divergence trace",
+        "reward trajectory"
+      ]
+    },
+    {
+      "capability": "dpo_direct_preference_optimization",
+      "subdomain": "ftune__pref_align",
+      "method": "Train policy on chosen/rejected pairs with DPO loss (closed-form, no explicit RM); tune beta hyperparameter; verify chosen log-prob increases and rejected decreases relative to SFT; detect likelihood displacement; monitor general benchmark retention",
+      "when_to_use": "When simplicity and lower compute cost are prioritized over maximal RLHF quality; when RM training budget is unavailable",
+      "inputs": [
+        "SFT model checkpoint",
+        "preference dataset with chosen/rejected pairs",
+        "beta hyperparameter"
+      ],
+      "outputs": [
+        "DPO-aligned policy",
+        "implicit reward distribution"
+      ]
+    },
+    {
+      "capability": "alignment_variants_ipo_kto_orpo",
+      "subdomain": "ftune__pref_align",
+      "method": "Select among IPO (regularized DPO for distribution stability), KTO (binary desirability labels, no paired comparisons), ORPO (SFT+alignment in single training stage via odds-ratio loss); compare chosen variant against DPO baseline on target benchmark before committing",
+      "when_to_use": "When standard DPO fails (mode collapse, displacement); when data format is binary labels not paired; when SFT+alignment must be fused",
+      "inputs": [
+        "SFT checkpoint",
+        "preference or desirability-labeled dataset",
+        "chosen alignment variant"
+      ],
+      "outputs": [
+        "aligned policy",
+        "variant selection rationale"
+      ]
+    },
+    {
+      "capability": "rlvr_verifiable_reward_training",
+      "subdomain": "ftune__pref_align",
+      "method": "Apply RL with verifiable outcome rewards (unit test pass/fail for code, correctness checker for math); use GRPO or REINFORCE++ algorithms; optionally add PRM for step-level supervision on chain-of-thought; bypasses learned RM entirely; requires domain with checkable ground truth",
+      "when_to_use": "For math, code, formal verification domains where reward can be computed programmatically without human annotation",
+      "inputs": [
+        "SFT or base checkpoint",
+        "verifiable reward function",
+        "RL algorithm config"
+      ],
+      "outputs": [
+        "RLVR-tuned policy",
+        "reward signal trace",
+        "solve-rate curves"
+      ]
+    },
+    {
+      "capability": "process_reward_modeling",
+      "subdomain": "ftune__pref_align",
+      "method": "Train PRM that scores individual reasoning steps (not just final answer); provides dense supervision for chain-of-thought; use with RLVR or as step-level signal in DPO; collect step-level human or automated correctness labels",
+      "when_to_use": "When outcome reward is too sparse; when intermediate reasoning quality matters; for multi-step math or code generation",
+      "inputs": [
+        "SFT checkpoint",
+        "step-annotated dataset",
+        "PRM architecture spec"
+      ],
+      "outputs": [
+        "process reward model",
+        "step-level reward scores"
+      ]
+    },
+    {
+      "capability": "goodhart_and_reward_hacking_monitoring",
+      "subdomain": "ftune__pref_align",
+      "method": "Monitor policy output quality vs reward score divergence; detect reward hacking by auditing rollouts for specification gaming; track KL divergence budget; use ensemble of RMs for debiasing; hold private human eval as ground truth; trigger RM retraining on hacking signal",
+      "when_to_use": "Throughout RLHF-PPO training; whenever proxy reward score inflates faster than human eval quality",
+      "inputs": [
+        "policy rollouts",
+        "RM reward scores",
+        "human eval sample"
+      ],
+      "outputs": [
+        "hacking signal report",
+        "KL budget trace",
+        "Goodhart alert"
+      ]
+    },
+    {
+      "capability": "alignment_safety_integration",
+      "subdomain": "ftune__pref_align",
+      "method": "Integrate harmlessness training via Constitutional AI / safety DPO; measure refusal calibration on both red-team harmful set and legitimate instruction set jointly; tune to minimize over-refusal; use alignment deployment guardrails and monitor post-deployment safety incidents",
+      "when_to_use": "Before production deployment of any aligned model; when over-refusal rate is unacceptable",
+      "inputs": [
+        "aligned policy",
+        "safety evaluation suite",
+        "over-refusal test set"
+      ],
+      "outputs": [
+        "safety-calibrated policy",
+        "refusal calibration report"
+      ]
+    },
+    {
+      "capability": "eval_metric_selection",
+      "subdomain": "ftune__train_loop",
+      "method": "Define primary held-out task metric (exact-match for code, ROUGE for summarization, reward score for alignment) that drives stopping/rollback decisions; define secondary guardrail metrics (toxicity, format compliance, perplexity); document grade examples; validate metric produces non-trivial ranking vs loss",
+      "when_to_use": "Before training begins; when task objective diverges from cross-entropy loss",
+      "inputs": [
+        "task spec",
+        "label schema",
+        "benchmark subset"
+      ],
+      "outputs": [
+        "eval metric config",
+        "acceptance threshold"
+      ]
+    },
+    {
+      "capability": "validation_cadence_control",
+      "subdomain": "ftune__train_loop",
+      "method": "Configure eval frequency (every N steps or adaptive); balance regression detection latency vs GPU throughput overhead (eval <5% of step wall-time); use adaptive scheduling triggered by loss plateau for large corpora",
+      "when_to_use": "When setting up training loop; when GPU throughput budget constrains eval frequency",
+      "inputs": [
+        "dataset size estimate",
+        "GPU throughput",
+        "eval cost estimate"
+      ],
+      "outputs": [
+        "cadence config",
+        "eval schedule doc"
+      ]
+    },
+    {
+      "capability": "early_stopping_and_patience",
+      "subdomain": "ftune__train_loop",
+      "method": "Implement patience-based stopping: halt when primary eval metric fails to improve by min_delta for patience consecutive eval checkpoints; smooth metric with window to distinguish transient dips from stalls; set patience >=3 to avoid LR warmup false stops; record best-step",
+      "when_to_use": "In all fine-tuning runs to prevent overfitting and wasted compute; patience must be re-tuned when LR schedule or cadence changes",
+      "inputs": [
+        "val cadence config",
+        "metric history",
+        "patience hyperparameter"
+      ],
+      "outputs": [
+        "stop signal",
+        "best-step record",
+        "training termination log"
+      ]
+    },
+    {
+      "capability": "checkpoint_management",
+      "subdomain": "ftune__train_loop",
+      "method": "Save model weights, optimizer state, and RNG state at configurable intervals; enforce retention policy bounding storage cost while preserving best-metric checkpoint; for PEFT: save adapter weights separately and verify PEFT-library compatibility on restore; never delete best checkpoint",
+      "when_to_use": "Throughout training; always required to enable rollback and resume",
+      "inputs": [
+        "training loop",
+        "storage quota",
+        "save interval config"
+      ],
+      "outputs": [
+        "checkpoint artifacts",
+        "retention log",
+        "storage usage report"
+      ]
+    },
+    {
+      "capability": "rollback_execution",
+      "subdomain": "ftune__train_loop",
+      "method": "On stall/regression detection: load best-metric checkpoint (weights+optimizer state); optionally reset or reduce LR on rollback; resume training or terminate; log rollback event with step and reason; verify restored checkpoint metric matches logged best-metric value",
+      "when_to_use": "When eval metric fails patience window or shows absolute regression; triggered by STALL_DETECT",
+      "inputs": [
+        "best-metric checkpoint",
+        "regression/stall signal",
+        "rollback config"
+      ],
+      "outputs": [
+        "restored model",
+        "rollback event log",
+        "resume point"
+      ]
+    },
+    {
+      "capability": "lr_schedule_and_warmup",
+      "subdomain": "ftune__train_loop",
+      "method": "Configure warmup (linear, 100-500 steps) + cosine/linear/step decay; save LR state in checkpoint for resume continuity; set patience to not trigger during warmup; verify resume at step N reproduces same LR as continuous run; no NaN in first 100 warmup steps",
+      "when_to_use": "Before training begins; must be revisited when optimizer, total step budget, or base model changes",
+      "inputs": [
+        "base LR estimate",
+        "warmup step budget",
+        "total step budget"
+      ],
+      "outputs": [
+        "LR schedule config",
+        "warmup log"
+      ]
+    },
+    {
+      "capability": "gradient_monitoring",
+      "subdomain": "ftune__train_loop",
+      "method": "Monitor gradient norms and loss between eval checkpoints; detect training instability (NaN loss, gradient explosion, gradient vanishing) without waiting for full eval cycle; set gradient clipping threshold; alert on per-step anomalies",
+      "when_to_use": "Continuously during training to catch instability early; especially during QLoRA and early warmup",
+      "inputs": [
+        "per-step gradient norms",
+        "loss values",
+        "clip threshold"
+      ],
+      "outputs": [
+        "instability alerts",
+        "gradient norm trace"
+      ]
+    },
+    {
+      "capability": "hyperparameter_sweep",
+      "subdomain": "ftune__train_loop",
+      "method": "Sweep LR, batch size, rank/alpha on held-out validation set using separate split from early-stopping set to avoid contamination; use pilot runs (100-200 steps) to screen unstable configs; log all sweep configs and metrics for reproducibility",
+      "when_to_use": "When initial config is uncertain; when sweep budget is available; before full training runs",
+      "inputs": [
+        "sweep config space",
+        "pilot dataset sample",
+        "validation split"
+      ],
+      "outputs": [
+        "best hyperparameter config",
+        "sweep log"
+      ]
+    },
+    {
+      "capability": "experiment_tracking_and_lineage",
+      "subdomain": "ftune__train_loop",
+      "method": "Record: run ID, base model hash, dataset version, hyperparameters, seed, responsible engineer, metric history, checkpoint paths; build immutable audit trail; complete lineage required before model promotion; support reproducibility and compliance",
+      "when_to_use": "Throughout all training runs; mandatory for model promotion eligibility",
+      "inputs": [
+        "training run metadata",
+        "checkpoint registry",
+        "metric logs"
+      ],
+      "outputs": [
+        "run lineage record",
+        "audit trail"
+      ]
+    },
+    {
+      "capability": "neutral_tail_pruning",
+      "subdomain": "ftune__train_loop",
+      "method": "Identify training steps after best-metric checkpoint that produced no improvement (neutral suffix); trim run lineage to best-step boundary; archive original metric log before pruning; verify pruned boundary matches logged best-step exactly",
+      "when_to_use": "After training completes and best step is confirmed; reduces lineage noise and storage",
+      "inputs": [
+        "metric history log",
+        "best-step record"
+      ],
+      "outputs": [
+        "trimmed run record",
+        "best-step boundary artifact"
+      ]
+    },
+    {
+      "capability": "multi_metric_guardrail",
+      "subdomain": "ftune__train_loop",
+      "method": "Define secondary guardrail metrics (toxicity score, format compliance, perplexity) that must not regress beyond threshold even when primary metric improves; veto checkpoint promotion if any guardrail fails; reconcile offline eval gains with online user metrics before final promotion",
+      "when_to_use": "When fine-tuning optimizes a narrow objective with risk of side-effect regressions",
+      "inputs": [
+        "primary metric",
+        "secondary guardrail metrics",
+        "thresholds"
+      ],
+      "outputs": [
+        "multi-metric checkpoint report",
+        "promotion veto signals"
+      ]
+    }
+  ],
+  "decision_procedure": [
+    "1. GATE: Conduct go/no-go SFT vs prompting analysis; if specialist does not outperform prompting on target metric, abort fine-tuning (SPECIALIST_VS_GENERALIST dominance rule DR_05)",
+    "2. LEGAL: Classify base model license (Apache-2.0/restricted/proprietary); obtain legal sign-off before any training; if license blocks deployment, replace model regardless of capability (DR_01)",
+    "3. DATA: Curate and quality-filter SFT or preference data; run benchmark contamination check; verify kappa>=0.6 for preference annotation; do NOT proceed without contamination-free data card",
+    "4. TEMPLATE: Apply correct chat template; verify loss masking on prompt tokens; lock template version; failure to mask silently degrades model and causes inference mismatches",
+    "5. COMPUTE: Profile VRAM budget; choose fp16 LoRA vs QLoRA (accept QLoRA if quality gap <2pp vs fp16 on validation); configure gradient checkpointing and flash-attention for long sequences",
+    "6. ADAPTER: Select LoRA rank (start r=16, ablate to r=64); choose target modules (include MLP for generative tasks); optionally use DoRA if standard LoRA underfits; verify module names in model.named_modules()",
+    "7. ALIGNMENT METHOD: For preference alignment choose: RLHF-PPO if budget allows and quality must be maximal; DPO if simplicity and lower compute preferred; KTO if only binary labels available; ORPO if SFT+alignment must fuse; RLVR if domain has verifiable rewards (math/code)",
+    "8. TRAINING LOOP: Set eval cadence (<5% throughput overhead); configure patience-based early stopping (patience>=3, min_delta>0); save checkpoints including optimizer state; configure rollback trigger; run gradient monitoring between evals",
+    "9. EVALUATION: Run task metric, general benchmarks (within 2pp of base), human eval (agreement>0.7), private held-out set; run safety red-team; all gates must pass before checkpoint promotion",
+    "10. ESCALATION: Human review required for: license compatibility, safety failures, reward hacking signal, repeated rollbacks indicating data issue, and final deployment approval"
+  ],
+  "workflow": [
+    {
+      "phase": "go_no_go_and_framing",
+      "objective": "Establish whether fine-tuning is justified over prompting; define task spec and compute envelope",
+      "entry": [
+        "task definition",
+        "performance gap analysis"
+      ],
+      "exit": [
+        "SFT decision memo approved",
+        "compute envelope defined"
+      ],
+      "gates": [
+        "specialist outperforms prompting on target metric or prompting cost exceeds fine-tuning amortized cost"
+      ]
+    },
+    {
+      "phase": "base_model_and_license",
+      "objective": "Select base model; audit license for target deployment use-case",
+      "entry": [
+        "SFT decision memo",
+        "model capability benchmarks",
+        "license docs"
+      ],
+      "exit": [
+        "approved base model",
+        "license audit report with legal sign-off"
+      ],
+      "gates": [
+        "license confirmed for production use-case; benchmark covers target domain"
+      ]
+    },
+    {
+      "phase": "data_pipeline",
+      "objective": "Curate SFT or preference data; run contamination check; produce data card",
+      "entry": [
+        "raw data sources",
+        "benchmark test sets",
+        "annotation guidelines"
+      ],
+      "exit": [
+        "curated dataset",
+        "data card",
+        "contamination report (no eval-set overlap)"
+      ],
+      "gates": [
+        "no eval-set n-gram overlap; kappa>=0.6 for preference annotation; quality metrics pass"
+      ]
+    },
+    {
+      "phase": "template_and_tokenization",
+      "objective": "Apply chat template; configure tokenizer; verify loss masking and EOS token",
+      "entry": [
+        "curated dataset",
+        "tokenizer",
+        "chat template spec"
+      ],
+      "exit": [
+        "tokenized dataset with loss mask confirmed"
+      ],
+      "gates": [
+        "prompt tokens masked to -100; EOS token present; generation terminates on held-out prompts"
+      ]
+    },
+    {
+      "phase": "adapter_and_compute_config",
+      "objective": "Select QLoRA/fp16 LoRA; configure rank/alpha/target modules; run VRAM pilot",
+      "entry": [
+        "model architecture",
+        "compute budget",
+        "task complexity"
+      ],
+      "exit": [
+        "training config",
+        "VRAM profile",
+        "LoRA/DoRA adapter config"
+      ],
+      "gates": [
+        "peak memory within 90% GPU capacity on 100-step pilot; gradient norms stable"
+      ]
+    },
+    {
+      "phase": "training_loop_execution",
+      "objective": "Execute SFT or alignment training with eval cadence, early stopping, checkpointing, and rollback",
+      "entry": [
+        "finalized training config",
+        "full dataset",
+        "base model"
+      ],
+      "exit": [
+        "best model checkpoint",
+        "training logs",
+        "experiment lineage record"
+      ],
+      "gates": [
+        "validation metric improves vs base; early stopping fires at true best-step; no gradient explosion"
+      ]
+    },
+    {
+      "phase": "evaluation_and_safety",
+      "objective": "Run task metric, general benchmarks, contamination check, human eval, and safety red-team",
+      "entry": [
+        "best checkpoint",
+        "eval harness",
+        "red-team guidelines"
+      ],
+      "exit": [
+        "evaluation report",
+        "safety eval report"
+      ],
+      "gates": [
+        "task metric improved; general benchmarks within 2pp of base; human eval agreement >0.7; harmful output rate below threshold; refusal rate acceptable"
+      ]
+    },
+    {
+      "phase": "deployment_and_monitoring",
+      "objective": "Merge adapter or configure multi-adapter serving; deploy; monitor drift and safety",
+      "entry": [
+        "safety-cleared checkpoint",
+        "deployment constraints"
+      ],
+      "exit": [
+        "deployed model artifact",
+        "monitoring dashboard"
+      ],
+      "gates": [
+        "merged output matches unmerged within tolerance; latency within SLA; production metrics within control limits"
+      ]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "Base model license incompatible with target deployment or redistribution use-case",
+      "action": "human_review",
+      "reason": "Legal liability exceeds any performance gain; model must be replaced before training investment is made"
+    },
+    {
+      "condition": "Safety red-team reveals jailbreak surface expansion or harmful output rate above threshold",
+      "action": "human_review",
+      "reason": "Fine-tuning may have degraded base model safety properties; deployment blocked until safety cleared"
+    },
+    {
+      "condition": "Reward hacking signal detected in RLHF rollout audits (reward inflates, human eval flat or regresses)",
+      "action": "human_review",
+      "reason": "Goodhart's law failure; RM is no longer a valid proxy; retraining RM required"
+    },
+    {
+      "condition": "KL divergence from reference policy exceeds budget [0.02,0.2] during RLHF-PPO",
+      "action": "flag",
+      "reason": "Mode collapse or policy degeneration risk; reduce KL coefficient or rollback to SFT baseline"
+    },
+    {
+      "condition": "Benchmark contamination detected (n-gram overlap between training and eval sets)",
+      "action": "human_review",
+      "reason": "All scores are invalid until contamination removed and eval re-run; published scores must be retracted"
+    },
+    {
+      "condition": "Repeated rollbacks (>3) triggered from same training run",
+      "action": "human_review",
+      "reason": "Persistent stalls indicate data distribution issue, LR misconfiguration, or RM failure requiring diagnosis"
+    },
+    {
+      "condition": "QLoRA quantization degrades task performance >2pp vs fp16 LoRA baseline",
+      "action": "flag",
+      "reason": "Quantization quality loss exceeds threshold; switch to fp16 LoRA or upgrade GPU tier"
+    },
+    {
+      "condition": "General capability benchmarks (MMLU/HellaSwag) drop >2pp post-SFT vs base model",
+      "action": "flag",
+      "reason": "Catastrophic forgetting detected; add general instruction replay before promotion"
+    },
+    {
+      "condition": "Annotator inter-rater kappa falls below 0.5 on preference data audit",
+      "action": "human_review",
+      "reason": "Preference signal is too noisy to train reliable reward model or DPO policy"
+    },
+    {
+      "condition": "DoRA magnitude vectors become NaN or collapse during training",
+      "action": "flag",
+      "reason": "Switch to standard LoRA; check PEFT library version compatibility"
+    }
+  ],
+  "validation_checklist": [
+    "License audit report signed off before any training begins; license classification matches target deployment scope",
+    "No n-gram overlap between SFT/preference training data and evaluation benchmark test sets (MinHash dedup verified)",
+    "Data card documents sources, filter thresholds, and PII redaction steps",
+    "Prompt tokens confirmed masked to label -100 in loss computation; EOS token present in all training sequences",
+    "VRAM pilot (100 steps) confirms peak memory within 90% GPU capacity without OOM",
+    "LoRA target module names verified against model.named_modules() before training",
+    "Gradient norms stable in pilot run; no loss spikes in first 200 steps",
+    "Primary eval metric non-trivially different from cross-entropy loss and documented with grade examples",
+    "Eval cadence consumes <5% of step wall-time on target hardware",
+    "Early stopping patience set to >=3 and not triggering during LR warmup phase",
+    "Checkpoint includes optimizer state and RNG state to enable faithful resume and rollback",
+    "Best-metric checkpoint excluded from retention policy deletion",
+    "Resume from checkpoint reproduces same LR value as continuous run at same step",
+    "Task metric improved vs base model on held-out set at best checkpoint",
+    "General benchmarks (MMLU/HellaSwag) within 2pp of base model post-SFT",
+    "Human eval agreement >0.7 on held-out sample before promotion",
+    "Safety red-team passes: harmful output rate below threshold; refusal rate on legitimate prompts acceptable",
+    "For RLHF: KL vs reference policy within [0.02,0.2] throughout training; human eval win-rate vs SFT >=55%",
+    "For DPO: chosen response log-prob increases and rejected decreases relative to SFT baseline",
+    "For preference data: inter-annotator kappa >=0.6 on held-out annotation sample",
+    "Merged adapter output matches unmerged adapter output within numerical tolerance",
+    "Chat template version locked in model card and matches inference serving configuration",
+    "Experiment lineage record complete (run ID, base model hash, dataset version, hyperparameters, seed) before model promotion",
+    "Contamination audit completes and no contamination found before benchmark scores are reported"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "task_performance_vs_general_capability",
+      "resolution": "Monitor MMLU/HellaSwag alongside task metric; add 5-10% general instruction replay; gate promotion on general benchmarks within 2pp of base"
+    },
+    {
+      "tradeoff": "quantization_quality_vs_compute_cost",
+      "resolution": "Benchmark QLoRA vs fp16 LoRA on validation; accept QLoRA only if quality gap <2pp; otherwise upgrade GPU tier or apply gradient checkpointing"
+    },
+    {
+      "tradeoff": "lora_rank_capacity_vs_memory_efficiency",
+      "resolution": "Start r=16; ablate to r=64; return minimal rank at performance plateau; COMPUTE_BUDGET dominates LORA_CONFIG when VRAM is fixed"
+    },
+    {
+      "tradeoff": "data_quantity_vs_data_quality",
+      "resolution": "Quality-filter first; prefer LIMA-style 1K high-quality over 100K noisy; DATA_CURATION dominates LORA_CONFIG in low-data regimes"
+    },
+    {
+      "tradeoff": "benchmark_score_vs_true_capability",
+      "resolution": "Hold private eval set; include human eval; decontaminate training data from benchmarks; GOODHART_BENCH dominates EVAL_HARNESS (contamination audit before reporting)"
+    },
+    {
+      "tradeoff": "specialist_depth_vs_orchestration_cost",
+      "resolution": "Profile end-to-end pipeline vs single frontier model call; prefer specialist only if clear performance+cost win; SPECIALIST_VS_GENERALIST dominates all PEFT nodes"
+    },
+    {
+      "tradeoff": "license_openness_vs_deployment_rights",
+      "resolution": "LICENSE_TOS dominates BASE_MODEL_SEL unconditionally; prefer Apache-2.0 models for unrestricted deployment; classify license before training"
+    },
+    {
+      "tradeoff": "safety_refusal_calibration_vs_task_utility",
+      "resolution": "Measure refusal rate jointly on red-team harmful set and legitimate task set; tune to minimize over-refusal; SAFETY_ALIGNMENT dominates ADAPTER_MERGE (safety must pass before deployment artifact)"
+    },
+    {
+      "tradeoff": "adapter_modularity_vs_inference_latency",
+      "resolution": "Profile swap latency under peak load; merge for latency-critical single-task; keep separate for multi-tenant hot-swap"
+    },
+    {
+      "tradeoff": "training_epoch_count_vs_overfitting",
+      "resolution": "Use validation-metric early stopping with patience 1-2 epochs; CHECKPOINT_MGT (metric-based) dominates HYPERPARAM_TUNING (epoch-count heuristic)"
+    },
+    {
+      "tradeoff": "rlhf_ppo_vs_dpo_complexity",
+      "resolution": "DPO preferred when compute budget is limited and quality gap vs PPO is acceptable; PPO preferred when maximum alignment quality is required and engineering budget supports it"
+    },
+    {
+      "tradeoff": "patience_window_vs_lr_warmup_interaction",
+      "resolution": "Set patience to not trigger during LR warmup; LR state must be saved in checkpoint to prevent warm-restart artifacts on rollback"
+    },
+    {
+      "tradeoff": "eval_cadence_frequency_vs_gpu_throughput",
+      "resolution": "Eval overhead <5% of step wall-time; for large corpora use adaptive scheduling triggered by loss plateau"
+    },
+    {
+      "tradeoff": "reward_hacking_vs_reward_optimization",
+      "resolution": "KL constraint bounds policy drift; ensemble RM debiasing; hold human eval as ground truth; trigger RM retraining on hacking signal; REWARD_HACKING_MIT dominates KL_CONSTRAINT configuration"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "SFT",
+      "definition": "supervised fine-tuning; training a pre-trained LLM on labeled instruction-response pairs with cross-entropy loss on completion tokens only (prompt tokens masked)"
+    },
+    {
+      "term": "PEFT",
+      "definition": "parameter-efficient fine-tuning; trains adapter modules (LoRA, IA3, prefix-tuning) rather than full model weights; reduces trainable parameters 100-1000x"
+    },
+    {
+      "term": "LoRA",
+      "definition": "low-rank adaptation; adds trainable matrices A (d×r) and B (r×d) to frozen base weight W; effective weight W'=W+(alpha/r)*B*A; only A,B updated"
+    },
+    {
+      "term": "QLoRA",
+      "definition": "quantized LoRA; base model quantized to 4-bit NF4 with double quantization; LoRA adapters trained in fp16/bf16 with paged Adam optimizer"
+    },
+    {
+      "term": "DoRA",
+      "definition": "weight-decomposed LoRA; decomposes weight into magnitude and direction; applies LoRA to directional component with separate magnitude scaling per layer"
+    },
+    {
+      "term": "catastrophic_forgetting",
+      "definition": "degradation of pre-trained model general capabilities when fine-tuned on narrow task data due to gradient overwriting; mitigated by general instruction replay"
+    },
+    {
+      "term": "chat_template",
+      "definition": "standardized formatting schema for multi-turn conversations specifying system/user/assistant role tags and special tokens for a given model family"
+    },
+    {
+      "term": "loss_masking",
+      "definition": "setting gradient contributions of prompt tokens to -100 so model only learns to predict completion tokens during SFT; absence causes model to learn to reproduce prompts"
+    },
+    {
+      "term": "adapter_merge",
+      "definition": "mathematical integration W'=W+(alpha/r)*B*A of LoRA adapter into base model weights; dequantize base before merging QLoRA adapters"
+    },
+    {
+      "term": "RLHF",
+      "definition": "reinforcement learning from human feedback; fine-tunes LLM policy using reward model trained on human preference comparisons, optimized via PPO with KL penalty"
+    },
+    {
+      "term": "DPO",
+      "definition": "direct preference optimization; closed-form alignment objective implicitly defining reward through policy ratio; no explicit RM or RL loop required; tunable via beta hyperparameter"
+    },
+    {
+      "term": "IPO",
+      "definition": "identity preference optimization; regularized DPO variant providing distribution stability; preferred when DPO shows mode collapse"
+    },
+    {
+      "term": "KTO",
+      "definition": "Kahneman-Tversky optimization; alignment from binary desirability labels (not paired comparisons); applicable when comparison pairs are infeasible"
+    },
+    {
+      "term": "ORPO",
+      "definition": "odds-ratio preference optimization; fuses SFT and alignment objectives into single training stage via odds-ratio loss"
+    },
+    {
+      "term": "RLVR",
+      "definition": "reinforcement learning with verifiable rewards; RL using ground-truth-checkable rewards (unit tests, math checker) instead of learned reward models; used for math/code domains"
+    },
+    {
+      "term": "process_reward_model",
+      "definition": "PRM; scores individual reasoning steps rather than only final outputs; provides dense supervision for chain-of-thought reasoning"
+    },
+    {
+      "term": "reward_hacking",
+      "definition": "policy behavior maximizing proxy reward model without satisfying true human preference; central alignment risk in RLHF; detected via rollout audits and human eval divergence"
+    },
+    {
+      "term": "kl_divergence",
+      "definition": "KL penalty bounding policy drift from SFT reference policy during RLHF; target range [0.02,0.2]; excess causes mode collapse"
+    },
+    {
+      "term": "Goodhart_law",
+      "definition": "when a metric becomes a target it ceases to be a good measure; in fine-tuning: optimizing benchmark scores inflates scores without improving true capability; mitigated by private eval sets and human eval"
+    },
+    {
+      "term": "early_stopping",
+      "definition": "halting training when primary eval metric fails to improve by min_delta for patience consecutive eval checkpoints; prevents overfitting and wasted compute"
+    },
+    {
+      "term": "patience",
+      "definition": "count of consecutive eval checkpoints without min_delta improvement before early stop fires; set >=3 to avoid false triggers during LR warmup"
+    },
+    {
+      "term": "rollback",
+      "definition": "restoring training state to prior best-metric checkpoint after stall or regression detection; requires optimizer state in checkpoint to preserve LR continuity"
+    },
+    {
+      "term": "neutral_tail",
+      "definition": "training steps after best-metric checkpoint that produced no metric improvement; pruned from run lineage after best-step is confirmed"
+    },
+    {
+      "term": "run_lineage",
+      "definition": "immutable record linking model artifact to training run, dataset version, hyperparameters, seed, and responsible engineer; required for model promotion eligibility"
+    },
+    {
+      "term": "guardrail_metric",
+      "definition": "secondary metric (toxicity, format compliance, perplexity) that must not regress beyond threshold even when primary metric improves; veto checkpoint promotion if any guardrail fails"
+    }
+  ],
+  "competency_questions_covered": [
+    "What criteria determine whether a base model license permits target deployment and redistribution?",
+    "When is fine-tuning a specialist LLM preferable to prompting a frontier generalist model?",
+    "What standards must instruction-response pairs meet before entering the SFT training pipeline?",
+    "How should chat templates be configured to prevent prompt token inclusion in the loss computation?",
+    "How are SFT learning rate, epoch count, and batch size selected to prevent divergence and over-training?",
+    "How does SFT training interact with catastrophic forgetting and what mitigation strategy is applied?",
+    "How are LoRA rank and alpha selected and what target modules should be included for a generative task?",
+    "When should QLoRA be used vs fp16 LoRA and what configuration prevents quantization quality loss?",
+    "What compute and memory planning is required to ensure training completes within GPU budget?",
+    "What evaluation suite confirms SFT model quality across task performance and general capability?",
+    "How is benchmark contamination detected and how does Goodhart's law risk affect SFT evaluation?",
+    "What safety evaluation must be run on the fine-tuned model before production deployment?",
+    "When should adapters be merged into the base model vs kept separate for multi-adapter serving?",
+    "What preference data collection protocol (annotation format, elicitation method, quality threshold) is used?",
+    "How is prompt diversity managed to prevent narrow alignment?",
+    "What reward model architecture and loss function are used and how is the RM evaluated?",
+    "How does the RLHF PPO training loop incorporate the reward model and KL constraint?",
+    "How is reward hacking detected and mitigated throughout alignment training?",
+    "How does DPO eliminate the explicit reward model and what are its failure modes?",
+    "What alignment variants beyond DPO (IPO, KTO, ORPO) exist and when are they preferred?",
+    "How does RLVR apply verifiable rewards for math and code without a learned reward model?",
+    "How do process reward models provide step-level supervision for chain-of-thought?",
+    "How is alignment quality evaluated beyond reward scores to avoid Goodhart inflation?",
+    "How does iterative/online RLHF address distribution mismatch between RM and policy?",
+    "How are safety alignment and harmlessness integrated without causing over-refusal?",
+    "What is the primary eval metric and what secondary guardrails constrain checkpoint selection?",
+    "How are offline eval metric gains reconciled with online user metrics before model promotion?",
+    "How frequently is the held-out eval metric computed during training and what drives cadence choice?",
+    "How is training instability detected between eval checkpoints without waiting for the full eval cycle?",
+    "How does the stall detection logic distinguish genuine metric regression from transient noise?",
+    "What triggers a rollback and how is the rollback target checkpoint identified?",
+    "What checkpoint fields are required to enable full resume, rollback, and PEFT adapter restore?",
+    "How is the LR state preserved and verified after a checkpoint rollback?",
+    "How are neutral trailing steps identified and pruned from the run lineage?",
+    "How is the LR schedule configured to interact safely with early stopping patience?",
+    "What experiment tracking fields are required to reproduce a fine-tuning run and build the audit trail?",
+    "When is curriculum data ordering beneficial and how is it validated against the eval metric trajectory?",
+    "How are hyperparameter sweep configs selected without contaminating the early-stopping validation set?",
+    "What lineage fields must be complete before a fine-tuned model is eligible for promotion?"
+  ]
+}

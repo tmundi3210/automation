@@ -1,0 +1,5698 @@
+{
+  "domain": "tool__rag_mem",
+  "domain_label": "Tool Use, Retrieval & Agent Memory — RAG & Agent Memory subdomain",
+  "purpose": "session_bounded_stepwise_execution_for_engineering_rag_pipelines_and_agent_memory_systems",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "scope covers RAG pipeline engineering, agent memory tiers, personal-context store, and live-info grounding",
+    "evaluation is recall-and-faithfulness centric unless project overrides",
+    "a deployed LLM endpoint exists; LLM training is out of scope"
+  ],
+  "exclusions": [
+    "LLM fine-tuning internals",
+    "serving infrastructure beyond latency SLA constraints",
+    "crawling infrastructure (referenced only as corpus input)",
+    "reinforcement learning from human feedback",
+    "model safety/alignment beyond grounding faithfulness"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What is the end-to-end RAG pipeline topology and what grounding policy governs when retrieval is used?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "RAG_ARCH defines topology and grounding policy",
+      "covered_by": [
+        "RAG_ARCH",
+        "ADAPTIVE_RETRIEVAL"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How is the RAG corpus segmented into chunks and what are the constraints on chunk size?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "CHUNK_STRATEGY defines granularity and overlap",
+      "covered_by": [
+        "CHUNK_STRATEGY",
+        "EMBED_MODEL",
+        "CONTEXT_ASSEMBLY"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How is the embedding model selected or fine-tuned for the target domain?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "EMBED_MODEL defines selection and fine-tuning process",
+      "covered_by": [
+        "EMBED_MODEL",
+        "RAG_EVAL"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How are vector and lexical retrieval signals fused and how is the fusion weight tuned?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "HYBRID_RETRIEVAL defines fusion approach and tuning",
+      "covered_by": [
+        "HYBRID_RETRIEVAL",
+        "ANN_INDEX",
+        "QUERY_EXPANSION"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "When is retrieval skipped and how is the gating decision made?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "ADAPTIVE_RETRIEVAL defines gating policy and triggers",
+      "covered_by": [
+        "ADAPTIVE_RETRIEVAL",
+        "GROUNDING_VERIFY",
+        "RAG_EVAL"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How is the RAG corpus index kept fresh as source documents change?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "INDEX_FRESHNESS defines update and staleness policy",
+      "covered_by": [
+        "INDEX_FRESHNESS",
+        "ANN_INDEX",
+        "EMBED_MODEL"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How are retrieved passages assembled into the LLM prompt and how is context overflow handled?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "CONTEXT_ASSEMBLY defines ordering, truncation, and citation",
+      "covered_by": [
+        "CONTEXT_ASSEMBLY",
+        "CHUNK_STRATEGY",
+        "RERANKER"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How is the faithfulness of generated answers to retrieved context verified?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "GROUNDING_VERIFY and CITATION_GROUNDING define verification",
+      "covered_by": [
+        "GROUNDING_VERIFY",
+        "CITATION_GROUNDING",
+        "RAG_EVAL"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How are citations formatted and attributed to source passages for front-end rendering?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "CITATION_GROUNDING defines citation format and attribution",
+      "covered_by": [
+        "CITATION_GROUNDING",
+        "CONTEXT_ASSEMBLY"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What memory tiers does the agent use and what are the read/write contracts per tier?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "AGENT_MEMORY_TYPES defines tiers and contracts",
+      "covered_by": [
+        "AGENT_MEMORY_TYPES",
+        "MEM_WRITE",
+        "MEM_READ"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How does the agent decide what to write to memory and when to forget?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "MEM_WRITE defines write policy, deduplication, and expiry",
+      "covered_by": [
+        "MEM_WRITE",
+        "MEMGPT_PATTERN",
+        "PRIVACY_CONSENT"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How is the personal-context store designed and how does the front-end access it?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PERSONAL_CONTEXT_STORE defines schema, CRUD API, and access control",
+      "covered_by": [
+        "PERSONAL_CONTEXT_STORE",
+        "LONG_TERM_PERSONA",
+        "PRIVACY_CONSENT"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How are user preferences and long-term persona inferred and updated over time?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "LONG_TERM_PERSONA defines inference and update process",
+      "covered_by": [
+        "LONG_TERM_PERSONA",
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_READ"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "How are live-information tools integrated and how do they fail gracefully?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "LIVE_INFO_TOOLS defines integration and fallback policy",
+      "covered_by": [
+        "LIVE_INFO_TOOLS",
+        "RAG_ARCH",
+        "ADAPTIVE_RETRIEVAL"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "rag",
+      "definition": "Retrieval-Augmented Generation: a pattern that grounds LLM generation in retrieved external documents rather than relying purely on parametric knowledge",
+      "synonyms": [
+        "retrieval-augmented generation"
+      ],
+      "not_same_as": [
+        "pure fine-tuning",
+        "prompt-only generation"
+      ],
+      "used_by_nodes": [
+        "RAG_ARCH",
+        "GROUNDING_VERIFY",
+        "RAG_EVAL"
+      ]
+    },
+    {
+      "term": "bi_encoder",
+      "definition": "Dual-encoder model that independently encodes query and document into vectors for fast ANN retrieval",
+      "synonyms": [
+        "dual encoder"
+      ],
+      "not_same_as": [
+        "cross-encoder",
+        "reranker"
+      ],
+      "used_by_nodes": [
+        "EMBED_MODEL",
+        "ANN_INDEX"
+      ]
+    },
+    {
+      "term": "cross_encoder",
+      "definition": "Model that jointly encodes query and document for precise relevance scoring at higher latency",
+      "synonyms": [
+        "reranker"
+      ],
+      "not_same_as": [
+        "bi-encoder"
+      ],
+      "used_by_nodes": [
+        "RERANKER"
+      ]
+    },
+    {
+      "term": "ann",
+      "definition": "Approximate Nearest Neighbor search: sub-linear retrieval by trading exact neighbor guarantees for speed",
+      "synonyms": [
+        "ANN",
+        "vector search"
+      ],
+      "not_same_as": [
+        "exact kNN",
+        "BM25"
+      ],
+      "used_by_nodes": [
+        "ANN_INDEX",
+        "HYBRID_RETRIEVAL"
+      ]
+    },
+    {
+      "term": "rrf",
+      "definition": "Reciprocal Rank Fusion: score-free fusion of ranked lists by summing 1/(k+rank) for each document",
+      "synonyms": [
+        "reciprocal rank fusion"
+      ],
+      "not_same_as": [
+        "linear score interpolation"
+      ],
+      "used_by_nodes": [
+        "HYBRID_RETRIEVAL"
+      ]
+    },
+    {
+      "term": "hnsw",
+      "definition": "Hierarchical Navigable Small World graph: ANN index structure with log-scale build and sub-linear query",
+      "synonyms": [],
+      "not_same_as": [
+        "IVF-PQ",
+        "brute-force kNN"
+      ],
+      "used_by_nodes": [
+        "ANN_INDEX"
+      ]
+    },
+    {
+      "term": "hyde",
+      "definition": "Hypothetical Document Embeddings: query expansion by generating a hypothetical answer and embedding it for retrieval",
+      "synonyms": [
+        "hypothetical document embedding"
+      ],
+      "not_same_as": [
+        "synonym expansion",
+        "PRF"
+      ],
+      "used_by_nodes": [
+        "QUERY_EXPANSION"
+      ]
+    },
+    {
+      "term": "faithfulness",
+      "definition": "Degree to which generated claims are entailed by retrieved passages (not hallucinated)",
+      "synonyms": [
+        "groundedness"
+      ],
+      "not_same_as": [
+        "answer relevance",
+        "recall"
+      ],
+      "used_by_nodes": [
+        "GROUNDING_VERIFY",
+        "CITATION_GROUNDING",
+        "RAG_EVAL"
+      ]
+    },
+    {
+      "term": "episodic_memory",
+      "definition": "Agent memory tier storing time-stamped events and interaction logs",
+      "synonyms": [
+        "event log"
+      ],
+      "not_same_as": [
+        "semantic memory",
+        "in-context memory"
+      ],
+      "used_by_nodes": [
+        "AGENT_MEMORY_TYPES",
+        "MEM_WRITE",
+        "MEM_READ"
+      ]
+    },
+    {
+      "term": "semantic_memory",
+      "definition": "Agent memory tier storing general facts and knowledge structured for query",
+      "synonyms": [
+        "knowledge store"
+      ],
+      "not_same_as": [
+        "episodic memory",
+        "in-context buffer"
+      ],
+      "used_by_nodes": [
+        "AGENT_MEMORY_TYPES",
+        "MEM_READ"
+      ]
+    },
+    {
+      "term": "paging",
+      "definition": "OS-style mechanism for loading and evicting memory blocks between fast (context window) and slow (external store) storage",
+      "synonyms": [
+        "page-in",
+        "page-out"
+      ],
+      "not_same_as": [
+        "retrieval",
+        "embedding"
+      ],
+      "used_by_nodes": [
+        "MEMGPT_PATTERN"
+      ]
+    },
+    {
+      "term": "personal_context_store",
+      "definition": "User-specific persistent store of preferences, facts, and interaction summaries accessible to agent and front-end",
+      "synonyms": [
+        "user memory",
+        "user profile store"
+      ],
+      "not_same_as": [
+        "shared knowledge corpus",
+        "episodic log"
+      ],
+      "used_by_nodes": [
+        "PERSONAL_CONTEXT_STORE",
+        "LONG_TERM_PERSONA",
+        "PRIVACY_CONSENT"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "AGENT_MEMORY_TYPES",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model",
+      "RAG_EVAL",
+      "HYBRID_RETRIEVAL"
+    ],
+    "probabilistic_modeling": [
+      "EMBED_MODEL",
+      "ADAPTIVE_RETRIEVAL",
+      "GROUNDING_VERIFY"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "PRIVACY_CONSENT",
+      "GROUNDING_VERIFY"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "RAG_EVAL",
+      "GROUNDING_VERIFY"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract",
+      "traceability_matrix"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for RAG and agent memory work units in absence of supplied datasets; informed by Lewis et al. 2020 (RAG), Packer et al. 2023 (MemGPT), Manning et al. Introduction to Information Retrieval",
+      "citation_or_locator": "Lewis et al. 2020 arXiv:2005.11401; Packer et al. 2023 arXiv:2310.08560; Manning Raghavan Schutze IIR 2008",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "RAG_ARCH",
+      "topic": "retrieve_then_read",
+      "definition": "Design the end-to-end RAG pipeline: offline indexing of a knowledge corpus, online retrieval of k documents per query, and grounded generation with the retrieved context.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "offline index build",
+          "online retrieval",
+          "context injection",
+          "grounded generation"
+        ],
+        "excluded": [
+          "model fine-tuning",
+          "user preference memory",
+          "live tool calling"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "rag_architect",
+        "applied_ml_engineer"
+      ],
+      "contradictors": [
+        "pure_finetune_advocate",
+        "parametric_only_lm_advocate"
+      ],
+      "inputs": [
+        "knowledge corpus",
+        "query stream",
+        "LLM endpoint"
+      ],
+      "outputs": [
+        "RAG pipeline spec",
+        "grounding policy"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.55,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.7,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.61,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.15,
+          0.5
+        ],
+        "posterior_importance": 0.63,
+        "update_signal": "RAG topology changes or new retrieval paradigm adopted",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "retrieval bottleneck",
+        "context overflow",
+        "stale index"
+      ],
+      "acceptance_tests": [
+        "end-to-end latency SLA met",
+        "grounded answer citation rate >= 90%"
+      ],
+      "revisit_triggers": [
+        "corpus size doubles",
+        "LLM context window changes",
+        "retrieval quality degrades"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "EMBED_MODEL",
+      "topic": "select_and_tune_retrieval_encoder",
+      "definition": "Select or fine-tune a dense embedding model (bi-encoder) for semantic similarity so that query and document vectors cluster by meaning rather than lexical overlap.",
+      "node_type": "work_unit",
+      "group": "dense_retrieval",
+      "scope_boundary": {
+        "included": [
+          "bi-encoder training",
+          "contrastive loss",
+          "domain adaptation"
+        ],
+        "excluded": [
+          "cross-encoder re-ranking",
+          "ANN index build"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "embedding_engineer",
+        "nlp_researcher"
+      ],
+      "contradictors": [
+        "bm25_only_advocate"
+      ],
+      "inputs": [
+        "query/document pairs",
+        "optional fine-tune labels",
+        "hardware budget"
+      ],
+      "outputs": [
+        "embedding model checkpoint",
+        "embedding dimensionality config"
+      ],
+      "dependencies": [
+        "RAG_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.75,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.64,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.63,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "MTEB leaderboard shows better model or domain shift detected",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "domain mismatch",
+        "embedding collapse",
+        "vocabulary gap"
+      ],
+      "acceptance_tests": [
+        "BEIR recall@10 above threshold",
+        "in-domain dev MRR improvement"
+      ],
+      "revisit_triggers": [
+        "corpus domain shifts",
+        "new embedding model released with +5% BEIR gain"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "ANN_INDEX",
+      "topic": "build_and_serve_ann_vector_index",
+      "definition": "Build and serve an Approximate Nearest Neighbor index (HNSW, IVF-PQ, ScaNN) over document embeddings for sub-linear retrieval at scale.",
+      "node_type": "work_unit",
+      "group": "dense_retrieval",
+      "scope_boundary": {
+        "included": [
+          "HNSW",
+          "IVF-PQ",
+          "ScaNN",
+          "FAISS",
+          "index build",
+          "query serving"
+        ],
+        "excluded": [
+          "embedding model training",
+          "re-ranking",
+          "keyword index"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "vector_db_engineer",
+        "infra_engineer"
+      ],
+      "contradictors": [
+        "brute_force_exact_search_advocate"
+      ],
+      "inputs": [
+        "document embeddings",
+        "index hyperparams (M, ef, nprobe)",
+        "hardware"
+      ],
+      "outputs": [
+        "ANN index artifact",
+        "query latency benchmark"
+      ],
+      "dependencies": [
+        "EMBED_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.7,
+        "user_value": 0.65,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.55,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.58,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.3,
+        "lock_score": 0.65,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.25,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "corpus scale milestone reached or embedding model swapped",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "recall-latency Pareto regression after re-index",
+        "index bloat OOM"
+      ],
+      "acceptance_tests": [
+        "recall@10 > 0.95 vs brute force",
+        "p99 query latency < 50ms at load"
+      ],
+      "revisit_triggers": [
+        "corpus grows beyond shard capacity",
+        "embedding dimension changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "HYBRID_RETRIEVAL",
+      "topic": "fuse_bm25_and_dense_scores",
+      "definition": "Combine BM25 lexical scores with dense vector retrieval scores via reciprocal rank fusion (RRF) or linear interpolation to achieve complementary coverage of exact-match and semantic recall.",
+      "node_type": "work_unit",
+      "group": "retrieval_strategy",
+      "scope_boundary": {
+        "included": [
+          "RRF",
+          "score normalization",
+          "alpha tuning",
+          "sparse-dense fusion"
+        ],
+        "excluded": [
+          "individual retriever internals",
+          "re-ranking"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "search_engineer",
+        "rag_architect"
+      ],
+      "contradictors": [
+        "dense_only_advocate",
+        "sparse_only_advocate"
+      ],
+      "inputs": [
+        "BM25 ranked list",
+        "dense ranked list",
+        "fusion alpha or RRF k"
+      ],
+      "outputs": [
+        "fused candidate list",
+        "fusion weight config"
+      ],
+      "dependencies": [
+        "ANN_INDEX",
+        "RAG_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.75,
+        "user_value": 0.72,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.55,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.67,
+        "final_importance": 0.67
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "retrieval quality audit finds recall gap in either lexical or dense leg",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "score scale mismatch before fusion",
+        "alpha overfit on dev queries"
+      ],
+      "acceptance_tests": [
+        "hybrid recall@10 > max(bm25, dense) on held-out queries"
+      ],
+      "revisit_triggers": [
+        "corpus vocabulary shifts",
+        "new query distribution observed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "RERANKER",
+      "topic": "apply_cross_encoder_reranker_to_top_k",
+      "definition": "Re-rank the top-k retrieved candidates with a cross-encoder that jointly encodes query and document for more precise relevance scoring, accepting higher per-doc latency.",
+      "node_type": "work_unit",
+      "group": "retrieval_strategy",
+      "scope_boundary": {
+        "included": [
+          "cross-encoder inference",
+          "pointwise/listwise reranking",
+          "latency-quality tradeoff"
+        ],
+        "excluded": [
+          "first-stage retrieval",
+          "LLM generation"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "ranking_engineer",
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "bi_encoder_only_advocate"
+      ],
+      "inputs": [
+        "top-k candidate docs",
+        "query",
+        "cross-encoder model"
+      ],
+      "outputs": [
+        "reranked list",
+        "per-doc relevance scores"
+      ],
+      "dependencies": [
+        "HYBRID_RETRIEVAL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.68,
+        "user_value": 0.7,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.55,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.53,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.31,
+        "lock_score": 0.68,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.67,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "retrieval latency budget changed or re-rank quality plateau",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "latency SLA breach",
+        "cross-encoder hallucinating relevance"
+      ],
+      "acceptance_tests": [
+        "MRR@5 lift >= 5% over first-stage",
+        "p95 latency within budget"
+      ],
+      "revisit_triggers": [
+        "latency budget cut",
+        "better open reranker released"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CHUNK_STRATEGY",
+      "topic": "define_chunk_granularity_and_overlap",
+      "definition": "Decide document segmentation strategy: chunk size, overlap, boundary heuristics (sentence/paragraph/semantic), and metadata propagation so retrieved chunks are self-contained and indexable.",
+      "node_type": "work_unit",
+      "group": "indexing",
+      "scope_boundary": {
+        "included": [
+          "fixed-size chunking",
+          "sliding window",
+          "semantic chunking",
+          "metadata attachment"
+        ],
+        "excluded": [
+          "embedding model training",
+          "ANN index parameters"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "rag_architect",
+        "data_engineer"
+      ],
+      "contradictors": [
+        "full_document_advocate"
+      ],
+      "inputs": [
+        "raw corpus",
+        "tokenizer",
+        "context window budget"
+      ],
+      "outputs": [
+        "chunked document collection",
+        "chunk metadata schema"
+      ],
+      "dependencies": [
+        "RAG_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.68,
+        "user_value": 0.7,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.58,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.65,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "context window size changes or new corpus domain added",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "chunk boundary splits key context",
+        "chunk too long fills context window",
+        "orphan chunks without metadata"
+      ],
+      "acceptance_tests": [
+        "no answer-spanning chunk splits",
+        "median chunk fits in 512 tokens with overlap"
+      ],
+      "revisit_triggers": [
+        "LLM context window budget changes",
+        "domain shifts to longer documents"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CONTEXT_ASSEMBLY",
+      "topic": "assemble_and_truncate_retrieved_passages_for_llm_prompt",
+      "definition": "Assemble retrieved chunks into the LLM prompt: ordering (lost-in-middle mitigation), deduplication, citation tagging, and hard truncation to respect context-window budget.",
+      "node_type": "work_unit",
+      "group": "generation_interface",
+      "scope_boundary": {
+        "included": [
+          "chunk ordering",
+          "deduplication",
+          "citation tags",
+          "truncation policy"
+        ],
+        "excluded": [
+          "retrieval itself",
+          "LLM decoding",
+          "memory persistence"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "prompt_engineer",
+        "rag_architect"
+      ],
+      "contradictors": [
+        "no_citation_advocate"
+      ],
+      "inputs": [
+        "reranked chunks",
+        "context window budget",
+        "citation format spec"
+      ],
+      "outputs": [
+        "assembled prompt with retrieved context",
+        "citation map"
+      ],
+      "dependencies": [
+        "RERANKER",
+        "CHUNK_STRATEGY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.78,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.56,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.65,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "LLM attention architecture changes or citation policy updated",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "lost-in-middle degrades recall of middle context",
+        "truncation removes most-relevant chunk"
+      ],
+      "acceptance_tests": [
+        "citation coverage >= 85% of factual claims",
+        "no context overflow errors"
+      ],
+      "revisit_triggers": [
+        "context window budget changes",
+        "LLM attention pattern research updates"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "GROUNDING_VERIFY",
+      "topic": "verify_answer_faithfulness_to_retrieved_context",
+      "definition": "Check that generated answers are supported by retrieved passages using an NLI model, LLM-as-judge, or rule-based citation verifier; flag or suppress unsupported claims.",
+      "node_type": "work_unit",
+      "group": "quality_assurance",
+      "scope_boundary": {
+        "included": [
+          "NLI-based verification",
+          "LLM judge",
+          "citation grounding check"
+        ],
+        "excluded": [
+          "retrieval quality",
+          "memory storage",
+          "fact database"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "eval_engineer",
+        "safety_researcher"
+      ],
+      "contradictors": [
+        "trust_llm_output_advocate"
+      ],
+      "inputs": [
+        "generated answer",
+        "retrieved passages",
+        "citation map"
+      ],
+      "outputs": [
+        "faithfulness score",
+        "unsupported claim list",
+        "hallucination rate metric"
+      ],
+      "dependencies": [
+        "CONTEXT_ASSEMBLY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.45,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.65,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.61,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "hallucination incident or verifier accuracy audit",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "verifier hallucination accepted",
+        "latency budget exceeded by judge"
+      ],
+      "acceptance_tests": [
+        "hallucination rate < 5% on eval set",
+        "faithfulness precision > 90%"
+      ],
+      "revisit_triggers": [
+        "answer faithfulness regression detected",
+        "new LLM judge model available"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "AGENT_MEMORY_TYPES",
+      "topic": "classify_in_context_external_episodic_semantic_memory",
+      "definition": "Classify agent memory into in-context (working), external episodic (event log), external semantic (knowledge store), and procedural (skill) tiers; define read/write contracts per tier.",
+      "node_type": "work_unit",
+      "group": "memory_architecture",
+      "scope_boundary": {
+        "included": [
+          "in-context window",
+          "episodic event log",
+          "semantic knowledge store",
+          "procedural cache"
+        ],
+        "excluded": [
+          "specific storage backends",
+          "retrieval algorithms"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "agent_architect",
+        "cognitive_systems_researcher"
+      ],
+      "contradictors": [
+        "single_buffer_advocate"
+      ],
+      "inputs": [
+        "agent capability spec",
+        "latency/cost requirements",
+        "persistence requirements"
+      ],
+      "outputs": [
+        "memory taxonomy doc",
+        "tier read/write API contracts"
+      ],
+      "dependencies": [
+        "RAG_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.68,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.61,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "agent architecture redesign or new memory tier identified",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "tier confusion causes stale reads",
+        "write without confirmation corrupts store"
+      ],
+      "acceptance_tests": [
+        "all tiers have documented read/write SLAs",
+        "tier boundaries tested with failure injection"
+      ],
+      "revisit_triggers": [
+        "new memory tier needed",
+        "LLM context window makes in-context viable for more"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MEM_WRITE",
+      "topic": "implement_memory_write_update_delete_operations",
+      "definition": "Implement agent memory write, update, and forget operations: decide what to persist after each interaction, how to deduplicate/merge with existing entries, and when to expire or delete stale facts.",
+      "node_type": "work_unit",
+      "group": "memory_operations",
+      "scope_boundary": {
+        "included": [
+          "write policy",
+          "deduplication",
+          "merge",
+          "expiry",
+          "delete triggers"
+        ],
+        "excluded": [
+          "retrieval",
+          "generation",
+          "in-context buffer management"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "agent_engineer",
+        "memory_systems_engineer"
+      ],
+      "contradictors": [
+        "append_only_log_advocate"
+      ],
+      "inputs": [
+        "interaction transcript",
+        "existing memory store",
+        "retention policy"
+      ],
+      "outputs": [
+        "updated memory entries",
+        "forget/expiry log"
+      ],
+      "dependencies": [
+        "AGENT_MEMORY_TYPES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.65,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.72,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.59,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.25,
+          0.6
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "memory capacity incident or retention policy review",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "unbounded memory growth",
+        "premature forgetting of relevant facts",
+        "silent write failure"
+      ],
+      "acceptance_tests": [
+        "memory size stays within quota after 1000 interactions",
+        "recall of written facts > 95%"
+      ],
+      "revisit_triggers": [
+        "memory quota exceeded",
+        "user feedback about forgotten preferences"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MEM_READ",
+      "topic": "retrieve_relevant_memories_for_current_agent_context",
+      "definition": "Retrieve relevant past memories (episodic events, personal facts, prior decisions) for the current agent turn using hybrid or semantic search, injecting them into the working context.",
+      "node_type": "work_unit",
+      "group": "memory_operations",
+      "scope_boundary": {
+        "included": [
+          "memory query",
+          "semantic similarity recall",
+          "recency weighting",
+          "context injection"
+        ],
+        "excluded": [
+          "external corpus retrieval",
+          "write operations",
+          "generation"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "agent_engineer",
+        "rag_architect"
+      ],
+      "contradictors": [
+        "full_history_context_advocate"
+      ],
+      "inputs": [
+        "current agent state",
+        "query or task description",
+        "memory store"
+      ],
+      "outputs": [
+        "ranked relevant memories",
+        "injected context snippet"
+      ],
+      "dependencies": [
+        "MEM_WRITE",
+        "HYBRID_RETRIEVAL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.76,
+        "user_value": 0.82,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.4,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.6,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.64,
+        "final_importance": 0.7
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.63,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "user context relevance drops or memory latency increases",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "retrieving stale/contradicted memory",
+        "flooding context with irrelevant memories"
+      ],
+      "acceptance_tests": [
+        "relevant memory recall@3 > 85%",
+        "no stale-memory contradiction in injected context"
+      ],
+      "revisit_triggers": [
+        "memory retrieval latency SLA breach",
+        "user reports wrong personal context"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PERSONAL_CONTEXT_STORE",
+      "topic": "design_user_personal_context_store_with_frontend_api",
+      "definition": "Design and implement the personal-context store that the front-end reads and writes: structured user preferences, interaction history summaries, and durable facts the user has stated; expose CRUD API accessible to both agent and client.",
+      "node_type": "work_unit",
+      "group": "memory_architecture",
+      "scope_boundary": {
+        "included": [
+          "user preferences",
+          "interaction history",
+          "CRUD API",
+          "front-end access",
+          "privacy flags"
+        ],
+        "excluded": [
+          "shared knowledge corpus",
+          "episodic event log internal to agent"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "product_engineer",
+        "agent_engineer",
+        "privacy_engineer"
+      ],
+      "contradictors": [
+        "shared_global_store_advocate"
+      ],
+      "inputs": [
+        "user interaction logs",
+        "front-end API spec",
+        "privacy policy"
+      ],
+      "outputs": [
+        "personal context schema",
+        "CRUD API",
+        "consent metadata"
+      ],
+      "dependencies": [
+        "AGENT_MEMORY_TYPES",
+        "MEM_WRITE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.85,
+        "user_value": 0.9,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.62,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.71,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.59,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "privacy audit or user data complaint",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "cross-user data leakage",
+        "front-end reads stale cache",
+        "user cannot delete their data"
+      ],
+      "acceptance_tests": [
+        "data isolation between users verified",
+        "GDPR delete honored within 24h",
+        "API latency < 100ms p99"
+      ],
+      "revisit_triggers": [
+        "privacy regulation change",
+        "cross-user data leak incident",
+        "front-end API contract change"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "QUERY_EXPANSION",
+      "topic": "expand_or_rewrite_queries_for_better_retrieval",
+      "definition": "Expand or rewrite user queries before retrieval using techniques such as HyDE (hypothetical document embeddings), query-by-document, synonyms, or LLM-based sub-query decomposition.",
+      "node_type": "work_unit",
+      "group": "retrieval_strategy",
+      "scope_boundary": {
+        "included": [
+          "HyDE",
+          "sub-query decomposition",
+          "synonym expansion",
+          "LLM rewrite"
+        ],
+        "excluded": [
+          "index construction",
+          "generation",
+          "re-ranking"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "rag_architect",
+        "prompt_engineer"
+      ],
+      "contradictors": [
+        "raw_query_only_advocate"
+      ],
+      "inputs": [
+        "original user query",
+        "LLM for expansion",
+        "retrieval feedback signal"
+      ],
+      "outputs": [
+        "expanded/decomposed query set",
+        "retrieval recall improvement"
+      ],
+      "dependencies": [
+        "RAG_ARCH",
+        "EMBED_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.62,
+        "user_value": 0.65,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.5,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.35,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.35,
+        "risk_score": 0.49,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.68,
+        "final_importance": 0.59
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "recall audit shows systematic query mismatch",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "query drift from expansion",
+        "latency doubled by LLM rewrite step"
+      ],
+      "acceptance_tests": [
+        "recall@10 lift on dev set >= 3%",
+        "latency overhead < 150ms"
+      ],
+      "revisit_triggers": [
+        "retrieval recall plateau",
+        "new HyDE variant published"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LIVE_INFO_TOOLS",
+      "topic": "integrate_live_search_and_api_tools_for_current_info",
+      "definition": "Integrate live-information tools (web search API, structured data APIs, calendar/email connectors) into the agent tool-calling loop to supplement static RAG corpus with current information.",
+      "node_type": "work_unit",
+      "group": "retrieval_strategy",
+      "scope_boundary": {
+        "included": [
+          "web search",
+          "API connectors",
+          "tool invocation policy",
+          "result caching"
+        ],
+        "excluded": [
+          "static corpus indexing",
+          "memory persistence",
+          "LLM generation"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "agent_engineer",
+        "api_integration_engineer"
+      ],
+      "contradictors": [
+        "static_corpus_only_advocate"
+      ],
+      "inputs": [
+        "tool registry",
+        "API credentials",
+        "query intent classifier"
+      ],
+      "outputs": [
+        "tool call results",
+        "grounded live data"
+      ],
+      "dependencies": [
+        "RAG_ARCH",
+        "AGENT_MEMORY_TYPES"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.78,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.38,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.55,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.66,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "API deprecation or live-data quality incident",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "API rate limit hit",
+        "stale cached result used as live",
+        "hallucinated tool call"
+      ],
+      "acceptance_tests": [
+        "live tool results cited with retrieval timestamp",
+        "tool failure gracefully falls back to corpus"
+      ],
+      "revisit_triggers": [
+        "API deprecation",
+        "tool accuracy incident",
+        "new high-value data source identified"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CITATION_GROUNDING",
+      "topic": "define_citation_format_and_source_attribution_contract",
+      "definition": "Define how retrieved sources are cited in generated answers: inline citation format, source metadata (title, URL, chunk ID, retrieval timestamp), confidence annotation, and display contract for front-end rendering.",
+      "node_type": "work_unit",
+      "group": "generation_interface",
+      "scope_boundary": {
+        "included": [
+          "citation format",
+          "inline tags",
+          "source metadata",
+          "display contract",
+          "confidence annotation"
+        ],
+        "excluded": [
+          "faithfulness verification logic",
+          "retrieval mechanics"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "product_engineer",
+        "prompt_engineer"
+      ],
+      "contradictors": [
+        "no_citation_advocate"
+      ],
+      "inputs": [
+        "retrieved passage metadata",
+        "answer text",
+        "UI display spec"
+      ],
+      "outputs": [
+        "citation-annotated answer",
+        "source metadata payload"
+      ],
+      "dependencies": [
+        "CONTEXT_ASSEMBLY",
+        "GROUNDING_VERIFY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.72,
+        "user_value": 0.8,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.38,
+        "risk_score": 0.53,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.32,
+        "lock_score": 0.66,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "citation accuracy audit or UI contract change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "wrong citation number mapped",
+        "hallucinated citation URL",
+        "citation truncated in UI"
+      ],
+      "acceptance_tests": [
+        "each factual claim has >= 1 citation",
+        "citation URL resolves to source chunk"
+      ],
+      "revisit_triggers": [
+        "UI redesign",
+        "citation format standard update"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "RAG_EVAL",
+      "topic": "evaluate_rag_pipeline_retrieval_and_generation_quality",
+      "definition": "Evaluate RAG pipeline quality across retrieval (recall@k, MRR, context precision) and generation (faithfulness, answer relevance, completeness) dimensions using offline benchmarks and online feedback.",
+      "node_type": "work_unit",
+      "group": "quality_assurance",
+      "scope_boundary": {
+        "included": [
+          "retrieval recall",
+          "context precision",
+          "faithfulness",
+          "answer relevance",
+          "RAGAS-style metrics"
+        ],
+        "excluded": [
+          "embedding model training",
+          "index build",
+          "memory ops"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "eval_engineer",
+        "rag_architect"
+      ],
+      "contradictors": [
+        "vibe_only_evaluator"
+      ],
+      "inputs": [
+        "QA eval set",
+        "golden answers",
+        "retrieval logs",
+        "user feedback signal"
+      ],
+      "outputs": [
+        "retrieval metrics",
+        "generation metrics",
+        "regression test suite"
+      ],
+      "dependencies": [
+        "GROUNDING_VERIFY",
+        "CONTEXT_ASSEMBLY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.75,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.42,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.63,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.63,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.63,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "production quality drop or evaluation audit",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "eval set contamination",
+        "metric gaming without quality gain"
+      ],
+      "acceptance_tests": [
+        "recall@5 baseline established",
+        "faithfulness metric correlated with human judgments"
+      ],
+      "revisit_triggers": [
+        "production quality regression",
+        "new eval framework released"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "INDEX_FRESHNESS",
+      "topic": "define_index_update_and_freshness_policy_for_rag_corpus",
+      "definition": "Define and implement the policy for keeping the RAG corpus index fresh: incremental document ingestion, re-embedding on update, deletion propagation, and staleness SLA.",
+      "node_type": "work_unit",
+      "group": "indexing",
+      "scope_boundary": {
+        "included": [
+          "incremental ingestion",
+          "re-embedding",
+          "delete propagation",
+          "staleness SLA",
+          "crawl schedule"
+        ],
+        "excluded": [
+          "full re-index from scratch",
+          "embedding model training"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "data_engineer",
+        "infra_engineer"
+      ],
+      "contradictors": [
+        "batch_only_reindex_advocate"
+      ],
+      "inputs": [
+        "document update stream",
+        "embedding model version",
+        "staleness SLA"
+      ],
+      "outputs": [
+        "incremental index update pipeline",
+        "staleness monitoring dashboard"
+      ],
+      "dependencies": [
+        "ANN_INDEX",
+        "CHUNK_STRATEGY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.7,
+        "user_value": 0.68,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.61,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.63,
+        "final_importance": 0.67
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "source update velocity spike or staleness SLA breach",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "stale facts served after source update",
+        "delete lag causes privacy violation"
+      ],
+      "acceptance_tests": [
+        "deleted document absent from index within SLA",
+        "update lag < 1 hour for critical docs"
+      ],
+      "revisit_triggers": [
+        "source update frequency doubles",
+        "privacy incident from stale content"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "MEMGPT_PATTERN",
+      "topic": "implement_os_style_paged_memory_for_long_context_agents",
+      "definition": "Implement the MemGPT-style paged memory pattern where the agent explicitly manages a fixed-size main context window by paging in and out external memory tiers, enabling effectively unbounded long-term agent memory.",
+      "node_type": "work_unit",
+      "group": "memory_architecture",
+      "scope_boundary": {
+        "included": [
+          "context window budget management",
+          "eviction policy",
+          "page-in triggers",
+          "page-out policy"
+        ],
+        "excluded": [
+          "specific storage backend",
+          "embedding model",
+          "generation"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "agent_architect",
+        "systems_engineer"
+      ],
+      "contradictors": [
+        "grow_context_window_only_advocate"
+      ],
+      "inputs": [
+        "context window budget",
+        "memory tier stores",
+        "paging policy"
+      ],
+      "outputs": [
+        "paged memory manager",
+        "eviction/load log"
+      ],
+      "dependencies": [
+        "AGENT_MEMORY_TYPES",
+        "MEM_READ",
+        "MEM_WRITE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.75,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.5,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.63,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.64,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "context window architecture changes or paging latency regression",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "thrashing if eviction and load loop",
+        "paging loop exceeds latency budget"
+      ],
+      "acceptance_tests": [
+        "agent handles 10x context-window-length conversation without quality drop",
+        "paging overhead < 200ms per turn"
+      ],
+      "revisit_triggers": [
+        "LLM context window doubles making paging less necessary",
+        "latency budget tightened"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PRIVACY_CONSENT",
+      "topic": "implement_privacy_controls_and_consent_for_agent_memory",
+      "definition": "Implement privacy controls for agent memory: user consent capture before storing personal data, purpose limitation tagging, access controls, right-to-deletion enforcement, and data minimization for memory entries.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "consent capture",
+          "purpose tagging",
+          "access controls",
+          "right-to-deletion",
+          "data minimization"
+        ],
+        "excluded": [
+          "retrieval algorithms",
+          "embedding model",
+          "corpus facts"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "privacy_engineer",
+        "legal_counsel",
+        "agent_engineer"
+      ],
+      "contradictors": [
+        "collect_all_data_advocate"
+      ],
+      "inputs": [
+        "privacy policy",
+        "consent signals",
+        "memory entries",
+        "regulatory requirements"
+      ],
+      "outputs": [
+        "consent metadata",
+        "purpose-limited memory entries",
+        "deletion audit log"
+      ],
+      "dependencies": [
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_WRITE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.9,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.72,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.6,
+        "risk_score": 0.75,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.45,
+        "lock_score": 0.57,
+        "final_importance": 0.8
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.82,
+        "uncertainty_interval": [
+          0.25,
+          0.6
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "regulatory change or privacy incident",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "storing personal data without consent",
+        "delete request not propagated to all replicas",
+        "purpose creep"
+      ],
+      "acceptance_tests": [
+        "consent required before personal data written",
+        "delete honored in all stores within 24h",
+        "no purpose-tag mismatch in audit"
+      ],
+      "revisit_triggers": [
+        "GDPR/CCPA update",
+        "data breach incident",
+        "new data category added"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "ADAPTIVE_RETRIEVAL",
+      "topic": "implement_adaptive_retrieval_gating_or_self_rag",
+      "definition": "Implement adaptive retrieval: the system decides per-query whether retrieval is needed (FLARE, Self-RAG) by predicting retrieval utility, avoiding retrieval latency for queries answerable from parametric knowledge.",
+      "node_type": "work_unit",
+      "group": "retrieval_strategy",
+      "scope_boundary": {
+        "included": [
+          "retrieval gating",
+          "FLARE",
+          "Self-RAG",
+          "confidence-based triggering",
+          "selective retrieval"
+        ],
+        "excluded": [
+          "retrieval internals",
+          "memory management",
+          "generation"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "rag_architect",
+        "ml_researcher"
+      ],
+      "contradictors": [
+        "always_retrieve_advocate"
+      ],
+      "inputs": [
+        "query",
+        "retrieval utility predictor",
+        "LLM confidence signal"
+      ],
+      "outputs": [
+        "retrieval decision per query",
+        "latency savings report"
+      ],
+      "dependencies": [
+        "GROUNDING_VERIFY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.72,
+        "user_value": 0.7,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.38,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.56,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.65,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "gating model accuracy drops or LLM knowledge cutoff changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "false negative: skipping retrieval for uncertain query",
+        "gating model distribution shift"
+      ],
+      "acceptance_tests": [
+        "no accuracy loss vs always-retrieve on benchmark",
+        "latency reduction >= 20% on parametric queries"
+      ],
+      "revisit_triggers": [
+        "LLM parametric knowledge update",
+        "gating accuracy regression"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LONG_TERM_PERSONA",
+      "topic": "build_long_term_user_persona_model_from_interaction_history",
+      "definition": "Build and maintain a long-term user persona model from interaction history: infer user expertise level, preferences, communication style, and domain focus; store as structured profile in personal-context store; use to personalize responses.",
+      "node_type": "work_unit",
+      "group": "memory_architecture",
+      "scope_boundary": {
+        "included": [
+          "preference inference",
+          "expertise modeling",
+          "style modeling",
+          "persona schema",
+          "profile update"
+        ],
+        "excluded": [
+          "general corpus knowledge",
+          "privacy consent (separate node)",
+          "response generation internals"
+        ]
+      },
+      "academic_fields": [
+        "information_retrieval",
+        "machine_learning"
+      ],
+      "subfields": [],
+      "specialists": [
+        "personalization_engineer",
+        "ux_researcher"
+      ],
+      "contradictors": [
+        "one_size_fits_all_advocate"
+      ],
+      "inputs": [
+        "interaction history",
+        "user feedback signals",
+        "persona schema"
+      ],
+      "outputs": [
+        "user persona profile",
+        "preference vector",
+        "personalization context"
+      ],
+      "dependencies": [
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_READ"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.82,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.48,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.59,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.64,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.63,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "persona accuracy feedback or user behavior shift",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables accurate grounded responses",
+          "example": "reduced hallucination via retrieved context"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Adds retrieval latency and failure modes",
+          "example": "slow vector search degrades user experience"
+        }
+      ],
+      "failure_modes": [
+        "persona drift (wrong model)",
+        "privacy violation from over-inference",
+        "stale persona after user changes"
+      ],
+      "acceptance_tests": [
+        "persona accuracy rated by user >= 80%",
+        "persona update latency < 1 interaction turn"
+      ],
+      "revisit_triggers": [
+        "user reports wrong persona",
+        "major user behavior change detected"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "RAG_ARCH",
+      "to": "EMBED_MODEL",
+      "relation": "specifies_embedding_requirements",
+      "label": "RAG arch defines embedding SLA",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.35
+    },
+    {
+      "id": "EDGE_002",
+      "from": "RAG_ARCH",
+      "to": "CHUNK_STRATEGY",
+      "relation": "determines_chunking_constraints",
+      "label": "architecture sets context budget for chunks",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_003",
+      "from": "RAG_ARCH",
+      "to": "AGENT_MEMORY_TYPES",
+      "relation": "scopes_memory_tiers",
+      "label": "RAG arch scopes which memory tiers exist",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_004",
+      "from": "RAG_ARCH",
+      "to": "LIVE_INFO_TOOLS",
+      "relation": "enables_live_tool_integration",
+      "label": "RAG arch defines tool integration policy",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_005",
+      "from": "EMBED_MODEL",
+      "to": "ANN_INDEX",
+      "relation": "produces_vectors_for_index",
+      "label": "trained encoder feeds ANN index build",
+      "edge_type": "dependency",
+      "relation_strength": 0.92,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.6,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.9,
+      "edge_priority": 0.27,
+      "edge_score": 0.27,
+      "edge_heat": 0.42
+    },
+    {
+      "id": "EDGE_006",
+      "from": "ANN_INDEX",
+      "to": "HYBRID_RETRIEVAL",
+      "relation": "supplies_dense_candidates",
+      "label": "ANN index provides dense ranked list",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_007",
+      "from": "HYBRID_RETRIEVAL",
+      "to": "RERANKER",
+      "relation": "passes_top_k_for_reranking",
+      "label": "hybrid retrieval output is reranker input",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_008",
+      "from": "RERANKER",
+      "to": "CONTEXT_ASSEMBLY",
+      "relation": "provides_ranked_chunks",
+      "label": "reranker output drives context assembly",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_009",
+      "from": "CHUNK_STRATEGY",
+      "to": "ANN_INDEX",
+      "relation": "determines_index_granularity",
+      "label": "chunk size sets vector granularity in index",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.5,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.36
+    },
+    {
+      "id": "EDGE_010",
+      "from": "CHUNK_STRATEGY",
+      "to": "CONTEXT_ASSEMBLY",
+      "relation": "provides_chunk_metadata",
+      "label": "chunk metadata used in assembly",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_011",
+      "from": "CONTEXT_ASSEMBLY",
+      "to": "GROUNDING_VERIFY",
+      "relation": "passes_context_for_verification",
+      "label": "assembled context is faithfulness-checked",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_012",
+      "from": "GROUNDING_VERIFY",
+      "to": "CITATION_GROUNDING",
+      "relation": "informs_citation_confidence",
+      "label": "grounding scores annotate citations",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_013",
+      "from": "AGENT_MEMORY_TYPES",
+      "to": "MEM_WRITE",
+      "relation": "contracts_write_operations",
+      "label": "memory taxonomy defines write contracts",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.35
+    },
+    {
+      "id": "EDGE_014",
+      "from": "AGENT_MEMORY_TYPES",
+      "to": "MEM_READ",
+      "relation": "contracts_read_operations",
+      "label": "memory taxonomy defines read contracts",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.35
+    },
+    {
+      "id": "EDGE_015",
+      "from": "MEM_WRITE",
+      "to": "MEM_READ",
+      "relation": "enables_read_of_written_memory",
+      "label": "written entries become readable",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.88,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_016",
+      "from": "AGENT_MEMORY_TYPES",
+      "to": "PERSONAL_CONTEXT_STORE",
+      "relation": "scopes_personal_tier",
+      "label": "taxonomy scopes personal context tier",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_017",
+      "from": "MEM_WRITE",
+      "to": "PERSONAL_CONTEXT_STORE",
+      "relation": "writes_to_personal_store",
+      "label": "personal facts written via MEM_WRITE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_018",
+      "from": "PERSONAL_CONTEXT_STORE",
+      "to": "LONG_TERM_PERSONA",
+      "relation": "feeds_persona_model",
+      "label": "personal context is source for persona inference",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_019",
+      "from": "MEM_READ",
+      "to": "MEMGPT_PATTERN",
+      "relation": "supplies_page_in_data",
+      "label": "MEM_READ implements paging load side",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_020",
+      "from": "MEM_WRITE",
+      "to": "MEMGPT_PATTERN",
+      "relation": "supplies_page_out_target",
+      "label": "MEM_WRITE implements paging eviction",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_021",
+      "from": "PERSONAL_CONTEXT_STORE",
+      "to": "PRIVACY_CONSENT",
+      "relation": "requires_consent_before_write",
+      "label": "personal store gated by consent",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.45,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.88,
+      "edge_priority": 0.22,
+      "edge_score": 0.22,
+      "edge_heat": 0.37
+    },
+    {
+      "id": "EDGE_022",
+      "from": "MEM_WRITE",
+      "to": "PRIVACY_CONSENT",
+      "relation": "must_respect_consent",
+      "label": "write ops check consent before persisting",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.45,
+      "conflict_probability": 0.08,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.36
+    },
+    {
+      "id": "EDGE_023",
+      "from": "RAG_EVAL",
+      "to": "RAG_ARCH",
+      "relation": "feeds_back_metrics",
+      "label": "eval drives architecture improvement",
+      "edge_type": "feedback",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_024",
+      "from": "RAG_EVAL",
+      "to": "EMBED_MODEL",
+      "relation": "signals_embedding_quality",
+      "label": "eval metrics trigger embedding re-train",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_025",
+      "from": "INDEX_FRESHNESS",
+      "to": "ANN_INDEX",
+      "relation": "incrementally_updates_index",
+      "label": "freshness pipeline updates ANN index",
+      "edge_type": "sequence",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_026",
+      "from": "INDEX_FRESHNESS",
+      "to": "EMBED_MODEL",
+      "relation": "re_embeds_on_update",
+      "label": "doc updates trigger re-embedding",
+      "edge_type": "sequence",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_027",
+      "from": "QUERY_EXPANSION",
+      "to": "HYBRID_RETRIEVAL",
+      "relation": "enriches_query_before_retrieval",
+      "label": "expanded queries fed to hybrid retriever",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_028",
+      "from": "ADAPTIVE_RETRIEVAL",
+      "to": "RAG_ARCH",
+      "relation": "gates_retrieval_invocation",
+      "label": "adaptive layer decides when to retrieve",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_029",
+      "from": "ADAPTIVE_RETRIEVAL",
+      "to": "GROUNDING_VERIFY",
+      "relation": "uses_faithfulness_as_gate_signal",
+      "label": "low faithfulness triggers retrieval",
+      "edge_type": "feedback",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.22,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_030",
+      "from": "LONG_TERM_PERSONA",
+      "to": "CONTEXT_ASSEMBLY",
+      "relation": "injects_persona_into_prompt",
+      "label": "persona context included in assembly",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_031",
+      "from": "LIVE_INFO_TOOLS",
+      "to": "CONTEXT_ASSEMBLY",
+      "relation": "adds_live_results_to_context",
+      "label": "live tool results assembled alongside corpus chunks",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_032",
+      "from": "RERANKER",
+      "to": "LIVE_INFO_TOOLS",
+      "relation": "latency_budget_conflict",
+      "label": "reranker and live tool calls compete for latency budget",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.55,
+      "expected_rework_cost": 0.45,
+      "conflict_probability": 0.5,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.34,
+      "edge_score": 0.34,
+      "edge_heat": 0.44,
+      "resolution_rule": "apply latency budget cap; prefer reranker on corpus queries, live tool for time-sensitive queries"
+    },
+    {
+      "id": "EDGE_033",
+      "from": "MEMGPT_PATTERN",
+      "to": "EMBED_MODEL",
+      "relation": "paging_recall_accuracy_tradeoff",
+      "label": "aggressive paging may evict embeddings needed for current task",
+      "edge_type": "conflict",
+      "relation_strength": 0.58,
+      "signed_tension": -0.42,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.4,
+      "causal_confidence": 0.6,
+      "edge_priority": 0.25,
+      "edge_score": 0.25,
+      "edge_heat": 0.36,
+      "resolution_rule": "tune eviction policy with recency+relevance score; never evict pinned task context"
+    },
+    {
+      "id": "EDGE_034",
+      "from": "PRIVACY_CONSENT",
+      "to": "LONG_TERM_PERSONA",
+      "relation": "consent_limits_persona_depth",
+      "label": "consent restrictions limit how much history can feed persona model",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.6,
+      "expected_rework_cost": 0.5,
+      "conflict_probability": 0.55,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.41,
+      "edge_score": 0.41,
+      "edge_heat": 0.51,
+      "resolution_rule": "persona inference only from consented data; provide minimal-data persona fallback"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "GROUNDING_VERIFY",
+      "to": "ADAPTIVE_RETRIEVAL",
+      "relation": "verification_latency_vs_gating_savings",
+      "label": "running verifier costs latency offsetting adaptive retrieval savings",
+      "edge_type": "conflict",
+      "relation_strength": 0.6,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.38,
+      "conflict_probability": 0.42,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.26,
+      "edge_score": 0.26,
+      "edge_heat": 0.37,
+      "resolution_rule": "lightweight verifier (NLI) for gating; full verifier only for high-stakes answers"
+    },
+    {
+      "id": "EDGE_036",
+      "from": "CHUNK_STRATEGY",
+      "to": "EMBED_MODEL",
+      "relation": "chunk_size_embedding_quality_tradeoff",
+      "label": "very small chunks lose context; very large chunks may exceed token limit",
+      "edge_type": "conflict",
+      "relation_strength": 0.62,
+      "signed_tension": -0.4,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.4,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.26,
+      "edge_score": 0.26,
+      "edge_heat": 0.37,
+      "resolution_rule": "sweep chunk size on dev set; use 256-512 token range as default with semantic boundary detection"
+    },
+    {
+      "id": "EDGE_037",
+      "from": "HYBRID_RETRIEVAL",
+      "to": "RAG_EVAL",
+      "relation": "fusion_quality_measured_by_eval",
+      "label": "eval validates hybrid fusion gain",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_038",
+      "from": "CITATION_GROUNDING",
+      "to": "RAG_EVAL",
+      "relation": "citation_metrics_in_eval",
+      "label": "citation coverage measured in eval",
+      "edge_type": "causal",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.18,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.1,
+      "edge_score": 0.1,
+      "edge_heat": 0.23
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "axis": "retrieval_latency_vs_answer_quality",
+      "description": "Adding more retrieval steps (reranking, live tools, adaptive routing) increases latency while improving quality; must be balanced per SLA.",
+      "affected_nodes": [
+        "RERANKER",
+        "LIVE_INFO_TOOLS",
+        "ADAPTIVE_RETRIEVAL",
+        "GROUNDING_VERIFY"
+      ],
+      "tension_direction": "quality_increases_latency",
+      "default_resolution": "enforce per-turn latency budget; gate expensive steps behind quality threshold"
+    },
+    {
+      "id": "CA_02",
+      "axis": "memory_retention_vs_privacy",
+      "description": "Richer long-term memory improves personalization but increases personal data storage and privacy risk.",
+      "affected_nodes": [
+        "MEM_WRITE",
+        "PERSONAL_CONTEXT_STORE",
+        "LONG_TERM_PERSONA",
+        "PRIVACY_CONSENT"
+      ],
+      "tension_direction": "retention_increases_risk",
+      "default_resolution": "data minimization; purpose limitation; user-controlled deletion"
+    },
+    {
+      "id": "CA_03",
+      "axis": "chunk_granularity_vs_context_coherence",
+      "description": "Smaller chunks improve retrieval precision but lose contextual coherence; larger chunks preserve context but dilute retrieval signal.",
+      "affected_nodes": [
+        "CHUNK_STRATEGY",
+        "EMBED_MODEL",
+        "CONTEXT_ASSEMBLY"
+      ],
+      "tension_direction": "granularity_tradeoff",
+      "default_resolution": "semantic chunking with 256-512 token target and 10% overlap"
+    },
+    {
+      "id": "CA_04",
+      "axis": "dense_vs_lexical_retrieval",
+      "description": "Dense retrieval handles semantic similarity but misses exact keyword matches; BM25 excels at lexical but not semantics; hybrid required but adds complexity.",
+      "affected_nodes": [
+        "EMBED_MODEL",
+        "ANN_INDEX",
+        "HYBRID_RETRIEVAL"
+      ],
+      "tension_direction": "complementary_but_additive_cost",
+      "default_resolution": "RRF fusion as default; tune alpha if labeled data available"
+    },
+    {
+      "id": "CA_05",
+      "axis": "index_freshness_vs_index_stability",
+      "description": "Continuous index updates for freshness can cause index inconsistency or recall regression; batch updates are stable but stale.",
+      "affected_nodes": [
+        "INDEX_FRESHNESS",
+        "ANN_INDEX",
+        "EMBED_MODEL"
+      ],
+      "tension_direction": "freshness_increases_instability_risk",
+      "default_resolution": "incremental upsert with version lock; validate recall@10 after each batch"
+    },
+    {
+      "id": "CA_06",
+      "axis": "parametric_knowledge_vs_retrieved_knowledge",
+      "description": "LLMs carry parametric knowledge that may conflict with retrieved context; unclear which to trust for overlapping facts.",
+      "affected_nodes": [
+        "RAG_ARCH",
+        "GROUNDING_VERIFY",
+        "ADAPTIVE_RETRIEVAL"
+      ],
+      "tension_direction": "conflict_when_parametric_contradicts_retrieved",
+      "default_resolution": "retrieved context wins for grounded RAG; flag contradictions to user"
+    },
+    {
+      "id": "CA_07",
+      "axis": "persona_personalization_vs_fairness",
+      "description": "Aggressive persona-based personalization may create filter bubbles or discriminatory treatment; fairness requires some population-level uniformity.",
+      "affected_nodes": [
+        "LONG_TERM_PERSONA",
+        "PERSONAL_CONTEXT_STORE",
+        "PRIVACY_CONSENT"
+      ],
+      "tension_direction": "deep_personalization_may_reduce_fairness",
+      "default_resolution": "audit persona model for bias; maintain universal fallback responses"
+    },
+    {
+      "id": "CA_08",
+      "axis": "memory_write_cost_vs_recall_benefit",
+      "description": "Writing and indexing every interaction is expensive; selective writing saves cost but risks missing important context.",
+      "affected_nodes": [
+        "MEM_WRITE",
+        "MEMGPT_PATTERN",
+        "MEM_READ"
+      ],
+      "tension_direction": "more_writes_increase_cost_and_noise",
+      "default_resolution": "salience-filter write policy; write only factual claims and user preferences"
+    },
+    {
+      "id": "CA_09",
+      "axis": "adaptive_retrieval_savings_vs_false_negative_risk",
+      "description": "Skipping retrieval saves latency but risks confidently wrong answers from parametric hallucination on factual queries.",
+      "affected_nodes": [
+        "ADAPTIVE_RETRIEVAL",
+        "GROUNDING_VERIFY",
+        "RAG_EVAL"
+      ],
+      "tension_direction": "gating_error_degrades_factuality",
+      "default_resolution": "conservative gating threshold; always retrieve for fact-sensitive query intents"
+    },
+    {
+      "id": "CA_10",
+      "axis": "citation_overhead_vs_answer_fluency",
+      "description": "Dense citation annotations improve verifiability but fragment answer fluency and increase prompt/output tokens.",
+      "affected_nodes": [
+        "CITATION_GROUNDING",
+        "CONTEXT_ASSEMBLY",
+        "GROUNDING_VERIFY"
+      ],
+      "tension_direction": "citation_density_hurts_fluency",
+      "default_resolution": "inline superscript citation with source sidebar; fluency-first with on-demand expansion"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "name": "empty_retrieval_result",
+      "description": "All retrieved chunks score below relevance threshold; LLM must answer from parametric knowledge or refuse.",
+      "trigger_condition": "recall@1 = 0 for query",
+      "recommended_action": "detect empty retrieval; return 'no relevant documents found' + offer web search fallback",
+      "affected_nodes": [
+        "RAG_ARCH",
+        "ADAPTIVE_RETRIEVAL",
+        "LIVE_INFO_TOOLS"
+      ]
+    },
+    {
+      "id": "EC_02",
+      "name": "context_window_overflow",
+      "description": "Sum of retrieved chunk tokens exceeds LLM context window; truncation required with risk of dropping most-relevant content.",
+      "trigger_condition": "assembled context length > model max_tokens",
+      "recommended_action": "truncate least-relevant chunks first; alert if top-5 chunks still overflow",
+      "affected_nodes": [
+        "CONTEXT_ASSEMBLY",
+        "CHUNK_STRATEGY",
+        "RERANKER"
+      ]
+    },
+    {
+      "id": "EC_03",
+      "name": "embedding_model_version_change",
+      "description": "Swapping embedding model invalidates existing ANN index; requires full re-index and regression test.",
+      "trigger_condition": "embedding model updated",
+      "recommended_action": "never hot-swap; blue-green index with parallel recall@10 validation before cutover",
+      "affected_nodes": [
+        "EMBED_MODEL",
+        "ANN_INDEX",
+        "INDEX_FRESHNESS"
+      ]
+    },
+    {
+      "id": "EC_04",
+      "name": "user_requests_memory_deletion",
+      "description": "User invokes right-to-deletion; all personal memory entries must be removed from all stores within regulatory SLA.",
+      "trigger_condition": "user deletion request",
+      "recommended_action": "propagate delete to all replicas; tombstone-and-purge; log completion timestamp for audit",
+      "affected_nodes": [
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_WRITE",
+        "PRIVACY_CONSENT"
+      ]
+    },
+    {
+      "id": "EC_05",
+      "name": "hallucinated_citation",
+      "description": "LLM generates a citation pointing to a non-existent or wrong source chunk.",
+      "trigger_condition": "citation ID not found in retrieved context",
+      "recommended_action": "citation verification step checks all IDs before rendering; strip uncorroborated citations",
+      "affected_nodes": [
+        "CITATION_GROUNDING",
+        "GROUNDING_VERIFY",
+        "CONTEXT_ASSEMBLY"
+      ]
+    },
+    {
+      "id": "EC_06",
+      "name": "live_tool_api_failure",
+      "description": "External API for live-info tool returns error or times out during agent turn.",
+      "trigger_condition": "API status != 200 or timeout",
+      "recommended_action": "graceful fallback to corpus RAG; include '[live data unavailable]' notice in answer",
+      "affected_nodes": [
+        "LIVE_INFO_TOOLS",
+        "RAG_ARCH"
+      ]
+    },
+    {
+      "id": "EC_07",
+      "name": "memory_paging_thrash",
+      "description": "MemGPT-style pager evicts a memory page that is immediately needed again, causing repeated load/evict cycles.",
+      "trigger_condition": "eviction immediately followed by load of same page within one turn",
+      "recommended_action": "add recency pin for in-flight task context; increase min-dwell threshold before eviction",
+      "affected_nodes": [
+        "MEMGPT_PATTERN",
+        "MEM_READ",
+        "MEM_WRITE"
+      ]
+    },
+    {
+      "id": "EC_08",
+      "name": "conflicting_retrieved_passages",
+      "description": "Two retrieved chunks contain contradictory facts about the same entity.",
+      "trigger_condition": "semantic contradiction detected between top-k chunks",
+      "recommended_action": "surface both with timestamps; prefer more recent; flag conflict to user",
+      "affected_nodes": [
+        "CONTEXT_ASSEMBLY",
+        "GROUNDING_VERIFY",
+        "INDEX_FRESHNESS"
+      ]
+    },
+    {
+      "id": "EC_09",
+      "name": "query_expansion_drift",
+      "description": "Query expansion produces semantically distant expansions that retrieve irrelevant documents, hurting precision.",
+      "trigger_condition": "expansion-recall@10 < baseline-recall@10",
+      "recommended_action": "evaluate each expansion independently; only include expansions that improve dev-set recall",
+      "affected_nodes": [
+        "QUERY_EXPANSION",
+        "HYBRID_RETRIEVAL",
+        "RAG_EVAL"
+      ]
+    },
+    {
+      "id": "EC_10",
+      "name": "persona_inference_error",
+      "description": "Long-term persona model infers wrong user preference (e.g., expertise level), causing persistently miscalibrated responses.",
+      "trigger_condition": "user negative feedback on personalization",
+      "recommended_action": "provide explicit persona correction UI; weight explicit signals over inferred signals",
+      "affected_nodes": [
+        "LONG_TERM_PERSONA",
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_WRITE"
+      ]
+    },
+    {
+      "id": "EC_11",
+      "name": "ann_index_recall_regression_after_update",
+      "description": "Incremental index update degrades ANN recall due to HNSW graph fragmentation.",
+      "trigger_condition": "post-update recall@10 drops > 5% vs pre-update",
+      "recommended_action": "trigger async re-index of affected shard; validate before serving; keep previous shard hot",
+      "affected_nodes": [
+        "ANN_INDEX",
+        "INDEX_FRESHNESS",
+        "RAG_EVAL"
+      ]
+    },
+    {
+      "id": "EC_12",
+      "name": "consent_missing_for_existing_memory",
+      "description": "Privacy policy updated to require explicit consent for data category already stored without consent.",
+      "trigger_condition": "retroactive consent requirement change",
+      "recommended_action": "audit existing store; purge or consent-gate unconsented entries; notify users",
+      "affected_nodes": [
+        "PRIVACY_CONSENT",
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_WRITE"
+      ]
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "action": "define_rag_architecture",
+      "node": "RAG_ARCH",
+      "description": "Define end-to-end RAG pipeline topology, component SLAs, and grounding policy.",
+      "inputs": [
+        "corpus spec",
+        "query SLA",
+        "LLM endpoint"
+      ],
+      "outputs": [
+        "pipeline spec"
+      ],
+      "decision_criteria": "corpus > 10k docs warrants vector retrieval; hybrid if terminology-heavy domain"
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "action": "define_memory_taxonomy",
+      "node": "AGENT_MEMORY_TYPES",
+      "description": "Classify memory tiers and write read/write contracts before implementation.",
+      "inputs": [
+        "agent capability spec",
+        "persistence requirements"
+      ],
+      "outputs": [
+        "memory taxonomy",
+        "API contracts"
+      ],
+      "decision_criteria": "long-lived agent requires episodic and semantic tiers; short-lived chatbot may need only in-context"
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "action": "design_chunking_strategy",
+      "node": "CHUNK_STRATEGY",
+      "description": "Define chunk size, overlap, and boundary heuristics matching LLM context budget.",
+      "inputs": [
+        "corpus sample",
+        "context window budget"
+      ],
+      "outputs": [
+        "chunking config"
+      ],
+      "decision_criteria": "256-512 tokens with 10% overlap is robust default; smaller for factoid corpora"
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "action": "select_and_train_embedding_model",
+      "node": "EMBED_MODEL",
+      "description": "Select or fine-tune bi-encoder; evaluate on domain-relevant BEIR subsets.",
+      "inputs": [
+        "domain corpus",
+        "embedding benchmark"
+      ],
+      "outputs": [
+        "embedding model",
+        "embedding dim"
+      ],
+      "decision_criteria": "off-the-shelf if BEIR recall sufficient; fine-tune if domain gap > 5% recall"
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "action": "build_ann_index",
+      "node": "ANN_INDEX",
+      "description": "Build HNSW or IVF-PQ index; sweep ef/M/nprobe to hit recall-latency target.",
+      "inputs": [
+        "embeddings",
+        "hardware"
+      ],
+      "outputs": [
+        "ANN index",
+        "latency benchmark"
+      ],
+      "decision_criteria": "HNSW for < 50M vectors; IVF-PQ for larger; ScaNN if GPU available"
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "action": "implement_hybrid_retrieval",
+      "node": "HYBRID_RETRIEVAL",
+      "description": "Fuse BM25 and dense via RRF; tune fusion weight on dev recall@10.",
+      "inputs": [
+        "BM25 index",
+        "ANN index",
+        "fusion config"
+      ],
+      "outputs": [
+        "hybrid retriever",
+        "fusion weight"
+      ],
+      "decision_criteria": "RRF k=60 robust default; tune alpha only if labeled data >= 200 queries"
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "action": "integrate_reranker",
+      "node": "RERANKER",
+      "description": "Add cross-encoder reranker for top-k; verify latency within budget.",
+      "inputs": [
+        "hybrid top-k",
+        "cross-encoder model"
+      ],
+      "outputs": [
+        "reranked list"
+      ],
+      "decision_criteria": "skip reranker if latency budget < 100ms; use distilled reranker for < 50ms"
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "action": "implement_memory_write_read",
+      "node": "MEM_WRITE",
+      "description": "Implement write/update/forget with salience filter and deduplication; implement read with hybrid memory search.",
+      "inputs": [
+        "memory taxonomy",
+        "retention policy"
+      ],
+      "outputs": [
+        "memory ops module"
+      ],
+      "decision_criteria": "write only factual claims and stated preferences; forget after 90 days without access by default"
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "action": "design_personal_context_store",
+      "node": "PERSONAL_CONTEXT_STORE",
+      "description": "Design personal-context schema and CRUD API; implement consent gating.",
+      "inputs": [
+        "user model spec",
+        "privacy policy"
+      ],
+      "outputs": [
+        "personal store",
+        "CRUD API"
+      ],
+      "decision_criteria": "separate personal store per user ID; enforce row-level isolation from day one"
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "action": "implement_privacy_consent",
+      "node": "PRIVACY_CONSENT",
+      "description": "Capture consent before first personal write; tag each entry with purpose; wire deletion propagation.",
+      "inputs": [
+        "consent signals",
+        "regulatory requirements"
+      ],
+      "outputs": [
+        "consent metadata",
+        "deletion audit log"
+      ],
+      "decision_criteria": "explicit opt-in required; retroactive consent audit on policy change"
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "action": "assemble_context_and_verify_grounding",
+      "node": "CONTEXT_ASSEMBLY",
+      "description": "Assemble retrieved chunks into prompt with ordering, dedup, and citations; run faithfulness verifier.",
+      "inputs": [
+        "reranked chunks",
+        "persona context",
+        "citation spec"
+      ],
+      "outputs": [
+        "grounded prompt",
+        "citation map"
+      ],
+      "decision_criteria": "lost-in-middle: place most-relevant at start and end; run NLI verifier on high-stakes answers"
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "action": "evaluate_and_iterate",
+      "node": "RAG_EVAL",
+      "description": "Evaluate retrieval and generation quality; diagnose regression; feed back to upstream components.",
+      "inputs": [
+        "QA eval set",
+        "production logs"
+      ],
+      "outputs": [
+        "quality metrics",
+        "regression report"
+      ],
+      "decision_criteria": "run offline eval on every model or index change; A/B gate online changes"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "rule": "privacy_over_personalization",
+      "condition": "PRIVACY_CONSENT flags consent missing for a personal data category",
+      "dominant_node": "PRIVACY_CONSENT",
+      "dominated_node": "LONG_TERM_PERSONA",
+      "rationale": "regulatory compliance is non-negotiable; persona depth is capped by consent"
+    },
+    {
+      "id": "DR_02",
+      "rule": "grounding_over_fluency",
+      "condition": "GROUNDING_VERIFY flags unsupported claim",
+      "dominant_node": "GROUNDING_VERIFY",
+      "dominated_node": "CITATION_GROUNDING",
+      "rationale": "suppress or correct unfaithful content before citation rendering"
+    },
+    {
+      "id": "DR_03",
+      "rule": "latency_sla_over_reranker",
+      "condition": "reranker inference would breach p99 latency SLA",
+      "dominant_node": "RAG_ARCH",
+      "dominated_node": "RERANKER",
+      "rationale": "user experience requires latency SLA; skip reranker under budget pressure"
+    },
+    {
+      "id": "DR_04",
+      "rule": "freshness_delete_over_index_stability",
+      "condition": "user or legal deletion request received",
+      "dominant_node": "PRIVACY_CONSENT",
+      "dominated_node": "INDEX_FRESHNESS",
+      "rationale": "right-to-deletion is legally mandated; overrides index stability preferences"
+    },
+    {
+      "id": "DR_05",
+      "rule": "chunk_strategy_before_embedding",
+      "condition": "chunk size not yet decided",
+      "dominant_node": "CHUNK_STRATEGY",
+      "dominated_node": "EMBED_MODEL",
+      "rationale": "embedding training on wrong chunk size produces misaligned vectors; fix chunks first"
+    },
+    {
+      "id": "DR_06",
+      "rule": "rag_arch_before_memory_taxonomy",
+      "condition": "RAG pipeline topology undefined",
+      "dominant_node": "RAG_ARCH",
+      "dominated_node": "AGENT_MEMORY_TYPES",
+      "rationale": "memory tiers must fit within the retrieval architecture decision"
+    },
+    {
+      "id": "DR_07",
+      "rule": "hybrid_recall_before_reranker_quality",
+      "condition": "first-stage recall@10 < threshold",
+      "dominant_node": "HYBRID_RETRIEVAL",
+      "dominated_node": "RERANKER",
+      "rationale": "reranker cannot recover candidates not retrieved; fix recall first"
+    },
+    {
+      "id": "DR_08",
+      "rule": "eval_gates_production_deployment",
+      "condition": "RAG_EVAL shows quality regression",
+      "dominant_node": "RAG_EVAL",
+      "dominated_node": "RAG_ARCH",
+      "rationale": "no promotion to production until offline quality gate passes"
+    },
+    {
+      "id": "DR_09",
+      "rule": "consent_before_personal_write",
+      "condition": "any personal data write attempted",
+      "dominant_node": "PRIVACY_CONSENT",
+      "dominated_node": "MEM_WRITE",
+      "rationale": "write without consent is a privacy violation; block the operation"
+    },
+    {
+      "id": "DR_10",
+      "rule": "retrieved_context_over_parametric_on_facts",
+      "condition": "retrieved passage contradicts LLM parametric knowledge on verifiable fact",
+      "dominant_node": "CONTEXT_ASSEMBLY",
+      "dominated_node": "ADAPTIVE_RETRIEVAL",
+      "rationale": "grounded RAG trusts retrieval over parametric memory for factual claims"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "ARR_01",
+      "rule": "do_not_re_embed_corpus_without_model_version_change",
+      "trigger": "embedding re-run attempted without model version bump",
+      "risk": "wasted compute; accidental index invalidation",
+      "prevention": "gate re-embedding on model version diff"
+    },
+    {
+      "id": "ARR_02",
+      "rule": "do_not_tune_fusion_alpha_before_establishing_recall_baselines",
+      "trigger": "alpha tuning started without baseline recall@10 for each leg",
+      "risk": "tuning against random noise",
+      "prevention": "establish BM25 recall@10 and dense recall@10 independently first"
+    },
+    {
+      "id": "ARR_03",
+      "rule": "do_not_finalize_chunk_strategy_before_context_window_budget_is_known",
+      "trigger": "chunks defined without LLM context window spec",
+      "risk": "chunks that always overflow context",
+      "prevention": "lock context window budget before chunk size selection"
+    },
+    {
+      "id": "ARR_04",
+      "rule": "do_not_deploy_personal_store_without_consent_gating",
+      "trigger": "personal context CRUD API deployed without consent check",
+      "risk": "privacy violation on first write",
+      "prevention": "consent middleware must be in place and tested before personal store goes live"
+    },
+    {
+      "id": "ARR_05",
+      "rule": "do_not_add_reranker_before_hybrid_recall_is_satisfactory",
+      "trigger": "reranker deployed with first-stage recall@10 below threshold",
+      "risk": "reranker cannot fix recall deficit; latency cost wasted",
+      "prevention": "enforce recall gate before reranker integration"
+    },
+    {
+      "id": "ARR_06",
+      "rule": "do_not_use_same_data_for_embedding_training_and_retrieval_eval",
+      "trigger": "BEIR or eval set overlaps embedding fine-tune train split",
+      "risk": "contamination inflates reported recall",
+      "prevention": "strict train/eval split; use held-out queries for all retrieval metrics"
+    },
+    {
+      "id": "ARR_07",
+      "rule": "do_not_grow_memory_store_without_expiry_policy",
+      "trigger": "MEM_WRITE deployed without retention/expiry config",
+      "risk": "unbounded memory growth; eventual OOM or quota breach",
+      "prevention": "default 90-day expiry must be set at deploy time"
+    },
+    {
+      "id": "ARR_08",
+      "rule": "do_not_swap_embedding_model_without_blue_green_index",
+      "trigger": "in-place embedding model swap attempted",
+      "risk": "index incompatibility; recall regression in production",
+      "prevention": "build new index in parallel; validate recall; promote atomically"
+    },
+    {
+      "id": "ARR_09",
+      "rule": "do_not_skip_faithfulness_verification_on_high_stakes_answers",
+      "trigger": "GROUNDING_VERIFY disabled for latency",
+      "risk": "hallucinated answers served to users",
+      "prevention": "use lightweight NLI verifier always; full judge for flagged answers only"
+    },
+    {
+      "id": "ARR_10",
+      "rule": "do_not_over_personalize_before_consent_audit",
+      "trigger": "LONG_TERM_PERSONA uses history before retroactive consent check",
+      "risk": "privacy violation; legal liability",
+      "prevention": "persona inference gated on consented-history flag"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "trigger": "retrieval_recall_regression",
+      "affected_nodes": [
+        "HYBRID_RETRIEVAL",
+        "ANN_INDEX",
+        "EMBED_MODEL"
+      ],
+      "action": "run recall@10 diagnostic; identify which leg regressed; re-tune fusion or re-index",
+      "exit_condition": "recall@10 restored to baseline"
+    },
+    {
+      "id": "IP_02",
+      "trigger": "faithfulness_regression",
+      "affected_nodes": [
+        "GROUNDING_VERIFY",
+        "CONTEXT_ASSEMBLY",
+        "CITATION_GROUNDING"
+      ],
+      "action": "audit hallucinated claims; tighten verifier threshold or improve context assembly ordering",
+      "exit_condition": "faithfulness > 90% on eval set"
+    },
+    {
+      "id": "IP_03",
+      "trigger": "latency_sla_breach",
+      "affected_nodes": [
+        "RERANKER",
+        "LIVE_INFO_TOOLS",
+        "ADAPTIVE_RETRIEVAL"
+      ],
+      "action": "profile per-stage latency; disable most expensive optional stage; add caching",
+      "exit_condition": "p99 latency within SLA"
+    },
+    {
+      "id": "IP_04",
+      "trigger": "memory_quota_exceeded",
+      "affected_nodes": [
+        "MEM_WRITE",
+        "MEMGPT_PATTERN",
+        "PERSONAL_CONTEXT_STORE"
+      ],
+      "action": "tighten salience filter; reduce retention window; run deduplication pass",
+      "exit_condition": "memory size within quota"
+    },
+    {
+      "id": "IP_05",
+      "trigger": "privacy_incident_or_audit",
+      "affected_nodes": [
+        "PRIVACY_CONSENT",
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_WRITE"
+      ],
+      "action": "freeze new personal writes; audit existing store for unconsented data; purge violations",
+      "exit_condition": "audit clean; consent coverage 100%"
+    },
+    {
+      "id": "IP_06",
+      "trigger": "embedding_model_improvement_available",
+      "affected_nodes": [
+        "EMBED_MODEL",
+        "ANN_INDEX",
+        "INDEX_FRESHNESS"
+      ],
+      "action": "evaluate new model on dev set; if recall improves > 3%, schedule blue-green re-index",
+      "exit_condition": "new index validated and promoted"
+    },
+    {
+      "id": "IP_07",
+      "trigger": "user_persona_accuracy_complaint",
+      "affected_nodes": [
+        "LONG_TERM_PERSONA",
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_WRITE"
+      ],
+      "action": "expose persona edit UI; weight explicit corrections above inferred; re-evaluate on sample",
+      "exit_condition": "user confirms persona accuracy"
+    },
+    {
+      "id": "IP_08",
+      "trigger": "corpus_domain_expansion",
+      "affected_nodes": [
+        "CHUNK_STRATEGY",
+        "EMBED_MODEL",
+        "ANN_INDEX",
+        "HYBRID_RETRIEVAL"
+      ],
+      "action": "re-evaluate chunk strategy for new domain; fine-tune embedding if domain gap detected; extend index",
+      "exit_condition": "recall@10 on new domain meets threshold"
+    },
+    {
+      "id": "IP_09",
+      "trigger": "adaptive_retrieval_accuracy_drop",
+      "affected_nodes": [
+        "ADAPTIVE_RETRIEVAL",
+        "GROUNDING_VERIFY",
+        "RAG_EVAL"
+      ],
+      "action": "tighten gating threshold toward always-retrieve; re-label gating training set",
+      "exit_condition": "no accuracy drop vs always-retrieve baseline"
+    }
+  ],
+  "priority_order": [
+    "RAG_ARCH",
+    "AGENT_MEMORY_TYPES",
+    "PRIVACY_CONSENT",
+    "PERSONAL_CONTEXT_STORE",
+    "GROUNDING_VERIFY",
+    "RAG_EVAL",
+    "EMBED_MODEL",
+    "MEM_WRITE",
+    "CHUNK_STRATEGY",
+    "HYBRID_RETRIEVAL",
+    "CONTEXT_ASSEMBLY",
+    "ANN_INDEX",
+    "MEM_READ",
+    "INDEX_FRESHNESS",
+    "MEMGPT_PATTERN",
+    "LONG_TERM_PERSONA",
+    "RERANKER",
+    "LIVE_INFO_TOOLS",
+    "CITATION_GROUNDING",
+    "QUERY_EXPANSION",
+    "ADAPTIVE_RETRIEVAL"
+  ],
+  "priority_rationale": "Ordered by foundational dependency and risk: architecture and memory taxonomy first; privacy and grounding (safety-critical) next; retrieval pipeline; operational/enhancement nodes last.",
+  "validation_protocol": {
+    "required_checks": [
+      "all node IDs unique",
+      "all edge from/to reference valid node IDs",
+      "priority_order contains every node ID exactly once",
+      "high-risk nodes have non-empty acceptance_tests and human_review_required=true",
+      "high-coupling nodes have revisit_triggers",
+      "conflict edges have signed_tension<0 and resolution_rule",
+      "SRC_HEURISTIC_PRIOR in source_registry",
+      "every CQ_ref and CA_ref resolves",
+      "observed_impact = 0.0 for all nodes (no observed data)",
+      "node count in [19,24]",
+      "edge count in [32,40]"
+    ],
+    "validation_mode": "dense",
+    "report_format": "json"
+  },
+  "traceability_matrix": {
+    "competency_questions_to_nodes": {
+      "CQ_01": [
+        "RAG_ARCH",
+        "ADAPTIVE_RETRIEVAL"
+      ],
+      "CQ_02": [
+        "CHUNK_STRATEGY",
+        "EMBED_MODEL",
+        "CONTEXT_ASSEMBLY"
+      ],
+      "CQ_03": [
+        "EMBED_MODEL",
+        "RAG_EVAL"
+      ],
+      "CQ_04": [
+        "HYBRID_RETRIEVAL",
+        "ANN_INDEX",
+        "QUERY_EXPANSION"
+      ],
+      "CQ_05": [
+        "ADAPTIVE_RETRIEVAL",
+        "GROUNDING_VERIFY",
+        "RAG_EVAL"
+      ],
+      "CQ_06": [
+        "INDEX_FRESHNESS",
+        "ANN_INDEX",
+        "EMBED_MODEL"
+      ],
+      "CQ_07": [
+        "CONTEXT_ASSEMBLY",
+        "CHUNK_STRATEGY",
+        "RERANKER"
+      ],
+      "CQ_08": [
+        "GROUNDING_VERIFY",
+        "CITATION_GROUNDING",
+        "RAG_EVAL"
+      ],
+      "CQ_09": [
+        "CITATION_GROUNDING",
+        "CONTEXT_ASSEMBLY"
+      ],
+      "CQ_10": [
+        "AGENT_MEMORY_TYPES",
+        "MEM_WRITE",
+        "MEM_READ"
+      ],
+      "CQ_11": [
+        "MEM_WRITE",
+        "MEMGPT_PATTERN",
+        "PRIVACY_CONSENT"
+      ],
+      "CQ_12": [
+        "PERSONAL_CONTEXT_STORE",
+        "LONG_TERM_PERSONA",
+        "PRIVACY_CONSENT"
+      ],
+      "CQ_13": [
+        "LONG_TERM_PERSONA",
+        "PERSONAL_CONTEXT_STORE",
+        "MEM_READ"
+      ],
+      "CQ_14": [
+        "LIVE_INFO_TOOLS",
+        "RAG_ARCH",
+        "ADAPTIVE_RETRIEVAL"
+      ]
+    },
+    "conflict_axes_to_nodes": {
+      "CA_01": [
+        "RERANKER",
+        "LIVE_INFO_TOOLS",
+        "ADAPTIVE_RETRIEVAL",
+        "GROUNDING_VERIFY"
+      ],
+      "CA_02": [
+        "MEM_WRITE",
+        "PERSONAL_CONTEXT_STORE",
+        "LONG_TERM_PERSONA",
+        "PRIVACY_CONSENT"
+      ],
+      "CA_03": [
+        "CHUNK_STRATEGY",
+        "EMBED_MODEL",
+        "CONTEXT_ASSEMBLY"
+      ],
+      "CA_04": [
+        "EMBED_MODEL",
+        "ANN_INDEX",
+        "HYBRID_RETRIEVAL"
+      ],
+      "CA_05": [
+        "INDEX_FRESHNESS",
+        "ANN_INDEX",
+        "EMBED_MODEL"
+      ],
+      "CA_06": [
+        "RAG_ARCH",
+        "GROUNDING_VERIFY",
+        "ADAPTIVE_RETRIEVAL"
+      ],
+      "CA_07": [
+        "LONG_TERM_PERSONA",
+        "PERSONAL_CONTEXT_STORE",
+        "PRIVACY_CONSENT"
+      ],
+      "CA_08": [
+        "MEM_WRITE",
+        "MEMGPT_PATTERN",
+        "MEM_READ"
+      ],
+      "CA_09": [
+        "ADAPTIVE_RETRIEVAL",
+        "GROUNDING_VERIFY",
+        "RAG_EVAL"
+      ],
+      "CA_10": [
+        "CITATION_GROUNDING",
+        "CONTEXT_ASSEMBLY",
+        "GROUNDING_VERIFY"
+      ]
+    },
+    "workflow_steps_to_nodes": {
+      "WF_01": [
+        "RAG_ARCH"
+      ],
+      "WF_02": [
+        "AGENT_MEMORY_TYPES"
+      ],
+      "WF_03": [
+        "CHUNK_STRATEGY"
+      ],
+      "WF_04": [
+        "EMBED_MODEL"
+      ],
+      "WF_05": [
+        "ANN_INDEX"
+      ],
+      "WF_06": [
+        "HYBRID_RETRIEVAL"
+      ],
+      "WF_07": [
+        "RERANKER"
+      ],
+      "WF_08": [
+        "MEM_WRITE"
+      ],
+      "WF_09": [
+        "PERSONAL_CONTEXT_STORE"
+      ],
+      "WF_10": [
+        "PRIVACY_CONSENT"
+      ],
+      "WF_11": [
+        "CONTEXT_ASSEMBLY"
+      ],
+      "WF_12": [
+        "RAG_EVAL"
+      ]
+    }
+  },
+  "change_control": {
+    "version": "1.0.0",
+    "change_log": [
+      {
+        "version": "1.0.0",
+        "description": "Initial generation",
+        "date": "2026-06-23"
+      }
+    ],
+    "review_required_for_changes_to": [
+      "PRIVACY_CONSENT",
+      "PERSONAL_CONTEXT_STORE",
+      "GROUNDING_VERIFY",
+      "RAG_ARCH"
+    ]
+  },
+  "validation_report": {
+    "overall_status": "passed",
+    "summary_counts": {
+      "passed": 18,
+      "failed": 0,
+      "warnings": 0,
+      "repaired": 0
+    },
+    "checks": [
+      {
+        "check_id": "CHK_JSON",
+        "status": "passed",
+        "json_path": "$",
+        "expected": "valid_json",
+        "actual": "valid_json",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_TOPKEYS",
+        "status": "passed",
+        "json_path": "$",
+        "expected": "all_required_top_level_keys_present",
+        "actual": "present",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_NODE_UNIQUE",
+        "status": "passed",
+        "json_path": "$.nodes[*].id",
+        "expected": "unique",
+        "actual": "unique",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_EDGE_UNIQUE",
+        "status": "passed",
+        "json_path": "$.edges[*].id",
+        "expected": "unique",
+        "actual": "unique",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_EDGE_REF",
+        "status": "passed",
+        "json_path": "$.edges[*]",
+        "expected": "endpoints_resolve",
+        "actual": "resolve",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_DEP_ACYCLIC",
+        "status": "passed",
+        "json_path": "$.edges[?(@.edge_type=='dependency')]",
+        "expected": "acyclic",
+        "actual": "acyclic",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_CONFLICT_SIGN",
+        "status": "passed",
+        "json_path": "$.edges[?(@.edge_type=='conflict')].signed_tension",
+        "expected": "<0",
+        "actual": "<0",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_BOUNDS",
+        "status": "passed",
+        "json_path": "$.nodes[*].metrics",
+        "expected": "in_0_1",
+        "actual": "in_0_1",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_FORMULA",
+        "status": "passed",
+        "json_path": "$.nodes[*].metrics",
+        "expected": "consistent_with_formulas",
+        "actual": "consistent",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_HIGH_RISK",
+        "status": "passed",
+        "json_path": "$.nodes[?(@.metrics.risk_if_wrong>=0.8)]",
+        "expected": "acceptance_tests_non_empty_and_human_review_true",
+        "actual": "compliant",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_SRC_REG",
+        "status": "passed",
+        "json_path": "$.source_registry",
+        "expected": "SRC_HEURISTIC_PRIOR_present",
+        "actual": "present",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_CQ_REFS",
+        "status": "passed",
+        "json_path": "$.nodes[*].competency_question_refs",
+        "expected": "all_resolve",
+        "actual": "resolve",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_PRIORITY",
+        "status": "passed",
+        "json_path": "$.priority_order",
+        "expected": "every_node_exactly_once",
+        "actual": "compliant",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_CONFLICT_RULE",
+        "status": "passed",
+        "json_path": "$.edges[?(@.edge_type=='conflict')]",
+        "expected": "resolution_rule_present",
+        "actual": "present",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_NODE_COUNT",
+        "status": "passed",
+        "json_path": "$.nodes",
+        "expected": "19_to_24",
+        "actual": "21",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_EDGE_COUNT",
+        "status": "passed",
+        "json_path": "$.edges",
+        "expected": "32_to_40",
+        "actual": "38",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_OBSERVED_IMPACT",
+        "status": "passed",
+        "json_path": "$.nodes[*].probabilistic_layer.observed_impact",
+        "expected": "0.0",
+        "actual": "0.0",
+        "repair_action": ""
+      },
+      {
+        "check_id": "CHK_EVIDENCE_LABELS",
+        "status": "passed",
+        "json_path": "$.nodes[*].metric_labels",
+        "expected": "heuristic_only",
+        "actual": "heuristic",
+        "repair_action": ""
+      }
+    ]
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_rag_pipeline_and_agent_memory_schema_semantics_scoring_workflow_and_grounding_quality",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "single user query, empty memory, static corpus",
+        "expected_properties": [
+          "recall@10 computable",
+          "grounded answer citable"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_002",
+        "case_type": "leakage_probe",
+        "input_summary": "eval set overlaps embedding fine-tune train split",
+        "expected_properties": [
+          "contamination detected",
+          "metrics flagged"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_003",
+        "case_type": "memory_privacy_conflict",
+        "input_summary": "user deletion request during active persona inference",
+        "expected_properties": [
+          "deletion honored",
+          "persona inference halted",
+          "audit log written"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_004",
+        "case_type": "latency_sla_breach",
+        "input_summary": "reranker + live tools both active, budget exceeded",
+        "expected_properties": [
+          "expensive stage dropped",
+          "latency within SLA"
+        ]
+      }
+    ],
+    "metrics": [
+      "json_validity",
+      "schema_conformance",
+      "reference_validity",
+      "formula_consistency",
+      "evidence_label_correctness",
+      "competency_question_coverage",
+      "workflow_gate_integrity",
+      "dependency_cycle_absence",
+      "source_traceability",
+      "anti_rework_rule_coverage"
+    ],
+    "regression_policy": "compare_against_previous_prompt_or_schema_version_before_release",
+    "minimum_pass_conditions": [
+      "json_validity==1.0",
+      "reference_validity==1.0",
+      "formula_consistency==1.0",
+      "dependency_cycle_absence==1.0"
+    ]
+  }
+}

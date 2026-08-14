@@ -1,0 +1,3771 @@
+{
+  "domain": "engagement_gamification_progress_visuals",
+  "domain_label": "Study System \u2014 Engagement, Gamification & Progress Visuals (engage): the ephemeral, quarantined session-drill WaterMeter timed-fluency mechanic and its four-gate guardrails",
+  "purpose": "A method for deciding whether a timed-drill / decaying-resource-meter / variable-reward / collection engagement mechanic may ship in a single-user study app \u2014 the opt-in, isolated automaticity drill over small MCQs on the existing-but-unused skill_drill surface, with an ephemeral non-persisted WaterMeter, session-only decay framed as momentum not forgetting, a deterministic correct-within-window rise, a game_timed evidence quarantine and one-way read-only arrow, timeout != wrong, honest collection mapped to real mastered units, and a blue-not-green stepped tickless encoding \u2014 judging each against engage's four gates (fidelity, motivation-safety, guardrails, learning-primacy) and the ten GAMIFICATION_PLAN invariants, so the drill is a conditional GO only when every gate holds and a no-go otherwise, with every external claim tagged FACT / ESTIMATE / UNKNOWN exactly as the grounding plan did and no statistic invented that the recon did not verify.",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "the single learner is the only user and there is no leaderboard, social comparison or tangible-reward economy in scope; the drill meter is judged as informational fluency feedback to one person, never as a currency or a points-for-prizes system",
+    "the drill is opt-in, isolated from the FSRS-scheduled Review, and built on the existing-but-unused Card.kind=skill_drill surface [FACT - APP_RECON 6.11]; its reward meter is ephemeral, quarantined from the learning model, and visually unmistakable from real progress [ESTIMATE - plan section 1/2]",
+    "the design is a heuristic prior from the GAMIFICATION_PLAN, not an observed dataset; this KB introduces no measured drill outcome, so observed_impact and data_quality stay 0.0 exactly as the sibling gamification KB's evidence_label_policy mandates",
+    "the only FACT-grade app-behaviour claims available are the plan's recon tags [FACT - APP_RECON 6.11] (skill_drill surface exists, unused) and [FACT - APP_RECON 5] (no animation/physics lib today); every other drill-design claim is [ESTIMATE - design] or an [UNKNOWN] open decision",
+    "several load-bearing constants are owner-open build-time decisions the plan did not fix (water_decay_timescale, game_answer_logging, the TOEFL wrong-answer penalty, and the graphux build-vs-adopt animation choice) and are carried as [UNKNOWN], never invented"
+  ],
+  "exclusions": [
+    "the FSRS scheduling algorithm, interval math and backlog ordering belong to the scheduler/SRS specialist; this KB only constrains that the drill never writes to or degrades that output (the quarantine and session-only-decay rules)",
+    "the learner-model internals (BKT mastery estimation, ItemElo, CalibrationBin) belong to the learner-model specialist and are referenced only as the read-only source of the real mastery threshold the honest collection consumes, never written by the drill",
+    "the motion and physics implementation (the drop animation, the build-vs-adopt of an animation lib) belongs to the graphux specialist; engage constrains it (removable physics, reduced-motion fallback, static targets) but does not build it",
+    "exact visual styling beyond the owner-fixed separation semantics (the precise cyan hex, pixel sizes, easing curves, the exact fall-time constant and decay_per_sec value) is a build-time decision routed to graphux/uxguide",
+    "inventing a drill engagement lift, fluency-gain, retention or completion statistic the recon did not verify, or presenting a design estimate as an observed finding"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "standard",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "standard",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_D01",
+      "question": "What exactly is the fenced brief for the session drill, and which parts are binding versus held open?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "DRILL_SCOPE_FIDELITY records the opt-in timed fluency drill on the unused Card.kind=skill_drill surface [FACT - APP_RECON 6.11] with the ephemeral/quarantined/visually-unmistakable binding properties, and lists water_decay_timescale, game_answer_logging and the TOEFL penalty as [UNKNOWN] held-open decisions, never invented",
+      "covered_by": [
+        "DRILL_SCOPE_FIDELITY"
+      ]
+    },
+    {
+      "id": "CQ_D02",
+      "question": "What is the ephemeral WaterMeter data model, and how is non-persistence guaranteed?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "WATERMETER_MODEL gives WaterMeter { level 0..100 stepped, rise_per_hit, decay_per_sec, window_ms } as a non-persisted client/session object that resets each session and writes nothing to day-box pct, course mastery, LearnerState/BKT, ItemElo, FSRS CardState or CalibrationBin",
+      "covered_by": [
+        "WATERMETER_MODEL"
+      ]
+    },
+    {
+      "id": "CQ_D03",
+      "question": "What does the rise rule honestly reward, and why is that a tension against the retention invariant?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "WATER_RISE_RULE states rise fires only on correct-within-window as speed+accuracy=recognition fluency with a deterministic rise_per_hit, flags it 'speed not mastery', and marks it a conditional PASS that collides with INV-5 and clears only because DRILL_CONTENT_ELIGIBILITY fences it to automaticity-only content",
+      "covered_by": [
+        "WATER_RISE_RULE",
+        "DRILL_CONTENT_ELIGIBILITY"
+      ]
+    },
+    {
+      "id": "CQ_D04",
+      "question": "Why must the decay be session-only, and why is multi-day decay rejected?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SESSION_DECAY_RULE frames decay as session momentum not forgetting, requires it be session-only, and rejects multi-day decay because it creates a pull to review early (a spacing violation failing INV-2 and INV-4), keeping water_decay_timescale [UNKNOWN] with session-only recommended",
+      "covered_by": [
+        "SESSION_DECAY_RULE"
+      ]
+    },
+    {
+      "id": "CQ_D05",
+      "question": "How is the timed drill kept construct-valid for the underlying MCQ and for ESL fairness?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "TIMED_DRILL_MODE keeps the MCQ unchanged and still gated (cover-the-options, homogeneous options, real-error distractors), sets a per-card fall window with a readable ESL floor, and makes the static option buttons the selection target so no moving drop turns it into a motor-dexterity test",
+      "covered_by": [
+        "TIMED_DRILL_MODE"
+      ]
+    },
+    {
+      "id": "CQ_D06",
+      "question": "How is timed-mode evidence quarantined from the learning model, and why is flag-and-trust insufficient?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "QUARANTINE_INVARIANT logs timed data only as evidence_class=game_timed excluded by default from every BKT/Elo replay, diagnosis and calibration bin, keeps the arrow one-way (read never write), and re-verifies every bkt_evidence/submitReview change because that path was silently broken once already (INV-10)",
+      "covered_by": [
+        "QUARANTINE_INVARIANT"
+      ]
+    },
+    {
+      "id": "CQ_D07",
+      "question": "Why is a missed drop not a wrong answer, and what does it write to the learner model?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "TIMEOUT_NOT_WRONG states a missed drop has no chosen_option_id, is not an FSRS Again, carries no misconception, writes no learning-model evidence, and surfaces 'Correct - but the drop fell first. Speed, not knowledge' with an untimed re-see, encoding INV-8",
+      "covered_by": [
+        "TIMEOUT_NOT_WRONG"
+      ]
+    },
+    {
+      "id": "CQ_D08",
+      "question": "Which content is eligible for the timed drill and which is prohibited, and why?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "DRILL_CONTENT_ELIGIBILITY routes remember/understand terminology gates and time-boxed TOEFL small tasks in, and routes INBDE itemsets/vignettes/EXCEPT-NOT/constructed-response out because timing them trains recognition-over-understanding, with the TOEFL wrong-answer penalty held [UNKNOWN]",
+      "covered_by": [
+        "DRILL_CONTENT_ELIGIBILITY"
+      ]
+    },
+    {
+      "id": "CQ_D09",
+      "question": "When is a collection mechanic honest, and when does it become a no-go?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "HONEST_COLLECTION lights KG concepts only at a real BKT mastery threshold (never on drill hits and never reading the WaterMeter), which is the 'all zeros' fix and maps to a real denominator (G3), and becomes a NO-GO the moment a 'concept unlocked by drill speed' variant is proposed",
+      "covered_by": [
+        "HONEST_COLLECTION",
+        "WATER_RISE_RULE"
+      ]
+    },
+    {
+      "id": "CQ_D10",
+      "question": "Why are variable/random reward schedules rejected, and what does that require of rise_per_hit?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "VARIABLE_REWARD_REJECT rejects variable/random reward schedules as a dark pattern that breaks the informational-feedback rule (overjustification) and therefore requires rise_per_hit to be deterministic so the WaterMeter never becomes a variable-ratio slot-machine",
+      "covered_by": [
+        "VARIABLE_REWARD_REJECT"
+      ]
+    },
+    {
+      "id": "CQ_D11",
+      "question": "How is the drill meter made visually unmistakable from real mastery progress?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "HONEST_DRILL_ENCODING separates the meter by form (a vertical tank), hue (blue, outside the mastery green/yellow/red palette), location (drill surface only) and label+no-persistence, quantises the fill into discrete steps, and keeps it tickless (the completion tick is reserved for real day-box completion)",
+      "covered_by": [
+        "HONEST_DRILL_ENCODING"
+      ]
+    },
+    {
+      "id": "CQ_D12",
+      "question": "What accessibility floor does the drill require, and what stays independent of the decorative motion?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "DRILL_ACCESSIBILITY requires prefers-reduced-motion to fall back to a static countdown numeral/ring + step meter (drop physics removable, timer information not), colorblind reads by height + numeric label, no shame loop, onboarding pre-explains timeout, and flags graphux build-vs-adopt [UNKNOWN] since no animation lib exists today [FACT - APP_RECON 5]",
+      "covered_by": [
+        "DRILL_ACCESSIBILITY"
+      ]
+    },
+    {
+      "id": "CQ_D13",
+      "question": "When is the session drill a go, and what makes it a no-go?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "DRILL_GO_NOGO composes the verdict: the drill is a CONDITIONAL GO only when it clears G1 fidelity, G2 motivation-safety (deterministic rise, no variable reward), G3 guardrails (quarantine, timeout != wrong, ESL floor, static target, honest collection) and G4 learning-primacy (non-persistence, one-way arrow, session-only decay) at once; failing any gate is a no-go until fixed, and it ships LAST behind graphux",
+      "covered_by": [
+        "DRILL_GO_NOGO",
+        "QUARANTINE_INVARIANT"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "WaterMeter (ephemeral session meter)",
+      "definition": "The drill's session-flow meter WaterMeter { level 0..100 rendered stepped, rise_per_hit, decay_per_sec, window_ms }: a non-persisted client/session object that resets each session and writes nothing to the learning model. A coarse fluency counter, never a measured mastery continuum [ESTIMATE - design, plan section 1]."
+    },
+    {
+      "term": "game_timed quarantine",
+      "definition": "The rule that timed-mode answers are logged only as a distinct evidence_class=game_timed (extending grade_source) and excluded by default from every nightly BKT/Elo replay, diagnosis and calibration bin; the arrow is one-way (the game reads the model, never writes it) [ESTIMATE - design, plan section 3 INV-3/INV-9]."
+    },
+    {
+      "term": "session-only decay",
+      "definition": "level -= decay_per_sec * dt floored at 0, framed as session momentum ('use it or lose it this session'), NOT forgetting. It must never persist across days; multi-day decay is rejected because it creates a spacing-violating pull to review early [ESTIMATE - design, plan section 1; water_decay_timescale UNKNOWN]."
+    },
+    {
+      "term": "timeout != wrong",
+      "definition": "A missed drop has no chosen_option_id, so it is not a misconception, not a knowledge verdict, and never an FSRS 'Again'; it writes no learning-model evidence and offers an untimed re-see. A game clock never substitutes for the learner-model latency/honesty signal (INV-8) [ESTIMATE - design, plan section 1]."
+    },
+    {
+      "term": "recognition fluency (speed, not mastery)",
+      "definition": "What the rise rule honestly rewards: correctness-within-a-window = speed + accuracy = recognition fluency, valid only where automaticity is the objective and always UI-flagged as speed not mastery; unflagged, it is a no-go [ESTIMATE - design, plan section 1]."
+    },
+    {
+      "term": "honest collection",
+      "definition": "A collection mechanic that lights up KG concepts only when they reach a real BKT mastery threshold, never from accrued drill hits and never by reading the WaterMeter; the concrete fix for 'all zeros' and an anti-illusionary mapping to a real denominator [ESTIMATE - design, plan section 2.3]."
+    },
+    {
+      "term": "variable-reward rejection",
+      "definition": "The standing rejection of variable/random (variable-ratio) reward schedules as a dark pattern adjacent to a tangible-reward economy that breaks the informational-feedback rule; it requires rise_per_hit to be deterministic so the meter never becomes a slot-machine [ESTIMATE - design synthesis, plan section 2]."
+    },
+    {
+      "term": "blue-not-green stepped tickless encoding",
+      "definition": "The four honest-encoding separators of the drill meter from real mastery: form (a vertical tank), hue (blue, outside the green/yellow/red mastery palette), location (drill surface only) and label+no-persistence; the fill is quantised into discrete steps and is tickless (the completion tick is reserved for real day-box completion) [ESTIMATE - design, plan section 1]."
+    },
+    {
+      "term": "fall-time floor (ESL fairness)",
+      "definition": "The readable minimum on the per-card fall window, calibrated to option count and ESL reading rate, so the timer measures recognition fluency and not English reading speed; never a fixed cinematic constant [ESTIMATE - design, plan section 1]."
+    },
+    {
+      "term": "the four gates (G1-G4)",
+      "definition": "engage's ship gates the drill must clear at once: G1 fidelity (faithful and visually unmistakable), G2 motivation-safety (informational, deterministic, no variable reward), G3 guardrails (quarantine, timeout != wrong, ESL floor, static target, honest collection), G4 learning-primacy (non-persistence, one-way arrow, session-only decay). Fail any gate = no-go [ESTIMATE - design synthesis]."
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model"
+    ],
+    "probabilistic_modeling": [
+      "nodes"
+    ],
+    "risk_analysis": [
+      "edge_cases"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for the session-drill mechanics work units in absence of supplied datasets; the design is grounded in the GAMIFICATION_PLAN and its APP_RECON tags, carried at the plan's own FACT/ESTIMATE/UNKNOWN grade",
+      "citation_or_locator": "heuristic prior; GAMIFICATION_PLAN design synthesis; no external dataset supplied",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "DRILL_SCOPE_FIDELITY",
+      "topic": "binding_water_drop_drill_brief",
+      "definition": "Anchor the drill to the owner request as recorded in the plan: an opt-in timed warm-up / fluency drill over a pool of small MCQs, separate from the FSRS-scheduled Review, on the existing-but-unused Card.kind=\"skill_drill\" surface [FACT \u2014 APP_RECON \u00a76.11]. Binding properties every other node inherits: the reward meter is ephemeral, quarantined from the learning model, and visually unmistakable from real progress [ESTIMATE \u2014 plan \u00a71/\u00a72]. This node does not itself ship a mechanic; it fixes the fence and is the G1-fidelity reference, carrying the framing 'gamify the wall, not the hole.' Held-open decisions are kept, not invented: water_decay_timescale, game_answer_logging, and the TOEFL wrong-answer penalty are all [UNKNOWN \u2014 plan \u00a75]. The whole drill is a conditional GO, narrowly fenced, and ships LAST behind the new graphux specialist.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "the opt-in / timed / fluency / skill_drill-surface fenced brief as recorded in the plan",
+          "the ephemeral + quarantined + visually-unmistakable binding properties every node inherits",
+          "the held-open decisions (water_decay_timescale, game_answer_logging, TOEFL penalty) tagged UNKNOWN"
+        ],
+        "excluded": [
+          "the meter data model itself (its own node)",
+          "the four-gate verdict (the synthesis node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.3,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.32,
+        "risk_score": 0.574,
+        "confidence_score": 0.608,
+        "revisit_pressure": 0.317,
+        "lock_score": 0.713,
+        "final_importance": 0.712
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.86,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.78,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.12,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "posterior_importance": 0.702,
+        "update_signal": "an owner clarification on a held-open decision (water_decay_timescale, game_answer_logging, TOEFL penalty) or a plan revision changes the fence",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fixing the fence first stops a later engineer widening the drill past the opt-in, isolated, ephemeral scope the owner set",
+          "example": "building the drill on the existing Card.kind=skill_drill surface rather than bolting timers onto the FSRS Review"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Several load-bearing constants are genuinely unresolved, so the fence is exact in shape but open in a few numbers",
+          "example": "the decay timescale being stated as session-only in intent while the actual constant stays [UNKNOWN] until the owner fixes it"
+        }
+      ],
+      "failure_modes": [
+        "widening the drill beyond the opt-in isolated automaticity scope",
+        "inventing a value for a held-open decision instead of flagging it UNKNOWN"
+      ],
+      "acceptance_tests": [
+        "the brief states the drill is opt-in, timed, fluency-only, on the skill_drill surface, and separate from FSRS Review, with the ephemeral/quarantined/visually-unmistakable properties as [ESTIMATE] and the three held-open constants as [UNKNOWN]"
+      ],
+      "revisit_triggers": [
+        "the owner resolves a held-open constant",
+        "a downstream node contradicts a binding property",
+        "the plan scope is revised"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "WATERMETER_MODEL",
+      "topic": "ephemeral_session_flow_meter_data_model",
+      "definition": "Define the ephemeral session-flow meter data model [ESTIMATE \u2014 design from plan \u00a71]: WaterMeter { level: 0..100 rendered STEPPED not smooth, rise_per_hit, decay_per_sec, window_ms } as a client/session state object, non-persisted. Non-persistence invariant: it resets each session and writes NOTHING to day-box pct, course mastery, LearnerState/BKT, ItemElo, FSRS CardState, or CalibrationBin. G4 PASS via non-persistence (INV-1 no BKT/Elo write, INV-2 no interval write, INV-9 one-way arrow); the meter is a fluency counter, not a currency (G2); the STEPPED render is the G1 hook \u2014 a coarse counter, never a measured continuum.",
+      "node_type": "work_unit",
+      "group": "mechanics",
+      "scope_boundary": {
+        "included": [
+          "the WaterMeter { level 0..100 stepped, rise_per_hit, decay_per_sec, window_ms } fields",
+          "the non-persistence invariant (writes nothing to BKT/Elo/FSRS/CalibrationBin/day-box/course)",
+          "the stepped-not-smooth render as the coarse-counter G1 hook"
+        ],
+        "excluded": [
+          "the rise and decay mutation rules (their own nodes)",
+          "the game_timed logging path (its own node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "DRILL_SCOPE_FIDELITY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.76,
+        "user_value": 0.78,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.45,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.611,
+        "confidence_score": 0.585,
+        "revisit_pressure": 0.331,
+        "lock_score": 0.698,
+        "final_importance": 0.722
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "posterior_importance": 0.636,
+        "update_signal": "a persistence or schema change touches the meter, or a new drill surface reads/writes the level",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A non-persisted session object makes the learning-model firewall structural, not a matter of discipline",
+          "example": "the meter living only in client/session state so a page reload zeroes it and no nightly job can read it"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A purely session object cannot show cross-session fluency trend, which some designs would want",
+          "example": "a learner who wants a week-over-week fluency chart cannot get one from an object that resets each session"
+        }
+      ],
+      "failure_modes": [
+        "persisting the level into any durable store",
+        "letting the render imply a smooth measured continuum rather than a coarse stepped counter"
+      ],
+      "acceptance_tests": [
+        "the model defines the four WaterMeter fields, marks the object non-persisted/session-scoped, and asserts it writes nothing to day-box pct, course mastery, BKT, Elo, FSRS CardState or CalibrationBin"
+      ],
+      "revisit_triggers": [
+        "a persistence or caching change touches the meter",
+        "a new surface wants to read the level",
+        "the stepped render is questioned"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "WATER_RISE_RULE",
+      "topic": "correct_within_window_rise_rewards_fluency",
+      "definition": "Rise fires ONLY when correct == true AND within the fall window: level = min(100, level + rise_per_hit); otherwise the drop disappears [ESTIMATE \u2014 plan \u00a71]. What it honestly rewards is correctness-within-a-window = speed + accuracy = recognition fluency, valid ONLY where automaticity is the actual objective, flagged as such in the UI and never sold as mastery. rise_per_hit is deterministic/fixed, guarding against variable-reward drift. This is the tension node: rewarding speed collides with INV-5 (never reward raw speed/volume over retention); it clears the gate ONLY because it is fenced to automaticity-only content (DRILL_CONTENT_ELIGIBILITY) and quarantined (QUARANTINE_INVARIANT). G2 is a conditional-PASS contingent on the honesty label; without the 'speed, not mastery' flag it is a NO-GO.",
+      "node_type": "work_unit",
+      "group": "mechanics",
+      "scope_boundary": {
+        "included": [
+          "the correct-within-window rise rule and deterministic rise_per_hit",
+          "the honest 'speed + accuracy = recognition fluency' claim and its mandatory UI flag",
+          "the INV-5 tension and the fence/quarantine conditions that clear it"
+        ],
+        "excluded": [
+          "the timed-mode fall window mechanics (its own node)",
+          "the content routing that legitimises the reward (its own node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WATERMETER_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.72,
+        "user_value": 0.74,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.79,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.602,
+        "confidence_score": 0.546,
+        "revisit_pressure": 0.387,
+        "lock_score": 0.667,
+        "final_importance": 0.697
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.24,
+          0.52
+        ],
+        "posterior_importance": 0.571,
+        "update_signal": "the honesty label is dropped, rise_per_hit is made variable, or the fenced content set changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Naming exactly what the rise rewards (fluency, not mastery) keeps the mechanic honest and auditable",
+          "example": "the UI labelling a filled meter 'recognition speed' so it is never mistaken for course mastery"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.64,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Rewarding speed is intrinsically in tension with the retention invariant and only survives inside a tight fence",
+          "example": "the same rule applied to an apply/analyze item would reward fast guessing over understanding"
+        }
+      ],
+      "failure_modes": [
+        "dropping the 'speed, not mastery' label so the reward masquerades as competence",
+        "making rise_per_hit variable and drifting toward a variable-ratio reward"
+      ],
+      "acceptance_tests": [
+        "rise fires only on correct-within-window, rise_per_hit is deterministic, the UI flags it as speed/fluency not mastery, and the node states it clears G2 only under the content fence and the quarantine"
+      ],
+      "revisit_triggers": [
+        "the honesty label is weakened",
+        "a variable rise is proposed",
+        "the eligible content set changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SESSION_DECAY_RULE",
+      "topic": "session_momentum_decay_not_forgetting",
+      "definition": "level -= decay_per_sec \u00b7 dt, floored at 0, framed as session momentum ('use it or lose it THIS session'), NOT forgetting/retrievability \u2014 calling it 'forgetting' would falsely borrow the FSRS concept [ESTIMATE \u2014 plan \u00a71]. DECAY MUST BE SESSION-ONLY, never over days. Multi-day decay is REJECTED because it creates a pull to review early = a spacing violation (fails INV-2 and INV-4, punishing a spacing-correct rest day). The open decision water_decay_timescale is [UNKNOWN \u2014 owner states the constant, plan \u00a75], with session-only recommended and multi-day rejected. The node's job is to encode the rejection so a later engineer cannot 'improve retention' by persisting decay across days.",
+      "node_type": "work_unit",
+      "group": "mechanics",
+      "scope_boundary": {
+        "included": [
+          "the session-momentum decay rule floored at 0 and its non-forgetting framing",
+          "the session-only requirement and the explicit multi-day rejection",
+          "the water_decay_timescale UNKNOWN and its recommended session-only resolution"
+        ],
+        "excluded": [
+          "the meter fields (its own node)",
+          "the go/no-go composition (the synthesis node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WATERMETER_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.7,
+        "user_value": 0.72,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.607,
+        "confidence_score": 0.561,
+        "revisit_pressure": 0.362,
+        "lock_score": 0.674,
+        "final_importance": 0.687
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.574,
+        "update_signal": "the owner fixes water_decay_timescale, or any proposal tries to persist decay across days",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Encoding multi-day decay as REJECTED prevents a well-meaning 'retention' change from creating a spacing-violating pull to review early",
+          "example": "refusing to persist the meter overnight so the app never nudges a learner to drill on a scheduled rest day"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "The exact decay constant is unset, so session pacing feel is tunable but not yet fixed",
+          "example": "two different decay_per_sec values giving very different session urgency, unresolved until the owner picks one"
+        }
+      ],
+      "failure_modes": [
+        "persisting decay across days and creating a review-early pull",
+        "framing the decay as 'forgetting' and borrowing the FSRS retrievability concept"
+      ],
+      "acceptance_tests": [
+        "the rule is session-scoped and floored at 0, framed as momentum not forgetting, multi-day decay is explicitly rejected as an INV-2/INV-4 violation, and water_decay_timescale is carried [UNKNOWN] with session-only recommended"
+      ],
+      "revisit_triggers": [
+        "the owner fixes the decay constant",
+        "a multi-day persistence is proposed",
+        "the momentum framing is challenged"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "TIMED_DRILL_MODE",
+      "topic": "timed_drill_construct_validity",
+      "definition": "The timed drill mode itself. The fall window is a per-card ESTIMATE calibrated to option count + ESL reading rate, with a readable floor, never a fixed cinematic constant [ESTIMATE \u2014 plan \u00a71]. The MCQ under the animation is unchanged: it must still pass the full ship gate (cover-the-options, homogeneous options, real-error distractors, no testwiseness cues) \u2014 'a gamified item that fails cover-the-options is a broken item wearing an animation.' Selection targets are the STATIC option buttons (keys 1\u20144 / tap), never a moving drop (clicking a moving target is a motor-dexterity test, construct-invalid). G1 fidelity + construct-validity; the fall-time floor is the ESL-fairness guard so the timer does not silently test English reading rate.",
+      "node_type": "work_unit",
+      "group": "mechanics",
+      "scope_boundary": {
+        "included": [
+          "the per-card fall window with a readable ESL floor",
+          "the unchanged-MCQ ship-gate requirement under the animation",
+          "the static-option-button selection rule (never a moving drop)"
+        ],
+        "excluded": [
+          "the timeout semantics (its own node)",
+          "the accessibility constraints (its own node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WATER_RISE_RULE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.72,
+        "user_value": 0.76,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.4,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.594,
+        "confidence_score": 0.561,
+        "revisit_pressure": 0.356,
+        "lock_score": 0.687,
+        "final_importance": 0.693
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "the fall-window calibration or the selection-target rule changes, or a new item type enters the mode",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Keeping the selection target the static option buttons preserves the measured construct instead of testing motor dexterity",
+          "example": "pressing key 2 to answer while the drop is purely decorative timing, not a target to be clicked"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A per-card fall window is harder to calibrate than a fixed constant and can still mis-time an item",
+          "example": "an unusually long stem timing out fast learners if the reading-rate floor is set too low"
+        }
+      ],
+      "failure_modes": [
+        "making a moving drop the click target and turning the item into a dexterity test",
+        "using a fixed cinematic fall constant that silently tests English reading rate"
+      ],
+      "acceptance_tests": [
+        "the fall window is per-card with an ESL-reading-rate floor, the underlying MCQ still passes the full item ship gate, and selection is on the static option buttons never a moving target"
+      ],
+      "revisit_triggers": [
+        "the fall-window calibration is revised",
+        "a new item type is admitted",
+        "an ESL-fairness signal appears"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "QUARANTINE_INVARIANT",
+      "topic": "game_timed_evidence_quarantine",
+      "definition": "The load-bearing node. Timed-mode data is quarantined: logged only as a distinct evidence_class = \"game_timed\" (extend grade_source) and excluded BY DEFAULT from every nightly BKT/Elo replay, diagnosis, and calibration bin [ESTIMATE \u2014 plan \u00a73 INV-3]. Flag-and-trust is insufficient \u2014 the bkt_evidence path was silently broken once already \u2014 so every change touching bkt_evidence/submitReview is re-verified, never reverted-and-trusted (INV-10). The arrow is one-way: the game READS the model, never writes it (INV-9). This encodes INV-1, INV-2, INV-3, INV-9 and INV-10 and is the cornerstone of G4. Open decision game_answer_logging: quarantine-and-exclude (recommended) vs a retained game_timed side-metric that needs the schema change + re-verification BEFORE any writer ships [UNKNOWN \u2014 plan \u00a75].",
+      "node_type": "work_unit",
+      "group": "guardrails",
+      "scope_boundary": {
+        "included": [
+          "the game_timed evidence_class and its default exclusion from replay/diagnosis/calibration",
+          "the re-verify-never-revert-and-trust rule on bkt_evidence/submitReview",
+          "the one-way read-only arrow and the game_answer_logging UNKNOWN"
+        ],
+        "excluded": [
+          "the meter model it protects (its own node)",
+          "the four gates it feeds (the synthesis node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WATERMETER_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D06",
+        "CQ_D13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.78,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.79,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.55,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.662,
+        "confidence_score": 0.576,
+        "revisit_pressure": 0.352,
+        "lock_score": 0.682,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.648,
+        "update_signal": "any change touches bkt_evidence/submitReview/grade_source, or game_answer_logging is resolved toward a retained side-metric",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A distinct evidence_class excluded by default makes contamination the exception a writer must justify, not the default",
+          "example": "a nightly BKT replay skipping every game_timed row so a fast drill never shifts a mastery estimate"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A retained game_timed side-metric would need the schema change and re-verification before any writer ships, so the safe default is exclusion",
+          "example": "adding a game_timed analytics table and only later discovering a join silently fed it into calibration"
+        }
+      ],
+      "failure_modes": [
+        "letting game_timed rows into any BKT/Elo replay, diagnosis, or calibration bin",
+        "trusting a flag change on the bkt_evidence path without re-verifying it"
+      ],
+      "acceptance_tests": [
+        "timed answers are logged only as evidence_class=game_timed excluded by default from replay/diagnosis/calibration, the arrow is one-way read-only, and any bkt_evidence/submitReview change is re-verified rather than reverted-and-trusted"
+      ],
+      "revisit_triggers": [
+        "a change touches the bkt_evidence or submitReview path",
+        "game_answer_logging is resolved",
+        "a new consumer of grade_source appears"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "TIMEOUT_NOT_WRONG",
+      "topic": "missed_drop_is_not_an_error_signal",
+      "definition": "A missed drop has NO chosen_option_id, so it carries no misconception, no knowledge verdict, and is NOT an FSRS 'Again' [ESTIMATE \u2014 plan \u00a71]. UI: 'Correct \u2014 but the drop fell first. Speed, not knowledge,' with an offer to re-see the item untimed; it writes no learning-model evidence. This is the biggest validity trap: it encodes INV-8 (a game clock never stands in for the learner model's latency/honesty signal) and G4, with no shame loop.",
+      "node_type": "work_unit",
+      "group": "guardrails",
+      "scope_boundary": {
+        "included": [
+          "a missed drop carries no chosen_option_id, no verdict, and is not an FSRS Again",
+          "the 'speed, not knowledge' UI copy and the untimed re-see offer",
+          "INV-8: a game clock never substitutes for the learner-model latency/honesty signal"
+        ],
+        "excluded": [
+          "the fall-window mode that produces the timeout (its own node)",
+          "the game_timed logging path (its own node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TIMED_DRILL_MODE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.84,
+        "business_value": 0.72,
+        "user_value": 0.78,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.59,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.352,
+        "lock_score": 0.683,
+        "final_importance": 0.694
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.605,
+        "update_signal": "a proposal maps a timeout onto an FSRS grade or a learner-model latency signal",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Refusing to map a timeout onto 'Again' keeps a running-out-of-time event from corrupting the schedule as a fake lapse",
+          "example": "a learner who knew the answer but was slow keeps their real FSRS interval intact"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Offering an untimed re-see adds a UI branch and a second interaction the drill must handle",
+          "example": "a learner repeatedly timing out and re-seeing untimed, lengthening the session"
+        }
+      ],
+      "failure_modes": [
+        "logging a timeout as an FSRS Again or any error signal",
+        "showing a shame/failure loop on a missed drop"
+      ],
+      "acceptance_tests": [
+        "a missed drop writes no learning-model evidence, is never an FSRS Again, surfaces 'speed, not knowledge' copy with an untimed re-see, and encodes INV-8"
+      ],
+      "revisit_triggers": [
+        "a timeout is proposed as a grade",
+        "the re-see flow is redesigned",
+        "a latency signal wants to read the clock"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DRILL_CONTENT_ELIGIBILITY",
+      "topic": "qcraft_eligible_vs_prohibited_content",
+      "definition": "Hard content routing [ESTIMATE \u2014 plan \u00a71, qcraft]. ELIGIBLE: INBDE standalone remember/understand terminology gates (anatomy/structure naming, drug-class recognition, definition recall \u2014 short homogeneous options); TOEFL already-time-boxed small tasks (Complete-the-Words, possibly Listen-and-Choose), gated current-2026-vs-legacy. PROHIBITED: INBDE itemsets/cases, any vignette apply/analyze item, EXCEPT/NOT items, and all constructed-response/productive tasks \u2014 timing these trains recognition-over-understanding, the exact INBDE anti-goal. INBDE no-penalty timeout is grounded; the TOEFL wrong-answer penalty is [UNKNOWN] (no-penalty only by analogy, plan \u00a75). This node is what makes the speed-reward legitimate: it fences the fluency reward to the only place automaticity is the real objective (G1 + construct-validity).",
+      "node_type": "work_unit",
+      "group": "guardrails",
+      "scope_boundary": {
+        "included": [
+          "the ELIGIBLE remember/understand terminology and time-boxed TOEFL small-task list",
+          "the PROHIBITED itemsets/vignettes/EXCEPT-NOT/constructed-response list",
+          "the INBDE no-penalty grounding and the TOEFL-penalty UNKNOWN"
+        ],
+        "excluded": [
+          "the timed-mode mechanics (its own node)",
+          "the speed-reward rule it legitimises (its own node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "DRILL_SCOPE_FIDELITY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.86,
+        "business_value": 0.74,
+        "user_value": 0.78,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.42,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.596,
+        "confidence_score": 0.561,
+        "revisit_pressure": 0.356,
+        "lock_score": 0.682,
+        "final_importance": 0.705
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "posterior_importance": 0.602,
+        "update_signal": "the eligible/prohibited routing changes, or the TOEFL wrong-answer penalty is resolved",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fencing the drill to automaticity-only content is exactly what makes rewarding speed defensible",
+          "example": "timing drug-class recognition, where fast recall is the real objective, while never timing a case vignette"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "The TOEFL wrong-answer penalty is only analogised from INBDE, so one eligible surface has an open scoring question",
+          "example": "assuming no-penalty for a timed TOEFL task when its real scoring rule is still [UNKNOWN]"
+        }
+      ],
+      "failure_modes": [
+        "admitting an apply/analyze vignette or itemset into the timed drill",
+        "timing a constructed-response or EXCEPT/NOT item and training recognition-over-understanding"
+      ],
+      "acceptance_tests": [
+        "the node lists eligible remember/understand terminology and time-boxed TOEFL tasks, prohibits itemsets/vignettes/EXCEPT-NOT/constructed-response, and carries the TOEFL penalty [UNKNOWN]"
+      ],
+      "revisit_triggers": [
+        "the routing table changes",
+        "a new item type is proposed for the drill",
+        "the TOEFL penalty is resolved"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "HONEST_COLLECTION",
+      "topic": "collection_maps_to_real_mastered_units",
+      "definition": "A collection mechanic is honest only when it maps to real mastered units: KG concepts light up as they reach a REAL BKT mastery threshold, not when the learner accrues drill hits [ESTIMATE \u2014 plan \u00a72.3]. This is the concrete fix for 'all zeros' and is honest collection (real mastered units, not vanity badges, not fluency-meter hits). G3 PASS (progress maps to a real denominator \u2014 anti-illusionary) and G4 via the one-way arrow (it READS BKT mastery, never writes). It becomes a NO-GO the moment a 'concept unlocked by drill speed' variant is proposed \u2014 that would be illusionary progress. The collection must NOT read the WaterMeter.",
+      "node_type": "work_unit",
+      "group": "mechanics",
+      "scope_boundary": {
+        "included": [
+          "the real-BKT-mastery-threshold unlock rule for KG concepts",
+          "the 'all zeros' fix and the not-vanity / not-fluency-hits honesty line",
+          "the must-not-read-the-WaterMeter constraint"
+        ],
+        "excluded": [
+          "the meter's rise rule it must not read (its own node)",
+          "the mastery-model internals (routed to the learner-model specialist)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WATER_RISE_RULE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.74,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.38,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.44,
+        "risk_score": 0.583,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.355,
+        "lock_score": 0.693,
+        "final_importance": 0.695
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "posterior_importance": 0.576,
+        "update_signal": "a 'concept unlocked by drill speed' variant is proposed, or the mastery threshold source changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tying the collection to a real BKT mastery threshold makes a lit-up concept a truthful claim of learning",
+          "example": "a KG node turning gold only once its BKT mastery crosses threshold, so the map reflects real competence"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A mastery-gated collection lights up more slowly than a hit-gated one, which can feel less immediately rewarding",
+          "example": "early sessions showing few lit concepts because real mastery, unlike drill hits, accrues slowly"
+        }
+      ],
+      "failure_modes": [
+        "unlocking a collected concept from drill speed or accrued fluency hits",
+        "letting the collection read the WaterMeter instead of the mastery model"
+      ],
+      "acceptance_tests": [
+        "concepts light up only at a real BKT mastery threshold, never from drill hits or the WaterMeter, and the node names the 'unlocked by drill speed' variant an illusionary-progress NO-GO"
+      ],
+      "revisit_triggers": [
+        "a drill-speed unlock variant is proposed",
+        "the mastery threshold definition changes",
+        "the collection surface is redesigned"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "VARIABLE_REWARD_REJECT",
+      "topic": "variable_ratio_reward_rejected",
+      "definition": "Variable/random reward schedules are REJECTED (plan \u00a72 REJECT list; engage anti-patterns; learner/scheduler concurrence) [ESTIMATE \u2014 design synthesis]. Consequence for this KB: rise_per_hit must be deterministic \u2014 the WaterMeter must never become a variable-ratio slot-machine. A variable-ratio schedule is a dark pattern adjacent to a tangible-reward economy and breaks the informational-feedback rule (overjustification), so any variable-reward variant is a G2 motivation-safety FAIL / NO-GO. This node is named explicitly as a standing rejection so the drill cannot drift into a compulsion loop, mirroring how the existing KB carries ILLUSIONARY_PROGRESS_ETHICS.",
+      "node_type": "work_unit",
+      "group": "guardrails",
+      "scope_boundary": {
+        "included": [
+          "the standing rejection of variable/random reward schedules",
+          "the deterministic-rise_per_hit consequence for the WaterMeter",
+          "the overjustification / dark-pattern rationale"
+        ],
+        "excluded": [
+          "the rise rule it constrains (its own node)",
+          "the go/no-go composition (the synthesis node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WATER_RISE_RULE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.72,
+        "user_value": 0.74,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.4,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.566,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.358,
+        "lock_score": 0.688,
+        "final_importance": 0.671
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "any variable/random reward schedule is proposed for the meter or the collection",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A standing named rejection stops a future 'make it more fun' change from installing a variable-ratio compulsion loop",
+          "example": "refusing to randomise rise_per_hit into a jackpot so the meter never becomes a slot-machine"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A strictly deterministic reward is less novelty-rich than a variable one, trading engagement lift for safety",
+          "example": "a fixed rise feeling predictable compared with a variable schedule that would be more habit-forming but manipulative"
+        }
+      ],
+      "failure_modes": [
+        "randomising rise_per_hit into a variable-ratio schedule",
+        "adding any jackpot/loot reward adjacent to a tangible-reward economy"
+      ],
+      "acceptance_tests": [
+        "the node rejects variable/random reward schedules, requires deterministic rise_per_hit, and marks any variable-reward variant a G2 no-go on overjustification/dark-pattern grounds"
+      ],
+      "revisit_triggers": [
+        "a variable reward is proposed",
+        "a reward-economy feature is suggested",
+        "the deterministic-rise rule is questioned"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "HONEST_DRILL_ENCODING",
+      "topic": "blue_not_green_stepped_tickless_separation",
+      "definition": "The four honest-encoding separators from real mastery [ESTIMATE \u2014 plan \u00a71, viz]: form (a vertical tank, not a mastery bar/line); hue (a cool/cyan token OUTSIDE the mastery green/yellow/red palette \u2014 blue, not green); location (drill surface only \u2014 never the Dashboard or Learner-Model page); and label + no persistence ('session,' writes nowhere). Fill is quantized into discrete steps (like the DayBox floor(...*20)) signalling 'coarse counter,' and it is tickless \u2014 the completion tick is reserved for real day-box completion and must never appear on the meter. G1 fidelity \u2014 'visually unmistakable from real progress' \u2014 directly reusing and protecting the existing KBs' terminal-tick invariant and the green-mastery palette.",
+      "node_type": "work_unit",
+      "group": "mechanics",
+      "scope_boundary": {
+        "included": [
+          "the four separators: form (tank), hue (blue-not-green), location (drill-only), label+no-persistence",
+          "the discrete-step quantisation signalling a coarse counter",
+          "the tickless rule reserving the completion tick for real day-box completion"
+        ],
+        "excluded": [
+          "the meter fields (its own node)",
+          "reduced-motion / colorblind a11y (its own node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "WATERMETER_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.76,
+        "user_value": 0.8,
+        "technical_complexity": 0.42,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.573,
+        "confidence_score": 0.585,
+        "revisit_pressure": 0.337,
+        "lock_score": 0.706,
+        "final_importance": 0.693
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.74,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "posterior_importance": 0.607,
+        "update_signal": "the meter is placed on a mastery surface, colored green, or given a completion tick",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Four independent separators make the meter visually unmistakable from real mastery even if one is missed",
+          "example": "a blue vertical tank on the drill screen that no learner would confuse with the green day-box fill"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A deliberately-different visual language for the meter adds a second design vocabulary to maintain",
+          "example": "designers having to keep the blue drill palette and the green mastery palette consistently distinct"
+        }
+      ],
+      "failure_modes": [
+        "coloring the meter in the mastery green/yellow/red palette",
+        "placing the meter on the Dashboard or Learner-Model page, or giving it a completion tick"
+      ],
+      "acceptance_tests": [
+        "the meter is a blue vertical tank on the drill surface only, stepped/quantized, session-labeled, non-persisted, and tickless (the completion tick stays reserved for real day-box completion)"
+      ],
+      "revisit_triggers": [
+        "the meter is proposed for a mastery surface",
+        "a green/tick treatment is suggested",
+        "the day-box tick invariant is revisited"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DRILL_ACCESSIBILITY",
+      "topic": "reduced_motion_target_and_a11y_floor",
+      "definition": "Hard requirements [ESTIMATE \u2014 plan \u00a71, uxguide]: prefers-reduced-motion \u2192 a static countdown numeral/ring + discrete step meter (drop physics is decorative and FULLY removable; the timer INFORMATION is not). Colorblind \u2192 level reads by height + numeric label, never green/red water alone. No shame loop on wrong/timeout; first-run onboarding pre-explains the timeout framing. graphux owns the motion; engage constrains it \u2014 the app has no animation/physics lib today [FACT \u2014 APP_RECON \u00a75], and build-vs-adopt is [UNKNOWN] until prototyped. The removability rule keeps the timer information (the real signal) independent of the decorative juice (construct-validity + honesty gate).",
+      "node_type": "work_unit",
+      "group": "guardrails",
+      "scope_boundary": {
+        "included": [
+          "the reduced-motion static-countdown + step-meter requirement (physics removable, timer info not)",
+          "the colorblind height + numeric-label requirement",
+          "the no-shame-loop, onboarding pre-explanation, and graphux build-vs-adopt UNKNOWN"
+        ],
+        "excluded": [
+          "the motion implementation (owned by graphux)",
+          "the timed-mode selection rules (its own node)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "TIMED_DRILL_MODE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.7,
+        "user_value": 0.78,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.35,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.36,
+        "risk_score": 0.554,
+        "confidence_score": 0.561,
+        "revisit_pressure": 0.345,
+        "lock_score": 0.698,
+        "final_importance": 0.667
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.26,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.24,
+          0.5
+        ],
+        "posterior_importance": 0.546,
+        "update_signal": "graphux resolves build-vs-adopt for the motion, or a reduced-motion/colorblind gap is found",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Making the drop physics fully removable while the timer information stays keeps the real signal independent of the juice",
+          "example": "a reduced-motion user seeing a static countdown ring and step meter with the same timing information, no animation"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "The animation approach is unresolved (no lib today, build-vs-adopt open), so the motion layer is not yet costed",
+          "example": "not knowing whether a physics lib is adopted or built until graphux prototypes it"
+        }
+      ],
+      "failure_modes": [
+        "removing the timer information along with the decorative physics under reduced-motion",
+        "encoding level by green/red water alone with no height or numeric label"
+      ],
+      "acceptance_tests": [
+        "reduced-motion falls back to a static countdown + step meter with the timer information preserved, level reads by height + numeric label, there is no shame loop, and build-vs-adopt is flagged [UNKNOWN]"
+      ],
+      "revisit_triggers": [
+        "graphux resolves the motion approach",
+        "a reduced-motion or colorblind gap is reported",
+        "the onboarding framing changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DRILL_GO_NOGO",
+      "topic": "merged_session_drill_go_nogo",
+      "definition": "The synthesis node (analogue of ENGAGEMENT_GO_NOGO). The drill is a CONDITIONAL GO only when it clears all four gates at once [ESTIMATE \u2014 design synthesis]: G1 Fidelity \u2014 faithful to the plan spec AND visually unmistakable from real progress (blue/tank/tickless/session-labeled, stepped) [N1, N11]; G2 Motivation-safety \u2014 informational fluency feedback with the 'speed, not mastery' label, deterministic rise, NO variable reward, no points/currency [N3, N10]; G3 Guardrails \u2014 quarantine (game_timed excluded from replay), timeout \u2260 wrong, ESL fall-time floor, static-target selection, honest collection mapping to REAL mastery [N6, N7, N8, N9, N12]; G4 Learning-primacy \u2014 non-persistence, one-way arrow, session-only decay (multi-day rejected), never punishes a spacing-correct rest day, bkt_evidence path re-verified [N2, N4, N6]. Fail ANY gate \u2192 NO-GO until fixed. Ship LAST, behind graphux. Vendor/appeal never substitutes for a gate.",
+      "node_type": "work_unit",
+      "group": "synthesis",
+      "scope_boundary": {
+        "included": [
+          "the four-gate CONDITIONAL-GO verdict (G1 fidelity, G2 motivation-safety, G3 guardrails, G4 learning-primacy)",
+          "the fail-any-gate = NO-GO rule and the ship-LAST-behind-graphux ordering",
+          "the vendor/appeal-never-substitutes-for-a-gate rule"
+        ],
+        "excluded": [
+          "the individual node mechanics it composes",
+          "implementation and styling detail (routed to graphux / other specialists)"
+        ]
+      },
+      "academic_fields": [],
+      "subfields": [],
+      "specialists": [],
+      "contradictors": [],
+      "inputs": [],
+      "outputs": [],
+      "dependencies": [
+        "DRILL_SCOPE_FIDELITY",
+        "QUARANTINE_INVARIANT",
+        "SESSION_DECAY_RULE",
+        "VARIABLE_REWARD_REJECT",
+        "TIMEOUT_NOT_WRONG",
+        "HONEST_DRILL_ENCODING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_D13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.94,
+        "business_value": 0.82,
+        "user_value": 0.82,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.6,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.667,
+        "confidence_score": 0.579,
+        "revisit_pressure": 0.368,
+        "lock_score": 0.679,
+        "final_importance": 0.772
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.85,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "posterior_importance": 0.677,
+        "update_signal": "any gate condition changes, a new drill mechanic is proposed, or a held-open decision is resolved",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Intersecting all four gates makes the drill a defensible conditional GO instead of a vibes-based ship decision",
+          "example": "refusing to ship until the quarantine, timeout-not-wrong, deterministic-rise and blue-encoding gates all hold at once"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "A four-gate conjunction is deliberately hard to clear, so the drill is intentionally the last, most-fenced feature",
+          "example": "the drill waiting behind graphux and every gate while simpler engagement work ships first"
+        }
+      ],
+      "failure_modes": [
+        "issuing a GO while any one of the four gates is unmet",
+        "letting a vendor number or an appeal substitute for clearing a gate"
+      ],
+      "acceptance_tests": [
+        "the verdict is a conditional GO only when G1 fidelity, G2 motivation-safety, G3 guardrails and G4 learning-primacy all hold, a fail on any gate is a NO-GO until fixed, and the drill ships last behind graphux"
+      ],
+      "revisit_triggers": [
+        "a gate condition is weakened",
+        "a new drill mechanic is proposed",
+        "a held-open decision is resolved"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "DRILL_SCOPE_FIDELITY",
+      "to": "WATERMETER_MODEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.147,
+      "edge_heat": 0.301,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.147,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the fenced brief is what the ephemeral meter must encode",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_002",
+      "from": "DRILL_SCOPE_FIDELITY",
+      "to": "DRILL_CONTENT_ELIGIBILITY",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the opt-in automaticity-drill scope fixes what content is eligible",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_003",
+      "from": "WATERMETER_MODEL",
+      "to": "WATER_RISE_RULE",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "edge_score": 0.143,
+      "edge_heat": 0.296,
+      "prior_relation_strength": 0.82,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.143,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "rise mutates the meter's level",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_004",
+      "from": "WATERMETER_MODEL",
+      "to": "SESSION_DECAY_RULE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "decay mutates the meter's level",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_005",
+      "from": "WATERMETER_MODEL",
+      "to": "HONEST_DRILL_ENCODING",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.136,
+      "edge_heat": 0.284,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.136,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the stepped/non-persisted level is what the four separators render honestly",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_006",
+      "from": "WATERMETER_MODEL",
+      "to": "QUARANTINE_INVARIANT",
+      "edge_type": "constraint",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "non-persistence is enforced by the quarantine rule",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_007",
+      "from": "WATER_RISE_RULE",
+      "to": "TIMED_DRILL_MODE",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "rise only fires inside the timed fall window",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_008",
+      "from": "WATER_RISE_RULE",
+      "to": "DRILL_CONTENT_ELIGIBILITY",
+      "edge_type": "constraint",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "edge_score": 0.133,
+      "edge_heat": 0.279,
+      "prior_relation_strength": 0.76,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.133,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the speed-reward is legitimate ONLY on automaticity-eligible content",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_009",
+      "from": "WATER_RISE_RULE",
+      "to": "VARIABLE_REWARD_REJECT",
+      "edge_type": "conflict",
+      "relation_strength": 0.62,
+      "signed_tension": -0.05,
+      "edge_score": 0.136,
+      "edge_heat": 0.267,
+      "prior_relation_strength": 0.62,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "edge_priority": 0.136,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "rise must stay deterministic and resist drift into a variable-ratio reward",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "keep rise_per_hit deterministic/fixed; the WaterMeter must never become a variable-ratio slot-machine, or the mechanic is a G2 no-go"
+    },
+    {
+      "id": "EDGE_010",
+      "from": "WATER_RISE_RULE",
+      "to": "HONEST_COLLECTION",
+      "edge_type": "conflict",
+      "relation_strength": 0.6,
+      "signed_tension": -0.05,
+      "edge_score": 0.132,
+      "edge_heat": 0.261,
+      "prior_relation_strength": 0.6,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.2,
+      "expected_rework_cost": 0.3,
+      "edge_priority": 0.132,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "collection must map to real mastery, never to accrued rise/fluency hits",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": "",
+      "resolution_rule": "let the collection light up only from a real BKT mastery threshold; it must never read the WaterMeter or unlock on accrued fluency/rise hits"
+    },
+    {
+      "id": "EDGE_011",
+      "from": "DRILL_CONTENT_ELIGIBILITY",
+      "to": "TIMED_DRILL_MODE",
+      "edge_type": "constraint",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.273,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the MCQ under the animation must still pass the full item ship gate",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_012",
+      "from": "TIMED_DRILL_MODE",
+      "to": "TIMEOUT_NOT_WRONG",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "edge_score": 0.14,
+      "edge_heat": 0.29,
+      "prior_relation_strength": 0.8,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.14,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the timeout semantics come from the fall-window mode",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_013",
+      "from": "TIMED_DRILL_MODE",
+      "to": "DRILL_ACCESSIBILITY",
+      "edge_type": "dependency",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.273,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "static targets + reduced-motion + fall-time floor constrain the mode",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_014",
+      "from": "TIMEOUT_NOT_WRONG",
+      "to": "QUARANTINE_INVARIANT",
+      "edge_type": "constraint",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.136,
+      "edge_heat": 0.284,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.136,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "a timeout writes no learning-model evidence",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_015",
+      "from": "SESSION_DECAY_RULE",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "constraint",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.136,
+      "edge_heat": 0.284,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.136,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "multi-day decay fails G4; session-only is a gate condition",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_016",
+      "from": "HONEST_COLLECTION",
+      "to": "QUARANTINE_INVARIANT",
+      "edge_type": "similarity",
+      "relation_strength": 0.64,
+      "signed_tension": 0.0,
+      "edge_score": 0.112,
+      "edge_heat": 0.244,
+      "prior_relation_strength": 0.64,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.112,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "both enforce the one-way arrow (read the model, never write)",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_017",
+      "from": "DRILL_SCOPE_FIDELITY",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.136,
+      "edge_heat": 0.284,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.136,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the fidelity gate G1 checks the drill against the binding brief",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_018",
+      "from": "QUARANTINE_INVARIANT",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "dependency",
+      "relation_strength": 0.84,
+      "signed_tension": 0.0,
+      "edge_score": 0.147,
+      "edge_heat": 0.301,
+      "prior_relation_strength": 0.84,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.147,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the learning-primacy gate G4 cornerstone",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_019",
+      "from": "TIMEOUT_NOT_WRONG",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.136,
+      "edge_heat": 0.284,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.136,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the guardrail gate G3",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_020",
+      "from": "VARIABLE_REWARD_REJECT",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "edge_score": 0.136,
+      "edge_heat": 0.284,
+      "prior_relation_strength": 0.78,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.136,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the motivation-safety gate G2",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_021",
+      "from": "HONEST_DRILL_ENCODING",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "dependency",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "edge_score": 0.133,
+      "edge_heat": 0.279,
+      "prior_relation_strength": 0.76,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.133,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the fidelity/visual-separation gate G1",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_022",
+      "from": "DRILL_ACCESSIBILITY",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "dependency",
+      "relation_strength": 0.74,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.273,
+      "prior_relation_strength": 0.74,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the guardrail gate G3",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_023",
+      "from": "HONEST_COLLECTION",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "dependency",
+      "relation_strength": 0.76,
+      "signed_tension": 0.0,
+      "edge_score": 0.133,
+      "edge_heat": 0.279,
+      "prior_relation_strength": 0.76,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.133,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the guardrail gate G3 (progress maps to real denominators)",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_024",
+      "from": "WATER_RISE_RULE",
+      "to": "DRILL_GO_NOGO",
+      "edge_type": "feedback",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "edge_score": 0.122,
+      "edge_heat": 0.261,
+      "prior_relation_strength": 0.7,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.122,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the speed-reward is the mechanic the four gates are adjudicating",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "speed_reward_vs_retention_invariant",
+      "description": "Rewarding correctness-within-a-window rewards speed, which collides with the invariant that raw speed/volume must never be rewarded over retention (INV-5).",
+      "poles": [
+        "reward drill speed for engagement",
+        "protect retention over raw speed"
+      ],
+      "resolution_hint": "fence the speed reward to automaticity-only content, quarantine its evidence, and always UI-flag it as speed not mastery",
+      "affected_nodes": [
+        "WATER_RISE_RULE",
+        "DRILL_CONTENT_ELIGIBILITY",
+        "QUARANTINE_INVARIANT"
+      ],
+      "id": "CA_D1"
+    },
+    {
+      "name": "ephemeral_meter_vs_learning_model_integrity",
+      "description": "A satisfying persisted meter tempts writing to the learning model, which the non-persistence and quarantine invariants forbid.",
+      "poles": [
+        "persist the meter for richer feedback",
+        "keep the meter ephemeral and quarantined"
+      ],
+      "resolution_hint": "keep the WaterMeter non-persisted and the arrow one-way; log timed data only as game_timed excluded from replay",
+      "affected_nodes": [
+        "WATERMETER_MODEL",
+        "QUARANTINE_INVARIANT",
+        "DRILL_GO_NOGO"
+      ],
+      "id": "CA_D2"
+    },
+    {
+      "name": "session_decay_vs_spacing_correctness",
+      "description": "Persisting decay across days would raise session urgency but pull the learner to review early, violating spacing.",
+      "poles": [
+        "persist decay across days for retention",
+        "keep decay session-only"
+      ],
+      "resolution_hint": "restrict decay to the session and reject multi-day decay as an INV-2/INV-4 spacing violation",
+      "affected_nodes": [
+        "SESSION_DECAY_RULE",
+        "DRILL_GO_NOGO"
+      ],
+      "id": "CA_D3"
+    },
+    {
+      "name": "variable_reward_vs_motivation_safety",
+      "description": "A variable-ratio schedule is more habit-forming but is a dark pattern that breaks the informational-feedback rule.",
+      "poles": [
+        "randomise the reward for engagement",
+        "keep rise deterministic and informational"
+      ],
+      "resolution_hint": "reject variable/random reward outright and require deterministic rise_per_hit",
+      "affected_nodes": [
+        "VARIABLE_REWARD_REJECT",
+        "WATER_RISE_RULE"
+      ],
+      "id": "CA_D4"
+    },
+    {
+      "name": "fluency_collection_vs_honest_mastery",
+      "description": "A collection that lights up on drill hits feels rewarding but fabricates progress; honest collection must map to real mastery.",
+      "poles": [
+        "unlock concepts on drill hits",
+        "unlock concepts on real BKT mastery"
+      ],
+      "resolution_hint": "gate every collected concept on a real BKT mastery threshold and forbid the collection from reading the WaterMeter",
+      "affected_nodes": [
+        "HONEST_COLLECTION",
+        "WATER_RISE_RULE"
+      ],
+      "id": "CA_D5"
+    },
+    {
+      "name": "timeout_signal_vs_learner_model_honesty",
+      "description": "A game clock running out looks like a wrong answer, but treating it as one corrupts the learner model with a fake lapse.",
+      "poles": [
+        "log a timeout as an error/Again",
+        "treat a timeout as no knowledge signal"
+      ],
+      "resolution_hint": "write no evidence on a timeout, never map it to FSRS Again, and offer an untimed re-see (INV-8)",
+      "affected_nodes": [
+        "TIMEOUT_NOT_WRONG",
+        "QUARANTINE_INVARIANT"
+      ],
+      "id": "CA_D6"
+    },
+    {
+      "name": "drill_juice_vs_construct_validity",
+      "description": "Cinematic drop physics and a moving target add fun but can turn a knowledge item into a reading-speed or dexterity test.",
+      "poles": [
+        "maximise the animated juice",
+        "protect the measured construct"
+      ],
+      "resolution_hint": "keep selection on static buttons, floor the fall time for ESL fairness, and make the physics fully removable while the timer information stays",
+      "affected_nodes": [
+        "TIMED_DRILL_MODE",
+        "DRILL_ACCESSIBILITY",
+        "HONEST_DRILL_ENCODING"
+      ],
+      "id": "CA_D7"
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "A timed-drill answer is written into the BKT/Elo replay, shifting a mastery estimate",
+      "trigger": "a game_timed row is not excluded from the nightly replay",
+      "affected_nodes": [
+        "QUARANTINE_INVARIANT",
+        "WATERMETER_MODEL"
+      ],
+      "mitigation": "log timed answers only as evidence_class=game_timed excluded by default from replay/diagnosis/calibration, with the arrow one-way",
+      "severity": "high",
+      "id": "EC_D1"
+    },
+    {
+      "description": "Decay is persisted across days, creating a pull to drill on a scheduled rest day",
+      "trigger": "the meter or its decay is stored durably and applied over days",
+      "affected_nodes": [
+        "SESSION_DECAY_RULE",
+        "DRILL_GO_NOGO"
+      ],
+      "mitigation": "keep decay session-only and reject multi-day decay as an INV-2/INV-4 spacing violation",
+      "severity": "high",
+      "id": "EC_D2"
+    },
+    {
+      "description": "rise_per_hit is randomised into a variable-ratio jackpot, creating a compulsion loop",
+      "trigger": "a 'make it more fun' change installs a variable reward schedule",
+      "affected_nodes": [
+        "VARIABLE_REWARD_REJECT",
+        "WATER_RISE_RULE"
+      ],
+      "mitigation": "reject variable/random reward and require deterministic rise_per_hit",
+      "severity": "high",
+      "id": "EC_D3"
+    },
+    {
+      "description": "A missed drop is logged as an FSRS Again, corrupting the schedule with a fake lapse",
+      "trigger": "the timeout is mapped onto a knowledge verdict",
+      "affected_nodes": [
+        "TIMEOUT_NOT_WRONG",
+        "QUARANTINE_INVARIANT"
+      ],
+      "mitigation": "write no evidence on a timeout, never map it to Again, and offer an untimed re-see",
+      "severity": "high",
+      "id": "EC_D4"
+    },
+    {
+      "description": "A KG concept is unlocked by drill speed rather than real mastery, fabricating progress",
+      "trigger": "the collection reads the WaterMeter or drill hits instead of BKT mastery",
+      "affected_nodes": [
+        "HONEST_COLLECTION",
+        "WATER_RISE_RULE"
+      ],
+      "mitigation": "gate every collected concept on a real BKT mastery threshold and forbid reading the WaterMeter",
+      "severity": "high",
+      "id": "EC_D5"
+    },
+    {
+      "description": "The drill meter is colored green or given a completion tick and is mistaken for real mastery",
+      "trigger": "the meter reuses the mastery palette or the terminal tick",
+      "affected_nodes": [
+        "HONEST_DRILL_ENCODING",
+        "WATERMETER_MODEL"
+      ],
+      "mitigation": "render the meter as a blue vertical tank on the drill surface only, stepped, session-labeled and tickless",
+      "severity": "high",
+      "id": "EC_D6"
+    },
+    {
+      "description": "An INBDE apply/analyze itemset or vignette is admitted into the timed drill, training recognition-over-understanding",
+      "trigger": "a prohibited item type is routed into timed mode",
+      "affected_nodes": [
+        "DRILL_CONTENT_ELIGIBILITY",
+        "TIMED_DRILL_MODE"
+      ],
+      "mitigation": "restrict the drill to remember/understand terminology and time-boxed TOEFL tasks; prohibit itemsets, vignettes, EXCEPT/NOT and constructed-response",
+      "severity": "high",
+      "id": "EC_D7"
+    },
+    {
+      "description": "Under reduced motion the timer information is removed along with the decorative drop physics, or a moving drop is the click target",
+      "trigger": "reduced-motion strips the countdown, or selection is bound to a moving target",
+      "affected_nodes": [
+        "DRILL_ACCESSIBILITY",
+        "TIMED_DRILL_MODE"
+      ],
+      "mitigation": "fall back to a static countdown + step meter keeping the timer information, and keep selection on static option buttons",
+      "severity": "medium",
+      "id": "EC_D8"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "Fix the fenced drill brief and separate it from held-open decisions",
+      "node_ref": "DRILL_SCOPE_FIDELITY",
+      "description": "Record the opt-in timed fluency drill on the skill_drill surface as [FACT - APP_RECON 6.11] with the ephemeral/quarantined/unmistakable properties, and list water_decay_timescale, game_answer_logging and the TOEFL penalty as [UNKNOWN]",
+      "artifact": "drill brief with binding-vs-open split",
+      "gate": "the binding properties are stated and the three held-open constants are flagged [UNKNOWN], none invented",
+      "id": "WF_D01",
+      "step": 1
+    },
+    {
+      "action": "Define the ephemeral non-persisted WaterMeter model",
+      "node_ref": "WATERMETER_MODEL",
+      "description": "Specify WaterMeter { level 0..100 stepped, rise_per_hit, decay_per_sec, window_ms } and the non-persistence invariant (writes nothing to BKT/Elo/FSRS/CalibrationBin/day-box/course)",
+      "artifact": "WaterMeter data model",
+      "gate": "the four fields, session-scope and the write-nothing invariant are stated",
+      "id": "WF_D02",
+      "step": 2
+    },
+    {
+      "action": "Specify the deterministic correct-within-window rise rule",
+      "node_ref": "WATER_RISE_RULE",
+      "description": "State rise fires only on correct-within-window as recognition fluency, with deterministic rise_per_hit and the mandatory 'speed not mastery' UI flag",
+      "artifact": "rise rule + honesty label",
+      "gate": "rise is deterministic and window-gated and the speed-not-mastery label is present",
+      "id": "WF_D03",
+      "step": 3
+    },
+    {
+      "action": "Encode session-only decay and reject multi-day decay",
+      "node_ref": "SESSION_DECAY_RULE",
+      "description": "State the session-momentum decay floored at 0, forbid multi-day persistence, and carry water_decay_timescale [UNKNOWN]",
+      "artifact": "decay rule + rejection",
+      "gate": "decay is session-only, multi-day is rejected as an INV-2/INV-4 violation, and the constant is [UNKNOWN]",
+      "id": "WF_D04",
+      "step": 4
+    },
+    {
+      "action": "Specify the timed mode and protect construct validity",
+      "node_ref": "TIMED_DRILL_MODE",
+      "description": "Set a per-card fall window with an ESL floor, keep the MCQ ship-gated, and bind selection to static option buttons",
+      "artifact": "timed-mode spec",
+      "gate": "the fall window has an ESL floor, the MCQ still passes its ship gate, and selection is on static targets",
+      "id": "WF_D05",
+      "step": 5
+    },
+    {
+      "action": "Route eligible versus prohibited content",
+      "node_ref": "DRILL_CONTENT_ELIGIBILITY",
+      "description": "Admit remember/understand terminology and time-boxed TOEFL tasks; prohibit itemsets, vignettes, EXCEPT/NOT and constructed-response; carry the TOEFL penalty [UNKNOWN]",
+      "artifact": "content routing table",
+      "gate": "the eligible and prohibited lists are stated and the TOEFL penalty is [UNKNOWN]",
+      "id": "WF_D06",
+      "step": 6
+    },
+    {
+      "action": "Install the game_timed quarantine and the one-way arrow",
+      "node_ref": "QUARANTINE_INVARIANT",
+      "description": "Log timed data only as game_timed excluded from replay/diagnosis/calibration, keep the arrow read-only, and re-verify any bkt_evidence/submitReview change",
+      "artifact": "quarantine invariant",
+      "gate": "game_timed is excluded by default, the arrow is one-way, and bkt_evidence changes are re-verified",
+      "id": "WF_D07",
+      "step": 7
+    },
+    {
+      "action": "Encode timeout != wrong and honest collection",
+      "node_ref": "TIMEOUT_NOT_WRONG",
+      "description": "State a missed drop writes no evidence and is never an FSRS Again, and gate the collection on real BKT mastery (never drill hits or the WaterMeter)",
+      "artifact": "timeout + collection rules",
+      "gate": "a timeout writes no learning-model evidence and the collection maps only to real mastery",
+      "id": "WF_D08",
+      "step": 8
+    },
+    {
+      "action": "Specify blue-not-green tickless encoding and the a11y floor",
+      "node_ref": "HONEST_DRILL_ENCODING",
+      "description": "Render the meter as a blue stepped tickless session-labeled tank on the drill surface only, and require reduced-motion/colorblind fallbacks that keep the timer information",
+      "artifact": "encoding + accessibility spec",
+      "gate": "the four visual separators hold and reduced-motion keeps the timer information while dropping only the physics",
+      "id": "WF_D09",
+      "step": 9
+    },
+    {
+      "action": "Compose the four-gate go/no-go verdict",
+      "node_ref": "DRILL_GO_NOGO",
+      "description": "Intersect G1 fidelity, G2 motivation-safety, G3 guardrails and G4 learning-primacy and issue a conditional GO only if all hold; ship last behind graphux",
+      "artifact": "drill go/no-go verdict",
+      "gate": "the verdict rules a fail on any of the four gates a no-go until fixed",
+      "id": "WF_D10",
+      "step": 10
+    }
+  ],
+  "priority_order": [
+    "DRILL_GO_NOGO",
+    "QUARANTINE_INVARIANT",
+    "DRILL_SCOPE_FIDELITY",
+    "SESSION_DECAY_RULE",
+    "TIMEOUT_NOT_WRONG",
+    "VARIABLE_REWARD_REJECT",
+    "WATER_RISE_RULE",
+    "DRILL_CONTENT_ELIGIBILITY",
+    "WATERMETER_MODEL",
+    "HONEST_DRILL_ENCODING",
+    "TIMED_DRILL_MODE",
+    "HONEST_COLLECTION",
+    "DRILL_ACCESSIBILITY"
+  ],
+  "priority_rationale": "The drill go/no-go and the quarantine invariant come first because they compose and protect every mechanic: nothing ships unless the four gates hold and the learning model stays firewalled. The scope-fidelity anchor, the session-decay rejection, the timeout-not-wrong rule and the variable-reward rejection come next because they are the standing constraints a later engineer is most likely to breach ('improve retention' via multi-day decay, log a timeout as Again, add a variable reward). The rise rule, content eligibility and WaterMeter model then turn the fence into the concrete deterministic mechanic; the honest encoding, timed mode, honest collection and accessibility floor finally render and constrain it. Ordering puts the guardrails and the synthesis ahead of the mechanics because on this drill the hazards, not the features, are load-bearing.",
+  "dominance_rules": [
+    {
+      "rule": "Learning-model integrity dominates drill engagement",
+      "rationale": "the system exists to teach, so no drill mechanic may write to or degrade the learning model or scheduler",
+      "trigger": "a drill mechanic would write BKT/Elo/FSRS/CalibrationBin or persist decay across days",
+      "action": "reject or rework the mechanic so the arrow stays one-way and evidence stays quarantined",
+      "id": "DR_D1",
+      "priority": 1
+    },
+    {
+      "rule": "The four-gate verdict dominates any single appeal",
+      "rationale": "a conditional GO requires all of fidelity, motivation-safety, guardrails and learning-primacy at once",
+      "trigger": "a mechanic clears three gates but fails one",
+      "action": "rule it a no-go until the failed gate is fixed; a vendor number or appeal never substitutes for a gate",
+      "id": "DR_D2",
+      "priority": 1
+    },
+    {
+      "rule": "Deterministic reward dominates variable reward",
+      "rationale": "a variable-ratio schedule is a dark pattern that breaks the informational-feedback rule",
+      "trigger": "a variable or random reward schedule is proposed for the meter",
+      "action": "require deterministic rise_per_hit and reject the variable schedule",
+      "id": "DR_D3",
+      "priority": 2
+    },
+    {
+      "rule": "Real mastery dominates fluency for any collection or progress claim",
+      "rationale": "lighting up a concept is a claim of learning, which drill speed cannot substantiate",
+      "trigger": "a collection or progress mark is about to be driven by drill hits or the WaterMeter",
+      "action": "gate it on a real BKT mastery threshold and forbid reading the meter",
+      "id": "DR_D4",
+      "priority": 1
+    },
+    {
+      "rule": "No knowledge signal dominates a game-clock timeout",
+      "rationale": "a game clock never stands in for the learner model's latency/honesty signal (INV-8)",
+      "trigger": "a timeout is about to be written as an error or an FSRS Again",
+      "action": "write no evidence, never map to Again, and offer an untimed re-see",
+      "id": "DR_D5",
+      "priority": 2
+    },
+    {
+      "rule": "Construct validity dominates cinematic juice",
+      "rationale": "a gamified item that fails its ship gate is a broken item wearing an animation",
+      "trigger": "a moving target, a fixed cinematic fall time, or a reading-rate-testing timer is proposed",
+      "action": "keep selection on static buttons, floor the fall time for ESL fairness, and keep the MCQ ship-gated",
+      "id": "DR_D6",
+      "priority": 2
+    },
+    {
+      "rule": "Visual separation dominates reuse of the mastery language",
+      "rationale": "the meter must be visually unmistakable from real progress",
+      "trigger": "the meter is proposed in green, with a tick, or on a mastery surface",
+      "action": "keep it a blue stepped tickless session-labeled tank on the drill surface only",
+      "id": "DR_D7",
+      "priority": 3
+    },
+    {
+      "rule": "Re-verification dominates flag-and-trust on the evidence path",
+      "rationale": "the bkt_evidence path was silently broken once already",
+      "trigger": "a change touches bkt_evidence/submitReview/grade_source",
+      "action": "re-verify the quarantine end-to-end rather than reverting-and-trusting the flag (INV-10)",
+      "id": "DR_D8",
+      "priority": 2
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Make the WaterMeter non-persisted from the first data model",
+      "prevents": "a later teardown of a durable meter that leaked into the learning model or day-box",
+      "id": "ARR_D1"
+    },
+    {
+      "rule": "Log timed answers as a distinct game_timed evidence_class excluded by default from the start",
+      "prevents": "a contaminated BKT/Elo replay that must be reconstructed after game data leaked in",
+      "id": "ARR_D2"
+    },
+    {
+      "rule": "Encode multi-day decay as REJECTED before any persistence is added",
+      "prevents": "a spacing-violating review-early pull shipped as a 'retention' improvement",
+      "id": "ARR_D3"
+    },
+    {
+      "rule": "Decide timeout != wrong before wiring the drill into submitReview",
+      "prevents": "fake FSRS lapses that corrupt intervals and must be unwound",
+      "id": "ARR_D4"
+    },
+    {
+      "rule": "Gate the collection on real BKT mastery, never drill hits, at design time",
+      "prevents": "an illusionary-progress collection that has to be rebuilt once flagged as manipulation",
+      "id": "ARR_D5"
+    },
+    {
+      "rule": "Fix rise_per_hit as deterministic before adding any reward polish",
+      "prevents": "building and then stripping a variable-ratio compulsion loop",
+      "id": "ARR_D6"
+    },
+    {
+      "rule": "Choose the blue-not-green tickless drill palette before styling the meter",
+      "prevents": "a meter mistaken for mastery that must be recolored and relocated after release",
+      "id": "ARR_D7"
+    },
+    {
+      "rule": "Re-verify the bkt_evidence/quarantine path on every touch instead of trusting the flag",
+      "prevents": "a silently re-broken evidence path that leaks game data undetected",
+      "id": "ARR_D8"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "the owner fixes water_decay_timescale",
+      "action": "replace the [UNKNOWN] constant with the decided value, keep decay session-only, and re-confirm the G4 gate",
+      "nodes": [
+        "SESSION_DECAY_RULE",
+        "DRILL_GO_NOGO"
+      ],
+      "priority": 1,
+      "id": "IP_D1"
+    },
+    {
+      "trigger": "game_answer_logging is resolved toward a retained game_timed side-metric",
+      "action": "add the schema change and re-verify the quarantine end-to-end before any writer ships",
+      "nodes": [
+        "QUARANTINE_INVARIANT",
+        "WATERMETER_MODEL"
+      ],
+      "priority": 1,
+      "id": "IP_D2"
+    },
+    {
+      "trigger": "the TOEFL wrong-answer penalty is confirmed",
+      "action": "replace the [UNKNOWN] penalty assumption and re-check TOEFL small-task eligibility",
+      "nodes": [
+        "DRILL_CONTENT_ELIGIBILITY"
+      ],
+      "priority": 2,
+      "id": "IP_D3"
+    },
+    {
+      "trigger": "graphux resolves build-vs-adopt for the motion/physics layer",
+      "action": "cost and constrain the animation, confirm the reduced-motion fallback keeps the timer information",
+      "nodes": [
+        "DRILL_ACCESSIBILITY",
+        "TIMED_DRILL_MODE"
+      ],
+      "priority": 2,
+      "id": "IP_D4"
+    },
+    {
+      "trigger": "a new drill mechanic (variable reward, persisted meter, speed-unlocked collection) is proposed",
+      "action": "run it through the four-gate go/no-go and the quarantine invariant before any build",
+      "nodes": [
+        "DRILL_GO_NOGO",
+        "QUARANTINE_INVARIANT"
+      ],
+      "priority": 1,
+      "id": "IP_D5"
+    },
+    {
+      "trigger": "a change touches the bkt_evidence/submitReview/grade_source path",
+      "action": "re-verify the game_timed quarantine and timeout-not-wrong behaviour end-to-end (INV-10)",
+      "nodes": [
+        "QUARANTINE_INVARIANT",
+        "TIMEOUT_NOT_WRONG"
+      ],
+      "priority": 1,
+      "id": "IP_D6"
+    },
+    {
+      "trigger": "a fall-window mis-timing or ESL-fairness signal is observed",
+      "action": "re-calibrate the per-card fall window and its readable floor",
+      "nodes": [
+        "TIMED_DRILL_MODE",
+        "DRILL_ACCESSIBILITY"
+      ],
+      "priority": 3,
+      "id": "IP_D7"
+    }
+  ],
+  "validation_protocol": {
+    "required_checks": [
+      "all node ids unique",
+      "all edge ids unique EDGE_XXX format",
+      "all from/to in edges reference valid node ids",
+      "all competency_question_refs resolve to valid CQ ids",
+      "all evidence_refs resolve to valid source_registry ids",
+      "all priority_order entries are valid node ids with no duplicates",
+      "high_risk_nodes (risk_if_wrong>=0.80) have non-empty acceptance_tests and human_review_required=true",
+      "high_coupling_nodes (cross_topic_coupling>=0.75) have non-empty revisit_triggers",
+      "conflict edges have signed_tension<0 and resolution_rule present",
+      "dependency edges form no cycles",
+      "observed_impact=0.0 for all nodes (no observed data)",
+      "SRC_HEURISTIC_PRIOR in source_registry",
+      "13 nodes, 24 edges, 7 conflict_axes, 8 edge_cases, 10 workflow steps, 13 competency_questions (deliberately-scoped standard-band 3rd engage KB)",
+      "schema_version=1.3"
+    ],
+    "post_formula_checks": [
+      "all derived fields non-zero after compute run",
+      "final_importance in [0,1] for all nodes",
+      "risk_score, confidence_score, revisit_pressure, lock_score in [0,1]",
+      "posterior_importance in [0,1]",
+      "edge_priority, edge_score, edge_heat in [0,1]"
+    ]
+  },
+  "validation_report": {
+    "status": "pending",
+    "last_validated": null,
+    "validator_version": null,
+    "failed_checks": [],
+    "passed_checks": [],
+    "notes": "built by build_engage_kb.py; run validators/kb_validator.py --mode standard to certify (deliberately-scoped 13-node/24-edge 3rd engage KB)"
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_core_properties_of_session_drill_mechanics_kb",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "smallest meaningful instance in this domain",
+        "expected_properties": [
+          "highest-priority node engaged first",
+          "obligations enforced"
+        ]
+      }
+    ],
+    "metrics": [
+      "coverage",
+      "consistency",
+      "obligation_adherence"
+    ],
+    "regression_policy": "re-run evaluation suite after any node addition or formula change",
+    "minimum_pass_conditions": [
+      "all required checks pass",
+      "no formula mismatches"
+    ]
+  },
+  "traceability_matrix": [
+    {
+      "node_id": "DRILL_SCOPE_FIDELITY",
+      "workflow_steps": [
+        "WF_D01"
+      ],
+      "competency_questions": [
+        "CQ_D01"
+      ],
+      "conflict_axes": [],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "WATERMETER_MODEL",
+      "workflow_steps": [
+        "WF_D02"
+      ],
+      "competency_questions": [
+        "CQ_D02"
+      ],
+      "conflict_axes": [
+        "CA_D2"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "WATER_RISE_RULE",
+      "workflow_steps": [
+        "WF_D03"
+      ],
+      "competency_questions": [
+        "CQ_D03"
+      ],
+      "conflict_axes": [
+        "CA_D1",
+        "CA_D4",
+        "CA_D5"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "SESSION_DECAY_RULE",
+      "workflow_steps": [
+        "WF_D04"
+      ],
+      "competency_questions": [
+        "CQ_D04"
+      ],
+      "conflict_axes": [
+        "CA_D3"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "TIMED_DRILL_MODE",
+      "workflow_steps": [
+        "WF_D05"
+      ],
+      "competency_questions": [
+        "CQ_D05"
+      ],
+      "conflict_axes": [
+        "CA_D7"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "QUARANTINE_INVARIANT",
+      "workflow_steps": [
+        "WF_D07"
+      ],
+      "competency_questions": [
+        "CQ_D06",
+        "CQ_D13"
+      ],
+      "conflict_axes": [
+        "CA_D1",
+        "CA_D2",
+        "CA_D6"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "TIMEOUT_NOT_WRONG",
+      "workflow_steps": [
+        "WF_D08"
+      ],
+      "competency_questions": [
+        "CQ_D07"
+      ],
+      "conflict_axes": [
+        "CA_D6"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "DRILL_CONTENT_ELIGIBILITY",
+      "workflow_steps": [
+        "WF_D06"
+      ],
+      "competency_questions": [
+        "CQ_D08"
+      ],
+      "conflict_axes": [
+        "CA_D1"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "HONEST_COLLECTION",
+      "workflow_steps": [
+        "WF_D08"
+      ],
+      "competency_questions": [
+        "CQ_D09"
+      ],
+      "conflict_axes": [
+        "CA_D5"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "VARIABLE_REWARD_REJECT",
+      "workflow_steps": [],
+      "competency_questions": [
+        "CQ_D10"
+      ],
+      "conflict_axes": [
+        "CA_D4"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "HONEST_DRILL_ENCODING",
+      "workflow_steps": [
+        "WF_D09"
+      ],
+      "competency_questions": [
+        "CQ_D11"
+      ],
+      "conflict_axes": [
+        "CA_D7"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "DRILL_ACCESSIBILITY",
+      "workflow_steps": [
+        "WF_D09"
+      ],
+      "competency_questions": [
+        "CQ_D12"
+      ],
+      "conflict_axes": [
+        "CA_D7"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    },
+    {
+      "node_id": "DRILL_GO_NOGO",
+      "workflow_steps": [
+        "WF_D10"
+      ],
+      "competency_questions": [
+        "CQ_D13"
+      ],
+      "conflict_axes": [
+        "CA_D2",
+        "CA_D3"
+      ],
+      "dominance_rules": [],
+      "anti_rework_rules": []
+    }
+  ],
+  "change_control": {
+    "version": "1.0.0",
+    "created": "2026-07-12",
+    "change_log": [],
+    "review_required_for": [
+      "node addition",
+      "edge type change",
+      "dominance_rule change",
+      "scope boundary change"
+    ]
+  }
+}

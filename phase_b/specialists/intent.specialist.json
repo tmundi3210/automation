@@ -1,0 +1,554 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "intent",
+  "domain": "intent",
+  "domain_label": "Intent Modeling & User Understanding",
+  "purpose": "Synthesize adaptive-UX user-state modeling (cognitive architecture, expertise/fatigue/bias signal estimation, Bayesian fusion) with intent elicitation (ambiguity detection, clarifying-question policy, slot extraction, pragmatics, multilingual handling, handoff) to enable personalized, calibrated, ethically bounded LLM-system interactions; invoke when a task requires understanding WHAT a user wants and WHO the user cognitively is for downstream routing or UX adaptation.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/intent__cogmodel.kb.json",
+    "phase_b/knowledge_base/llm_engineering/intent__intent_elicit.kb.json"
+  ],
+  "role": "Expert operating spec for intent modeling and user understanding in adaptive LLM systems. Scope: UX personalization via probabilistic cognitive-state modeling (non-clinical) + front-end intent elicitation, ambiguity resolution, clarifying-question policy, multilingual pragmatics, and canonical handoff to specialist orchestrators. Excluded: clinical/medical diagnosis, PHI, model retraining, RAG retrieval, cross-session persistent memory, authentication. Authority: select signal estimation methods, set Bayesian update parameters, enforce ethical/privacy dominance rules, gate handoff on calibrated confidence, escalate OOD and clinical-boundary violations.",
+  "capabilities": [
+    {
+      "capability": "dual_process_ux_routing",
+      "subdomain": "intent__cogmodel",
+      "method": "Map user behavioral signals to System-1 (fast/heuristic) vs System-2 (slow/deliberate) mode; route interface to simplified defaults vs advanced controls accordingly; use working-memory capacity model for cognitive-load taxonomy",
+      "when_to_use": "At session initialization and after each interaction turn to select UX complexity level",
+      "inputs": ["user interaction signals", "cognitive psychology literature framing"],
+      "outputs": ["dual-process mode label", "routing decision tree", "UX complexity tier"]
+    },
+    {
+      "capability": "probabilistic_expertise_estimation",
+      "subdomain": "intent__cogmodel",
+      "method": "Bayesian posterior over novice/intermediate/expert tiers updated from response latency, error rate, help-seeking frequency, vocabulary usage; CI width gate (<0.3) before tier promotion",
+      "when_to_use": "On each interaction turn to maintain current expertise posterior; at cold-start to initialize from population priors",
+      "inputs": ["interaction logs", "response latency traces", "vocabulary samples", "help-event stream"],
+      "outputs": ["expertise posterior distribution", "expertise-tier label with CI"]
+    },
+    {
+      "capability": "background_knowledge_estimation",
+      "subdomain": "intent__cogmodel",
+      "method": "Vocabulary complexity analysis, domain concept co-occurrence detection, readability scoring applied to user query text; cross-linguistic fairness control to deconfound L2 from low-domain-knowledge",
+      "when_to_use": "When calibrating content difficulty for new users or after vocabulary pattern shift",
+      "inputs": ["text samples from queries", "concept co-occurrence patterns", "vocabulary complexity metrics"],
+      "outputs": ["domain-knowledge prior distribution", "reading-level estimate", "concept-familiarity score"]
+    },
+    {
+      "capability": "fatigue_and_circadian_modeling",
+      "subdomain": "intent__cogmodel",
+      "method": "Time-varying fatigue posterior from session duration, error-rate slope, response-time drift, and local-time circadian proxy; complexity ceiling issued when fatigue_posterior>0.65; half-life <=2h; deconfound from task-novelty indicator",
+      "when_to_use": "Continuously within session; gate metacognitive prompts off when high-fatigue active",
+      "inputs": ["session timestamps", "error-rate time series", "response-latency trajectory", "local time of day"],
+      "outputs": ["fatigue posterior estimate", "circadian load index", "recommended UI complexity ceiling"]
+    },
+    {
+      "capability": "cognitive_bias_catalog_and_detection",
+      "subdomain": "intent__cogmodel",
+      "method": "Enumerated catalog (>=8 biases: anchoring, availability, framing, sunk-cost, confirmation, overconfidence, etc.) each with UX signal fingerprint; fingerprint matching triggers mitigation flag",
+      "when_to_use": "When interaction pattern matches a known bias fingerprint; before deploying mitigation intervention",
+      "inputs": ["cognitive psychology literature", "UX research findings", "active interaction stream"],
+      "outputs": ["active bias signal label", "mitigation trigger flag", "bias catalog lookup table"]
+    },
+    {
+      "capability": "bias_mitigation_intervention",
+      "subdomain": "intent__cogmodel",
+      "method": "Non-coercive nudge-based interventions: reframing, multiple-reference-point presentation, choice architecture defaults, confirmation prompts; gated on confirmed bias signal + ethics review; autonomy metric must not degrade in A/B",
+      "when_to_use": "Only when active bias fingerprint confirmed; never as default presentation layer",
+      "inputs": ["active bias signal from BIAS_CATALOG", "user decision context", "ethical review checklist"],
+      "outputs": ["intervention-triggered UI element", "mitigation effectiveness log"]
+    },
+    {
+      "capability": "bayesian_signal_fusion",
+      "subdomain": "intent__cogmodel",
+      "method": "Joint posterior over user-state dimensions (expertise, fatigue, edu-background, intent) via Bayesian update; asymmetric update rate (fast upward expertise revision, slow downward); drift-alert gates update before recalibration",
+      "when_to_use": "After each interaction turn to maintain unified user-state posterior; blocked when SIGNAL_CALIB drift alert active",
+      "inputs": ["expertise signal", "fatigue signal", "edu signal", "intent signal", "prior posterior"],
+      "outputs": ["joint user-state posterior", "posterior CI", "update log"]
+    },
+    {
+      "capability": "cold_start_initialization",
+      "subdomain": "intent__cogmodel",
+      "method": "Population-prior bootstrapping; optional onboarding (<=3 GDPR-reviewed questions); persona cluster assignment (fallback to flat prior if cluster confidence<0.60); cluster fairness audit (no cluster correlates >0.3 with protected attributes)",
+      "when_to_use": "On first session with no user history; when returning user history exceeds retention window",
+      "inputs": ["population priors", "onboarding responses (optional)", "persona cluster model"],
+      "outputs": ["initialized user-state posterior", "persona segment label"]
+    },
+    {
+      "capability": "temporal_decay_and_staleness_management",
+      "subdomain": "intent__cogmodel",
+      "method": "Per-signal half-lives: expertise >=14 days, fatigue <=2h; half-life capped by PRIVACY_CONSENT retention limit; staleness flag triggers re-estimation within 2 interactions",
+      "when_to_use": "On each session start; when returning user's absence exceeds signal half-life",
+      "inputs": ["prior session state", "elapsed time", "retention policy constraints"],
+      "outputs": ["decayed posterior", "staleness flag", "re-estimation trigger"]
+    },
+    {
+      "capability": "adaptive_difficulty_calibration",
+      "subdomain": "intent__cogmodel",
+      "method": "PID-like difficulty controller driven by user-state posterior; difficulty change bounded to 1 tier per 5 interactions (anti-oscillation); scaffolding engine fades with mastery (fade rate r>0.6 with mastery signal); filter-bubble prevention via minimum 5% exploration rate",
+      "when_to_use": "After each user-state posterior update to select content difficulty and scaffolding level",
+      "inputs": ["joint user-state posterior", "task complexity tier", "interaction history"],
+      "outputs": ["difficulty setpoint", "scaffolding level", "exploration injection flag"]
+    },
+    {
+      "capability": "overload_and_overconfidence_detection",
+      "subdomain": "intent__cogmodel",
+      "method": "Real-time overload detection (precision>0.80, expert false-positive<0.15); overconfidence signal detection (precision>0.75, expert FP<0.20); EXPERT_EST gate: when expert_posterior>0.80 AND task_complexity_tier < user_expertise_tier, suppress overconfidence gate",
+      "when_to_use": "Continuously during session; overload gates UX simplification; overconfidence gates confirmation prompt",
+      "inputs": ["error rate", "response latency", "help-seeking events", "expertise posterior"],
+      "outputs": ["overload flag", "overconfidence flag", "intervention recommendation"]
+    },
+    {
+      "capability": "ambiguity_detection_and_taxonomy",
+      "subdomain": "intent__intent_elicit",
+      "method": "Classify utterance by ambiguity type: lexical, syntactic, referential, scope, pragmatic; mutually exclusive taxonomy; F1>0.75 on held-out test set; dual-output: ambiguity label + OOD flag for SCOPE_BOUND routing",
+      "when_to_use": "On every user utterance before clarifying-question decision; gates all downstream CQ logic",
+      "inputs": ["raw user utterance", "prior conversation context"],
+      "outputs": ["ambiguity type label", "confidence score", "trigger flag"]
+    },
+    {
+      "capability": "clarifying_question_policy",
+      "subdomain": "intent__intent_elicit",
+      "method": "Ask-vs-proceed decision rule: compare calibrated confidence against stake-tier threshold; friction budget (default max 2 turns); stake-override extends budget by +1 when risk_if_wrong>0.80 AND intent_confidence<0.90",
+      "when_to_use": "After ambiguity detection on each turn to determine whether to ask or proceed",
+      "inputs": ["ambiguity type label", "stake level", "session friction budget", "calibrated confidence"],
+      "outputs": ["ask/proceed decision", "stake tier", "remaining friction budget"]
+    },
+    {
+      "capability": "information_gain_question_ranking",
+      "subdomain": "intent__intent_elicit",
+      "method": "Expected entropy reduction of intent posterior per candidate question; rank by IG; select highest-gain within friction budget; zero-IG threshold (<0.02) triggers immediate stop; requires calibrated prior",
+      "when_to_use": "When ask decision made; to select among candidate clarifying questions",
+      "inputs": ["intent posterior distribution", "candidate question set"],
+      "outputs": ["ranked question list", "IG scores"]
+    },
+    {
+      "capability": "clarifying_question_generation",
+      "subdomain": "intent__intent_elicit",
+      "method": "Template selection + neural generation ranked by IG; register adaptation to user persona (formal/informal, expert/novice, Hindi-dominant/English-dominant); audit for leading questions; clarity rated >4/5 by human eval sample",
+      "when_to_use": "After IG ranking determines top question slot gap; adapted to PERSONA_ADAPT signal",
+      "inputs": ["ambiguity type", "IG-ranked slot gaps", "user register signal"],
+      "outputs": ["generated question text", "template ID"]
+    },
+    {
+      "capability": "pragmatic_implicature_inference",
+      "subdomain": "intent__intent_elicit",
+      "method": "Gricean maxims + speech-act theory to infer implied intent beyond literal utterance; indirect request classification; blocked by DR_05 when non-English detected (route to multilingual first)",
+      "when_to_use": "When utterance surface form is indirect or underspecified; after language identification confirms English or cross-lingual mapping complete",
+      "inputs": ["surface utterance", "discourse context", "world knowledge"],
+      "outputs": ["pragmatic intent label", "implicature flags"]
+    },
+    {
+      "capability": "multilingual_codeswitched_intent",
+      "subdomain": "intent__intent_elicit",
+      "method": "Script detection (accuracy>0.95), transliteration normalization, cross-lingual intent mapping for Hindi/Punjabi/Hinglish; intent F1 on Hinglish >0.72; precedes pragmatic inference pipeline per DR_05",
+      "when_to_use": "Whenever language-ID output returns non-English or mixed-script input detected",
+      "inputs": ["raw mixed-script utterance", "language-ID output"],
+      "outputs": ["normalized unicode form", "language tag", "intent label"]
+    },
+    {
+      "capability": "intent_slot_extraction",
+      "subdomain": "intent__intent_elicit",
+      "method": "Task-oriented NLU: intent classification + BIO slot tagging; multi-intent detection; intent F1>0.80 in-domain, slot EM>0.70; fixed schema with ontology governance via INTENT_SCHEMA",
+      "when_to_use": "After OOD check confirms in-domain intent; core extraction step in every turn",
+      "inputs": ["user utterance", "domain ontology"],
+      "outputs": ["intent label", "slot dict", "confidence scores"]
+    },
+    {
+      "capability": "dialogue_context_tracking",
+      "subdomain": "intent__intent_elicit",
+      "method": "Belief state update across turns: coreference resolution within session, slot carryover, turn-level state transitions; belief state accuracy >0.80 on multi-turn test cases; coreference resolved on 3+ turn chains",
+      "when_to_use": "After each user turn to maintain running belief state; slot carryover avoids re-asking answered slots",
+      "inputs": ["previous turn slots", "new utterance", "entity mentions"],
+      "outputs": ["updated belief state", "resolved coreferences"]
+    },
+    {
+      "capability": "answer_parsing_and_integration",
+      "subdomain": "intent__intent_elicit",
+      "method": "Extract slot values from clarifying answer; handle negative/evasive/partial answers; update belief state and intent confidence; explicit correction overrides belief state with confidence reset to 1.0 (DR_07)",
+      "when_to_use": "After each user answer to a clarifying question to integrate into running belief state",
+      "inputs": ["user answer text", "question that was asked", "current belief state"],
+      "outputs": ["updated slots", "updated belief state", "revised intent confidence"]
+    },
+    {
+      "capability": "intent_confidence_calibration",
+      "subdomain": "intent__intent_elicit",
+      "method": "Temperature scaling or Platt scaling on held-out data; ECE reported per deployment; calibration blocks production thresholds after model update until re-run (DR_04); reliability diagram verification",
+      "when_to_use": "After any intent model update; periodically on distribution shift detection",
+      "inputs": ["model logits", "held-out intent labels"],
+      "outputs": ["calibrated confidence", "ECE score"]
+    },
+    {
+      "capability": "bayesian_intent_prior_update",
+      "subdomain": "intent__intent_elicit",
+      "method": "Dirichlet posterior over intent classes updated from session context and population traffic; high-stake intents protected from prior suppression (DR_02 stake-override); stale prior refresh on distribution shift",
+      "when_to_use": "After calibration; at session start to condition on context; when traffic distribution shifts",
+      "inputs": ["intent distribution from traffic", "session context features", "user history if available"],
+      "outputs": ["conditioned intent prior", "prior update log"]
+    },
+    {
+      "capability": "scope_bounding_and_ood_detection",
+      "subdomain": "intent__intent_elicit",
+      "method": "OOD intent detection against domain boundary spec; precision>0.85, recall>0.80 on OOD benchmark; OOD confidence>0.85 triggers immediate escalation bypassing all clarification (DR_01); graceful refusal message per domain",
+      "when_to_use": "Before clarifying question policy; on every utterance to enforce domain boundary",
+      "inputs": ["intent candidate", "confidence distribution", "domain boundary spec"],
+      "outputs": ["OOD flag", "refusal message", "escalation path"]
+    },
+    {
+      "capability": "objective_dial_elicitation",
+      "subdomain": "intent__intent_elicit",
+      "method": "Elicit user quality/cost/speed (QCS) preference as weight vector; hard cost cap overrides quality dial when projected cost exceeds cap (DR_08); QCS included in handoff envelope",
+      "when_to_use": "When QCS preference not set at session start; before handoff assembly if QCS missing",
+      "inputs": ["user utterance or preference signal", "session context"],
+      "outputs": ["QCS weight vector", "orchestration params"]
+    },
+    {
+      "capability": "downstream_handoff_assembly",
+      "subdomain": "intent__intent_elicit",
+      "method": "Package resolved intent, slot dict, QCS params, calibrated confidence, and escalation flag into canonical JSON envelope; validate against JSON Schema; reject on schema version mismatch (DR_06); escalation flag set when confidence<threshold",
+      "when_to_use": "When proceed decision reached or max turns exhausted; final step before specialist orchestrator",
+      "inputs": ["resolved intent", "slot dict", "QCS vector", "confidence"],
+      "outputs": ["handoff envelope JSON", "escalation flag"]
+    },
+    {
+      "capability": "adaptive_ux_evaluation",
+      "subdomain": "intent__cogmodel",
+      "method": "A/B test design (power>0.80); primary metrics + guardrail metrics (autonomy, fairness, filter-bubble variance>0.15/month, exploration rate [0.05,0.20]); guardrail breach blocks ship regardless of primary lift (DR_10 cogmodel)",
+      "when_to_use": "Before shipping any adaptive personalization change; nightly regression on held-out eval set",
+      "inputs": ["A/B test results", "guardrail metric dashboard", "user session logs"],
+      "outputs": ["evaluation report", "ship/block decision", "regression flags"]
+    },
+    {
+      "capability": "intent_elicitation_evaluation",
+      "subdomain": "intent__intent_elicit",
+      "method": "Multi-metric eval: intent accuracy, slot EM, turns-to-resolve, task success rate, user satisfaction proxy; nightly eval pipeline; regression alert on >2% metric drop; correction event + re-query rate logged",
+      "when_to_use": "Continuously post-deployment; after any policy or model update",
+      "inputs": ["labeled intent test set", "user session logs", "satisfaction scores"],
+      "outputs": ["evaluation report", "metric dashboard", "regression flags"]
+    }
+  ],
+  "decision_procedure": [
+    "1. On user turn receipt: assemble input bundle (utterance + session context + turn history)",
+    "2. Run script detection; if non-English confidence>0.80 route to multilingual pipeline (DR_05) before pragmatic inference",
+    "3. Run AMBIG_DETECT + SCOPE_BOUND simultaneously: if OOD confidence>0.85 escalate immediately, skip all subsequent steps (DR_01)",
+    "4. Load current user-state posterior: if cold-start (no history), initialize from population prior + optional onboarding (<=3 questions); if returning user apply temporal decay",
+    "5. Check SIGNAL_CALIB drift alert: if active, block BAYES_UPDATE until recalibration complete (DR_09 cogmodel)",
+    "6. Run INTENT_SLOT extraction; apply CALIBRATION (block on uncalibrated model per DR_04); update PRIOR_UPDATE Dirichlet posterior",
+    "7. Update CONTEXT_TRACK belief state; resolve coreferences; integrate any ANSWER_PARSE updates from prior clarifying turn",
+    "8. Apply CQ_POLICY: compare calibrated confidence against stake-tier threshold + friction budget; apply stake-override if risk_if_wrong>0.80 (DR_02 elicit); check zero-IG stop criterion",
+    "9. If ask: rank by INFO_GAIN, adapt via PERSONA_ADAPT + MULTILINGUAL, generate via QUESTION_GEN; send to user; on answer receipt loop to step 6",
+    "10. If proceed: elicit QCS dial if missing; assemble HANDOFF envelope; validate schema; set escalation flag if confidence below threshold",
+    "11. In parallel with intent loop, update user-state posterior via BAYES_UPDATE; run OVERLOAD_DETECT and OVERCONF_DETECT; apply ADAPT_DIFF difficulty setpoint; check ETHICS_BOUND and PRIVACY_CONSENT constraints",
+    "12. Post-session: log FEEDBACK_LOOP signals (corrections, abandonment, re-queries); run EVAL_UX / EVAL_INTENT nightly; trigger iteration protocol if metric thresholds breached"
+  ],
+  "workflow": [
+    {
+      "phase": "session_init",
+      "objective": "Initialize user-state posterior and elicitation pipeline for session",
+      "entry": ["new session started", "user ID received"],
+      "exit": ["user-state posterior initialized", "language routing determined"],
+      "gates": ["cold-start fallback to flat prior if cluster confidence<0.60", "ETHICS_BOUND scope check passed"]
+    },
+    {
+      "phase": "utterance_intake_and_routing",
+      "objective": "Normalize input, detect language, classify ambiguity, check OOD boundary",
+      "entry": ["user utterance received"],
+      "exit": ["ambiguity label set", "OOD flag evaluated", "normalized unicode form ready"],
+      "gates": ["OOD confidence>0.85 triggers immediate escalation exit", "non-English routes to multilingual before pragmatics"]
+    },
+    {
+      "phase": "intent_slot_extraction",
+      "objective": "Extract structured (intent, slots) from utterance using calibrated NLU",
+      "entry": ["in-domain utterance confirmed", "calibration current"],
+      "exit": ["intent label and slot dict produced", "confidence scores calibrated"],
+      "gates": ["model updated since calibration: block until re-calibrated (DR_04)", "SIGNAL_CALIB drift alert: block BAYES_UPDATE"]
+    },
+    {
+      "phase": "belief_state_update",
+      "objective": "Update dialogue state, user-state posterior, and Bayesian intent prior",
+      "entry": ["intent and slots extracted", "coreferences available"],
+      "exit": ["belief state updated", "joint user-state posterior updated", "conditioned intent prior refreshed"],
+      "gates": ["explicit correction overrides belief state at confidence 1.0 (DR_07)", "asymmetric expertise update applied"]
+    },
+    {
+      "phase": "clarifying_question_decision",
+      "objective": "Apply CQ policy to decide ask vs proceed; if ask, generate and deliver optimal question",
+      "entry": ["calibrated confidence available", "friction budget tracked"],
+      "exit": ["ask/proceed decision made", "if ask: question sent to user"],
+      "gates": ["stake-override extends budget on high-risk task (DR_02 elicit)", "zero-IG stop: all candidate IG<0.02 triggers proceed (DR_10 elicit)", "max turns enforced"]
+    },
+    {
+      "phase": "answer_integration",
+      "objective": "Parse user answer to clarifying question and integrate into belief state",
+      "entry": ["user answer received"],
+      "exit": ["slots updated", "belief state revised", "intent confidence revised"],
+      "gates": ["evasive/negative answer detected and handled", "loop back to belief_state_update phase"]
+    },
+    {
+      "phase": "cognitive_state_adaptation",
+      "objective": "Apply adaptive UX decisions from current user-state posterior",
+      "entry": ["joint user-state posterior updated"],
+      "exit": ["difficulty setpoint applied", "scaffolding level set", "bias/overload interventions triggered if signaled"],
+      "gates": ["ETHICS_BOUND dominates: no diagnostic framing in interventions", "FATIGUE_EST>0.65 gates metacognitive prompts off", "difficulty change bounded 1 tier per 5 interactions", "bias mitigation only on confirmed fingerprint"]
+    },
+    {
+      "phase": "handoff_assembly",
+      "objective": "Package resolved intent, slots, QCS, confidence into validated downstream envelope",
+      "entry": ["proceed decision or max turns reached"],
+      "exit": ["handoff envelope JSON validated against schema", "escalation flag set appropriately"],
+      "gates": ["schema version match required (DR_06 elicit)", "QCS dial elicited if missing", "hard cost cap overrides quality dial"]
+    },
+    {
+      "phase": "evaluation_and_feedback",
+      "objective": "Log session signals, measure quality metrics, update policies and priors",
+      "entry": ["session completed or task executed"],
+      "exit": ["metrics logged", "feedback loop updated", "policy update trigger generated if threshold breached"],
+      "gates": ["guardrail metric breach blocks ship (DR_10 cogmodel)", "filter-bubble variance checked monthly", "exploration rate maintained [0.05,0.20]"]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "OOD intent detected with confidence>0.85",
+      "action": "flag",
+      "reason": "No clarification can resolve out-of-scope intent; immediate structured refusal required per DR_01"
+    },
+    {
+      "condition": "Any node or feature description uses diagnostic, therapeutic, or clinical framing",
+      "action": "human_review",
+      "reason": "ETHICS_BOUND dominates all nodes; clinical-boundary violation is regulatory and liability risk (DR_01 cogmodel)"
+    },
+    {
+      "condition": "Signal collection or retention exceeds user consent scope or legal retention limit",
+      "action": "human_review",
+      "reason": "PRIVACY_CONSENT dominates all signal collection decisions; GDPR/CCPA non-negotiable (DR_02 cogmodel)"
+    },
+    {
+      "condition": "SIGNAL_CALIB drift alert active on any input signal",
+      "action": "defer",
+      "reason": "Drifted signals corrupt posterior; BAYES_UPDATE blocked until recalibration (DR_09 cogmodel)"
+    },
+    {
+      "condition": "Intent model updated since last calibration run",
+      "action": "defer",
+      "reason": "Uncalibrated confidence scores make all threshold decisions unreliable; block production (DR_04 elicit)"
+    },
+    {
+      "condition": "Handoff schema version mismatches downstream consumer",
+      "action": "flag",
+      "reason": "Silent mismatch causes data corruption; reject handoff and return schema error (DR_06 elicit)"
+    },
+    {
+      "condition": "Guardrail metric (autonomy, fairness, exploration rate) breaches threshold in A/B",
+      "action": "human_review",
+      "reason": "Ship decision blocked regardless of primary metric lift; user trust protection (DR_10 cogmodel)"
+    },
+    {
+      "condition": "Bias mitigation intervention proposed without confirmed bias signal fingerprint",
+      "action": "defer",
+      "reason": "Untriggered mitigation wastes attention and may patronize; signal confirmation is prerequisite (DR_07 cogmodel)"
+    },
+    {
+      "condition": "COG_ARCH, EXPERT_EST, BIAS_CATALOG, BIAS_MITIG, ETHICS_BOUND, PRIVACY_CONSENT, EVAL_UX nodes in draft lifecycle with high risk_if_wrong",
+      "action": "human_review",
+      "reason": "These nodes have human_review_required=true due to risk_if_wrong>=0.80 or scope-boundary sensitivity"
+    },
+    {
+      "condition": "AMBIG_DETECT, CQ_POLICY, HANDOFF, SCOPE_BOUND, MULTILINGUAL nodes in draft lifecycle",
+      "action": "human_review",
+      "reason": "Core elicitation policy nodes with human_review_required=true; errors silently misroute all downstream logic"
+    }
+  ],
+  "validation_checklist": [
+    "Dual-process routing policy document reviewed by UX researcher and ethics officer before deployment",
+    "Ethics review signed off; no feature uses diagnostic/therapeutic framing (automated check on node definitions)",
+    "GDPR DPIA completed and signed; deletion workflow tested end-to-end in staging",
+    "Cognitive bias catalog covers >=8 named biases each with distinct UX fingerprint and testable mitigation strategy",
+    "Expertise estimator: posterior CI width <0.3 before tier promotion; monotone update in simulation",
+    "Background knowledge estimator: cross-linguistic fairness test passes; decorrelates from native-language proxy after calibration",
+    "Fatigue signal decorrelates from task-novelty indicator in holdout; circadian proxy validated against self-reported fatigue",
+    "Bayesian fusion 90% CI coverage test: CI contains true state in simulation 90% of time; update latency <50ms p99",
+    "Cold-start posterior converges to equilibrium within N<=5 interactions in simulation; onboarding questions GDPR-reviewed and optional",
+    "Overload detector: precision>0.80 vs abandonment ground truth; expert false-positive <0.15",
+    "Overconfidence detector: precision>0.75; expert false-positive <0.20",
+    "Scaffolding fade rate correlates with mastery signal r>0.6 in simulation; library reviewed quarterly",
+    "Signal calibration check automated and runs weekly; drift alert fires in <24h of injected distribution shift",
+    "Ambiguity taxonomy enumerated with mutually exclusive definitions; detector F1>0.75 on held-out test set",
+    "Clarifying question policy documented with thresholds per stake tier; shadow-mode run shows ask-rate within target band",
+    "IG ranking matches human-judged ordering on benchmark set",
+    "Script detection accuracy >0.95 on mixed-script test set; intent F1 on Hinglish >0.72",
+    "Intent NLU F1>0.80 in-domain; slot extraction EM>0.70",
+    "ECE reported on held-out calibration set; calibration plot shows diagonal alignment",
+    "OOD benchmark precision>0.85 and recall>0.80; graceful refusal message tested per domain",
+    "Handoff envelope validates against JSON Schema; escalation flag set when confidence<threshold",
+    "Eval pipeline runs nightly on held-out set; regression alert on metric drop >2%",
+    "A/B protocol statistical power>0.80 for target effect size; guardrail metrics reviewed before ship",
+    "Filter-bubble check: difficulty variance within user >0.15 measured monthly; exploration rate bounded [0.05,0.20]",
+    "Cluster fairness audit: no cluster correlates >0.3 with protected attributes; <10% reassignment rate week-over-week"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "personalization_vs_privacy",
+      "resolution": "PRIVACY_CONSENT dominates; default to data minimization; collect only signals necessary for active features; half-life capped by retention limit"
+    },
+    {
+      "tradeoff": "adaptation_speed_vs_stability",
+      "resolution": "Asymmetric update: fast upward expertise revision, slow downward; difficulty change bounded 1 tier per 5 interactions"
+    },
+    {
+      "tradeoff": "scaffolding_vs_autonomy",
+      "resolution": "Scaffold to zone of proximal development; fade monotonically with mastery; autonomy metric must not degrade in A/B"
+    },
+    {
+      "tradeoff": "nudge_vs_coercion",
+      "resolution": "ETHICS_BOUND dominates; all nudges require ethics review; no clinical framing; autonomy metric guardrail"
+    },
+    {
+      "tradeoff": "exploration_vs_exploitation",
+      "resolution": "Maintain minimum 5% exploration rate; review quarterly; filter-bubble variance monitored monthly"
+    },
+    {
+      "tradeoff": "cold_start_accuracy_vs_onboarding_friction",
+      "resolution": "Limit onboarding to 3 optional questions; use population priors for remainder; flat prior when cluster confidence<0.60"
+    },
+    {
+      "tradeoff": "model_sensitivity_vs_false_positive_rate",
+      "resolution": "Tune for expert-cohort false-positive <0.20 as primary constraint; suppress overconfidence gate when expert_posterior>0.80 and task_tier<user_tier"
+    },
+    {
+      "tradeoff": "clinical_utility_vs_regulatory_boundary",
+      "resolution": "ETHICS_BOUND is absolute; all feature descriptions reviewed against clinical-boundary checklist; system never recommends clinical action"
+    },
+    {
+      "tradeoff": "user_friction_vs_ambiguity_resolution",
+      "resolution": "Stake-level sets friction budget; default max 2 turns; stake-override +1 turn when risk_if_wrong>0.80 and confidence<0.90"
+    },
+    {
+      "tradeoff": "latency_slo_vs_clarification_quality",
+      "resolution": "Latency-first in real-time UX; skip IG computation at SLO breach; circuit-breaker falls back to best-effort intent (DR_03 elicit)"
+    },
+    {
+      "tradeoff": "prior_strength_vs_rare_intent_detection",
+      "resolution": "Stake-override: high-risk intents bypass prior suppression; rare high-stake intents explicitly protected in PRIOR_UPDATE"
+    },
+    {
+      "tradeoff": "schema_stability_vs_product_velocity",
+      "resolution": "Fast-track review for additive intent changes; breaking changes require full approval and downstream notification"
+    },
+    {
+      "tradeoff": "quality_dial_vs_cost_constraints",
+      "resolution": "Hard cost cap overrides quality dial; user informed of quality degradation (DR_08 elicit)"
+    },
+    {
+      "tradeoff": "persona_adaptation_vs_privacy",
+      "resolution": "Session-only signals; no cross-session persona inference without consent (DR_09 elicit)"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "dual_process",
+      "definition": "Kahneman System-1 (fast/automatic/heuristic) and System-2 (slow/deliberate/analytic) cognitive modes used as UX routing heuristic; NOT a clinical classification"
+    },
+    {
+      "term": "expertise_posterior",
+      "definition": "Bayesian probability distribution over novice/intermediate/expert tiers updated from behavioral signals; NOT IQ score or credential"
+    },
+    {
+      "term": "cognitive_load",
+      "definition": "Working-memory demand imposed by interface task; managed via difficulty control and scaffolding; NOT clinical cognitive impairment"
+    },
+    {
+      "term": "fatigue_signal",
+      "definition": "Probabilistic proxy for elevated cognitive fatigue from session behavioral patterns; UX personalization input; NOT medical fatigue diagnosis"
+    },
+    {
+      "term": "cognitive_bias",
+      "definition": "Systematic deviation from rational inference caused by heuristic shortcuts; catalogued with UX fingerprints for mitigation; NOT cognitive disorder"
+    },
+    {
+      "term": "scaffolding",
+      "definition": "Temporary support structures (hints, examples, progressive disclosure) calibrated to expertise; faded as mastery accumulates; NOT permanent simplification"
+    },
+    {
+      "term": "ecological_rationality",
+      "definition": "Gigerenzer framework: heuristics are rational when matched to environment information structure; drives natural-frequency and icon-array UX formatting"
+    },
+    {
+      "term": "cold_start",
+      "definition": "State where no user behavioral history exists; resolved via population priors and optional onboarding; NOT active forgetting"
+    },
+    {
+      "term": "filter_bubble",
+      "definition": "Self-reinforcing adaptive difficulty collapse to narrow range; prevented by minimum 5% exploration rate injection"
+    },
+    {
+      "term": "intent",
+      "definition": "User's goal or task inferred from utterance and context; distinct from utterance (surface form) and query (retrieval request)"
+    },
+    {
+      "term": "slot",
+      "definition": "Named attribute-value pair extracted from utterance needed to execute intent; distinct from intent class"
+    },
+    {
+      "term": "ambiguity",
+      "definition": "Condition where utterance is consistent with multiple distinct interpretations; types: lexical, syntactic, referential, scope, pragmatic; distinct from OOD"
+    },
+    {
+      "term": "clarifying_question",
+      "definition": "System-generated follow-up to resolve intent ambiguity; ranked by information gain; distinct from confirmation question"
+    },
+    {
+      "term": "information_gain",
+      "definition": "Expected reduction in entropy of intent posterior from observing answer to a question; used to rank candidate clarifying questions"
+    },
+    {
+      "term": "implicature",
+      "definition": "What speaker implies beyond literal content, derivable from Gricean maxims; inferred by PRAG_IMPLICATURE; distinct from entailment"
+    },
+    {
+      "term": "code_switching",
+      "definition": "Mixing of two or more languages within single utterance (e.g. Hinglish: Hindi-English mix); handled by MULTILINGUAL pipeline before pragmatics"
+    },
+    {
+      "term": "belief_state",
+      "definition": "System's probability distribution over possible intent interpretations and slot values at each dialogue turn; updated by CONTEXT_TRACK and ANSWER_PARSE"
+    },
+    {
+      "term": "QCS_dial",
+      "definition": "Explicit user preference encoding quality, cost, and speed priorities as weight vector for orchestration; included in handoff envelope"
+    },
+    {
+      "term": "OOD",
+      "definition": "Out-of-domain or out-of-scope: user intent outside system's defined task boundary; triggers immediate escalation, not clarification"
+    }
+  ],
+  "competency_questions_covered": [
+    "What cognitive architecture framing grounds adaptive UX routing decisions? (COG_ARCH dual-process policy)",
+    "How is the dual-process model used to route between simple and complex UX without clinical claims?",
+    "How is user expertise level estimated probabilistically from behavioral signals?",
+    "How does the system handle cold-start for new users with no history?",
+    "How is educational background estimated and used for difficulty calibration?",
+    "How are fatigue and time-of-day effects modeled as UX signals?",
+    "How is cognitive overload detected in real time and how does the UX respond?",
+    "Which cognitive biases are catalogued and how are their UX fingerprints defined?",
+    "How are bias mitigation interventions designed to avoid crossing into coercion or dark patterns?",
+    "How is ecological rationality applied to risk and uncertainty communication in the UX?",
+    "How are user intents classified and used to gate difficulty and content personalization?",
+    "How are stale user-state beliefs managed and how is drift in signals detected?",
+    "How are ethical bounds and privacy constraints enforced in the cognitive modeling pipeline?",
+    "How is adaptive personalization evaluated and what guardrail metrics prevent exploitation?",
+    "How is user intent taxonomy defined and what ambiguity types does the system recognize?",
+    "How are clarifying questions generated and ranked for informativeness?",
+    "How does the system detect out-of-domain or out-of-scope intents?",
+    "What is the stopping rule for clarifying questions and how does stake level influence it?",
+    "How is intent confidence calibrated to true probabilities?",
+    "How is a Bayesian intent prior maintained and updated from traffic?",
+    "How is dialogue context tracked across turns and coreferences resolved?",
+    "How are user answers to clarifying questions parsed and integrated into the belief state?",
+    "How does the system adapt question style to user persona and language register?",
+    "How does the system handle Hindi/Punjabi/Hinglish code-switched utterances?",
+    "How is Gricean pragmatics and implicature applied to infer intent beyond literal text?",
+    "How is intent elicitation quality measured end-to-end?",
+    "How does the explicit quality/cost/speed dial parameterize downstream orchestration?",
+    "How is the final resolved intent handed off to the specialist orchestrator?"
+  ]
+}

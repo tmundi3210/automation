@@ -1,0 +1,90 @@
+generated_at: "2026-07-13T21:14:30Z"
+task: "TASK-016"
+source_branch: "origin/claude/eager-wozniak-74rlgj"
+
+component: "OpenAI Codex CLI"
+product:
+  value: "codex-cli 0.140.0"
+  method: "test"
+  command: "codex --version"
+  output: "codex-cli 0.140.0"
+interface:
+  value: "local CLI on macOS"
+  method: "doc"
+  command: "codex --help"
+  output: "Usage: codex [OPTIONS] [PROMPT] / codex [OPTIONS] <COMMAND> [ARGS]"
+filesystem_scope:
+  value: "workspace-restricted in documented exec mode; current shell here has unrestricted fs per codex doctor"
+  method: "config"
+  command: "codex doctor"
+  output: "filesystem sandbox unrestricted · network enabled"
+shell_execution:
+  value: "yes"
+  method: "doc"
+  command: "codex --help"
+  output: "Commands: exec, review, login, logout, mcp, sandbox, apply, resume"
+git_github_access:
+  value: "yes, local git plus GitHub push workflow"
+  method: "doc"
+  command: "codex doctor"
+  output: "repo detected true · git version 2.50.1 · auth configured"
+web_search:
+  value: "present in CLI surface, but live use is blocked in this pinned build because the configured model requires a newer Codex"
+  method: "test"
+  command: "codex --search exec --json \"Reply with SEARCH_OK if live web search is available in this Codex build; otherwise reply NO_SEARCH.\""
+  output: "invalid_request_error: The 'gpt-5.6-terra' model requires a newer version of Codex"
+x_search:
+  value: "not verified in this environment"
+  method: "doc"
+  command: "codex --help"
+  output: "no x-search flag or X-specific command is exposed in this CLI help"
+mcp_or_tool_calling:
+  value: "yes"
+  method: "doc"
+  command: "codex --help"
+  output: "Commands include mcp and mcp-server"
+scheduling:
+  value: "operator-run audit required; codex-owned gate state should be isolated from the shared $HOME/.exchange-gate/ path"
+  method: "doc"
+  command: "incoming/task-016__capability-codex/gate_audit.sh"
+  output: "Clone-resident audit script prints whether $HOME/.exchange-gate/ and $HOME/.exchange-gate-codex/ exist, then tells the operator how to de-conflict them"
+sandboxing:
+  value: "read-only, workspace-write, danger-full-access"
+  method: "doc"
+  command: "codex --help"
+  output: "Select the sandbox policy to use ... [possible values: read-only, workspace-write, danger-full-access]"
+approval_mechanism:
+  value: "never | on-request | untrusted; on-failure is deprecated"
+  method: "doc"
+  command: "codex --help"
+  output: "Possible values: untrusted, on-failure (deprecated), on-request, never"
+authentication_method:
+  value: "ChatGPT account auth stored in ~/.codex/auth.json"
+  method: "test"
+  command: "codex doctor"
+  output: "auth storage mode File; stored auth mode chatgpt; stored ChatGPT tokens true"
+secret_exposure_risk:
+  value: "medium on this Mac; dockerless local user with credentials present, but sandbox and approvals reduce blast radius"
+  method: "config"
+  command: "codex doctor"
+  output: "environment on personal Mac; approval Never; filesystem unrestricted"
+cost_rate_limits:
+  value: "not visible from local config; plan-tier rate limits remain unverified"
+  method: "config"
+  command: "codex doctor"
+  output: "service_tier priority; no explicit rate limits exposed"
+known_limitations:
+  value:
+    - "current config pins model gpt-5.6-terra, which Codex 0.140.0 rejects in live exec"
+    - "terminal in this shell is TERM=dumb, so interactive TUI startup fails"
+    - "web-search probe cannot complete in headless mode with the current model pin"
+  method: "test"
+  command: "codex doctor; codex --search exec --json ..."
+  output: "requires a newer version of Codex; TERM is set to dumb"
+
+gate_state_audit:
+  status: "scripted"
+  documented_path: "$HOME/.exchange-gate/"
+  codex_path: "$HOME/.exchange-gate-codex/"
+  reason: "This run stays inside the clone, so the audit is delegated to a clone-resident idempotent script the operator can execute once."
+  risk: "shared last_seen_tip collision remains plausible until the operator runs the audit and separates codex-owned state"

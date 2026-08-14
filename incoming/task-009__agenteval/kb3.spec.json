@@ -1,0 +1,2376 @@
+{
+  "domain": "eval_routing_decision",
+  "domain_label": "Routing and Assignment Decisions",
+  "purpose": "Turn competence and risk signals into assignment decisions with capability matching, exploration floors, confidence-aware choices, human escalation thresholds, and auditable traces.",
+  "assumptions": [
+    "Competence vectors and breaker states are available",
+    "Tasks carry type SIZE RISK pattern fields",
+    "Human escalation channel exists"
+  ],
+  "exclusions": [
+    "General HR workforce scheduling products",
+    "Network packet routing",
+    "Kubernetes pod scheduling as primary scope"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What is the routing objective and how is the eligibility set built?",
+      "must_be_answerable_from": [
+        "ROUTING_OBJECTIVE",
+        "ELIGIBILITY_SET",
+        "CAPABILITY_MATCH"
+      ],
+      "acceptance_condition": "states utility/constraints and eligibility predicates",
+      "covered_by": [
+        "ROUTING_OBJECTIVE",
+        "ELIGIBILITY_SET",
+        "CAPABILITY_MATCH",
+        "CONSTRAINT_SOLVER",
+        "LOAD_BALANCE"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How does the exploration floor work numerically?",
+      "must_be_answerable_from": [
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK",
+        "ROUTING_OBJECTIVE"
+      ],
+      "acceptance_condition": "floor >=1 in 5 and near-tie handling",
+      "covered_by": [
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK",
+        "ROUTING_OBJECTIVE",
+        "STARVATION_DETECT"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How are capability match and xverify split enforced?",
+      "must_be_answerable_from": [
+        "CAPABILITY_MATCH",
+        "MULTI_AGENT_SPLIT",
+        "REASSIGN_POLICY"
+      ],
+      "acceptance_condition": "lane match and builder!=xverify",
+      "covered_by": [
+        "CAPABILITY_MATCH",
+        "MULTI_AGENT_SPLIT",
+        "REASSIGN_POLICY",
+        "CONFIDENCE_WEIGHT"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How do canaries and starvation controls protect recovery?",
+      "must_be_answerable_from": [
+        "CANARY_ROUTING",
+        "EXPLORATION_FLOOR",
+        "STARVATION_DETECT"
+      ],
+      "acceptance_condition": "half-open only S canaries; 14d starvation boost",
+      "covered_by": [
+        "CANARY_ROUTING",
+        "EXPLORATION_FLOOR",
+        "STARVATION_DETECT",
+        "HUMAN_ESCALATION"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How do confidence/CI width and decision traces affect routing?",
+      "must_be_answerable_from": [
+        "CONFIDENCE_WEIGHT",
+        "DECISION_TRACE",
+        "SHADOW_ROUTE"
+      ],
+      "acceptance_condition": "ECE and ci_width rules; trace schema; optional shadow",
+      "covered_by": [
+        "CONFIDENCE_WEIGHT",
+        "DECISION_TRACE",
+        "SHADOW_ROUTE",
+        "ROUTING_SIM"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What human escalation thresholds and risk floors apply?",
+      "must_be_answerable_from": [
+        "HUMAN_ESCALATION",
+        "RISK_GATING",
+        "SLA_CLASS"
+      ],
+      "acceptance_condition": "numeric escalation triggers and HIGH trust floor example",
+      "covered_by": [
+        "HUMAN_ESCALATION",
+        "RISK_GATING",
+        "SLA_CLASS",
+        "BACKPRESSURE",
+        "ELIGIBILITY_SET"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do load caps, SLA priority, and backpressure interact?",
+      "must_be_answerable_from": [
+        "LOAD_BALANCE",
+        "SLA_CLASS",
+        "BACKPRESSURE"
+      ],
+      "acceptance_condition": "concurrency caps; priority order; queue threshold action",
+      "covered_by": [
+        "LOAD_BALANCE",
+        "SLA_CLASS",
+        "BACKPRESSURE",
+        "TIE_BREAK"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "What may half-open agents receive and how is risk gated?",
+      "must_be_answerable_from": [
+        "CANARY_ROUTING",
+        "RISK_GATING",
+        "MULTI_AGENT_SPLIT"
+      ],
+      "acceptance_condition": "S canaries only; HIGH floors; split roles",
+      "covered_by": [
+        "CANARY_ROUTING",
+        "RISK_GATING",
+        "MULTI_AGENT_SPLIT",
+        "CAPABILITY_MATCH"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How are pool awards audited against starvation?",
+      "must_be_answerable_from": [
+        "POOL_AWARD",
+        "DECISION_TRACE",
+        "STARVATION_DETECT"
+      ],
+      "acceptance_condition": "award rules deny invalid claims; traces and share metrics",
+      "covered_by": [
+        "POOL_AWARD",
+        "DECISION_TRACE",
+        "STARVATION_DETECT",
+        "SHADOW_ROUTE"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How are reassigns and policy changes governed?",
+      "must_be_answerable_from": [
+        "REASSIGN_POLICY",
+        "ROUTING_SIM",
+        "CONSTRAINT_SOLVER"
+      ],
+      "acceptance_condition": "revise reassign rules; sim gate on policy change; filter order",
+      "covered_by": [
+        "REASSIGN_POLICY",
+        "ROUTING_SIM",
+        "CONSTRAINT_SOLVER",
+        "ELIGIBILITY_SET"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "eligibility_set",
+      "definition": "Agents passing breaker risk load and lane predicates"
+    },
+    {
+      "term": "exploration_floor",
+      "definition": "Minimum fraction of assigns to non-leader eligible agents (>=1/5)"
+    },
+    {
+      "term": "half_open",
+      "definition": "Breaker state allowing only canary S tasks"
+    },
+    {
+      "term": "competence_match",
+      "definition": "Selecting by task_type lane trust among eligible"
+    },
+    {
+      "term": "escalation_threshold",
+      "definition": "Numeric condition requiring human decision"
+    },
+    {
+      "term": "decision_trace",
+      "definition": "Logged candidates filters trusts and chosen rule path"
+    },
+    {
+      "term": "risk_floor",
+      "definition": "Minimum trust and n required for a RISK class"
+    },
+    {
+      "term": "starvation",
+      "definition": "Eligible agent receiving far below floor share"
+    },
+    {
+      "term": "shadow_assignee",
+      "definition": "Counterfactual assignee without exploration for offline eval"
+    },
+    {
+      "term": "constraint_order",
+      "definition": "Fixed sequence of routing filters for determinism"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "ROUTING_OBJECTIVE",
+      "topic": "routing_objective_function",
+      "definition": "Route each task to maximize expected successful accept under constraints: lane competence match, exploration floor, breaker state, load, and human-escalation risk. Objective is not lowest latency alone and not pure favoritism to current leader.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "base": {
+        "criticality": 0.93,
+        "business_value": 0.92,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "router always picks the globally highest trust ignoring lane and breakers"
+      },
+      "scope_boundary": {
+        "included": [
+          "expected accept utility",
+          "constraint set"
+        ],
+        "excluded": [
+          "job shop scheduling metaphor"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "claim": "Explicit objective prevents ad-hoc favoritism",
+          "example": "utility uses lane trust and constraints"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Misspecified utility can still starve recovery",
+          "example": "need exploration term"
+        }
+      ],
+      "failure_modes": [
+        "manual who is free only",
+        "ignore breakers"
+      ],
+      "acceptance_tests": [
+        "objective and constraints written"
+      ],
+      "revisit_triggers": [
+        "ad-hoc assignment patterns"
+      ]
+    },
+    {
+      "id": "CAPABILITY_MATCH",
+      "topic": "capability_matched_routing",
+      "definition": "Match task_type to agent competence_vector lane trust. Require candidate breaker_state=closed (or half-open canary). Prefer argmax trust among eligible, subject to exploration floor.",
+      "group": "routing",
+      "dependencies": [
+        "ROUTING_OBJECTIVE"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.9,
+        "user_value": 0.89,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.91,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "content task assigned to agent with only verify-lane evidence"
+      },
+      "scope_boundary": {
+        "included": [
+          "lane match",
+          "breaker eligibility",
+          "argmax among eligible"
+        ],
+        "excluded": [
+          "skill-based routing contact centers"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Lane match raises first-pass odds",
+          "example": "content to content-competent agent"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Cold start agents never eligible without prior blend",
+          "example": "need prior path"
+        }
+      ],
+      "failure_modes": [
+        "ignore lane",
+        "assign open-breaker agents full tasks"
+      ],
+      "acceptance_tests": [
+        "eligibility: lane key + breaker closed/half-open rules"
+      ],
+      "revisit_triggers": [
+        "wrong-lane assigns"
+      ]
+    },
+    {
+      "id": "EXPLORATION_FLOOR",
+      "topic": "exploration_vs_exploitation_floor",
+      "definition": "Never give 100 percent of a lane to the current leader. Reserve exploration floor >=1 in 5 assignments (20 percent) for a lower-scored ACTIVE eligible agent or recovering half-open canary, so bad streaks can be broken and metrics stay identifiable.",
+      "group": "routing",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "ROUTING_OBJECTIVE"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "leader takes every content task for a month; others starve"
+      },
+      "scope_boundary": {
+        "included": [
+          "floor >=1/5",
+          "ACTIVE only",
+          "canary counts as exploration"
+        ],
+        "excluded": [
+          "bandit epsilon-greedy"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Floor prevents monopoly and enables recovery data",
+          "example": "1 in 5 to challenger"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Floor can reduce short-term accept rate",
+          "example": "pay exploration tax"
+        }
+      ],
+      "failure_modes": [
+        "always exploit leader",
+        "randomize 50 percent always"
+      ],
+      "acceptance_tests": [
+        "floor fraction documented and enforced in router"
+      ],
+      "revisit_triggers": [
+        "starvation incidents"
+      ]
+    },
+    {
+      "id": "CONFIDENCE_WEIGHT",
+      "topic": "confidence_weighted_verdicts",
+      "definition": "When combining multi-judge axis scores, weight by calibrated confidence only if ECE<=0.15; else equal weight. For routing, treat ci_width on trust as uncertainty: if width>0.25, reduce exploitation preference and increase exploration probability for that agent.",
+      "group": "decision",
+      "dependencies": [
+        "ROUTING_OBJECTIVE"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.84,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.2,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "router treats uncalibrated 0.99 confidence as certainty"
+      },
+      "scope_boundary": {
+        "included": [
+          "ECE gate 0.15",
+          "ci_width>0.25 exploration boost"
+        ],
+        "excluded": [
+          "forecast ensembles"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Uncertainty-aware routing avoids false precision",
+          "example": "wide CI => explore others"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Always-wide CI agents never exploited",
+          "example": "need prior blend path"
+        }
+      ],
+      "failure_modes": [
+        "raw confidence always",
+        "ignore CI width"
+      ],
+      "acceptance_tests": [
+        "ECE and ci_width policies in router"
+      ],
+      "revisit_triggers": [
+        "false certainty routing"
+      ]
+    },
+    {
+      "id": "HUMAN_ESCALATION",
+      "topic": "human_escalation_thresholds",
+      "definition": "Escalate to human when: safety/scope conflict unresolved; two agents disagree on high-stakes ACCEPT with |Q diff|>=2.0; trust of only eligible agent <0.40 with n>=5; or breaker would leave lane with zero eligible agents. Default response SLA target 24h for MED tasks.",
+      "group": "escalation",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "CONFIDENCE_WEIGHT"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.91,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "pipeline silently assigns despite zero eligible agents"
+      },
+      "scope_boundary": {
+        "included": [
+          "thresholds list",
+          "SLA 24h MED",
+          "safety always escalate"
+        ],
+        "excluded": [
+          "on-call escalation policies"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Numeric thresholds make escalation non-political",
+          "example": "Q diff>=2.0 triggers human"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Too-low thresholds overwhelm humans",
+          "example": "tune with volume metrics"
+        }
+      ],
+      "failure_modes": [
+        "never escalate",
+        "escalate every nit"
+      ],
+      "acceptance_tests": [
+        "escalation threshold table with values"
+      ],
+      "revisit_triggers": [
+        "silent zero-eligible assigns"
+      ]
+    },
+    {
+      "id": "LOAD_BALANCE",
+      "topic": "load_and_concurrency_limits",
+      "definition": "Cap concurrent in_progress tasks per agent (default 1 build + 1 verify, or 2 total). Prefer eligible idle agents among top trust tier. Prevents queue pileup and context thrash.",
+      "group": "routing",
+      "dependencies": [
+        "CAPABILITY_MATCH"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "same agent given five concurrent builds"
+      },
+      "scope_boundary": {
+        "included": [
+          "concurrency caps",
+          "idle preference"
+        ],
+        "excluded": [
+          "worker pool sizing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Caps protect quality and latency",
+          "example": "max 2 in_progress"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Caps can idle capacity if set too low",
+          "example": "tune per agent class"
+        }
+      ],
+      "failure_modes": [
+        "unlimited concurrency",
+        "always pile on leader"
+      ],
+      "acceptance_tests": [
+        "concurrency caps documented"
+      ],
+      "revisit_triggers": [
+        "overload quality drops"
+      ]
+    },
+    {
+      "id": "CANARY_ROUTING",
+      "topic": "canary_and_half_open_routing",
+      "definition": "Half-open agents only receive canary-tagged tasks (size S, clear gates). Success closes breaker; failure re-opens. Canaries count toward exploration floor. Never send SIZE L to half-open.",
+      "group": "routing",
+      "dependencies": [
+        "EXPLORATION_FLOOR",
+        "CAPABILITY_MATCH"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.86,
+        "user_value": 0.87,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "half-open agent receives full MED content rewrite"
+      },
+      "scope_boundary": {
+        "included": [
+          "canary tag",
+          "size S only",
+          "success closes"
+        ],
+        "excluded": [
+          "feature flag rollouts"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Bounded canaries make recovery safe",
+          "example": "S task then close"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Canary drought blocks recovery",
+          "example": "reserve canary backlog"
+        }
+      ],
+      "failure_modes": [
+        "full traffic on half-open",
+        "canary without gates"
+      ],
+      "acceptance_tests": [
+        "half-open may only take canary S tasks"
+      ],
+      "revisit_triggers": [
+        "oversized half-open assigns"
+      ]
+    },
+    {
+      "id": "TIE_BREAK",
+      "topic": "tie_break_and_fairness",
+      "definition": "When trusts within 0.03, break ties by: lower current load, then longer time since last assign (fairness), then higher ci_width exploration need, then stable hash of task_id. Prevents silent leader lock-in on near-ties.",
+      "group": "routing",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "LOAD_BALANCE",
+        "EXPLORATION_FLOOR"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.38,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.81,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "0.01 trust edge always wins forever"
+      },
+      "scope_boundary": {
+        "included": [
+          "0.03 near-tie band",
+          "load then recency then CI"
+        ],
+        "excluded": [
+          "lottery scheduling"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "claim": "Fair tie-break reduces lock-in",
+          "example": "recency spreads work"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Complex tie-break harder to debug",
+          "example": "log decision trace"
+        }
+      ],
+      "failure_modes": [
+        "pure argmax always",
+        "random without seed"
+      ],
+      "acceptance_tests": [
+        "tie-break order documented and logged"
+      ],
+      "revisit_triggers": [
+        "near-tie monopolies"
+      ]
+    },
+    {
+      "id": "DECISION_TRACE",
+      "topic": "routing_decision_trace",
+      "definition": "Log each assignment: task_id, candidates, eligibility filters, trusts, exploration flag, chosen agent, rule path. Traces enable audit and debugging of starvation or bias.",
+      "group": "governance",
+      "dependencies": [
+        "ROUTING_OBJECTIVE",
+        "CAPABILITY_MATCH",
+        "TIE_BREAK"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.85,
+        "business_value": 0.86,
+        "user_value": 0.84,
+        "technical_complexity": 0.48,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.36,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "cannot explain why agent B never receives tasks"
+      },
+      "scope_boundary": {
+        "included": [
+          "candidate set log",
+          "rule path",
+          "exploration flag"
+        ],
+        "excluded": [
+          "decision audit logs"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Traces make routing auditable",
+          "example": "starvation debug in minutes"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Verbose traces storage cost",
+          "example": "retain 90d"
+        }
+      ],
+      "failure_modes": [
+        "no logs",
+        "logs without candidate trusts"
+      ],
+      "acceptance_tests": [
+        "trace schema required per assignment"
+      ],
+      "revisit_triggers": [
+        "unexplained starvation"
+      ]
+    },
+    {
+      "id": "SLA_CLASS",
+      "topic": "sla_and_priority_classes",
+      "definition": "Map SIZE/RISK to priority: safety and protocol tasks first; then HIGH risk; MED default; S canaries fill exploration. SLA targets example: HIGH 12h, MED 24h, S 48h for first response assignment.",
+      "group": "governance",
+      "dependencies": [
+        "HUMAN_ESCALATION",
+        "LOAD_BALANCE"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.83,
+        "business_value": 0.84,
+        "user_value": 0.82,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.4,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.36,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.16,
+          0.38
+        ],
+        "update_signal": "canary S jumps ahead of safety-critical protocol task"
+      },
+      "scope_boundary": {
+        "included": [
+          "priority order",
+          "SLA hours by class"
+        ],
+        "excluded": [
+          "incident priority matrices"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Priority protects critical path",
+          "example": "safety before canary"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Starved low priority forever",
+          "example": "aging boost after 2x SLA"
+        }
+      ],
+      "failure_modes": [
+        "FIFO only",
+        "canaries preempt safety"
+      ],
+      "acceptance_tests": [
+        "priority and SLA table documented"
+      ],
+      "revisit_triggers": [
+        "critical path waits"
+      ]
+    },
+    {
+      "id": "MULTI_AGENT_SPLIT",
+      "topic": "split_pattern_routing",
+      "definition": "For single+xverify patterns, route builder by content/code lane trust and xverify by verify-lane trust with different agent than builder. Never assign same agent both roles on same task.",
+      "group": "routing",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "EXPLORATION_FLOOR"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.89,
+        "technical_complexity": 0.52,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "builder also assigned as xverify on own delivery"
+      },
+      "scope_boundary": {
+        "included": [
+          "distinct builder and verifier",
+          "lane-specific picks"
+        ],
+        "excluded": [
+          "maker-checker banking"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Split roles enforce no self-grade structurally",
+          "example": "different agents"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "With only two agents limited pairs",
+          "example": "may escalate if cannot split"
+        }
+      ],
+      "failure_modes": [
+        "same agent both roles",
+        "xverify by author family session"
+      ],
+      "acceptance_tests": [
+        "pattern rules forbid builder equals xverify"
+      ],
+      "revisit_triggers": [
+        "self-xverify incidents"
+      ]
+    },
+    {
+      "id": "POOL_AWARD",
+      "topic": "pool_claim_and_award",
+      "definition": "When tasks are POOL, agents may claim; integrator awards by eligibility, trust, load, and exploration needs. Claims are data not self-assignment of authority. Deny claims that violate breaker or lane mismatch.",
+      "group": "routing",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "LOAD_BALANCE",
+        "EXPLORATION_FLOOR"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.82,
+        "user_value": 0.83,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "first claim auto-wins regardless of breaker"
+      },
+      "scope_boundary": {
+        "included": [
+          "claim is data",
+          "award by rules",
+          "deny invalid claims"
+        ],
+        "excluded": [
+          "ticket claim systems"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "claim": "Award rules beat claim races",
+          "example": "breaker claim denied"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Slow awards frustrate agents",
+          "example": "SLA on award decision"
+        }
+      ],
+      "failure_modes": [
+        "first claim wins always",
+        "claims become TASK without award"
+      ],
+      "acceptance_tests": [
+        "award algorithm uses eligibility trust load exploration"
+      ],
+      "revisit_triggers": [
+        "invalid claim awards"
+      ]
+    },
+    {
+      "id": "STARVATION_DETECT",
+      "topic": "starvation_and_fairness_metrics",
+      "definition": "Monitor tasks_assigned per agent per lane over 14d; flag starvation if eligible agent receives < floor share minus epsilon. Auto-boost exploration probability next window.",
+      "group": "governance",
+      "dependencies": [
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK",
+        "DECISION_TRACE"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.85,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "eligible agent gets zero tasks for 14 days"
+      },
+      "scope_boundary": {
+        "included": [
+          "14d share monitor",
+          "auto boost"
+        ],
+        "excluded": [
+          "fair queuing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "claim": "Starvation metrics close the loop on floor policy",
+          "example": "boost after detect"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "claim": "Short windows false starve",
+          "example": "require eligibility majority of window"
+        }
+      ],
+      "failure_modes": [
+        "no share metrics",
+        "manual complaints only"
+      ],
+      "acceptance_tests": [
+        "starvation metric and boost rule"
+      ],
+      "revisit_triggers": [
+        "zero-share eligible agents"
+      ]
+    },
+    {
+      "id": "RISK_GATING",
+      "topic": "risk_based_assignment_gates",
+      "definition": "HIGH risk tasks require higher trust floor (example trust>=0.60 and n>=5) or human co-sign. MED default trust>=0.45 or prior blend. S canaries allow half-open. Risk gating prevents novices on dangerous mutations.",
+      "group": "routing",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "HUMAN_ESCALATION",
+        "CONFIDENCE_WEIGHT"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.89,
+        "business_value": 0.86,
+        "user_value": 0.87,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "update_signal": "n=1 agent assigned HIGH risk protocol change"
+      },
+      "scope_boundary": {
+        "included": [
+          "risk to trust floors",
+          "human co-sign HIGH"
+        ],
+        "excluded": [
+          "change management risk"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.89,
+          "claim": "Risk floors protect critical tasks",
+          "example": "HIGH needs trust>=0.60 n>=5"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Floors can block all agents",
+          "example": "escalate human"
+        }
+      ],
+      "failure_modes": [
+        "ignore RISK field",
+        "HIGH to any idle"
+      ],
+      "acceptance_tests": [
+        "risk-to-floor table documented"
+      ],
+      "revisit_triggers": [
+        "HIGH to novices"
+      ]
+    },
+    {
+      "id": "REASSIGN_POLICY",
+      "topic": "reassign_on_revise_or_fail",
+      "definition": "On REVISE, default same agent if revise_count<2 and breaker closed; else consider reassign to higher-trust eligible peer. On repeated FAIL, reassign or escalate. Lane correction reassigns when evidence shows wrong lane (content authoring misroutes).",
+      "group": "routing",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "EXPLORATION_FLOOR",
+        "HUMAN_ESCALATION"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.87,
+        "business_value": 0.85,
+        "user_value": 0.86,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "third identical revise stays with same failing approach forever"
+      },
+      "scope_boundary": {
+        "included": [
+          "same-agent revise default",
+          "reassign rules",
+          "lane correction"
+        ],
+        "excluded": [
+          "support ticket reassign"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "claim": "Reassign escapes local failure modes",
+          "example": "lane correction to content specialist"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Too-eager reassign loses context",
+          "example": "prefer same agent for first revise"
+        }
+      ],
+      "failure_modes": [
+        "infinite same-agent revises",
+        "reassign every nit"
+      ],
+      "acceptance_tests": [
+        "reassign policy table"
+      ],
+      "revisit_triggers": [
+        "stuck revise loops"
+      ]
+    },
+    {
+      "id": "SHADOW_ROUTE",
+      "topic": "shadow_and_counterfactual",
+      "definition": "Optionally compute counterfactual assignee (who would have been chosen without exploration) and log for offline evaluation of floor tax. Shadow mode does not change live assignment.",
+      "group": "governance",
+      "dependencies": [
+        "EXPLORATION_FLOOR",
+        "DECISION_TRACE",
+        "CAPABILITY_MATCH"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.78,
+        "business_value": 0.8,
+        "user_value": 0.76,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.22,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.22,
+          0.48
+        ],
+        "update_signal": "cannot measure cost of exploration floor"
+      },
+      "scope_boundary": {
+        "included": [
+          "counterfactual log",
+          "offline eval"
+        ],
+        "excluded": [
+          "bandit offline eval"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "claim": "Shadow logs quantify exploration tax",
+          "example": "compare accept rates"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Extra compute and complexity",
+          "example": "sample 10 percent of tasks"
+        }
+      ],
+      "failure_modes": [
+        "no offline eval",
+        "shadow changes live route"
+      ],
+      "acceptance_tests": [
+        "optional shadow log fields defined"
+      ],
+      "revisit_triggers": [
+        "unknown exploration cost"
+      ]
+    },
+    {
+      "id": "CONSTRAINT_SOLVER",
+      "topic": "constraint_satisfaction_order",
+      "definition": "Apply filters in order: (1) hard denials/pattern constraints (2) breaker eligibility (3) risk floors (4) concurrency caps (5) lane match (6) exploration floor lottery (7) tie-break. Ordering makes behavior predictable and testable.",
+      "group": "foundations",
+      "dependencies": [
+        "ROUTING_OBJECTIVE",
+        "CAPABILITY_MATCH",
+        "RISK_GATING",
+        "LOAD_BALANCE",
+        "EXPLORATION_FLOOR",
+        "TIE_BREAK"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.86,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.48,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "filters applied in random order yielding unstable assigns"
+      },
+      "scope_boundary": {
+        "included": [
+          "ordered filter pipeline",
+          "test vectors"
+        ],
+        "excluded": [
+          "rules engines"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Stable order makes router unit-testable",
+          "example": "same inputs same assignee"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Rigid order may need rare overrides",
+          "example": "log overrides"
+        }
+      ],
+      "failure_modes": [
+        "unordered heuristics",
+        "undocumented overrides"
+      ],
+      "acceptance_tests": [
+        "filter order documented with tests"
+      ],
+      "revisit_triggers": [
+        "unstable assignments"
+      ]
+    },
+    {
+      "id": "BACKPRESSURE",
+      "topic": "queue_backpressure",
+      "definition": "If unassigned queue exceeds threshold (example 10 MED), raise exploration temporarily to idle eligible agents, or escalate for more capacity. Backpressure prevents silent queue growth.",
+      "group": "governance",
+      "dependencies": [
+        "LOAD_BALANCE",
+        "HUMAN_ESCALATION",
+        "SLA_CLASS"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.84,
+        "user_value": 0.8,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.42,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "queue of 25 tasks with no alert"
+      },
+      "scope_boundary": {
+        "included": [
+          "queue threshold 10 MED",
+          "capacity escalate"
+        ],
+        "excluded": [
+          "streaming backpressure"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.83,
+          "claim": "Backpressure surfaces capacity limits",
+          "example": "alert at 10"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Threshold tuning needed per installation",
+          "example": "start conservative"
+        }
+      ],
+      "failure_modes": [
+        "infinite silent queue",
+        "drop tasks quietly"
+      ],
+      "acceptance_tests": [
+        "queue threshold and action table"
+      ],
+      "revisit_triggers": [
+        "silent queue growth"
+      ]
+    },
+    {
+      "id": "ROUTING_SIM",
+      "topic": "routing_policy_simulation",
+      "definition": "Before changing floor fractions or trust floors, simulate on historical decision traces. Reject policy changes that increase predicted FAIL rate >5 percent absolute without human approval.",
+      "group": "governance",
+      "dependencies": [
+        "DECISION_TRACE",
+        "SHADOW_ROUTE",
+        "EXPLORATION_FLOOR"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "floor changed live to 50 percent without simulation"
+      },
+      "scope_boundary": {
+        "included": [
+          "replay traces",
+          "FAIL rate delta 5 percent gate"
+        ],
+        "excluded": [
+          "policy simulators"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.81,
+          "claim": "Sim reduces reckless policy flips",
+          "example": "block >5 percent predicted FAIL rise"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Historical traces miss new task types",
+          "example": "complement with canaries"
+        }
+      ],
+      "failure_modes": [
+        "live flip no sim",
+        "sim without FAIL metric"
+      ],
+      "acceptance_tests": [
+        "policy change requires sim or explicit waiver"
+      ],
+      "revisit_triggers": [
+        "unsimulated flips"
+      ]
+    },
+    {
+      "id": "ELIGIBILITY_SET",
+      "topic": "build_eligibility_set",
+      "definition": "Build candidate set as agents where: active status, breaker allows, risk floor met, concurrency available, lane defined. Empty set => human escalation, never force ineligible assign.",
+      "group": "foundations",
+      "dependencies": [
+        "CAPABILITY_MATCH",
+        "RISK_GATING",
+        "LOAD_BALANCE",
+        "CANARY_ROUTING"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.91,
+        "business_value": 0.88,
+        "user_value": 0.88,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.5,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.82,
+        "failure_rate": 0.12,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.12,
+          0.34
+        ],
+        "update_signal": "router assigns DEGRADED agent because set building skipped"
+      },
+      "scope_boundary": {
+        "included": [
+          "eligibility predicates",
+          "empty escalates"
+        ],
+        "excluded": [
+          "RBAC allow lists"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "claim": "Eligibility set is hard safety boundary",
+          "example": "empty escalates"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Over-tight predicates empty set often",
+          "example": "widen with priors carefully"
+        }
+      ],
+      "failure_modes": [
+        "skip eligibility",
+        "force assign ineligible"
+      ],
+      "acceptance_tests": [
+        "predicates listed; empty set escalates"
+      ],
+      "revisit_triggers": [
+        "ineligible assigns"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "ROUTING_OBJECTIVE",
+      "to": "CAPABILITY_MATCH",
+      "edge_type": "dependency",
+      "why_related": "match serves objective",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "ROUTING_OBJECTIVE",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "dependency",
+      "why_related": "floor in objective",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "ROUTING_OBJECTIVE",
+      "to": "CONFIDENCE_WEIGHT",
+      "edge_type": "dependency",
+      "why_related": "uncertainty in objective",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "ROUTING_OBJECTIVE",
+      "to": "CONSTRAINT_SOLVER",
+      "edge_type": "dependency",
+      "why_related": "solver implements objective",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "CAPABILITY_MATCH",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "dependency",
+      "why_related": "explore among matched",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CAPABILITY_MATCH",
+      "to": "LOAD_BALANCE",
+      "edge_type": "dependency",
+      "why_related": "load among matched",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CAPABILITY_MATCH",
+      "to": "MULTI_AGENT_SPLIT",
+      "edge_type": "dependency",
+      "why_related": "split uses match",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "CAPABILITY_MATCH",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "why_related": "eligibility includes match",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "CAPABILITY_MATCH",
+      "to": "POOL_AWARD",
+      "edge_type": "dependency",
+      "why_related": "award uses match",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "EXPLORATION_FLOOR",
+      "to": "CANARY_ROUTING",
+      "edge_type": "dependency",
+      "why_related": "canaries are exploration",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "EXPLORATION_FLOOR",
+      "to": "TIE_BREAK",
+      "edge_type": "dependency",
+      "why_related": "ties interact with floor",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "EXPLORATION_FLOOR",
+      "to": "STARVATION_DETECT",
+      "edge_type": "dependency",
+      "why_related": "floor failures show as starve",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "EXPLORATION_FLOOR",
+      "to": "SHADOW_ROUTE",
+      "edge_type": "dependency",
+      "why_related": "shadow measures floor tax",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CONFIDENCE_WEIGHT",
+      "to": "HUMAN_ESCALATION",
+      "edge_type": "dependency",
+      "why_related": "low conf escalates",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CONFIDENCE_WEIGHT",
+      "to": "RISK_GATING",
+      "edge_type": "dependency",
+      "why_related": "risk uses confidence/n",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "HUMAN_ESCALATION",
+      "to": "SLA_CLASS",
+      "edge_type": "dependency",
+      "why_related": "escalation has SLA",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "HUMAN_ESCALATION",
+      "to": "BACKPRESSURE",
+      "edge_type": "dependency",
+      "why_related": "capacity escalate",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "LOAD_BALANCE",
+      "to": "TIE_BREAK",
+      "edge_type": "dependency",
+      "why_related": "load in tie-break",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "LOAD_BALANCE",
+      "to": "POOL_AWARD",
+      "edge_type": "dependency",
+      "why_related": "award respects load",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "LOAD_BALANCE",
+      "to": "BACKPRESSURE",
+      "edge_type": "dependency",
+      "why_related": "load links queue",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "CANARY_ROUTING",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "why_related": "half-open eligibility",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "TIE_BREAK",
+      "to": "DECISION_TRACE",
+      "edge_type": "dependency",
+      "why_related": "trace includes tie path",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "DECISION_TRACE",
+      "to": "SHADOW_ROUTE",
+      "edge_type": "dependency",
+      "why_related": "shadow uses traces",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "DECISION_TRACE",
+      "to": "ROUTING_SIM",
+      "edge_type": "dependency",
+      "why_related": "sim replays traces",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "DECISION_TRACE",
+      "to": "STARVATION_DETECT",
+      "edge_type": "dependency",
+      "why_related": "traces prove shares",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "SLA_CLASS",
+      "to": "BACKPRESSURE",
+      "edge_type": "dependency",
+      "why_related": "SLA pressure from queue",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "RISK_GATING",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "why_related": "risk filters eligible",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "RISK_GATING",
+      "to": "REASSIGN_POLICY",
+      "edge_type": "dependency",
+      "why_related": "risk on reassign",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "MULTI_AGENT_SPLIT",
+      "to": "REASSIGN_POLICY",
+      "edge_type": "dependency",
+      "why_related": "split on re-verify",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "CONSTRAINT_SOLVER",
+      "to": "ELIGIBILITY_SET",
+      "edge_type": "dependency",
+      "why_related": "solver builds set first",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "ELIGIBILITY_SET",
+      "to": "CAPABILITY_MATCH",
+      "edge_type": "constraint",
+      "why_related": "never assign outside eligible",
+      "relation_strength": 0.94
+    },
+    {
+      "from": "MULTI_AGENT_SPLIT",
+      "to": "POOL_AWARD",
+      "edge_type": "constraint",
+      "why_related": "award cannot make builder=xverify",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "ELIGIBILITY_SET",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "sequence",
+      "why_related": "eligible then explore lottery",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "CONSTRAINT_SOLVER",
+      "to": "DECISION_TRACE",
+      "edge_type": "sequence",
+      "why_related": "decide then log",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "STARVATION_DETECT",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "feedback",
+      "why_related": "starve boosts floor",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "ROUTING_SIM",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "feedback",
+      "why_related": "sim tunes floor",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "SHADOW_ROUTE",
+      "to": "ROUTING_SIM",
+      "edge_type": "similarity",
+      "why_related": "both offline policy tools",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "EXPLORATION_FLOOR",
+      "to": "CAPABILITY_MATCH",
+      "edge_type": "conflict",
+      "why_related": "always pick best vs force exploration",
+      "resolution_rule": "argmax among eligible except floor slots for challenger/canary",
+      "relation_strength": 0.8,
+      "signed_tension": -0.45
+    },
+    {
+      "from": "RISK_GATING",
+      "to": "EXPLORATION_FLOOR",
+      "edge_type": "conflict",
+      "why_related": "HIGH risk floors vs need to explore novices",
+      "resolution_rule": "explore on MED/S; HIGH requires trust floors or human",
+      "relation_strength": 0.78,
+      "signed_tension": -0.45
+    },
+    {
+      "from": "LOAD_BALANCE",
+      "to": "SLA_CLASS",
+      "edge_type": "conflict",
+      "why_related": "spread load vs meet priority SLA",
+      "resolution_rule": "priority first within concurrency caps",
+      "relation_strength": 0.74,
+      "signed_tension": -0.45
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "exploit_vs_explore",
+      "description": "Best agent vs floor for others",
+      "poles": [
+        "always leader",
+        "high random"
+      ],
+      "resolution_hint": ">=1/5 floor",
+      "affected_nodes": [
+        "EXPLORATION_FLOOR",
+        "CAPABILITY_MATCH",
+        "STARVATION_DETECT"
+      ]
+    },
+    {
+      "name": "risk_vs_learning",
+      "description": "HIGH floors vs novice exploration",
+      "poles": [
+        "only veterans on all",
+        "anyone on HIGH"
+      ],
+      "resolution_hint": "HIGH floors; explore MED/S",
+      "affected_nodes": [
+        "RISK_GATING",
+        "EXPLORATION_FLOOR",
+        "CANARY_ROUTING"
+      ]
+    },
+    {
+      "name": "load_vs_sla",
+      "description": "Spread work vs hit priority SLA",
+      "poles": [
+        "perfect balance",
+        "always priority pile-on"
+      ],
+      "resolution_hint": "priority within caps",
+      "affected_nodes": [
+        "LOAD_BALANCE",
+        "SLA_CLASS",
+        "BACKPRESSURE"
+      ]
+    },
+    {
+      "name": "same_agent_revise_vs_reassign",
+      "description": "Context continuity vs escape failure",
+      "poles": [
+        "always same",
+        "always reassign"
+      ],
+      "resolution_hint": "same for first revise; then consider reassign",
+      "affected_nodes": [
+        "REASSIGN_POLICY",
+        "MULTI_AGENT_SPLIT"
+      ]
+    },
+    {
+      "name": "claim_race_vs_award",
+      "description": "First claim vs ruled award",
+      "poles": [
+        "first wins",
+        "slow central award"
+      ],
+      "resolution_hint": "claims data; award by rules",
+      "affected_nodes": [
+        "POOL_AWARD",
+        "ELIGIBILITY_SET"
+      ]
+    },
+    {
+      "name": "trace_cost_vs_audit",
+      "description": "Logging cost vs debuggability",
+      "poles": [
+        "no traces",
+        "log everything forever"
+      ],
+      "resolution_hint": "schema traces retain 90d",
+      "affected_nodes": [
+        "DECISION_TRACE",
+        "SHADOW_ROUTE"
+      ]
+    },
+    {
+      "name": "empty_eligible_vs_force",
+      "description": "Escalate vs force ineligible",
+      "poles": [
+        "always escalate",
+        "force anyone"
+      ],
+      "resolution_hint": "never force; escalate",
+      "affected_nodes": [
+        "ELIGIBILITY_SET",
+        "HUMAN_ESCALATION"
+      ]
+    },
+    {
+      "name": "sim_gate_vs_agility",
+      "description": "Require sim vs flip policy fast",
+      "poles": [
+        "sim always",
+        "live flip always"
+      ],
+      "resolution_hint": "sim or waiver on policy change",
+      "affected_nodes": [
+        "ROUTING_SIM",
+        "EXPLORATION_FLOOR"
+      ]
+    },
+    {
+      "name": "confidence_vs_equal_weight",
+      "description": "Trust confident judges vs equal",
+      "poles": [
+        "always conf weight",
+        "never"
+      ],
+      "resolution_hint": "only if ECE<=0.15",
+      "affected_nodes": [
+        "CONFIDENCE_WEIGHT",
+        "HUMAN_ESCALATION"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "Leader monopoly for 30d",
+      "trigger": "no floor",
+      "affected_nodes": [
+        "EXPLORATION_FLOOR",
+        "STARVATION_DETECT"
+      ],
+      "mitigation": "enforce 1/5 floor",
+      "severity": "high"
+    },
+    {
+      "description": "Builder==xverify",
+      "trigger": "split skipped",
+      "affected_nodes": [
+        "MULTI_AGENT_SPLIT",
+        "POOL_AWARD"
+      ],
+      "mitigation": "hard deny",
+      "severity": "high"
+    },
+    {
+      "description": "Half-open gets MED build",
+      "trigger": "canary rules skipped",
+      "affected_nodes": [
+        "CANARY_ROUTING",
+        "ELIGIBILITY_SET"
+      ],
+      "mitigation": "S only",
+      "severity": "high"
+    },
+    {
+      "description": "Empty eligible set silent assign",
+      "trigger": "no escalation",
+      "affected_nodes": [
+        "ELIGIBILITY_SET",
+        "HUMAN_ESCALATION"
+      ],
+      "mitigation": "escalate",
+      "severity": "high"
+    },
+    {
+      "description": "HIGH risk to n=1 agent",
+      "trigger": "risk floor missing",
+      "affected_nodes": [
+        "RISK_GATING",
+        "CONFIDENCE_WEIGHT"
+      ],
+      "mitigation": "floor or human co-sign",
+      "severity": "high"
+    },
+    {
+      "description": "Queue grows to 25 unnoticed",
+      "trigger": "no backpressure",
+      "affected_nodes": [
+        "BACKPRESSURE",
+        "SLA_CLASS"
+      ],
+      "mitigation": "threshold alert",
+      "severity": "medium"
+    },
+    {
+      "description": "Near-tie always same winner",
+      "trigger": "no tie-break fairness",
+      "affected_nodes": [
+        "TIE_BREAK",
+        "LOAD_BALANCE"
+      ],
+      "mitigation": "recency fairness",
+      "severity": "medium"
+    },
+    {
+      "description": "Stuck on third identical revise",
+      "trigger": "no reassign",
+      "affected_nodes": [
+        "REASSIGN_POLICY",
+        "CAPABILITY_MATCH"
+      ],
+      "mitigation": "reassign or lane correct",
+      "severity": "medium"
+    },
+    {
+      "description": "Invalid pool claim awarded",
+      "trigger": "first-claim wins",
+      "affected_nodes": [
+        "POOL_AWARD",
+        "ELIGIBILITY_SET"
+      ],
+      "mitigation": "ruled award",
+      "severity": "medium"
+    },
+    {
+      "description": "Policy floor flipped live without sim",
+      "trigger": "no ROUTING_SIM",
+      "affected_nodes": [
+        "ROUTING_SIM",
+        "EXPLORATION_FLOOR"
+      ],
+      "mitigation": "sim or waiver",
+      "severity": "medium"
+    },
+    {
+      "description": "Cannot explain assignment",
+      "trigger": "no decision trace",
+      "affected_nodes": [
+        "DECISION_TRACE",
+        "SHADOW_ROUTE"
+      ],
+      "mitigation": "require traces",
+      "severity": "low"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "read_competence",
+      "node_ref": "CAPABILITY_MATCH",
+      "description": "Load competence vectors",
+      "artifact": "vectors",
+      "gate": "freshness ok"
+    },
+    {
+      "action": "build_eligible",
+      "node_ref": "ELIGIBILITY_SET",
+      "description": "Apply predicates",
+      "artifact": "eligible set",
+      "gate": "nonempty or escalate"
+    },
+    {
+      "action": "apply_risk",
+      "node_ref": "RISK_GATING",
+      "description": "Filter by RISK floors",
+      "artifact": "risk-filtered set",
+      "gate": "HIGH floors applied"
+    },
+    {
+      "action": "apply_load",
+      "node_ref": "LOAD_BALANCE",
+      "description": "Drop over-cap agents",
+      "artifact": "load-filtered",
+      "gate": "caps applied"
+    },
+    {
+      "action": "exploration_slot",
+      "node_ref": "EXPLORATION_FLOOR",
+      "description": "Decide exploit vs explore slot",
+      "artifact": "slot type",
+      "gate": "floor accounting updated"
+    },
+    {
+      "action": "choose_agent",
+      "node_ref": "CONSTRAINT_SOLVER",
+      "description": "Argmax or challenger via ordered filters",
+      "artifact": "assignee",
+      "gate": "deterministic"
+    },
+    {
+      "action": "split_xverify",
+      "node_ref": "MULTI_AGENT_SPLIT",
+      "description": "Pick distinct verifier if pattern needs",
+      "artifact": "xverify assignee",
+      "gate": "builder!=xverify"
+    },
+    {
+      "action": "log_trace",
+      "node_ref": "DECISION_TRACE",
+      "description": "Write decision trace",
+      "artifact": "trace",
+      "gate": "schema valid"
+    },
+    {
+      "action": "check_sla_queue",
+      "node_ref": "BACKPRESSURE",
+      "description": "Queue and SLA checks",
+      "artifact": "alerts",
+      "gate": "thresholds evaluated"
+    },
+    {
+      "action": "escalate_if_needed",
+      "node_ref": "HUMAN_ESCALATION",
+      "description": "Human path if thresholds hit",
+      "artifact": "escalation ticket",
+      "gate": "if required"
+    },
+    {
+      "action": "shadow_optional",
+      "node_ref": "SHADOW_ROUTE",
+      "description": "Log counterfactual",
+      "artifact": "shadow",
+      "gate": "optional"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "eligibility_over_preference",
+      "rationale": "safety",
+      "trigger": "assignment",
+      "action": "never assign ineligible"
+    },
+    {
+      "rule": "split_over_convenience",
+      "rationale": "no self-grade",
+      "trigger": "xverify pattern",
+      "action": "distinct agents"
+    },
+    {
+      "rule": "floor_over_pure_exploit",
+      "rationale": "recovery and identification",
+      "trigger": "lane monopoly risk",
+      "action": "enforce >=1/5"
+    },
+    {
+      "rule": "risk_floors_over_idle_fill",
+      "rationale": "critical tasks",
+      "trigger": "HIGH risk",
+      "action": "apply trust/n floors"
+    },
+    {
+      "rule": "escalate_over_force",
+      "rationale": "empty eligible",
+      "trigger": "no candidates",
+      "action": "human escalate"
+    },
+    {
+      "rule": "priority_within_caps",
+      "rationale": "SLA with quality",
+      "trigger": "load vs priority",
+      "action": "priority inside concurrency caps"
+    },
+    {
+      "rule": "trace_over_opacity",
+      "rationale": "audit",
+      "trigger": "every assign",
+      "action": "write decision trace"
+    },
+    {
+      "rule": "sim_before_policy_flip",
+      "rationale": "stability",
+      "trigger": "floor/weight change",
+      "action": "simulate or waiver"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "no_assign_ineligible",
+      "prevents": "breaker/risk bypass"
+    },
+    {
+      "rule": "no_builder_equals_xverify",
+      "prevents": "self-grade structural failure"
+    },
+    {
+      "rule": "no_leader_100_percent_lane",
+      "prevents": "starvation and unidentifiable metrics"
+    },
+    {
+      "rule": "no_half_open_full_traffic",
+      "prevents": "recovery overreach"
+    },
+    {
+      "rule": "no_silent_empty_eligible",
+      "prevents": "forced bad assigns"
+    },
+    {
+      "rule": "no_first_claim_auto_award",
+      "prevents": "racey invalid claims"
+    },
+    {
+      "rule": "no_untraced_assignment",
+      "prevents": "unauditable routing"
+    },
+    {
+      "rule": "no_unsimulated_floor_flip",
+      "prevents": "reckless policy swings"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "empty eligibility set",
+      "action": "escalate human; do not force",
+      "nodes": [
+        "ELIGIBILITY_SET",
+        "HUMAN_ESCALATION"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "starvation flag",
+      "action": "boost exploration probability",
+      "nodes": [
+        "STARVATION_DETECT",
+        "EXPLORATION_FLOOR"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "builder==xverify attempt",
+      "action": "deny; re-pick verifier",
+      "nodes": [
+        "MULTI_AGENT_SPLIT",
+        "POOL_AWARD"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "HIGH risk below floor",
+      "action": "human co-sign or reassign",
+      "nodes": [
+        "RISK_GATING",
+        "HUMAN_ESCALATION"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "queue > threshold",
+      "action": "backpressure actions",
+      "nodes": [
+        "BACKPRESSURE",
+        "SLA_CLASS",
+        "LOAD_BALANCE"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "stuck revise_count>=2 same failure",
+      "action": "reassign or lane correct",
+      "nodes": [
+        "REASSIGN_POLICY",
+        "CAPABILITY_MATCH"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "policy change proposed",
+      "action": "run ROUTING_SIM",
+      "nodes": [
+        "ROUTING_SIM",
+        "SHADOW_ROUTE",
+        "EXPLORATION_FLOOR"
+      ],
+      "priority": 3
+    }
+  ],
+  "priority_rationale": "Eligibility and role-split dominate convenience; exploration floors dominate pure exploitation; escalation dominates forced ineligible assigns.",
+  "eval_objective": "verify_eligibility_floor_split_escalation_and_traces",
+  "created": "2026-07-13",
+  "source_description": "heuristic priors for multi-agent routing decisions aligned with EXCHANGE scoring scaffold",
+  "source_citation": "heuristic prior; operational scoring practice; no external dataset supplied"
+}

@@ -1,0 +1,975 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "orch",
+  "domain": "orch",
+  "domain_label": "Multi-Agent / Multi-Model Orchestration",
+  "purpose": "Invoked when designing, evaluating, or operating multi-agent/multi-model orchestration systems; covers agent graph topology, routing mechanisms, MoE gating, aggregation strategies, debate/ensembling, summarization, and all related reliability/safety/evaluation concerns.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/orch__topology.kb.json",
+    "phase_b/knowledge_base/llm_engineering/orch__aggregate.kb.json"
+  ],
+  "role": "Expert orchestration architect and evaluator for multi-agent/multi-model systems. Designs agent execution graphs (DAG/cyclic/any-to-any), selects and validates routing mechanisms (rule/classifier/LLM-judge/MoE), governs loop termination and fault tolerance, models latency/cost, engineers aggregation pipelines (vote/debate/ensemble/blend), manages context budgets and summarization, enforces security isolation and safety filters, instruments observability, and drives empirical topology ablation and specialist-vs-generalist evaluation. All decisions grounded in heuristic priors (Wooldridge MAS, Shazeer/Fedus MoE, Wang SC, Du debate, Jiang LLM-Blender, Nenkova summarization). Evidence basis is heuristic unless production data supplied.",
+  "capabilities": [
+    {
+      "capability": "agent_graph_design",
+      "subdomain": "orch__topology",
+      "method": "Specify DAG vs cyclic topology; assign node roles; define edge types and termination policy; serialise to JSON graph schema; run static cycle detection at design time",
+      "when_to_use": "Starting a new multi-agent system or restructuring an existing agent execution graph",
+      "inputs": [
+        "task spec",
+        "agent capability registry",
+        "latency budget"
+      ],
+      "outputs": [
+        "graph adjacency spec",
+        "node role map",
+        "termination policy"
+      ]
+    },
+    {
+      "capability": "router_and_dispatcher_design",
+      "subdomain": "orch__topology",
+      "method": "Select routing mechanism: rule-based (0ms, interpretable), classifier-based (generalises), or LLM-judge (~200ms, high accuracy); implement fallback path; validate router accuracy >=0.90 on held-out benchmark",
+      "when_to_use": "Designing how tasks are dispatched to specialist agent nodes",
+      "inputs": [
+        "current task state",
+        "agent capability index",
+        "confidence thresholds"
+      ],
+      "outputs": [
+        "routing policy spec",
+        "router implementation",
+        "routing latency budget"
+      ]
+    },
+    {
+      "capability": "moe_gating",
+      "subdomain": "orch__topology",
+      "method": "Softmax gating with top-K selection; auxiliary load-balance loss (Fedus 2021) to prevent expert collapse; monitor utilization variance <0.15; capacity factor tuning",
+      "when_to_use": "Implementing mixture-of-experts token/task dispatch across specialist agents",
+      "inputs": [
+        "task embedding",
+        "expert capacity config",
+        "load balance target"
+      ],
+      "outputs": [
+        "gating weights",
+        "selected expert set",
+        "utilization metrics"
+      ]
+    },
+    {
+      "capability": "conditional_dynamic_dispatch",
+      "subdomain": "orch__topology",
+      "method": "If/else and switch-case branching on intermediate agent outputs; predicate-based runtime agent selection; fan-out bounded by explicit max_branches config; all branches exercised in integration tests",
+      "when_to_use": "Data-dependent routing to different specialist agents based on intermediate results",
+      "inputs": [
+        "intermediate agent output",
+        "branching predicates",
+        "available agent pool"
+      ],
+      "outputs": [
+        "dispatch decision log",
+        "branch coverage report",
+        "dynamic fan-out spec"
+      ]
+    },
+    {
+      "capability": "parallel_execution_and_fan_out",
+      "subdomain": "orch__topology",
+      "method": "Fork/join async invocation; barrier synchronization with mandatory timeout; failed branch triggers fallback not hang; result ordering enforced deterministically",
+      "when_to_use": "Executing multiple independent agent branches simultaneously to reduce wall-clock latency",
+      "inputs": [
+        "agent dependency graph",
+        "async runtime",
+        "result schema"
+      ],
+      "outputs": [
+        "parallel execution plan",
+        "join barrier spec",
+        "concurrency config"
+      ]
+    },
+    {
+      "capability": "confidence_weighted_edge_management",
+      "subdomain": "orch__topology",
+      "method": "Assign scalar confidence weights on graph edges; soft routing and result blending; dynamic re-weighting on quality events; update bounded monotonically; aggregation tested with adversarial low-confidence inputs",
+      "when_to_use": "Enabling weighted aggregation or priority dispatch across agent outputs",
+      "inputs": [
+        "agent output quality scores",
+        "task-type confidence priors",
+        "aggregation policy"
+      ],
+      "outputs": [
+        "weighted adjacency matrix",
+        "edge update protocol",
+        "aggregation formula"
+      ]
+    },
+    {
+      "capability": "loop_control_and_termination",
+      "subdomain": "orch__topology",
+      "method": "Hard max-iter cap on all cycles; convergence threshold check; timeout budget; cycle detection at compile time; loop counter instrumentation",
+      "when_to_use": "Designing or auditing cyclic agent graphs (reflexion-style, debate, iterative refinement)",
+      "inputs": [
+        "cycle definition",
+        "convergence metric",
+        "timeout config"
+      ],
+      "outputs": [
+        "termination condition spec",
+        "loop guard implementation",
+        "cycle counter instrumentation"
+      ]
+    },
+    {
+      "capability": "any_to_any_topology_governance",
+      "subdomain": "orch__topology",
+      "method": "Edge permission matrix enforced at graph compile time; skip connections and feedback edges registered; cycle detection on all edge sets; privilege boundary checked per cross-cluster edge",
+      "when_to_use": "Adding non-series/parallel directed edges (feedback, skip connections, cross-cluster) to an agent graph",
+      "inputs": [
+        "graph schema",
+        "edge permission policy",
+        "cycle detection config"
+      ],
+      "outputs": [
+        "any-to-any edge registry",
+        "cycle detection report",
+        "edge permission matrix"
+      ]
+    },
+    {
+      "capability": "hierarchical_orchestration_design",
+      "subdomain": "orch__topology",
+      "method": "Meta-orchestrator decomposes tasks and delegates to sub-orchestrators managing specialist clusters; formal delegation contract per level; scope boundaries tested independently; limit to 2-3 levels unless complexity demands more",
+      "when_to_use": "Scaling orchestration beyond flat graph limits via hierarchical task decomposition",
+      "inputs": [
+        "task decomposition policy",
+        "sub-orchestrator specs",
+        "delegation protocol"
+      ],
+      "outputs": [
+        "orchestration hierarchy spec",
+        "delegation contract",
+        "scope boundary per level"
+      ]
+    },
+    {
+      "capability": "specialist_vs_generalist_evaluation",
+      "subdomain": "orch__topology",
+      "method": "Measure specialist on held-out production task sample (not benchmark); compute net value = accuracy_gain - routing_overhead_cost; re-evaluate on every base model update",
+      "when_to_use": "Deciding whether to add or retain a specialist agent route vs using a generalist LLM",
+      "inputs": [
+        "specialist agent benchmark results",
+        "generalist LLM baseline scores",
+        "task distribution spec"
+      ],
+      "outputs": [
+        "specialist justification report",
+        "go/no-go decision per subtask",
+        "routing overhead ROI analysis"
+      ]
+    },
+    {
+      "capability": "topology_evaluation_and_ablation",
+      "subdomain": "orch__topology",
+      "method": "Hold agent quality constant across topology variants; compare serial/parallel/hierarchical/any-to-any on quality+latency+cost; report all metrics not cherry-picked winner",
+      "when_to_use": "Selecting optimal agent graph topology empirically among alternatives",
+      "inputs": [
+        "candidate topology specs",
+        "evaluation metric suite",
+        "cost budget"
+      ],
+      "outputs": [
+        "topology comparison report",
+        "selected topology with justification",
+        "ablation results"
+      ]
+    },
+    {
+      "capability": "latency_and_cost_modeling",
+      "subdomain": "orch__topology",
+      "method": "Hop count analysis; routing overhead quantification; critical path computation; parallel speedup modeling; token cost projection; validate model within 15-20% of staging measurements",
+      "when_to_use": "Validating SLA feasibility before committing a topology to production",
+      "inputs": [
+        "graph topology spec",
+        "per-agent latency profile",
+        "token cost per agent"
+      ],
+      "outputs": [
+        "latency budget model",
+        "cost projection",
+        "critical path analysis"
+      ]
+    },
+    {
+      "capability": "fault_tolerance_and_circuit_breaker",
+      "subdomain": "orch__topology",
+      "method": "Per-node retry with exponential backoff+jitter; circuit breaker stops routing after threshold failures; fallback agent path; partial result recovery with explicit signal",
+      "when_to_use": "Engineering reliability for degraded-agent scenarios in production agent graphs",
+      "inputs": [
+        "failure taxonomy",
+        "retry budget",
+        "fallback agent spec"
+      ],
+      "outputs": [
+        "retry policy config",
+        "circuit breaker config",
+        "fallback routing table"
+      ]
+    },
+    {
+      "capability": "shared_state_and_memory_management",
+      "subdomain": "orch__topology",
+      "method": "Typed state schema with write-owner per field; CAS/mutex for concurrent writes; state size bounded; memory tiers: in-context (ephemeral), vector store (semantic), KV episodic (persistent)",
+      "when_to_use": "Designing shared context passing and memory architecture for multi-hop agent workflows",
+      "inputs": [
+        "agent context schema",
+        "state store backend",
+        "concurrency model"
+      ],
+      "outputs": [
+        "state schema spec",
+        "read/write access policy",
+        "state versioning protocol"
+      ]
+    },
+    {
+      "capability": "security_isolation",
+      "subdomain": "orch__topology",
+      "method": "Privilege boundaries by trust tier; output sanitization at every agent interface; injection defense tested with known payloads; audit logging; cross-trust edge requires explicit policy approval",
+      "when_to_use": "Enforcing security at agent graph boundaries, especially any-to-any edges across trust levels",
+      "inputs": [
+        "trust tier classification",
+        "edge permission policy",
+        "sanitization rules"
+      ],
+      "outputs": [
+        "security boundary spec",
+        "sanitization implementation",
+        "audit log config"
+      ]
+    },
+    {
+      "capability": "observability_and_tracing",
+      "subdomain": "orch__topology",
+      "method": "Distributed trace propagation across all agent hops; execution DAG replay; latency attribution; adaptive sampling (full for errors/SLA violations, sampled for normal); >=95% coverage gate",
+      "when_to_use": "Instrumenting multi-agent systems for debugging, latency attribution, and incident response",
+      "inputs": [
+        "trace instrumentation framework",
+        "agent execution events",
+        "alert thresholds"
+      ],
+      "outputs": [
+        "distributed trace store",
+        "latency dashboards",
+        "anomaly alerts"
+      ]
+    },
+    {
+      "capability": "aggregation_architecture_design",
+      "subdomain": "orch__aggregate",
+      "method": "Select aggregation strategy (vote/weighted/cascade/debate) based on cost+latency SLA; define N-agent topology; specify inter-agent message schema; enumerate failure modes with fallbacks; enforce context-window budget from day 1",
+      "when_to_use": "Architecting how N specialist LLM agent outputs are combined into a final result",
+      "inputs": [
+        "task specification",
+        "available specialist models",
+        "latency/cost SLA"
+      ],
+      "outputs": [
+        "aggregation architecture doc",
+        "agent topology diagram",
+        "message schema spec"
+      ]
+    },
+    {
+      "capability": "agent_weight_assignment",
+      "subdomain": "orch__aggregate",
+      "method": "Derive per-agent scalar weights from held-out accuracy (>=100 examples/agent), calibration metrics, and domain coverage; normalize weight vector to sum=1; version-lock to specialist model version; re-derive on model update",
+      "when_to_use": "Configuring weighted aggregation or weighted voting across specialist agents",
+      "inputs": [
+        "per-agent held-out accuracy",
+        "calibration metrics",
+        "domain coverage scores",
+        "value-weight policy"
+      ],
+      "outputs": [
+        "weight vector W",
+        "weight derivation report",
+        "normalization scheme"
+      ]
+    },
+    {
+      "capability": "self_consistency_voting",
+      "subdomain": "orch__aggregate",
+      "method": "Wang et al. 2022: sample K reasoning paths independently; select answer with highest marginal probability (majority/plurality vote); K vs accuracy curve plotted on held-out set; vote margin logged and thresholded; minimum diversity confirmed before voting",
+      "when_to_use": "Improving reasoning accuracy on tasks with discrete answer spaces without additional training",
+      "inputs": [
+        "prompt",
+        "K sample budget",
+        "temperature setting"
+      ],
+      "outputs": [
+        "voted answer",
+        "vote distribution",
+        "confidence estimate from vote margin"
+      ]
+    },
+    {
+      "capability": "multiagent_debate",
+      "subdomain": "orch__aggregate",
+      "method": "Du et al. 2023: N agents independently generate answers, exchange outputs, revise for R rounds; summarize between rounds (SUMM_COMPRESS); enforce hard per-round context cap; require minimum divergence at round 1 to detect sycophantic collapse; convergence criterion logged",
+      "when_to_use": "High-stakes reasoning tasks where factuality and multi-perspective critique improves accuracy",
+      "inputs": [
+        "question/task",
+        "N debating agents",
+        "round budget R",
+        "context window limit"
+      ],
+      "outputs": [
+        "final answer post-debate",
+        "debate transcript",
+        "convergence trace"
+      ]
+    },
+    {
+      "capability": "inter_agent_summarization",
+      "subdomain": "orch__aggregate",
+      "method": "Deploy dedicated summarizer model to compress N agent outputs to bounded length L before aggregation; key-fact retention benchmark; dropped-fact log reviewed; prefer extractive for high-stakes facts; factual consistency check on summarizer output",
+      "when_to_use": "When N*avg_output_length exceeds aggregator context window, or between debate rounds",
+      "inputs": [
+        "N agent outputs",
+        "target compression length L",
+        "key-fact inventory"
+      ],
+      "outputs": [
+        "compressed context C",
+        "compression ratio metric",
+        "dropped-fact log"
+      ]
+    },
+    {
+      "capability": "output_ensembling_and_blending",
+      "subdomain": "orch__aggregate",
+      "method": "Jiang et al. 2023 LLM-Blender: PairRanker for pairwise ranking + GenFuser for generative fusion (works without logit access); probability averaging when logits available; stacking or MoE gating for continuous distributions; calibration via ECE<0.05",
+      "when_to_use": "Combining probability distributions or ranked outputs from multiple models into a single result",
+      "inputs": [
+        "model output distributions",
+        "gating features",
+        "held-out calibration set"
+      ],
+      "outputs": [
+        "blended output distribution",
+        "pairwise rank matrix",
+        "gating model"
+      ]
+    },
+    {
+      "capability": "aggregation_calibration",
+      "subdomain": "orch__aggregate",
+      "method": "Measure Expected Calibration Error (ECE) on aggregated confidences; recalibrate with temperature scaling or Platt scaling; ECE<0.05 acceptance gate; re-run on aggregation method or model version change",
+      "when_to_use": "Ensuring aggregated confidence scores are reliable for downstream routing and escalation decisions",
+      "inputs": [
+        "aggregated confidences",
+        "ground truth labels",
+        "calibration method"
+      ],
+      "outputs": [
+        "calibrated scores",
+        "ECE metric",
+        "calibration report"
+      ]
+    },
+    {
+      "capability": "conflict_detection",
+      "subdomain": "orch__aggregate",
+      "method": "Embedding-similarity conflict detection (not lexical only); LLM judge for semantic consistency; conflict score computed before human escalation routing; false negative rate monitored (<10%); tie-breaking by judge model",
+      "when_to_use": "Detecting when specialist agents produce contradictory or semantically inconsistent outputs",
+      "inputs": [
+        "aggregated outputs",
+        "conflict score thresholds"
+      ],
+      "outputs": [
+        "conflict scores",
+        "escalation routing decisions",
+        "conflict log"
+      ]
+    },
+    {
+      "capability": "safety_filtering",
+      "subdomain": "orch__aggregate",
+      "method": "Post-aggregation safety filter applied to ALL aggregated outputs (emergent harmful combinations bypass per-agent filters); domain-specific thresholds; FP-blocked outputs routed to human review not hard-rejected; adversarial ensemble-level test set",
+      "when_to_use": "Preventing harmful outputs that emerge from combination of individually-safe agent outputs",
+      "inputs": [
+        "aggregated output",
+        "domain-specific policy rules"
+      ],
+      "outputs": [
+        "filtered output",
+        "audit log entry",
+        "block/pass decision"
+      ]
+    },
+    {
+      "capability": "human_escalation",
+      "subdomain": "orch__aggregate",
+      "method": "Async escalation queue; conflict score gates routing to human; priority by risk tier; threshold calibrated to reviewer capacity; CONFLICT_DETECT must run before HUMAN_ESCALATION to provide routing signal",
+      "when_to_use": "Routing high-conflict or high-risk aggregated outputs to human review",
+      "inputs": [
+        "conflict scores",
+        "safety block decisions",
+        "risk tier classification"
+      ],
+      "outputs": [
+        "escalation queue entries",
+        "reviewer assignments",
+        "resolution records"
+      ]
+    },
+    {
+      "capability": "goodhart_guard",
+      "subdomain": "orch__aggregate",
+      "method": "Strict train/test separation; rotate canary metrics independent of tuning set; block any weight/K optimization that shows benchmark gain without canary corroboration; contamination scan before weight tuning; benchmark-production divergence monitoring",
+      "when_to_use": "Preventing Goodhart's Law: benchmark overfitting when optimizing aggregation weights or K",
+      "inputs": [
+        "benchmark scores",
+        "canary metrics",
+        "weight optimization results"
+      ],
+      "outputs": [
+        "goodhart check pass/fail",
+        "contamination scan report",
+        "canary-benchmark divergence metric"
+      ]
+    },
+    {
+      "capability": "aggregation_evaluation_framework",
+      "subdomain": "orch__aggregate",
+      "method": "Multi-metric eval: task accuracy, latency/cost, calibration ECE, judge-human agreement (>0.75 threshold), ROUGE/Pyramid/factual-consistency for summarizer; Nenkova & McKeown Pyramid for content unit coverage; all metrics reported",
+      "when_to_use": "Validating the end-to-end aggregation pipeline before production deployment",
+      "inputs": [
+        "test set",
+        "cost logs",
+        "judge outputs",
+        "summarizer outputs"
+      ],
+      "outputs": [
+        "evaluation report",
+        "per-metric scores",
+        "pass/fail decision"
+      ]
+    },
+    {
+      "capability": "summarization_quality_evaluation",
+      "subdomain": "orch__aggregate",
+      "method": "Nenkova & McKeown Pyramid method: annotate content units with importance weights; score summaries by weighted coverage; supplement with ROUGE and BERTScore; factual consistency check; acceptance thresholds per compression ratio target",
+      "when_to_use": "Validating summarizer/compressor node output quality before integration into aggregation pipeline",
+      "inputs": [
+        "summarizer outputs",
+        "source agent outputs",
+        "key-fact inventory"
+      ],
+      "outputs": [
+        "Pyramid scores",
+        "ROUGE scores",
+        "factual consistency scores",
+        "acceptance decision"
+      ]
+    },
+    {
+      "capability": "provenance_tracing_and_feedback_loop",
+      "subdomain": "orch__aggregate",
+      "method": "Provenance record for every aggregation event; PROV_TRACE must be active before FEEDBACK_LOOP; version-controlled weight updates gated by eval regression suite; minimum update interval enforced; periodic offline attribution audit",
+      "when_to_use": "Enabling continuous improvement of aggregation weights via production outcome attribution",
+      "inputs": [
+        "production outcomes",
+        "provenance records",
+        "attribution policy"
+      ],
+      "outputs": [
+        "weight update triggers",
+        "K schedule updates",
+        "attribution audit log"
+      ]
+    },
+    {
+      "capability": "context_budget_governance",
+      "subdomain": "orch__aggregate",
+      "method": "Hard token cap enforced before calling aggregator; overflow triggers summarizer even outside normal path; CONTEXT_BUDGET limits must precede any aggregation call; summarizer re-evaluated when N agents increases",
+      "when_to_use": "Preventing context-window overflow in aggregation and debate pipelines",
+      "inputs": [
+        "aggregator context limit",
+        "N agents",
+        "avg output length"
+      ],
+      "outputs": [
+        "token budget spec",
+        "overflow guard config",
+        "per-round context cap"
+      ]
+    },
+    {
+      "capability": "domain_routing",
+      "subdomain": "orch__aggregate",
+      "method": "Domain classifier routes queries to relevant agent subset; routing accuracy >=0.90 gate; low-confidence routing falls back to full agent pool; confidence logged for audit; routing reduces cost/latency by excluding irrelevant specialists",
+      "when_to_use": "Reducing active agent set to only domain-relevant specialists before aggregation",
+      "inputs": [
+        "agent capabilities",
+        "domain taxonomy",
+        "query"
+      ],
+      "outputs": [
+        "routing model",
+        "agent coverage map",
+        "confidence score"
+      ]
+    },
+    {
+      "capability": "orchestration_monitoring",
+      "subdomain": "orch__aggregate",
+      "method": "Circuit breaker on failing agents; health dashboard with per-agent error rates and latency; agent timeout rate threshold; weight vector renormalized over available agents on partial failure; circuit breaker tested with injected failure",
+      "when_to_use": "Operating multi-agent pipelines in production with reliability SLAs",
+      "inputs": [
+        "pipeline health signals",
+        "error rate thresholds",
+        "circuit breaker config"
+      ],
+      "outputs": [
+        "health dashboard",
+        "alert config",
+        "circuit breaker state"
+      ]
+    }
+  ],
+  "decision_procedure": [
+    "1. Clarify task requirements: identify subtask count, dependency structure, latency SLA, token cost budget, and safety risk tier.",
+    "2. Select topology class: DAG if no feedback required; cyclic if iterative refinement needed; hierarchical if scale requires decomposition; any-to-any only if skip/feedback edges provide proven value.",
+    "3. Validate specialist advantage (SPEC_BEAT): measure specialist vs generalist on production task sample; compute net value = accuracy_gain - routing_overhead; reject specialization if net value negative or routing overhead dominates.",
+    "4. Design routing mechanism: start with rule-based for speed and interpretability; upgrade to classifier if task types are numerous; use LLM-judge only when accuracy gain justifies ~200ms overhead.",
+    "5. Model latency and cost (ORCH_LATENCY): compute critical path; verify p95 latency within SLA; if latency fails, simplify topology or switch serial to parallel on critical path.",
+    "6. Choose aggregation strategy: majority vote (VOTE_SC) for discrete answer spaces; weighted blend (ENSEMBLE_BLEND) for continuous distributions; debate (DEBATE_PROTO) for high-stakes factuality; cascade for sequential refinement.",
+    "7. Configure context budget (CONTEXT_BUDGET): compute N*avg_output_length; if exceeds aggregator context limit, deploy summarizer (SUMM_COMPRESS) and validate key-fact retention before integration.",
+    "8. Derive agent weights (WEIGHT_ASSIGN): from held-out accuracy >=100 examples/agent; normalize; version-lock to specialist model version; never tune on test set (GOODHART_GUARD).",
+    "9. Implement reliability controls: loop guards (LOOP_CTRL), circuit breakers (FAULT_TOL), retry with backoff, parallel join barrier with timeout.",
+    "10. Enforce security isolation (SECURITY_ISO): assign trust tiers; sanitize at every cross-tier edge; validate with known injection payloads.",
+    "11. Instrument observability (OBS_TRACE): achieve >=95% agent trace coverage; configure latency dashboards and anomaly alerts before production.",
+    "12. Apply safety filter (SAFETY_FILTER) post-aggregation; configure CONFLICT_DETECT before HUMAN_ESCALATION; test adversarial ensemble-level harm scenarios.",
+    "13. Run topology ablation (TOPO_EVAL) with agent quality held constant; report all metrics; select winner by multi-metric Pareto analysis.",
+    "14. Monitor and iterate: re-run SPEC_BEAT on base model update; re-derive weights on specialist model update; escalate on SLA violations or conflict detection degradation."
+  ],
+  "workflow": [
+    {
+      "phase": "graph_design",
+      "objective": "Define agent execution graph structure before any implementation",
+      "entry": [
+        "task spec available",
+        "agent capability registry complete"
+      ],
+      "exit": [
+        "graph adjacency spec serialized",
+        "cycle detection passed",
+        "termination policy documented"
+      ],
+      "gates": [
+        "GRAPH_DESIGN signed off; all cycles have guards"
+      ]
+    },
+    {
+      "phase": "specialist_validation",
+      "objective": "Empirically justify specialist agents before routing infrastructure investment",
+      "entry": [
+        "GRAPH_DESIGN complete",
+        "production task sample available"
+      ],
+      "exit": [
+        "net value positive per subtask",
+        "specialist justification report approved"
+      ],
+      "gates": [
+        "SPEC_BEAT: net_value = accuracy_gain - routing_overhead > 0"
+      ]
+    },
+    {
+      "phase": "routing_and_gating_design",
+      "objective": "Implement and validate routing mechanism and MoE gating",
+      "entry": [
+        "GRAPH_DESIGN complete",
+        "SPEC_BEAT validated"
+      ],
+      "exit": [
+        "routing policy spec deployed",
+        "router accuracy >=0.90",
+        "fallback path tested",
+        "MoE utilization variance <0.15"
+      ],
+      "gates": [
+        "router accuracy >=0.90 on held-out benchmark; MoE expert collapse check passed"
+      ]
+    },
+    {
+      "phase": "aggregation_architecture",
+      "objective": "Define end-to-end aggregation strategy, context budget, and message schema",
+      "entry": [
+        "N agents and SLA defined",
+        "aggregation strategy selected"
+      ],
+      "exit": [
+        "architecture doc approved",
+        "latency budget traced per hop",
+        "context budget enforced",
+        "failure modes enumerated"
+      ],
+      "gates": [
+        "architecture review approved; context overflow guard tested"
+      ]
+    },
+    {
+      "phase": "context_and_summarization",
+      "objective": "Prevent context-window overflow in aggregation and debate pipelines",
+      "entry": [
+        "AGGREGATION_ARCH complete",
+        "N*avg_output_length computed"
+      ],
+      "exit": [
+        "summarizer deployed",
+        "key-fact retention above threshold",
+        "compression ratio validated"
+      ],
+      "gates": [
+        "key-fact retention >= threshold AND ROUGE/Pyramid pass; output length <= L for all inputs"
+      ]
+    },
+    {
+      "phase": "weight_and_calibration",
+      "objective": "Derive validated agent weights and calibrate ensemble confidence",
+      "entry": [
+        "aggregation method finalized",
+        "held-out eval set >=100/agent available"
+      ],
+      "exit": [
+        "weight vector W normalized and version-locked",
+        "ECE < 0.05"
+      ],
+      "gates": [
+        "weight derivation reproducible; held-out set size verified; ECE < 0.05; Goodhart guard passed"
+      ]
+    },
+    {
+      "phase": "reliability_and_security",
+      "objective": "Implement loop controls, fault tolerance, state safety, and security isolation",
+      "entry": [
+        "topology and execution plan defined"
+      ],
+      "exit": [
+        "all cycles terminate within max_iter",
+        "circuit breakers configured",
+        "concurrent write safety verified",
+        "injection defense tested"
+      ],
+      "gates": [
+        "loop guards pass adversarial test; retry bounded; CAS verified; injection defense validated"
+      ]
+    },
+    {
+      "phase": "safety_and_escalation",
+      "objective": "Apply post-aggregation safety filter and configure human escalation",
+      "entry": [
+        "aggregation method active",
+        "conflict detection configured"
+      ],
+      "exit": [
+        "safety filter applied post-aggregation",
+        "false positive rate measured",
+        "human escalation queue active"
+      ],
+      "gates": [
+        "CONFLICT_DETECT running before HUMAN_ESCALATION; false positive rate within budget; adversarial ensemble harm test passed"
+      ]
+    },
+    {
+      "phase": "observability_and_evaluation",
+      "objective": "Instrument tracing, evaluate topology, and validate Goodhart guard",
+      "entry": [
+        "aggregation pipeline deployed to staging"
+      ],
+      "exit": [
+        "trace coverage >=95%",
+        "topology ablation complete",
+        "all eval metrics above threshold",
+        "contamination scan passed"
+      ],
+      "gates": [
+        "trace coverage gate; topology winner justified by multi-metric analysis; Goodhart guard passed"
+      ]
+    },
+    {
+      "phase": "production_monitoring_and_iteration",
+      "objective": "Operate pipeline with continuous monitoring and trigger-based iteration",
+      "entry": [
+        "production deployment complete",
+        "monitoring dashboards active"
+      ],
+      "exit": [
+        "circuit breaker tested with injected failure",
+        "feedback loop with provenance tracing active"
+      ],
+      "gates": [
+        "circuit breaker validated; PROV_TRACE active before FEEDBACK_LOOP; weight update version-controlled"
+      ]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "GRAPH_DESIGN not finalized before ROUTER_DESIGN or PARALLEL_EXEC implementation starts",
+      "action": "flag",
+      "reason": "Routing and execution depend on graph structure; implementing without spec creates O(N) rework cost"
+    },
+    {
+      "condition": "SPEC_BEAT net value <= 0 (routing overhead exceeds accuracy gain)",
+      "action": "human_review",
+      "reason": "Specialist routing is pure overhead cost; disable until advantage measured on production distribution"
+    },
+    {
+      "condition": "Loop runaway detected in staging or production (cycle without termination guard)",
+      "action": "human_review",
+      "reason": "Unbounded cycles cause infinite cost; critical priority - add max-iter cap and timeout immediately"
+    },
+    {
+      "condition": "Expert collapse: MoE utilization variance >0.5 across experts",
+      "action": "flag",
+      "reason": "Expert collapse degrades MoE to single-model performance; increase auxiliary load-balance loss and capacity factor"
+    },
+    {
+      "condition": "Aggregation accuracy degrades >threshold vs offline eval (Goodhart signal)",
+      "action": "human_review",
+      "reason": "Production-offline divergence indicates benchmark contamination or distribution shift; contamination scan required before next weight update"
+    },
+    {
+      "condition": "Summarizer key-fact retention drops below threshold OR compression hallucinates novel content",
+      "action": "human_review",
+      "reason": "Lossy summarization irreversibly degrades debate and aggregation quality; summarizer replacement and re-evaluation required"
+    },
+    {
+      "condition": "Judge-human agreement drops below 0.75",
+      "action": "flag",
+      "reason": "Judge model has drifted or developed new bias; audit positional and verbosity bias; rotate judge family"
+    },
+    {
+      "condition": "All N agents produce identical wrong answers (correlated failure undetectable by conflict detection)",
+      "action": "human_review",
+      "reason": "System-level failure mode not caught by standard checks; require diverse model families and canary test set monitoring"
+    },
+    {
+      "condition": "Prompt injection traced through agent chain from external input to privileged agent",
+      "action": "human_review",
+      "reason": "Security incident; audit all any-to-any edges; add sanitization to affected interfaces; emergency topology lockdown may be required"
+    },
+    {
+      "condition": "Context budget exhausted mid-graph returning silent truncation (not explicit partial_result signal)",
+      "action": "flag",
+      "reason": "Silent truncation corrupts aggregation; enforce explicit signal and increase budget to cover full path"
+    },
+    {
+      "condition": "Human escalation queue overwhelms reviewer capacity (automation SLA broken)",
+      "action": "defer",
+      "reason": "Use async escalation queue; calibrate escalation threshold to reviewer capacity; prioritize by risk tier"
+    },
+    {
+      "condition": "AGG_ARCH topology changed without updating CONTEXT_BUDGET or SUMM_COMPRESS targets",
+      "action": "flag",
+      "reason": "N agent increase without context budget update causes overflow; AR_07 anti-rework rule violated"
+    }
+  ],
+  "validation_checklist": [
+    "Graph adjacency spec is serialized and passes static cycle detection before implementation begins",
+    "All cycles have explicit max-iter cap, convergence threshold, and timeout budget",
+    "Specialist advantage validated on held-out production task sample (not benchmark); net value positive after routing overhead",
+    "Router accuracy >=0.90 on held-out benchmark; every route has tested fallback path",
+    "MoE expert utilization variance <0.15; auxiliary load-balance loss coefficient validated",
+    "Latency model validated against staging measurements within 15-20%; cost projection within 15% of actual",
+    "SPEC_BEAT re-run after every base model version increment",
+    "AGG_ARCH finalized and reviewed before any aggregation sub-component implemented",
+    "Context budget computed as N*avg_output_length; overflow guard tested; hard token cap enforced before aggregator call",
+    "Summarizer key-fact retention above threshold on benchmark; dropped-fact log reviewed; output length <= L for all inputs",
+    "Weight vector derived from >=100 examples/agent held-out set; normalized sum=1; version-locked to specialist model version; derivation reproducible",
+    "Weights not tuned on test set; Goodhart guard: benchmark improvement corroborated by canary metric",
+    "Calibration ECE < 0.05 on aggregated outputs",
+    "Conflict detection false negative rate <10%; CONFLICT_DETECT runs before HUMAN_ESCALATION",
+    "Post-aggregation safety filter applied to ALL outputs; adversarial ensemble-level harm test set used",
+    "Safety filter false positive rate measured and within budget per domain risk tier",
+    "PROV_TRACE active before FEEDBACK_LOOP; attribution methodology validated; weight updates version-controlled",
+    "Concurrent write safety verified (CAS or mutex) before parallel execution enabled",
+    "State size bounded by schema validation; overflow triggers summarization to external memory tier",
+    "Privilege boundaries enforced; output sanitization at every cross-trust-level edge; injection defense tested",
+    "Trace coverage >=95% of agent invocations; end-to-end trace reconstructable for any execution",
+    "Circuit breaker tested with injected failure; retry policy uses exponential backoff with jitter",
+    "Topology ablation holds agent quality constant; all metrics reported; winner selection justified by multi-metric analysis",
+    "Judge model positional bias and verbosity bias audited before production; answer-swap test completed",
+    "CONTEXT_BUDGET updated and SUMM_COMPRESS re-evaluated whenever N agents increases",
+    "Versioned graph dispatch: in-flight executions complete on prior version; rollback procedure validated"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "specialist_accuracy_vs_latency_cost",
+      "resolution": "Compute net_value=accuracy_gain-routing_overhead via ORCH_LATENCY; reject specialization when net value negative; re-evaluate on every base model update (SPEC_BEAT)"
+    },
+    {
+      "tradeoff": "any_to_any_flexibility_vs_graph_complexity",
+      "resolution": "Default to DAG; only add any-to-any edges with proven value; enforce edge permission matrix and cycle detection at compile time; limit N*N edge audit surface"
+    },
+    {
+      "tradeoff": "parallel_execution_latency_vs_cost",
+      "resolution": "Only parallelize critical-path branches where combined cost within COST_BOUND budget; triple-check that latency saving justifies additive token cost"
+    },
+    {
+      "tradeoff": "aggregation_quality_vs_latency_cost",
+      "resolution": "Use parallel dispatch, early-exit, domain routing, and K-accuracy plateau to operate on Pareto frontier; N*R*K cost compounds rapidly"
+    },
+    {
+      "tradeoff": "summarizer_compression_vs_information_retention",
+      "resolution": "Set minimum key-fact retention threshold; audit dropped-fact log; prefer extractive compression for high-stakes facts (SUMM_COMPRESS)"
+    },
+    {
+      "tradeoff": "diversity_vs_individual_reliability",
+      "resolution": "Set quality floor on individual candidates before admitting to ensemble pool; measure diversity+accuracy jointly (DIVERSITY_ENFORCE)"
+    },
+    {
+      "tradeoff": "benchmark_optimization_vs_production_validity",
+      "resolution": "GOODHART_GUARD overrides any benchmark gain: strict train/test separation; rotate canary metrics; contamination scan before weight tuning"
+    },
+    {
+      "tradeoff": "human_escalation_thoroughness_vs_automation_scalability",
+      "resolution": "Async escalation queue; calibrate threshold to reviewer capacity; risk-tier priority; domain-specific safety thresholds"
+    },
+    {
+      "tradeoff": "debate_context_growth_vs_context_budget",
+      "resolution": "CONTEXT_BUDGET hard limits enforced before aggregator call; summarize between debate rounds; limit R by budget not by convergence alone"
+    },
+    {
+      "tradeoff": "judge_model_self_reinforcement_vs_objectivity",
+      "resolution": "Judge from different model family than generators; audit positional bias; diversify judges over time (GOODHART_GUARD)"
+    },
+    {
+      "tradeoff": "shared_state_vs_isolation",
+      "resolution": "Partition state by trust level; read-only views for lower-trust agents; serialize concurrent writes with CAS/mutex (STATE_MGMT+SECURITY_ISO)"
+    },
+    {
+      "tradeoff": "fault_tolerance_retry_vs_cost_amplification",
+      "resolution": "Cap retry count in FAULT_TOL; reserve retry budget fraction in COST_BOUND; exponential backoff bounds amplification"
+    },
+    {
+      "tradeoff": "hierarchy_depth_vs_delegation_latency",
+      "resolution": "Limit hierarchy to 2-3 levels; profile with ORCH_LATENCY; each level adds delegation overhead that compounds on simple tasks"
+    },
+    {
+      "tradeoff": "observability_trace_volume_vs_storage_cost",
+      "resolution": "Adaptive sampling: full trace for errors+SLA violations; sampled for normal traffic; >=95% coverage gate maintained"
+    },
+    {
+      "tradeoff": "weight_stability_vs_adaptability",
+      "resolution": "Version-control all weight changes; gate updates behind eval regression suite; enforce minimum update interval; PROV_TRACE required before FEEDBACK_LOOP"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "dag",
+      "definition": "Directed acyclic graph; agent execution graph with no cycles; enables topological sort and static analysis; default preferred topology"
+    },
+    {
+      "term": "any_to_any_topology",
+      "definition": "Agent graph where arbitrary directed edges connect any pair of agents including skip connections and feedback edges; not limited to series or parallel"
+    },
+    {
+      "term": "moe_gating",
+      "definition": "Mixture-of-experts gating: softmax gating selects top-K specialist agents per token/task using learned weights with auxiliary load-balance loss to prevent expert collapse (Shazeer 2017, Fedus 2021)"
+    },
+    {
+      "term": "expert_collapse",
+      "definition": "MoE failure mode where gating routes all or most tokens to one expert making others idle (winner-take-all); prevented by auxiliary load-balance loss and capacity factor"
+    },
+    {
+      "term": "confidence_weighted_edge",
+      "definition": "Graph edge with scalar confidence/value weight used to blend or prioritize source agent contributions; enables soft routing and result blending"
+    },
+    {
+      "term": "orchestration_latency",
+      "definition": "Total wall-clock latency attributable to routing, state management, and aggregation overhead beyond individual agent inference time; must be netted against accuracy gains"
+    },
+    {
+      "term": "specialist_routing_overhead",
+      "definition": "Latency and token cost added by routing mechanism to invoke a specialist vs single generalist call; must be subtracted from accuracy gain to compute net value"
+    },
+    {
+      "term": "circuit_breaker",
+      "definition": "Fault tolerance pattern stopping routing to a degraded agent after threshold failures; prevents cascade failures; distinct from retry or fallback alone"
+    },
+    {
+      "term": "privilege_boundary",
+      "definition": "Explicit separation of agent access rights to shared state or external tools based on trust level; cross-tier edges require sanitization"
+    },
+    {
+      "term": "self_consistency",
+      "definition": "Wang et al. 2022: sample K reasoning paths independently, select answer with highest marginal probability across paths; significant accuracy gain on reasoning tasks without additional training"
+    },
+    {
+      "term": "multiagent_debate",
+      "definition": "Du et al. 2023: N model instances independently generate answers then exchange and revise iteratively for R rounds before final aggregation; context grows O(N*R) requiring summarization"
+    },
+    {
+      "term": "llm_blender",
+      "definition": "Jiang et al. 2023: rank and blend LLM outputs using PairRanker (pairwise comparison) and GenFuser (generative fusion); works on black-box APIs without logit access"
+    },
+    {
+      "term": "summarizer_node",
+      "definition": "Dedicated model/module compressing N agent outputs to bounded length L before passing to aggregator or next debate round; prevents context-window overflow; requires key-fact retention validation"
+    },
+    {
+      "term": "weighted_aggregation",
+      "definition": "Combining agent outputs using normalized weight vector where weights reflect per-agent reliability, calibration, or value-importance; weights must be version-locked to model versions"
+    },
+    {
+      "term": "goodhart_law",
+      "definition": "When a measure becomes a target it ceases to be a good measure; optimizing aggregation on fixed benchmark causes production quality divergence; mitigated by canary metrics and contamination scanning"
+    },
+    {
+      "term": "sycophantic_collapse",
+      "definition": "Debate failure mode where agents converge to agreement prematurely due to social conformity pressure not actual reasoning; detected by low diversity at round 1; mitigated by adversarial injection"
+    },
+    {
+      "term": "positional_bias",
+      "definition": "LLM judge tendency to prefer answers in specific positions (e.g. position 1) independent of content quality; audited via answer-swap test before judge model deployment"
+    },
+    {
+      "term": "pyramid_method",
+      "definition": "Nenkova & McKeown summarization evaluation: annotate content units with importance weights; score summaries by weighted coverage; preferred over ROUGE alone for high-stakes compression"
+    }
+  ],
+  "competency_questions_covered": [
+    "What graph topology (DAG, cyclic, hierarchical, any-to-any) is used and what are the termination conditions?",
+    "How is the topology evaluated and what metrics govern topology selection?",
+    "What routing mechanism is used to dispatch tasks to agent nodes?",
+    "How is conditional and dynamic dispatch implemented and how are branches bounded?",
+    "When does a specialist agent genuinely outperform a generalist and how is that measured?",
+    "How does MoE gating select experts and prevent expert collapse?",
+    "How are edge weights and confidence scores assigned and used for aggregation?",
+    "How are loops detected and terminated in cyclic agent graphs?",
+    "How is hierarchical orchestration structured and what is the delegation protocol?",
+    "How are parallel agent executions synchronized and what happens if a branch fails?",
+    "How are conflicting agent outputs detected and resolved?",
+    "How is shared state managed and what are the memory tiers for long-horizon agents?",
+    "How is end-to-end latency and token cost modeled and budgeted?",
+    "What security isolation boundaries and fault tolerance mechanisms protect the agent graph?",
+    "What aggregation strategy (vote, weighted blend, debate, cascade) is used and why?",
+    "What is the end-to-end latency and cost model for the aggregation pipeline and how is SLA enforced?",
+    "How are agent weights derived and what data is required to validate them?",
+    "How is the output distribution of the ensemble calibrated and how is calibration quality measured?",
+    "What is the optimal K for self-consistency and how is it selected given cost and accuracy constraints?",
+    "How does multi-agent debate prevent sycophantic convergence and context overflow?",
+    "How is the judge model selected and what biases must be audited before production use?",
+    "How does the summarizer/compressor node ensure key facts are retained under aggressive compression?",
+    "What summarization quality metrics are applied to the compressor node output and what are the acceptance thresholds?",
+    "How are post-aggregation safety violations detected and what is the escalation path?",
+    "How are aggregation outcomes attributed to specific agents and fed back to improve the system?",
+    "How does the system guard against Goodhart's Law when optimizing aggregation on benchmark metrics?"
+  ]
+}

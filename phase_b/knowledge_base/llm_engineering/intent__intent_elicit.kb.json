@@ -1,0 +1,5207 @@
+{
+  "domain": "intent__intent_elicit",
+  "domain_label": "Intent Elicitation, Clarifying Questions & Pragmatics (LLM Engineering subdomain)",
+  "purpose": "session_bounded_stepwise_execution_for_intent_elicitation_clarifying_question_policy_and_pragmatic_understanding_in_an_orchestrated_llm_system",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "subdomain scope is the front-end intent-elicitation layer: ambiguity detection, clarifying questions, pragmatics, multilingual handling, and downstream handoff",
+    "target system is a multi-turn orchestrated LLM front-end that understands intent first then passes to specialist",
+    "user population includes Hindi/Punjabi/Hinglish code-switched speakers as a primary segment"
+  ],
+  "exclusions": [
+    "specialist LLM execution after handoff",
+    "RAG retrieval and document ranking",
+    "fine-tuning of intent classification models (covered in ftune subdomain)",
+    "authentication, access control, and billing",
+    "cross-session persistent memory and long-term user profiles"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "How is user intent taxonomy defined and what ambiguity types does the system recognize?",
+      "must_be_answerable_from": [
+        "nodes",
+        "glossary"
+      ],
+      "acceptance_condition": "AMBIG_DETECT and INTENT_SCHEMA define taxonomy and ambiguity classes",
+      "covered_by": [
+        "AMBIG_DETECT",
+        "INTENT_SCHEMA"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How are clarifying questions generated and ranked for informativeness?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "QUESTION_GEN + INFO_GAIN define generation and ranking",
+      "covered_by": [
+        "QUESTION_GEN",
+        "INFO_GAIN"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How does the system detect out-of-domain or out-of-scope intents?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SCOPE_BOUND defines OOD detection and routing",
+      "covered_by": [
+        "SCOPE_BOUND",
+        "AMBIG_DETECT"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What is the stopping rule for clarifying questions and how does stake level influence it?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "STOP_RULE defines turn budget and stake override",
+      "covered_by": [
+        "STOP_RULE",
+        "CQ_POLICY"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How is intent confidence calibrated to true probabilities?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "CALIBRATION + PRIOR_UPDATE define calibration approach",
+      "covered_by": [
+        "CALIBRATION",
+        "PRIOR_UPDATE"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How is a Bayesian intent prior maintained and updated from traffic?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "PRIOR_UPDATE defines prior initialization and update",
+      "covered_by": [
+        "PRIOR_UPDATE",
+        "CALIBRATION"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is dialogue context tracked across turns and coreferences resolved?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "CONTEXT_TRACK defines belief state and coreference handling",
+      "covered_by": [
+        "CONTEXT_TRACK",
+        "ANSWER_PARSE"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How are user answers to clarifying questions parsed and integrated into the belief state?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "ANSWER_PARSE + CONTEXT_TRACK",
+      "covered_by": [
+        "ANSWER_PARSE",
+        "CONTEXT_TRACK"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How does the system adapt question style to user persona and language register?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PERSONA_ADAPT + QUESTION_GEN",
+      "covered_by": [
+        "PERSONA_ADAPT",
+        "QUESTION_GEN"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "How does the system handle Hindi/Punjabi/Hinglish code-switched utterances?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "MULTILINGUAL defines script detection, normalization, cross-lingual mapping",
+      "covered_by": [
+        "MULTILINGUAL",
+        "PERSONA_ADAPT"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How is Gricean pragmatics and implicature applied to infer intent beyond literal text?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PRAG_IMPLICATURE defines speech-act and implicature inference",
+      "covered_by": [
+        "PRAG_IMPLICATURE",
+        "ANSWER_PARSE"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How is intent elicitation quality measured end-to-end?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "EVAL_INTENT defines multi-metric evaluation suite",
+      "covered_by": [
+        "EVAL_INTENT",
+        "CALIBRATION"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How does the explicit quality/cost/speed dial parameterize downstream orchestration?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "OBJ_DIAL defines QCS elicitation and handoff parameterization",
+      "covered_by": [
+        "OBJ_DIAL",
+        "HANDOFF"
+      ]
+    },
+    {
+      "id": "CQ_14",
+      "question": "How is the final resolved intent handed off to the specialist orchestrator?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "HANDOFF defines envelope schema and escalation path",
+      "covered_by": [
+        "HANDOFF",
+        "SCOPE_BOUND"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "intent",
+      "definition": "the user's goal or task as inferred from utterance and context",
+      "synonyms": [
+        "user intent",
+        "task intent"
+      ],
+      "not_same_as": [
+        "utterance",
+        "query"
+      ],
+      "used_by_nodes": [
+        "AMBIG_DETECT",
+        "INTENT_SLOT",
+        "INTENT_SCHEMA"
+      ]
+    },
+    {
+      "term": "slot",
+      "definition": "a named attribute-value pair extracted from user utterance needed to execute the intent",
+      "synonyms": [
+        "entity",
+        "parameter"
+      ],
+      "not_same_as": [
+        "intent"
+      ],
+      "used_by_nodes": [
+        "INTENT_SLOT",
+        "CONTEXT_TRACK",
+        "ANSWER_PARSE"
+      ]
+    },
+    {
+      "term": "ambiguity",
+      "definition": "condition where a single utterance is consistent with multiple distinct interpretations",
+      "synonyms": [
+        "vagueness"
+      ],
+      "not_same_as": [
+        "OOD",
+        "noise"
+      ],
+      "used_by_nodes": [
+        "AMBIG_DETECT",
+        "CQ_POLICY",
+        "INFO_GAIN"
+      ]
+    },
+    {
+      "term": "clarifying_question",
+      "definition": "a system-generated follow-up question to resolve ambiguity in user intent",
+      "synonyms": [
+        "follow-up question",
+        "CQ"
+      ],
+      "not_same_as": [
+        "confirmation question",
+        "small-talk"
+      ],
+      "used_by_nodes": [
+        "QUESTION_GEN",
+        "CQ_POLICY",
+        "STOP_RULE"
+      ]
+    },
+    {
+      "term": "information_gain",
+      "definition": "expected reduction in entropy of the intent posterior from observing the answer to a question",
+      "synonyms": [
+        "IG",
+        "expected information gain"
+      ],
+      "not_same_as": [
+        "relevance",
+        "confidence"
+      ],
+      "used_by_nodes": [
+        "INFO_GAIN",
+        "PRIOR_UPDATE"
+      ]
+    },
+    {
+      "term": "implicature",
+      "definition": "what a speaker implies beyond the literal content of an utterance, derivable from Gricean maxims",
+      "synonyms": [
+        "conversational implicature"
+      ],
+      "not_same_as": [
+        "entailment",
+        "presupposition"
+      ],
+      "used_by_nodes": [
+        "PRAG_IMPLICATURE",
+        "QUESTION_GEN"
+      ]
+    },
+    {
+      "term": "code_switching",
+      "definition": "mixing of two or more languages within a single utterance, e.g. Hindi-English (Hinglish)",
+      "synonyms": [
+        "Hinglish",
+        "code-mixing"
+      ],
+      "not_same_as": [
+        "translation",
+        "monolingual"
+      ],
+      "used_by_nodes": [
+        "MULTILINGUAL",
+        "PERSONA_ADAPT"
+      ]
+    },
+    {
+      "term": "belief_state",
+      "definition": "the system's probability distribution over possible interpretations of the user's intent and slots at each dialogue turn",
+      "synonyms": [
+        "dialogue state"
+      ],
+      "not_same_as": [
+        "session log"
+      ],
+      "used_by_nodes": [
+        "CONTEXT_TRACK",
+        "ANSWER_PARSE",
+        "PRIOR_UPDATE"
+      ]
+    },
+    {
+      "term": "QCS_dial",
+      "definition": "explicit user preference encoding quality, cost, and speed priorities as a weight vector for orchestration",
+      "synonyms": [
+        "objective dial"
+      ],
+      "not_same_as": [
+        "latency SLO"
+      ],
+      "used_by_nodes": [
+        "OBJ_DIAL",
+        "HANDOFF"
+      ]
+    },
+    {
+      "term": "OOD",
+      "definition": "out-of-domain or out-of-scope: user intent that falls outside the system's defined task boundary",
+      "synonyms": [
+        "out-of-scope",
+        "OOS"
+      ],
+      "not_same_as": [
+        "ambiguity",
+        "low-confidence"
+      ],
+      "used_by_nodes": [
+        "SCOPE_BOUND",
+        "AMBIG_DETECT"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "AMBIG_DETECT",
+      "INTENT_SCHEMA",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "math_model",
+      "INFO_GAIN",
+      "CALIBRATION"
+    ],
+    "probabilistic_modeling": [
+      "PRIOR_UPDATE",
+      "CALIBRATION",
+      "INFO_GAIN"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "SCOPE_BOUND",
+      "HANDOFF"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "EVAL_INTENT"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract",
+      "QUESTION_GEN"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow",
+      "HANDOFF"
+    ],
+    "software_schema_engineering": [
+      "schema_contract",
+      "INTENT_SCHEMA"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for intent elicitation, clarifying questions, and pragmatics work units in absence of supplied datasets",
+      "citation_or_locator": "",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors"
+      ]
+    },
+    {
+      "source_id": "SRC_LEVINSON_PRAGMATICS",
+      "source_type": "textbook",
+      "label_eligibility": [
+        "heuristic",
+        "expert_estimate"
+      ],
+      "description": "Levinson, S.C. (1983). Pragmatics. Cambridge University Press. Foundation for Gricean maxims and speech-act theory.",
+      "citation_or_locator": "Levinson 1983 Pragmatics CUP",
+      "supports": [
+        "pragmatic inference",
+        "implicature",
+        "speech-act classification"
+      ],
+      "does_not_support": [
+        "computational implementation",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "academic_textbook",
+        "activity": "reference",
+        "agent": "author",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "theoretical not empirical",
+        "pre-NLP era"
+      ]
+    },
+    {
+      "source_id": "SRC_JM_DIALOGUE",
+      "source_type": "textbook",
+      "label_eligibility": [
+        "heuristic",
+        "expert_estimate"
+      ],
+      "description": "Jurafsky & Martin, Speech and Language Processing (3rd ed.), Chapter 24-26: Dialogue Systems and Chatbots.",
+      "citation_or_locator": "Jurafsky & Martin SLP3 Ch24-26",
+      "supports": [
+        "dialogue state tracking",
+        "task-oriented dialogue",
+        "clarifying questions",
+        "slot filling"
+      ],
+      "does_not_support": [
+        "benchmark numbers",
+        "observed training data"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "academic_textbook",
+        "activity": "reference",
+        "agent": "author",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "textbook treatment; specific benchmarks evolve faster than text"
+      ]
+    },
+    {
+      "source_id": "SRC_ALIANNEJADI_2019",
+      "source_type": "research_paper",
+      "label_eligibility": [
+        "heuristic",
+        "expert_estimate"
+      ],
+      "description": "Aliannejadi et al. (2019). Asking Clarifying Questions in Open-Domain Information-Seeking Conversations. SIGIR 2019.",
+      "citation_or_locator": "Aliannejadi et al. SIGIR 2019",
+      "supports": [
+        "clarifying question policy",
+        "information gain ranking",
+        "open-domain CQ generation"
+      ],
+      "does_not_support": [
+        "multilingual specifics",
+        "LLM orchestration"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "research_paper",
+        "activity": "reference",
+        "agent": "authors",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "open-domain IR focus; task-oriented dialogue differs"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "AMBIG_DETECT",
+      "topic": "ambiguity_detection_taxonomy",
+      "definition": "Classify incoming user utterances by ambiguity type (lexical, syntactic, referential, scope, pragmatic) to decide whether and what to ask.",
+      "node_type": "work_unit",
+      "group": "foundations",
+      "scope_boundary": {
+        "included": [
+          "lexical ambiguity",
+          "syntactic ambiguity",
+          "referential ambiguity",
+          "scope ambiguity",
+          "pragmatic ambiguity classification"
+        ],
+        "excluded": [
+          "question generation",
+          "resolution strategies"
+        ]
+      },
+      "academic_fields": [
+        "computational_linguistics",
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "pragmatics",
+        "ambiguity_theory"
+      ],
+      "specialists": [
+        "nlu_architect"
+      ],
+      "contradictors": [
+        "single_intent_classifier"
+      ],
+      "inputs": [
+        "raw user utterance",
+        "prior conversation context"
+      ],
+      "outputs": [
+        "ambiguity type label",
+        "confidence score",
+        "trigger flag"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.85,
+        "user_value": 0.88,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.6,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.7,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.6,
+        "final_importance": 0.79
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "new user population introduces unseen query patterns",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Correct ambiguity taxonomy gates all downstream clarification logic",
+          "example": "pragmatic vs lexical ambiguity trigger different question templates"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Wrong taxonomy label silently routes request through wrong clarification branch",
+          "example": "referential ambiguity classified as scope ambiguity yields irrelevant follow-up"
+        }
+      ],
+      "failure_modes": [
+        "over-triggering on low-stakes ambiguity",
+        "conflating lexical and pragmatic ambiguity"
+      ],
+      "acceptance_tests": [
+        "ambiguity taxonomy enumerated with mutually exclusive definitions",
+        "detector F1>0.75 on held-out intent test set"
+      ],
+      "revisit_triggers": [
+        "new query type observed outside existing taxonomy",
+        "precision drops below 0.70 on ambiguity detection"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CQ_POLICY",
+      "topic": "clarifying_question_policy",
+      "definition": "Define when to ask a clarifying question: the decision rule balancing information gain against user friction, driven by ambiguity confidence and task stakes.",
+      "node_type": "work_unit",
+      "group": "policy",
+      "scope_boundary": {
+        "included": [
+          "ask-vs-proceed decision rule",
+          "information-gain threshold",
+          "friction budget",
+          "stake-based override"
+        ],
+        "excluded": [
+          "question phrasing",
+          "answer integration"
+        ]
+      },
+      "academic_fields": [
+        "dialogue_systems",
+        "information_retrieval"
+      ],
+      "subfields": [
+        "dialogue_management",
+        "decision_theory"
+      ],
+      "specialists": [
+        "dialogue_policy_designer"
+      ],
+      "contradictors": [
+        "always_ask_advocate",
+        "never_ask_advocate"
+      ],
+      "inputs": [
+        "ambiguity type label",
+        "stake level",
+        "session friction budget"
+      ],
+      "outputs": [
+        "ask/proceed decision",
+        "stake tier"
+      ],
+      "dependencies": [
+        "AMBIG_DETECT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.85,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.6,
+        "risk_score": 0.67,
+        "confidence_score": 0.48,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.58,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.74,
+        "uncertainty_range_width": 0.36,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.22,
+          0.58
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "user friction metrics shift or stake taxonomy changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit policy prevents ad-hoc per-engineer ask decisions",
+          "example": "stake-based override ensures high-risk tasks always confirm"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-conservative policy annoys users; under-conservative leads to wrong outputs",
+          "example": "asking for clarification on every query doubles round-trips"
+        }
+      ],
+      "failure_modes": [
+        "always asking regardless of confidence",
+        "ignoring stake level in decision"
+      ],
+      "acceptance_tests": [
+        "policy documented with thresholds per stake tier",
+        "shadow-mode run shows ask-rate within target band"
+      ],
+      "revisit_triggers": [
+        "user complaint rate on excess questioning rises",
+        "task error rate rises on direct-proceed decisions"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "INFO_GAIN",
+      "topic": "information_gain_entropy_reduction",
+      "definition": "Quantify expected reduction in intent uncertainty from asking each candidate clarifying question, selecting highest-gain question within friction budget.",
+      "node_type": "work_unit",
+      "group": "scoring",
+      "scope_boundary": {
+        "included": [
+          "entropy of intent posterior",
+          "expected information gain per question",
+          "question ranking by IG"
+        ],
+        "excluded": [
+          "multi-question strategies",
+          "answer integration"
+        ]
+      },
+      "academic_fields": [
+        "information_theory",
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "bayesian_dialogue",
+        "entropy_estimation"
+      ],
+      "specialists": [
+        "probabilistic_modeler"
+      ],
+      "contradictors": [
+        "rule_based_question_picker"
+      ],
+      "inputs": [
+        "intent posterior distribution",
+        "candidate question set"
+      ],
+      "outputs": [
+        "ranked question list",
+        "IG scores"
+      ],
+      "dependencies": [
+        "AMBIG_DETECT",
+        "CQ_POLICY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.72,
+        "user_value": 0.75,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.45,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.6,
+        "confidence_score": 0.46,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.59,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.43,
+        "update_signal": "intent distribution shifts in production traffic",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Maximally informative questions resolve ambiguity in fewest turns",
+          "example": "single yes/no question splits binary intent uncertainty in half"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "IG computation requires calibrated intent prior; miscalibration leads to suboptimal picks",
+          "example": "uniform prior treats all intents as equally likely causing low-utility questions"
+        }
+      ],
+      "failure_modes": [
+        "uncalibrated prior flattens IG scores",
+        "ignoring question cost/length in selection"
+      ],
+      "acceptance_tests": [
+        "IG ranking matches human-judged ordering on benchmark set"
+      ],
+      "revisit_triggers": [
+        "intent posterior calibration degrades",
+        "new intent class added to model"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "STOP_RULE",
+      "topic": "stopping_rule_questioning",
+      "definition": "Determine when to stop asking follow-up questions: confidence threshold, max-turn budget, or diminishing IG criterion.",
+      "node_type": "work_unit",
+      "group": "policy",
+      "scope_boundary": {
+        "included": [
+          "confidence threshold",
+          "max-turn budget",
+          "diminishing-returns IG stopping",
+          "latency guard"
+        ],
+        "excluded": [
+          "multi-turn dialogue orchestration",
+          "active learning"
+        ]
+      },
+      "academic_fields": [
+        "dialogue_systems",
+        "decision_theory"
+      ],
+      "subfields": [
+        "stopping_criteria",
+        "active_learning"
+      ],
+      "specialists": [
+        "dialogue_policy_designer"
+      ],
+      "contradictors": [
+        "infinite_clarification_advocate"
+      ],
+      "inputs": [
+        "current intent confidence",
+        "turns spent",
+        "remaining IG potential"
+      ],
+      "outputs": [
+        "stop/continue decision",
+        "final intent estimate"
+      ],
+      "dependencies": [
+        "CQ_POLICY",
+        "INFO_GAIN"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.62,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.6,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.5,
+        "update_signal": "downstream task error rate changes after stopping decisions",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Hard turn-budget prevents runaway question loops",
+          "example": "max 2 questions before proceeding with best-effort intent"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fixed threshold may stop too early on high-stakes ambiguous queries",
+          "example": "confidence threshold 0.85 inadequate when task irreversibility is high"
+        }
+      ],
+      "failure_modes": [
+        "ignoring stake level in stop criterion",
+        "conflating confidence with correctness"
+      ],
+      "acceptance_tests": [
+        "system stops after configured max turns in test harness",
+        "stake-override tested for high-irreversibility tasks"
+      ],
+      "revisit_triggers": [
+        "downstream error rate rises after stopping",
+        "user re-asks observed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "PRAG_IMPLICATURE",
+      "topic": "pragmatics_implicature",
+      "definition": "Apply Gricean maxims and speech-act theory to infer implied user intent beyond literal utterance content.",
+      "node_type": "work_unit",
+      "group": "pragmatics",
+      "scope_boundary": {
+        "included": [
+          "Gricean maxims",
+          "speech act classification",
+          "implicature inference",
+          "indirect requests"
+        ],
+        "excluded": [
+          "syntax parsing",
+          "semantic role labeling"
+        ]
+      },
+      "academic_fields": [
+        "linguistics",
+        "computational_pragmatics"
+      ],
+      "subfields": [
+        "pragmatics",
+        "speech_act_theory"
+      ],
+      "specialists": [
+        "computational_linguist"
+      ],
+      "contradictors": [
+        "literal_nlu_engineer"
+      ],
+      "inputs": [
+        "surface utterance",
+        "discourse context",
+        "world knowledge"
+      ],
+      "outputs": [
+        "pragmatic intent label",
+        "implicature flags"
+      ],
+      "dependencies": [
+        "AMBIG_DETECT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.7,
+        "user_value": 0.78,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.42,
+        "confidence": 0.55,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.61,
+        "confidence_score": 0.44,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.57,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.62,
+        "dependency_gate_pass_rate": 0.68,
+        "uncertainty_range_width": 0.36,
+        "revisit_trigger_count_normalized": 0.2
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.55,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.22,
+          0.58
+        ],
+        "posterior_importance": 0.4,
+        "update_signal": "user population or communication style shifts",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Captures indirect requests that literal NLU misses entirely",
+          "example": "'can you open the window?' interpreted as request not capability question"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Pragmatic inference is context-heavy and brittle across cultures",
+          "example": "Gricean implicature patterns differ in high-context vs low-context cultures"
+        }
+      ],
+      "failure_modes": [
+        "over-applying implicature to literal questions",
+        "ignoring prosodic/emoji context"
+      ],
+      "acceptance_tests": [
+        "speech-act labels match annotation on held-out pragmatics benchmark"
+      ],
+      "revisit_triggers": [
+        "new conversation style or cultural user group onboarded"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "MULTILINGUAL",
+      "topic": "multilingual_codeswitched_intent",
+      "definition": "Handle intent elicitation for Hindi/Punjabi/Hinglish code-switched utterances: transliteration normalization, script detection, cross-lingual intent mapping.",
+      "node_type": "work_unit",
+      "group": "multilingual",
+      "scope_boundary": {
+        "included": [
+          "script detection",
+          "transliteration normalization",
+          "Hinglish/Punjabi handling",
+          "cross-lingual intent mapping"
+        ],
+        "excluded": [
+          "English-only NLU",
+          "machine translation pipeline"
+        ]
+      },
+      "academic_fields": [
+        "computational_linguistics",
+        "multilingual_nlp"
+      ],
+      "subfields": [
+        "code_switching",
+        "transliteration",
+        "cross_lingual_transfer"
+      ],
+      "specialists": [
+        "multilingual_nlu_engineer"
+      ],
+      "contradictors": [
+        "english_only_nlu_engineer"
+      ],
+      "inputs": [
+        "raw mixed-script utterance",
+        "language-ID output"
+      ],
+      "outputs": [
+        "normalized unicode form",
+        "language tag",
+        "intent label"
+      ],
+      "dependencies": [
+        "AMBIG_DETECT",
+        "PRAG_IMPLICATURE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.85,
+        "technical_complexity": 0.8,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.5,
+        "confidence": 0.52,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.67,
+        "confidence_score": 0.42,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.53,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.6,
+        "dependency_gate_pass_rate": 0.65,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.52,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.25,
+          0.6
+        ],
+        "posterior_importance": 0.41,
+        "update_signal": "new language variant or script added to user base",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Unlocks correct intent classification for a dominant user segment",
+          "example": "Hinglish 'mujhe ek PDF chahiye' correctly maps to PDF-generation intent"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Transliteration normalization has high error rate on arbitrary Romanization",
+          "example": "same word romanized 5 different ways in user corpus"
+        }
+      ],
+      "failure_modes": [
+        "script-detection error flips Devanagari to Latin pipeline",
+        "intent mapped via English translation loses cultural nuance"
+      ],
+      "acceptance_tests": [
+        "script detection accuracy >0.95 on mixed-script test set",
+        "intent F1 on Hinglish >0.72"
+      ],
+      "revisit_triggers": [
+        "new regional language or script introduced",
+        "transliteration library updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "OBJ_DIAL",
+      "topic": "objective_dial_quality_cost_speed",
+      "definition": "Elicit and encode user's explicit quality/cost/speed priority to parameterize downstream orchestration and model selection.",
+      "node_type": "work_unit",
+      "group": "user_preference",
+      "scope_boundary": {
+        "included": [
+          "quality vs cost vs speed tradeoff elicitation",
+          "preference encoding",
+          "orchestration parameter setting"
+        ],
+        "excluded": [
+          "model selection internals",
+          "budget enforcement"
+        ]
+      },
+      "academic_fields": [
+        "dialogue_systems",
+        "decision_theory"
+      ],
+      "subfields": [
+        "preference_elicitation",
+        "multi_objective_optimization"
+      ],
+      "specialists": [
+        "product_manager",
+        "dialogue_designer"
+      ],
+      "contradictors": [
+        "one_size_fits_all_optimizer"
+      ],
+      "inputs": [
+        "user utterance or preference signal",
+        "session context"
+      ],
+      "outputs": [
+        "QCS weight vector",
+        "orchestration params"
+      ],
+      "dependencies": [
+        "CQ_POLICY"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_12",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.85,
+        "user_value": 0.82,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.58,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.63,
+        "confidence_score": 0.48,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.59,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "orchestration cost model or model tier changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Explicit objective dial aligns system behavior to stated user priority",
+          "example": "cost-first dial selects cheaper model tier; speed-first dial disables multi-step reasoning"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Users may not know their true preference until after seeing output quality",
+          "example": "user selects 'fast' then complains about quality"
+        }
+      ],
+      "failure_modes": [
+        "treating QCS as fixed instead of session-updatable",
+        "ignoring task-specific overrides"
+      ],
+      "acceptance_tests": [
+        "QCS dial exposed in API and maps to documented orchestration branches",
+        "default tested"
+      ],
+      "revisit_triggers": [
+        "user satisfaction splits by dial setting",
+        "cost model changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "INTENT_SLOT",
+      "topic": "intent_slot_extraction",
+      "definition": "Extract structured (intent-class, slot-key-value) tuples from user utterances using a task-oriented NLU model.",
+      "node_type": "work_unit",
+      "group": "nlu_core",
+      "scope_boundary": {
+        "included": [
+          "intent classification",
+          "slot filling",
+          "BIO tagging",
+          "multi-intent detection"
+        ],
+        "excluded": [
+          "free-form generation",
+          "semantic parsing beyond flat slots"
+        ]
+      },
+      "academic_fields": [
+        "natural_language_processing"
+      ],
+      "subfields": [
+        "task_oriented_dialogue",
+        "information_extraction"
+      ],
+      "specialists": [
+        "nlu_engineer"
+      ],
+      "contradictors": [
+        "pure_generative_advocate"
+      ],
+      "inputs": [
+        "user utterance",
+        "domain ontology"
+      ],
+      "outputs": [
+        "intent label",
+        "slot dict",
+        "confidence scores"
+      ],
+      "dependencies": [
+        "AMBIG_DETECT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.64,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.63,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.16,
+          0.46
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "domain ontology or task inventory changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Structured output enables deterministic downstream routing",
+          "example": "intent=book_flight + slots={origin,dest} routes directly to booking agent"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fixed slot schema fails on novel or compound tasks outside ontology",
+          "example": "'summarize and translate this PDF' spans two intents with no compound schema"
+        }
+      ],
+      "failure_modes": [
+        "slot schema too narrow for real user requests",
+        "multi-intent ignored"
+      ],
+      "acceptance_tests": [
+        "intent F1>0.80 on in-domain test set",
+        "slot extraction EM>0.70"
+      ],
+      "revisit_triggers": [
+        "new task type observed",
+        "ontology schema updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "CONTEXT_TRACK",
+      "topic": "dialogue_context_tracking",
+      "definition": "Maintain and update belief state over dialogue turns: coreference resolution, entity tracking, and prior-slot carryover.",
+      "node_type": "work_unit",
+      "group": "dialogue_state",
+      "scope_boundary": {
+        "included": [
+          "belief state update",
+          "coreference within session",
+          "slot carryover",
+          "turn-level state transitions"
+        ],
+        "excluded": [
+          "multi-session memory",
+          "cross-session personalization"
+        ]
+      },
+      "academic_fields": [
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "dialogue_state_tracking",
+        "coreference_resolution"
+      ],
+      "specialists": [
+        "dialogue_engineer"
+      ],
+      "contradictors": [
+        "stateless_nlu_advocate"
+      ],
+      "inputs": [
+        "previous turn slots",
+        "new utterance",
+        "entity mentions"
+      ],
+      "outputs": [
+        "updated belief state",
+        "resolved coreferences"
+      ],
+      "dependencies": [
+        "INTENT_SLOT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.75,
+        "user_value": 0.8,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.61,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.61,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "session length distribution or coreference patterns change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Context tracking avoids re-asking for already-provided slot values",
+          "example": "user says 'same destination as before'; system resolves without re-asking"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Stale belief state from earlier turn causes wrong slot carryover",
+          "example": "old date slot carried to new unrelated booking request"
+        }
+      ],
+      "failure_modes": [
+        "stale slot carryover across task boundaries",
+        "coreference error propagates to wrong entity"
+      ],
+      "acceptance_tests": [
+        "belief state accuracy >0.80 on multi-turn test cases",
+        "coreference resolved on 3+ turn chain"
+      ],
+      "revisit_triggers": [
+        "multi-turn error rate rises",
+        "user corrects previously stated slot"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "HANDOFF",
+      "topic": "intent_to_downstream_handoff",
+      "definition": "Package final resolved intent, slot dict, QCS params, and confidence into a canonical handoff envelope passed to specialist orchestrator.",
+      "node_type": "work_unit",
+      "group": "handoff",
+      "scope_boundary": {
+        "included": [
+          "handoff envelope schema",
+          "confidence attestation",
+          "escalation path for unresolved intent"
+        ],
+        "excluded": [
+          "specialist execution",
+          "fallback handling"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "api_design",
+        "microservices"
+      ],
+      "specialists": [
+        "integration_engineer"
+      ],
+      "contradictors": [
+        "monolithic_pipeline_builder"
+      ],
+      "inputs": [
+        "resolved intent",
+        "slot dict",
+        "QCS vector",
+        "confidence"
+      ],
+      "outputs": [
+        "handoff envelope JSON",
+        "escalation flag"
+      ],
+      "dependencies": [
+        "STOP_RULE",
+        "OBJ_DIAL",
+        "CONTEXT_TRACK"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_13",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.6,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.66,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.61,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.76,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.16,
+          0.46
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "downstream specialist API or slot schema changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Canonical envelope decouples intent front-end from specialist back-ends",
+          "example": "adding new specialist requires no change to elicitation layer"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Schema versioning friction when slot taxonomy evolves",
+          "example": "new slot key breaks downstream specialist expecting old schema"
+        }
+      ],
+      "failure_modes": [
+        "unresolved intent handed off without escalation flag",
+        "schema version mismatch silently drops slots"
+      ],
+      "acceptance_tests": [
+        "handoff envelope validates against JSON Schema",
+        "escalation flag set when confidence<threshold"
+      ],
+      "revisit_triggers": [
+        "specialist schema updated",
+        "new QCS parameter added"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CALIBRATION",
+      "topic": "intent_confidence_calibration",
+      "definition": "Calibrate model-reported intent confidence scores to true probabilities using temperature scaling or Platt scaling on held-out data.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "temperature scaling",
+          "Platt scaling",
+          "ECE measurement",
+          "reliability diagrams"
+        ],
+        "excluded": [
+          "intent model training",
+          "ensemble methods"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning"
+      ],
+      "subfields": [
+        "calibration",
+        "probabilistic_prediction"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "raw_softmax_confidence_user"
+      ],
+      "inputs": [
+        "model logits",
+        "held-out intent labels"
+      ],
+      "outputs": [
+        "calibrated confidence",
+        "ECE score"
+      ],
+      "dependencies": [
+        "INTENT_SLOT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.68,
+        "user_value": 0.7,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.4,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.57,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.61,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.18,
+          0.48
+        ],
+        "posterior_importance": 0.43,
+        "update_signal": "intent model retrained or deployment domain changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Calibrated confidence makes stop/ask thresholds statistically interpretable",
+          "example": "ECE<0.05 ensures 80% confidence truly correct 80% of time"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Calibration set must match deployment distribution; domain shift recalibrates",
+          "example": "news-domain calibration invalid on legal queries"
+        }
+      ],
+      "failure_modes": [
+        "calibrating on training set instead of held-out",
+        "temperature scalar applied without cross-validation"
+      ],
+      "acceptance_tests": [
+        "ECE reported on held-out set",
+        "calibration plot shows diagonal alignment"
+      ],
+      "revisit_triggers": [
+        "domain shift detected",
+        "intent model retrained"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "FEEDBACK_LOOP",
+      "topic": "user_feedback_intent_correction",
+      "definition": "Capture explicit corrections (user revises interpreted intent) and implicit signals (abandonment, re-query) to update intent model and policy.",
+      "node_type": "work_unit",
+      "group": "learning",
+      "scope_boundary": {
+        "included": [
+          "explicit correction capture",
+          "abandonment signal",
+          "re-query detection",
+          "online policy update signal"
+        ],
+        "excluded": [
+          "model retraining pipeline",
+          "A/B testing"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "active_learning",
+        "online_learning",
+        "user_feedback"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "product_analyst"
+      ],
+      "contradictors": [
+        "batch_only_update_advocate"
+      ],
+      "inputs": [
+        "user correction event",
+        "abandonment log",
+        "re-query log"
+      ],
+      "outputs": [
+        "correction dataset",
+        "policy update trigger"
+      ],
+      "dependencies": [
+        "HANDOFF",
+        "CALIBRATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.7,
+        "business_value": 0.72,
+        "user_value": 0.75,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.38,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.55,
+        "confidence_score": 0.46,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.6,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.68,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.39,
+        "update_signal": "user behavior patterns or product changes affect implicit signal validity",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Closes the intent loop making system improve on real user behavior",
+          "example": "abandonment signal flags intents consistently misclassified"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Noisy implicit signals require debiasing before use in training",
+          "example": "abandonment has many causes beyond wrong intent classification"
+        }
+      ],
+      "failure_modes": [
+        "conflating abandonment with unhelpfulness other than intent error",
+        "feedback loop causes oscillation in high-traffic intents"
+      ],
+      "acceptance_tests": [
+        "correction events captured in audit log",
+        "re-query rate shown in dashboard"
+      ],
+      "revisit_triggers": [
+        "correction rate rises above 5%",
+        "abandonment rate changes significantly"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "EVAL_INTENT",
+      "topic": "intent_elicitation_evaluation",
+      "definition": "Measure end-to-end elicitation quality: intent accuracy, slot EM, clarification efficiency (turns-to-resolve), user satisfaction, and task success rate.",
+      "node_type": "work_unit",
+      "group": "evaluation",
+      "scope_boundary": {
+        "included": [
+          "intent accuracy",
+          "slot EM",
+          "turns-to-resolve",
+          "task success rate",
+          "user satisfaction proxy"
+        ],
+        "excluded": [
+          "model-level calibration",
+          "A/B testing infrastructure"
+        ]
+      },
+      "academic_fields": [
+        "evaluation",
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "dialogue_evaluation",
+        "task_oriented_evaluation"
+      ],
+      "specialists": [
+        "eval_engineer"
+      ],
+      "contradictors": [
+        "single_metric_advocate"
+      ],
+      "inputs": [
+        "labeled intent test set",
+        "user session logs",
+        "satisfaction scores"
+      ],
+      "outputs": [
+        "evaluation report",
+        "metric dashboard",
+        "regression flags"
+      ],
+      "dependencies": [
+        "INTENT_SLOT",
+        "CALIBRATION",
+        "STOP_RULE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.75,
+        "user_value": 0.72,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.59,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.34,
+        "lock_score": 0.63,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.74,
+        "uncertainty_range_width": 0.28,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.76,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.18,
+          0.46
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "task taxonomy or success criteria change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Multi-metric eval catches tradeoffs invisible in single metric",
+          "example": "high intent accuracy with high turns-to-resolve signals over-questioning"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Task success rate hard to label automatically",
+          "example": "requires human annotation or proxy task completion signal"
+        }
+      ],
+      "failure_modes": [
+        "optimizing intent accuracy while ignoring turns-to-resolve",
+        "using training-domain eval set for production monitoring"
+      ],
+      "acceptance_tests": [
+        "eval pipeline runs nightly on held-out set",
+        "regression alert on metric drop >2%"
+      ],
+      "revisit_triggers": [
+        "metric distribution shifts",
+        "new task type added to scope"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "QUESTION_GEN",
+      "topic": "clarifying_question_generation",
+      "definition": "Generate fluent, concise, unambiguous clarifying questions ranked by information gain and adapted to user language register.",
+      "node_type": "work_unit",
+      "group": "generation",
+      "scope_boundary": {
+        "included": [
+          "question template selection",
+          "neural question generation",
+          "register adaptation",
+          "question ranking"
+        ],
+        "excluded": [
+          "answer parsing",
+          "dialogue state tracking"
+        ]
+      },
+      "academic_fields": [
+        "natural_language_generation",
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "question_generation",
+        "nlg"
+      ],
+      "specialists": [
+        "nlg_engineer"
+      ],
+      "contradictors": [
+        "fixed_template_only_advocate"
+      ],
+      "inputs": [
+        "ambiguity type",
+        "IG-ranked slot gaps",
+        "user register signal"
+      ],
+      "outputs": [
+        "generated question text",
+        "template ID"
+      ],
+      "dependencies": [
+        "INFO_GAIN",
+        "PRAG_IMPLICATURE",
+        "MULTILINGUAL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.45,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.63,
+        "confidence_score": 0.46,
+        "revisit_pressure": 0.39,
+        "lock_score": 0.58,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.68,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "user population register or question template library updated",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fluent register-adapted questions improve user response rate and quality",
+          "example": "informal register 'what kind of doc?' vs formal 'please specify document category'"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Neural generation may hallucinate plausible-but-misleading question options",
+          "example": "question implies false binary when multiple options exist"
+        }
+      ],
+      "failure_modes": [
+        "generating leading questions that bias user answer",
+        "question too long causing abandonment"
+      ],
+      "acceptance_tests": [
+        "question clarity rated >4/5 by human evaluators on sample",
+        "no leading questions in audit"
+      ],
+      "revisit_triggers": [
+        "answer quality degrades",
+        "user language register shifts"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ANSWER_PARSE",
+      "topic": "clarifying_answer_parsing_integration",
+      "definition": "Parse user answers to clarifying questions into slot-value updates and integrate them into the running belief state and intent estimate.",
+      "node_type": "work_unit",
+      "group": "integration",
+      "scope_boundary": {
+        "included": [
+          "slot extraction from answer",
+          "negative answer handling",
+          "partial answer resolution",
+          "belief state update"
+        ],
+        "excluded": [
+          "question generation",
+          "multi-turn orchestration"
+        ]
+      },
+      "academic_fields": [
+        "natural_language_processing",
+        "dialogue_systems"
+      ],
+      "subfields": [
+        "dialogue_state_tracking",
+        "slot_filling"
+      ],
+      "specialists": [
+        "nlu_engineer"
+      ],
+      "contradictors": [
+        "full_regen_from_scratch_advocate"
+      ],
+      "inputs": [
+        "user answer text",
+        "question that was asked",
+        "current belief state"
+      ],
+      "outputs": [
+        "updated slots",
+        "updated belief state",
+        "revised intent confidence"
+      ],
+      "dependencies": [
+        "QUESTION_GEN",
+        "CONTEXT_TRACK"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.78,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.42,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.59,
+        "confidence_score": 0.48,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.61,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.74,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.44,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.44,
+        "update_signal": "answer expression patterns shift in user base",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Correct answer integration avoids re-asking already-answered slot",
+          "example": "user said 'in Spanish' so language slot filled and not re-queried"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Partial or evasive answers leave slots ambiguous requiring fallback policy",
+          "example": "user says 'I dont know' to format question"
+        }
+      ],
+      "failure_modes": [
+        "failing to detect negative/evasive answer",
+        "overwriting correct slot with ambiguous answer"
+      ],
+      "acceptance_tests": [
+        "belief state correct after full multi-turn test sequence",
+        "evasive answer detected and flagged"
+      ],
+      "revisit_triggers": [
+        "user correction event after answer integration",
+        "new answer form observed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SCOPE_BOUND",
+      "topic": "scope_bounding_ood_detection",
+      "definition": "Detect when user intent falls outside system scope and route to appropriate refusal, redirection, or OOD escalation path.",
+      "node_type": "work_unit",
+      "group": "safety",
+      "scope_boundary": {
+        "included": [
+          "OOD intent detection",
+          "domain boundary enforcement",
+          "graceful refusal",
+          "escalation routing"
+        ],
+        "excluded": [
+          "in-domain intent classification",
+          "policy enforcement beyond routing"
+        ]
+      },
+      "academic_fields": [
+        "dialogue_systems",
+        "safety"
+      ],
+      "subfields": [
+        "ood_detection",
+        "intent_classification"
+      ],
+      "specialists": [
+        "safety_engineer",
+        "dialogue_engineer"
+      ],
+      "contradictors": [
+        "unlimited_scope_advocate"
+      ],
+      "inputs": [
+        "intent candidate",
+        "confidence distribution",
+        "domain boundary spec"
+      ],
+      "outputs": [
+        "OOD flag",
+        "refusal message",
+        "escalation path"
+      ],
+      "dependencies": [
+        "AMBIG_DETECT",
+        "INTENT_SLOT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_14"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.75,
+        "user_value": 0.72,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.65,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.59,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.5,
+        "update_signal": "domain scope or refusal policy changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "OOD detection prevents system from confidently executing wrong or harmful tasks",
+          "example": "medical diagnosis request routed to disclaimer not attempted execution"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-aggressive OOD detection refuses legitimate near-boundary requests",
+          "example": "legal summary request falsely flagged as out-of-scope"
+        }
+      ],
+      "failure_modes": [
+        "high false-positive OOD blocks valid intents",
+        "silent OOD — system proceeds with low-confidence intent"
+      ],
+      "acceptance_tests": [
+        "OOD benchmark precision>0.85 and recall>0.80",
+        "graceful refusal message tested per domain"
+      ],
+      "revisit_triggers": [
+        "scope boundary updated",
+        "new task type added to in-domain ontology"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "LATENCY_BUDGET",
+      "topic": "elicitation_latency_budget",
+      "definition": "Define per-turn latency SLO for elicitation pipeline components and enforce it via timeouts and circuit-breakers.",
+      "node_type": "work_unit",
+      "group": "infrastructure",
+      "scope_boundary": {
+        "included": [
+          "per-component latency SLO",
+          "timeout enforcement",
+          "circuit-breaker config",
+          "graceful degradation"
+        ],
+        "excluded": [
+          "model serving",
+          "inference optimization"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering"
+      ],
+      "subfields": [
+        "latency_slo",
+        "distributed_systems"
+      ],
+      "specialists": [
+        "platform_engineer"
+      ],
+      "contradictors": [
+        "accuracy_only_optimizer"
+      ],
+      "inputs": [
+        "component latency measurements",
+        "SLO spec"
+      ],
+      "outputs": [
+        "timeout config",
+        "degradation fallback plan"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_13"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.72,
+        "user_value": 0.75,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.45,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.56,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.33,
+        "lock_score": 0.64,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.68,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.44,
+        "update_signal": "traffic volume or infrastructure topology changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.68,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enforced latency budget prevents slow clarification from degrading UX",
+          "example": "200ms SLO per turn enforced; circuit-breaker falls back to best-effort intent"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.48,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Tight SLO forces degraded quality models under load",
+          "example": "context-tracking skipped at high QPS causing coreference errors"
+        }
+      ],
+      "failure_modes": [
+        "no circuit-breaker causes timeout cascade",
+        "SLO set without p99 measurement"
+      ],
+      "acceptance_tests": [
+        "p99 latency meets SLO in load test",
+        "fallback activates on component timeout"
+      ],
+      "revisit_triggers": [
+        "p99 latency breaches SLO in prod",
+        "component dependency added"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PERSONA_ADAPT",
+      "topic": "persona_register_adaptation",
+      "definition": "Adapt clarifying question style and vocabulary to user persona signals (expert vs novice, formal vs informal, Hindi-dominant vs English-dominant).",
+      "node_type": "work_unit",
+      "group": "generation",
+      "scope_boundary": {
+        "included": [
+          "user register detection",
+          "persona classification",
+          "question style adaptation",
+          "vocabulary simplification"
+        ],
+        "excluded": [
+          "core NLU",
+          "intent slot extraction"
+        ]
+      },
+      "academic_fields": [
+        "computational_sociolinguistics",
+        "nlg"
+      ],
+      "subfields": [
+        "register_adaptation",
+        "personalization"
+      ],
+      "specialists": [
+        "nlg_engineer",
+        "ux_writer"
+      ],
+      "contradictors": [
+        "one_size_fits_all_generator"
+      ],
+      "inputs": [
+        "user utterance style signals",
+        "persona model",
+        "previous turn register"
+      ],
+      "outputs": [
+        "adapted question text",
+        "persona label"
+      ],
+      "dependencies": [
+        "MULTILINGUAL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.65,
+        "business_value": 0.7,
+        "user_value": 0.8,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.62,
+        "irreversibility": 0.38,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.4,
+        "risk_score": 0.54,
+        "confidence_score": 0.45,
+        "revisit_pressure": 0.36,
+        "lock_score": 0.59,
+        "final_importance": 0.63
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.62,
+        "dependency_gate_pass_rate": 0.66,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.65,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.38,
+        "update_signal": "user persona distribution or language register norms change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Register-matched questions yield higher-quality user answers",
+          "example": "novice user gets plain-English choices; expert gets technical field names"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.48,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Persona misclassification causes condescending or confusing question style",
+          "example": "expert classified as novice receives oversimplified binary choice"
+        }
+      ],
+      "failure_modes": [
+        "persona flip mid-session causing inconsistent style",
+        "language register detector confused by code-switching"
+      ],
+      "acceptance_tests": [
+        "register adaptation tested across 3 persona stubs",
+        "Hindi-dominant user receives Hindi-script option"
+      ],
+      "revisit_triggers": [
+        "user persona distribution shifts",
+        "new language register introduced"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PRIOR_UPDATE",
+      "topic": "bayesian_intent_prior_update",
+      "definition": "Maintain and update a Bayesian prior over intent classes using session context, user history signals, and population-level traffic patterns.",
+      "node_type": "work_unit",
+      "group": "probabilistic",
+      "scope_boundary": {
+        "included": [
+          "intent prior initialization",
+          "traffic-driven prior update",
+          "session-context conditioning",
+          "Dirichlet posterior"
+        ],
+        "excluded": [
+          "model retraining",
+          "online learning"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "bayesian_inference"
+      ],
+      "subfields": [
+        "bayesian_inference",
+        "prior_elicitation"
+      ],
+      "specialists": [
+        "probabilistic_modeler"
+      ],
+      "contradictors": [
+        "uniform_prior_advocate"
+      ],
+      "inputs": [
+        "intent distribution from traffic",
+        "session context features",
+        "user history (if available)"
+      ],
+      "outputs": [
+        "conditioned intent prior",
+        "prior update log"
+      ],
+      "dependencies": [
+        "CALIBRATION"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.68,
+        "business_value": 0.65,
+        "user_value": 0.65,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.4,
+        "confidence": 0.55,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.59,
+        "confidence_score": 0.44,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.57,
+        "final_importance": 0.64
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.62,
+        "dependency_gate_pass_rate": 0.66,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.66,
+        "evidence_confidence": 0.55,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.2,
+          0.52
+        ],
+        "posterior_importance": 0.36,
+        "update_signal": "intent traffic distribution changes or new high-stake intent added",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Informed prior reduces average turns-to-resolve on common intents",
+          "example": "high base-rate 'summarize' intent sets strong prior reducing questioning"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Strong prior suppresses clarification on rare but high-stake intents",
+          "example": "payment reversal intent suppressed by low prior causing wrong execution"
+        }
+      ],
+      "failure_modes": [
+        "prior collapse to single dominant intent",
+        "stale prior from old traffic distribution"
+      ],
+      "acceptance_tests": [
+        "prior update tested on distribution shift simulation",
+        "rare high-stake intent not suppressed by prior"
+      ],
+      "revisit_triggers": [
+        "traffic distribution shifts significantly",
+        "high-stake intent added to taxonomy"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "INTENT_SCHEMA",
+      "topic": "intent_ontology_schema_governance",
+      "definition": "Govern the canonical intent ontology: define, version, deprecate intents and slots, enforce naming conventions, and manage migrations.",
+      "node_type": "work_unit",
+      "group": "governance",
+      "scope_boundary": {
+        "included": [
+          "intent taxonomy versioning",
+          "slot schema governance",
+          "deprecation policy",
+          "migration playbook"
+        ],
+        "excluded": [
+          "NLU model training",
+          "routing logic"
+        ]
+      },
+      "academic_fields": [
+        "software_engineering",
+        "knowledge_engineering"
+      ],
+      "subfields": [
+        "ontology_engineering",
+        "schema_management"
+      ],
+      "specialists": [
+        "ontology_engineer",
+        "product_manager"
+      ],
+      "contradictors": [
+        "ad_hoc_schema_modifier"
+      ],
+      "inputs": [
+        "proposed intent changes",
+        "current schema version",
+        "downstream consumer list"
+      ],
+      "outputs": [
+        "updated intent schema",
+        "migration guide",
+        "changelog"
+      ],
+      "dependencies": [
+        "INTENT_SLOT"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.68,
+        "user_value": 0.62,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.65,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.67,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.58,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.4
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.43,
+        "update_signal": "product task scope changes or downstream consumer list changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Versioned schema prevents silent breaking changes in downstream consumers",
+          "example": "v2 schema adds required slot; consumers receive migration guide not silent breakage"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Governance process slows iteration on fast-moving product",
+          "example": "new intent needs schema approval cycle before model can be trained"
+        }
+      ],
+      "failure_modes": [
+        "schema updated without version bump",
+        "intent deprecated without deprecation warning"
+      ],
+      "acceptance_tests": [
+        "schema changes require changelog entry",
+        "downstream consumers notified on breaking change"
+      ],
+      "revisit_triggers": [
+        "consumer reports schema mismatch",
+        "product adds significant new task category"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "AMBIG_DETECT",
+      "to": "CQ_POLICY",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_002",
+      "from": "AMBIG_DETECT",
+      "to": "INTENT_SLOT",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_003",
+      "from": "AMBIG_DETECT",
+      "to": "PRAG_IMPLICATURE",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_004",
+      "from": "AMBIG_DETECT",
+      "to": "SCOPE_BOUND",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_005",
+      "from": "CQ_POLICY",
+      "to": "INFO_GAIN",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_006",
+      "from": "CQ_POLICY",
+      "to": "STOP_RULE",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_007",
+      "from": "CQ_POLICY",
+      "to": "OBJ_DIAL",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_008",
+      "from": "INFO_GAIN",
+      "to": "QUESTION_GEN",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_009",
+      "from": "INFO_GAIN",
+      "to": "PRIOR_UPDATE",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_010",
+      "from": "STOP_RULE",
+      "to": "HANDOFF",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_011",
+      "from": "PRAG_IMPLICATURE",
+      "to": "QUESTION_GEN",
+      "edge_type": "dependency",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_012",
+      "from": "MULTILINGUAL",
+      "to": "QUESTION_GEN",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_013",
+      "from": "MULTILINGUAL",
+      "to": "PERSONA_ADAPT",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.26,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_014",
+      "from": "OBJ_DIAL",
+      "to": "HANDOFF",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_015",
+      "from": "INTENT_SLOT",
+      "to": "CONTEXT_TRACK",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_016",
+      "from": "INTENT_SLOT",
+      "to": "CALIBRATION",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.26,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_017",
+      "from": "INTENT_SLOT",
+      "to": "SCOPE_BOUND",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_018",
+      "from": "INTENT_SLOT",
+      "to": "INTENT_SCHEMA",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_019",
+      "from": "CONTEXT_TRACK",
+      "to": "ANSWER_PARSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.26,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_020",
+      "from": "CONTEXT_TRACK",
+      "to": "HANDOFF",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.26,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_021",
+      "from": "HANDOFF",
+      "to": "FEEDBACK_LOOP",
+      "edge_type": "dependency",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_022",
+      "from": "CALIBRATION",
+      "to": "PRIOR_UPDATE",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.26,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_023",
+      "from": "CALIBRATION",
+      "to": "STOP_RULE",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.26,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_024",
+      "from": "QUESTION_GEN",
+      "to": "ANSWER_PARSE",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_025",
+      "from": "ANSWER_PARSE",
+      "to": "CONTEXT_TRACK",
+      "edge_type": "feedback",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.26,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_026",
+      "from": "PERSONA_ADAPT",
+      "to": "QUESTION_GEN",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_027",
+      "from": "INTENT_SCHEMA",
+      "to": "HANDOFF",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.28
+    },
+    {
+      "id": "EDGE_028",
+      "from": "PRIOR_UPDATE",
+      "to": "CQ_POLICY",
+      "edge_type": "feedback",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.6,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_029",
+      "from": "SCOPE_BOUND",
+      "to": "HANDOFF",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_030",
+      "from": "LATENCY_BUDGET",
+      "to": "HANDOFF",
+      "edge_type": "constraint",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_031",
+      "from": "FEEDBACK_LOOP",
+      "to": "CALIBRATION",
+      "edge_type": "feedback",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.6,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    },
+    {
+      "id": "EDGE_032",
+      "from": "CQ_POLICY",
+      "to": "STOP_RULE",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.55,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.5,
+      "causal_confidence": 0.58,
+      "edge_priority": 0.32,
+      "edge_score": 0.32,
+      "edge_heat": 0.43,
+      "resolution_rule": "stake-based override: if risk_if_wrong>0.80 extend turn budget; else apply friction budget"
+    },
+    {
+      "id": "EDGE_033",
+      "from": "INFO_GAIN",
+      "to": "LATENCY_BUDGET",
+      "edge_type": "conflict",
+      "relation_strength": 0.6,
+      "signed_tension": -0.5,
+      "expected_rework_cost": 0.38,
+      "conflict_probability": 0.48,
+      "causal_confidence": 0.55,
+      "edge_priority": 0.28,
+      "edge_score": 0.28,
+      "edge_heat": 0.39,
+      "resolution_rule": "latency-first: if p99>SLO skip IG computation and use top-prior intent"
+    },
+    {
+      "id": "EDGE_034",
+      "from": "PRAG_IMPLICATURE",
+      "to": "MULTILINGUAL",
+      "edge_type": "conflict",
+      "relation_strength": 0.58,
+      "signed_tension": -0.48,
+      "expected_rework_cost": 0.36,
+      "conflict_probability": 0.45,
+      "causal_confidence": 0.52,
+      "edge_priority": 0.26,
+      "edge_score": 0.26,
+      "edge_heat": 0.37,
+      "resolution_rule": "language-first: detect script and language before applying pragmatic inference"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "OBJ_DIAL",
+      "to": "STOP_RULE",
+      "edge_type": "conflict",
+      "relation_strength": 0.62,
+      "signed_tension": -0.52,
+      "expected_rework_cost": 0.38,
+      "conflict_probability": 0.45,
+      "causal_confidence": 0.55,
+      "edge_priority": 0.29,
+      "edge_score": 0.29,
+      "edge_heat": 0.39,
+      "resolution_rule": "quality-dial overrides max-turn budget: if dial=quality allow +1 turn"
+    },
+    {
+      "id": "EDGE_036",
+      "from": "PRIOR_UPDATE",
+      "to": "AMBIG_DETECT",
+      "edge_type": "conflict",
+      "relation_strength": 0.55,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.42,
+      "causal_confidence": 0.5,
+      "edge_priority": 0.23,
+      "edge_score": 0.23,
+      "edge_heat": 0.34,
+      "resolution_rule": "detection-first: run ambiguity detection before conditioning on prior to avoid prior suppression of rare intents"
+    },
+    {
+      "id": "EDGE_037",
+      "from": "SCOPE_BOUND",
+      "to": "CQ_POLICY",
+      "edge_type": "conflict",
+      "relation_strength": 0.6,
+      "signed_tension": -0.5,
+      "expected_rework_cost": 0.36,
+      "conflict_probability": 0.45,
+      "causal_confidence": 0.55,
+      "edge_priority": 0.27,
+      "edge_score": 0.27,
+      "edge_heat": 0.38,
+      "resolution_rule": "OOD-first: if scope_bound flags OOD, skip clarification and escalate immediately"
+    },
+    {
+      "id": "EDGE_038",
+      "from": "QUESTION_GEN",
+      "to": "PERSONA_ADAPT",
+      "edge_type": "similarity",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_039",
+      "from": "CALIBRATION",
+      "to": "EVAL_INTENT",
+      "edge_type": "similarity",
+      "relation_strength": 0.68,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.1,
+      "edge_score": 0.1,
+      "edge_heat": 0.23
+    },
+    {
+      "id": "EDGE_040",
+      "from": "EVAL_INTENT",
+      "to": "FEEDBACK_LOOP",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.26
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "label": "User Friction vs Ambiguity Resolution",
+      "description": "More clarifying questions reduce ambiguity but increase user friction and abandonment risk",
+      "tension_type": "tradeoff",
+      "nodes_in_tension": [
+        "CQ_POLICY",
+        "STOP_RULE",
+        "INFO_GAIN"
+      ],
+      "resolution_heuristic": "use stake-level to set friction budget; default max 2 turns"
+    },
+    {
+      "id": "CA_02",
+      "label": "Latency SLO vs Clarification Quality",
+      "description": "Tight per-turn latency SLO forces lower-quality or skipped IG computation",
+      "tension_type": "tradeoff",
+      "nodes_in_tension": [
+        "LATENCY_BUDGET",
+        "INFO_GAIN",
+        "QUESTION_GEN"
+      ],
+      "resolution_heuristic": "latency-first in real-time UX; async IG for batch pipelines"
+    },
+    {
+      "id": "CA_03",
+      "label": "Prior Strength vs Rare Intent Detection",
+      "description": "Strong traffic-derived prior suppresses clarification on infrequent but high-stake intents",
+      "tension_type": "tradeoff",
+      "nodes_in_tension": [
+        "PRIOR_UPDATE",
+        "AMBIG_DETECT",
+        "STOP_RULE"
+      ],
+      "resolution_heuristic": "stake-override: high-risk intents bypass prior suppression"
+    },
+    {
+      "id": "CA_04",
+      "label": "Pragmatic Inference vs Literal Safety",
+      "description": "Aggressive implicature inference may misinterpret literal safety-critical requests",
+      "tension_type": "conflict",
+      "nodes_in_tension": [
+        "PRAG_IMPLICATURE",
+        "SCOPE_BOUND",
+        "AMBIG_DETECT"
+      ],
+      "resolution_heuristic": "safety-first: literal interpretation used for flagged safety domains"
+    },
+    {
+      "id": "CA_05",
+      "label": "Multilingual Coverage vs NLU Accuracy",
+      "description": "Expanding to more language variants lowers average NLU accuracy per language",
+      "tension_type": "tradeoff",
+      "nodes_in_tension": [
+        "MULTILINGUAL",
+        "INTENT_SLOT",
+        "CALIBRATION"
+      ],
+      "resolution_heuristic": "tier languages by user volume; maintain accuracy SLO per tier"
+    },
+    {
+      "id": "CA_06",
+      "label": "Schema Stability vs Product Velocity",
+      "description": "Strict schema governance slows new intent addition needed for fast product iteration",
+      "tension_type": "conflict",
+      "nodes_in_tension": [
+        "INTENT_SCHEMA",
+        "INTENT_SLOT",
+        "CQ_POLICY"
+      ],
+      "resolution_heuristic": "fast-track review for additive changes; breaking changes require full approval"
+    },
+    {
+      "id": "CA_07",
+      "label": "Quality Dial vs Cost Constraints",
+      "description": "User-selected quality-first dial conflicts with compute cost budget",
+      "tension_type": "tradeoff",
+      "nodes_in_tension": [
+        "OBJ_DIAL",
+        "LATENCY_BUDGET",
+        "HANDOFF"
+      ],
+      "resolution_heuristic": "hard cost cap overrides quality dial; inform user of degradation"
+    },
+    {
+      "id": "CA_08",
+      "label": "Persona Adaptation vs Privacy",
+      "description": "Inferring user persona from utterance history may conflict with data minimization principles",
+      "tension_type": "conflict",
+      "nodes_in_tension": [
+        "PERSONA_ADAPT",
+        "FEEDBACK_LOOP",
+        "CONTEXT_TRACK"
+      ],
+      "resolution_heuristic": "use session-only signals; no cross-session persona inference without consent"
+    },
+    {
+      "id": "CA_09",
+      "label": "OOD Detection Sensitivity vs Coverage",
+      "description": "High OOD recall refuses too many legitimate near-boundary requests",
+      "tension_type": "tradeoff",
+      "nodes_in_tension": [
+        "SCOPE_BOUND",
+        "INTENT_SLOT",
+        "CQ_POLICY"
+      ],
+      "resolution_heuristic": "tune OOD threshold with held-out near-boundary test cases; prefer precision"
+    },
+    {
+      "id": "CA_10",
+      "label": "Feedback Loop Speed vs Signal Noise",
+      "description": "Fast online updates from noisy implicit signals cause policy oscillation",
+      "tension_type": "tradeoff",
+      "nodes_in_tension": [
+        "FEEDBACK_LOOP",
+        "CQ_POLICY",
+        "CALIBRATION"
+      ],
+      "resolution_heuristic": "batch-update policy weekly; use explicit corrections for faster signal"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "label": "Empty Utterance",
+      "description": "User submits blank or whitespace-only input",
+      "affected_nodes": [
+        "AMBIG_DETECT",
+        "INTENT_SLOT"
+      ],
+      "recommended_handling": "return clarifying prompt asking for intent; do not classify"
+    },
+    {
+      "id": "EC_02",
+      "label": "Maximum Turn Budget Exhausted with Low Confidence",
+      "description": "System reaches turn limit but intent confidence still below threshold",
+      "affected_nodes": [
+        "STOP_RULE",
+        "HANDOFF",
+        "SCOPE_BOUND"
+      ],
+      "recommended_handling": "hand off with low-confidence flag and escalation path to human review"
+    },
+    {
+      "id": "EC_03",
+      "label": "Contradictory Answers Across Turns",
+      "description": "User provides slot values in later turns that contradict earlier answers",
+      "affected_nodes": [
+        "CONTEXT_TRACK",
+        "ANSWER_PARSE",
+        "CALIBRATION"
+      ],
+      "recommended_handling": "surface contradiction explicitly; ask user to confirm correct value"
+    },
+    {
+      "id": "EC_04",
+      "label": "Purely Code-Switched with No Dominant Language",
+      "description": "Utterance is ~50/50 Hindi-English with ambiguous script",
+      "affected_nodes": [
+        "MULTILINGUAL",
+        "AMBIG_DETECT",
+        "QUESTION_GEN"
+      ],
+      "recommended_handling": "generate clarifying question in both scripts; pick user's response language for continuation"
+    },
+    {
+      "id": "EC_05",
+      "label": "High-Stakes OOD Request",
+      "description": "User requests something dangerous or outside scope with high confidence",
+      "affected_nodes": [
+        "SCOPE_BOUND",
+        "HANDOFF"
+      ],
+      "recommended_handling": "escalate immediately with structured refusal; do not attempt clarification"
+    },
+    {
+      "id": "EC_06",
+      "label": "User Refuses to Answer Clarifying Question",
+      "description": "User explicitly declines to provide requested slot value",
+      "affected_nodes": [
+        "ANSWER_PARSE",
+        "STOP_RULE",
+        "CQ_POLICY"
+      ],
+      "recommended_handling": "mark slot as intentionally missing; proceed with partial intent and best-effort execution"
+    },
+    {
+      "id": "EC_07",
+      "label": "Implicature Inference Reversed by Literal Follow-Up",
+      "description": "System infers indirect request; user's next utterance shows literal interpretation was correct",
+      "affected_nodes": [
+        "PRAG_IMPLICATURE",
+        "CONTEXT_TRACK",
+        "ANSWER_PARSE"
+      ],
+      "recommended_handling": "update belief state to literal interpretation; do not re-apply implicature"
+    },
+    {
+      "id": "EC_08",
+      "label": "QCS Dial Conflict with Task Constraints",
+      "description": "User selects speed-first but task has mandatory quality gate",
+      "affected_nodes": [
+        "OBJ_DIAL",
+        "HANDOFF",
+        "LATENCY_BUDGET"
+      ],
+      "recommended_handling": "notify user of constraint; downgrade speed dial to comply with quality gate"
+    },
+    {
+      "id": "EC_09",
+      "label": "Schema Migration Mid-Session",
+      "description": "Intent schema updated while active sessions reference old schema",
+      "affected_nodes": [
+        "INTENT_SCHEMA",
+        "CONTEXT_TRACK",
+        "HANDOFF"
+      ],
+      "recommended_handling": "maintain schema version in session state; drain active sessions before schema cutover"
+    },
+    {
+      "id": "EC_10",
+      "label": "Calibration Drift After Model Update",
+      "description": "Intent model updated invalidating previous calibration scaling factors",
+      "affected_nodes": [
+        "CALIBRATION",
+        "PRIOR_UPDATE",
+        "STOP_RULE"
+      ],
+      "recommended_handling": "re-run calibration on held-out set immediately after model update; block deployment until ECE meets threshold"
+    },
+    {
+      "id": "EC_11",
+      "label": "Persona Flip Within Session",
+      "description": "User switches language register mid-session (e.g. formal to informal)",
+      "affected_nodes": [
+        "PERSONA_ADAPT",
+        "QUESTION_GEN",
+        "CONTEXT_TRACK"
+      ],
+      "recommended_handling": "update persona estimate per-turn with decay; do not lock persona from first turn"
+    },
+    {
+      "id": "EC_12",
+      "label": "Zero-IG Question Set",
+      "description": "All candidate clarifying questions yield near-zero information gain",
+      "affected_nodes": [
+        "INFO_GAIN",
+        "QUESTION_GEN",
+        "STOP_RULE"
+      ],
+      "recommended_handling": "trigger immediate stop; hand off with current best-effort intent estimate"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "action": "Receive raw user utterance and session context",
+      "produces": "input bundle (utterance, turn history, session metadata)",
+      "entry_condition": "user turn received",
+      "exit_condition": "input bundle assembled",
+      "nodes_activated": [
+        "CONTEXT_TRACK"
+      ]
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "action": "Run script detection and language identification for multilingual routing",
+      "produces": "language tag and normalized unicode form",
+      "entry_condition": "input bundle ready",
+      "exit_condition": "language tag assigned",
+      "nodes_activated": [
+        "MULTILINGUAL"
+      ]
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "action": "Classify ambiguity type and check OOD boundary",
+      "produces": "ambiguity type label and OOD flag",
+      "entry_condition": "normalized utterance available",
+      "exit_condition": "ambiguity label and OOD flag set",
+      "nodes_activated": [
+        "AMBIG_DETECT",
+        "SCOPE_BOUND"
+      ]
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "action": "If OOD flagged: escalate with structured refusal; else continue",
+      "produces": "escalation response or continuation signal",
+      "entry_condition": "OOD flag evaluated",
+      "exit_condition": "OOD path resolved or continued",
+      "nodes_activated": [
+        "SCOPE_BOUND",
+        "HANDOFF"
+      ]
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "action": "Extract intent and slots from utterance using task-oriented NLU",
+      "produces": "intent label, slot dict, raw confidence scores",
+      "entry_condition": "in-domain utterance confirmed",
+      "exit_condition": "intent and slots extracted",
+      "nodes_activated": [
+        "INTENT_SLOT",
+        "PRAG_IMPLICATURE"
+      ]
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "action": "Update belief state with new intent and slots; resolve coreferences",
+      "produces": "updated belief state",
+      "entry_condition": "intent and slots extracted",
+      "exit_condition": "belief state updated",
+      "nodes_activated": [
+        "CONTEXT_TRACK",
+        "ANSWER_PARSE"
+      ]
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "action": "Apply calibration and update Bayesian intent prior",
+      "produces": "calibrated confidence, conditioned prior",
+      "entry_condition": "belief state updated",
+      "exit_condition": "calibrated confidence available",
+      "nodes_activated": [
+        "CALIBRATION",
+        "PRIOR_UPDATE"
+      ]
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "action": "Apply clarifying question policy: check if confidence meets threshold and turn budget",
+      "produces": "ask/proceed decision",
+      "entry_condition": "calibrated confidence available",
+      "exit_condition": "ask or proceed determined",
+      "nodes_activated": [
+        "CQ_POLICY",
+        "STOP_RULE",
+        "OBJ_DIAL"
+      ]
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "action": "If ask: compute information gain per candidate question, select top question, adapt to persona, generate",
+      "produces": "clarifying question text",
+      "entry_condition": "ask decision made",
+      "exit_condition": "question sent to user",
+      "nodes_activated": [
+        "INFO_GAIN",
+        "QUESTION_GEN",
+        "PERSONA_ADAPT"
+      ]
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "action": "Parse user answer, integrate into belief state, go to step 7",
+      "produces": "updated slots and belief state",
+      "entry_condition": "user answer received",
+      "exit_condition": "belief state updated; loop to step 7",
+      "nodes_activated": [
+        "ANSWER_PARSE",
+        "CONTEXT_TRACK"
+      ]
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "action": "If proceed: elicit QCS dial if not set; assemble handoff envelope",
+      "produces": "handoff envelope JSON with intent, slots, QCS, confidence, escalation flag",
+      "entry_condition": "proceed decision or max turns reached",
+      "exit_condition": "handoff envelope validated",
+      "nodes_activated": [
+        "OBJ_DIAL",
+        "HANDOFF",
+        "INTENT_SCHEMA"
+      ]
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "action": "Evaluate elicitation quality; log correction and feedback signals",
+      "produces": "evaluation metrics, correction log entries",
+      "entry_condition": "session completed or task executed",
+      "exit_condition": "metrics recorded; feedback loop updated",
+      "nodes_activated": [
+        "EVAL_INTENT",
+        "FEEDBACK_LOOP"
+      ]
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "label": "OOD-before-Clarify",
+      "condition": "SCOPE_BOUND flags OOD with confidence > 0.85",
+      "action": "escalate immediately; skip all clarification steps",
+      "rationale": "no amount of clarification rescues an out-of-scope intent"
+    },
+    {
+      "id": "DR_02",
+      "label": "Stake-Override-Stop-Rule",
+      "condition": "task risk_if_wrong > 0.80 AND current intent confidence < 0.90",
+      "action": "extend turn budget by +1 regardless of friction budget",
+      "rationale": "high-stake errors justify extra friction"
+    },
+    {
+      "id": "DR_03",
+      "label": "Latency-SLO-Wins",
+      "condition": "p99 per-turn latency > SLO threshold",
+      "action": "skip IG computation; use top-prior intent; degrade gracefully",
+      "rationale": "user-facing latency SLO is non-negotiable in real-time product"
+    },
+    {
+      "id": "DR_04",
+      "label": "Calibration-Before-Threshold",
+      "condition": "model updated since last calibration run",
+      "action": "block intent confidence thresholds from production until re-calibrated",
+      "rationale": "uncalibrated confidence scores make all threshold-based decisions unreliable"
+    },
+    {
+      "id": "DR_05",
+      "label": "Language-Before-Pragmatics",
+      "condition": "script detection returns non-English with confidence > 0.80",
+      "action": "route to multilingual pipeline before applying pragmatic inference",
+      "rationale": "pragmatic inference trained on English data is unreliable on code-switched input"
+    },
+    {
+      "id": "DR_06",
+      "label": "Schema-Version-Lock",
+      "condition": "handoff schema version mismatches downstream consumer",
+      "action": "reject handoff; return schema error to orchestrator",
+      "rationale": "silent schema mismatch causes downstream data corruption"
+    },
+    {
+      "id": "DR_07",
+      "label": "Explicit-Correction-Trumps-Prior",
+      "condition": "user explicitly corrects a previously classified slot or intent",
+      "action": "override belief state with corrected value; reset confidence to 1.0 for that slot",
+      "rationale": "explicit correction is ground truth and must dominate any prior"
+    },
+    {
+      "id": "DR_08",
+      "label": "Cost-Cap-Overrides-Quality-Dial",
+      "condition": "projected compute cost for quality-first execution exceeds hard cost cap",
+      "action": "downgrade to cost-tier model; notify user of quality degradation",
+      "rationale": "hard cost constraints are non-negotiable; quality dial is a preference not a guarantee"
+    },
+    {
+      "id": "DR_09",
+      "label": "Privacy-Limits-Persona",
+      "condition": "session-only persona signals requested but cross-session data required",
+      "action": "use session-only signals; do not access cross-session history",
+      "rationale": "data minimization requirement overrides personalization benefit"
+    },
+    {
+      "id": "DR_10",
+      "label": "Zero-IG-Triggers-Stop",
+      "condition": "all candidate questions yield expected IG < 0.02",
+      "action": "stop questioning immediately; proceed with best-effort intent",
+      "rationale": "questions with near-zero IG add friction without resolving ambiguity"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "AR_01",
+      "label": "Freeze Ambiguity Taxonomy Before Training",
+      "description": "Do not change the ambiguity type taxonomy after intent model training has begun; taxonomy changes invalidate all NLU training labels",
+      "triggers_rework_in": [
+        "INTENT_SLOT",
+        "CALIBRATION",
+        "EVAL_INTENT"
+      ]
+    },
+    {
+      "id": "AR_02",
+      "label": "Define Slot Schema Before Question Templates",
+      "description": "Clarifying question templates depend on slot names; slot schema changes force question template regeneration",
+      "triggers_rework_in": [
+        "QUESTION_GEN",
+        "ANSWER_PARSE",
+        "CONTEXT_TRACK"
+      ]
+    },
+    {
+      "id": "AR_03",
+      "label": "Calibrate After Each Model Update",
+      "description": "Skipping calibration after model update requires later emergency recalibration under production pressure",
+      "triggers_rework_in": [
+        "STOP_RULE",
+        "CQ_POLICY",
+        "PRIOR_UPDATE"
+      ]
+    },
+    {
+      "id": "AR_04",
+      "label": "Establish OOD Boundaries Before Elicitation Policy",
+      "description": "CQ_POLICY assumes a fixed OOD boundary; retroactive OOD expansion requires policy re-evaluation",
+      "triggers_rework_in": [
+        "CQ_POLICY",
+        "STOP_RULE",
+        "HANDOFF"
+      ]
+    },
+    {
+      "id": "AR_05",
+      "label": "Validate Handoff Schema With All Consumers Before Launch",
+      "description": "Post-launch schema changes break consumers and require coordinated rollbacks",
+      "triggers_rework_in": [
+        "HANDOFF",
+        "INTENT_SCHEMA",
+        "CONTEXT_TRACK"
+      ]
+    },
+    {
+      "id": "AR_06",
+      "label": "Set QCS Dial API Before Building Orchestration Branches",
+      "description": "Orchestration branches are built around QCS parameter space; changing dial semantics post-build breaks all branches",
+      "triggers_rework_in": [
+        "OBJ_DIAL",
+        "HANDOFF",
+        "LATENCY_BUDGET"
+      ]
+    },
+    {
+      "id": "AR_07",
+      "label": "Multilingual Normalization Before Embedding Training",
+      "description": "Transliteration normalization must be finalized before embeddings are trained; norm changes invalidate embeddings",
+      "triggers_rework_in": [
+        "MULTILINGUAL",
+        "INTENT_SLOT",
+        "CALIBRATION"
+      ]
+    },
+    {
+      "id": "AR_08",
+      "label": "Stopping Rule Validated With Stake Tiers Before Policy Deploy",
+      "description": "Deploying stopping rule without stake-level testing causes high-risk intent under-clarification in production",
+      "triggers_rework_in": [
+        "STOP_RULE",
+        "HANDOFF",
+        "EVAL_INTENT"
+      ]
+    },
+    {
+      "id": "AR_09",
+      "label": "Context Window Boundary Defined Before Belief State Design",
+      "description": "Belief state carryover window must be defined upfront; shrinking it post-design breaks coreference resolution",
+      "triggers_rework_in": [
+        "CONTEXT_TRACK",
+        "ANSWER_PARSE",
+        "QUESTION_GEN"
+      ]
+    },
+    {
+      "id": "AR_10",
+      "label": "Feedback Loop Debiasing Before Online Policy Update",
+      "description": "Applying raw implicit signals to policy causes Goodhart effects; debiasing must be in place before feedback influences policy",
+      "triggers_rework_in": [
+        "FEEDBACK_LOOP",
+        "CQ_POLICY",
+        "PRIOR_UPDATE"
+      ]
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "label": "Ambiguity Taxonomy Review",
+      "trigger": "new query type observed outside current taxonomy OR detection precision < 0.70",
+      "action": "extend taxonomy, relabel affected training data, retrain intent model",
+      "affects_nodes": [
+        "AMBIG_DETECT",
+        "INTENT_SLOT"
+      ]
+    },
+    {
+      "id": "IP_02",
+      "label": "Calibration Refresh",
+      "trigger": "ECE > 0.08 on monitoring set OR intent model retrained",
+      "action": "re-run temperature scaling on new held-out set; update threshold config",
+      "affects_nodes": [
+        "CALIBRATION",
+        "PRIOR_UPDATE",
+        "STOP_RULE"
+      ]
+    },
+    {
+      "id": "IP_03",
+      "label": "Clarification Policy Tuning",
+      "trigger": "ask-rate outside target band OR user friction metric rises",
+      "action": "adjust IG threshold and stake-tier friction budgets; shadow-run before deploy",
+      "affects_nodes": [
+        "CQ_POLICY",
+        "STOP_RULE",
+        "INFO_GAIN"
+      ]
+    },
+    {
+      "id": "IP_04",
+      "label": "Multilingual Coverage Expansion",
+      "trigger": "new language variant onboarded OR F1 on existing language drops below tier SLO",
+      "action": "add transliteration rules, collect labeled examples, retrain multilingual model",
+      "affects_nodes": [
+        "MULTILINGUAL",
+        "PERSONA_ADAPT",
+        "QUESTION_GEN"
+      ]
+    },
+    {
+      "id": "IP_05",
+      "label": "Schema Governance Cycle",
+      "trigger": "new task type proposed OR breaking slot change requested",
+      "action": "run schema review, version bump, notify consumers, update migration guide",
+      "affects_nodes": [
+        "INTENT_SCHEMA",
+        "HANDOFF",
+        "INTENT_SLOT"
+      ]
+    },
+    {
+      "id": "IP_06",
+      "label": "Stopping Rule Stake Re-calibration",
+      "trigger": "downstream task error rate changes after stop decisions OR new high-stake task added",
+      "action": "re-evaluate stake tiers, adjust confidence thresholds, re-validate with human review",
+      "affects_nodes": [
+        "STOP_RULE",
+        "CQ_POLICY",
+        "HANDOFF"
+      ]
+    },
+    {
+      "id": "IP_07",
+      "label": "OOD Boundary Update",
+      "trigger": "scope expanded or contracted OR false-positive OOD rate rises",
+      "action": "update OOD test suite, retune threshold, re-validate with near-boundary cases",
+      "affects_nodes": [
+        "SCOPE_BOUND",
+        "AMBIG_DETECT",
+        "CQ_POLICY"
+      ]
+    },
+    {
+      "id": "IP_08",
+      "label": "Feedback Loop Debiasing Review",
+      "trigger": "correction rate rises above 5% OR implicit signal distribution shifts",
+      "action": "audit debiasing logic, update noise model, validate on correction holdout",
+      "affects_nodes": [
+        "FEEDBACK_LOOP",
+        "CALIBRATION",
+        "CQ_POLICY"
+      ]
+    },
+    {
+      "id": "IP_09",
+      "label": "Question Generation Quality Review",
+      "trigger": "question clarity rating drops below 3.5/5 OR answer quality degrades",
+      "action": "audit question templates, update neural generator training, re-run persona adaptation tests",
+      "affects_nodes": [
+        "QUESTION_GEN",
+        "PERSONA_ADAPT",
+        "ANSWER_PARSE"
+      ]
+    },
+    {
+      "id": "IP_10",
+      "label": "Latency SLO Enforcement Review",
+      "trigger": "p99 breaches SLO in production OR new component added to pipeline",
+      "action": "profile components, update timeout configs, test circuit-breaker activation",
+      "affects_nodes": [
+        "LATENCY_BUDGET",
+        "HANDOFF",
+        "INFO_GAIN"
+      ]
+    }
+  ],
+  "priority_order": [
+    "AMBIG_DETECT",
+    "CQ_POLICY",
+    "INTENT_SLOT",
+    "STOP_RULE",
+    "HANDOFF",
+    "SCOPE_BOUND",
+    "MULTILINGUAL",
+    "QUESTION_GEN",
+    "CONTEXT_TRACK",
+    "INFO_GAIN",
+    "CALIBRATION",
+    "PRAG_IMPLICATURE",
+    "ANSWER_PARSE",
+    "EVAL_INTENT",
+    "OBJ_DIAL",
+    "INTENT_SCHEMA",
+    "PRIOR_UPDATE",
+    "FEEDBACK_LOOP",
+    "PERSONA_ADAPT",
+    "LATENCY_BUDGET"
+  ],
+  "priority_rationale": "Ambiguity detection and clarifying question policy are gating decisions for all downstream nodes. Intent slot extraction and the stopping rule directly determine handoff quality. Scope bounding prevents safety failures. Multilingual handling unlocks the primary user segment. Question generation, context tracking, and information gain complete the core elicitation loop. Calibration, pragmatics, answer parsing, and evaluation provide quality assurance. Objective dial, schema governance, prior update, and feedback loop are important but depend on the core being stable. Persona adaptation and latency budget are operational concerns addressed after core correctness is validated.",
+  "change_control": {
+    "change_log": [],
+    "review_cadence": "quarterly or on trigger from iteration_protocol",
+    "approvers": [
+      "dialogue_architect",
+      "ml_lead",
+      "product_manager"
+    ],
+    "breaking_change_policy": "breaking schema or taxonomy changes require 2-week consumer notification period and migration guide before deployment"
+  },
+  "traceability_matrix": {
+    "CQ_01": [
+      "AMBIG_DETECT",
+      "INTENT_SCHEMA"
+    ],
+    "CQ_02": [
+      "QUESTION_GEN",
+      "INFO_GAIN"
+    ],
+    "CQ_03": [
+      "SCOPE_BOUND",
+      "AMBIG_DETECT"
+    ],
+    "CQ_04": [
+      "STOP_RULE",
+      "CQ_POLICY"
+    ],
+    "CQ_05": [
+      "CALIBRATION",
+      "PRIOR_UPDATE"
+    ],
+    "CQ_06": [
+      "PRIOR_UPDATE",
+      "CALIBRATION"
+    ],
+    "CQ_07": [
+      "CONTEXT_TRACK",
+      "ANSWER_PARSE"
+    ],
+    "CQ_08": [
+      "ANSWER_PARSE",
+      "CONTEXT_TRACK"
+    ],
+    "CQ_09": [
+      "PERSONA_ADAPT",
+      "QUESTION_GEN"
+    ],
+    "CQ_10": [
+      "MULTILINGUAL",
+      "PERSONA_ADAPT"
+    ],
+    "CQ_11": [
+      "PRAG_IMPLICATURE",
+      "ANSWER_PARSE"
+    ],
+    "CQ_12": [
+      "EVAL_INTENT",
+      "CALIBRATION"
+    ],
+    "CQ_13": [
+      "OBJ_DIAL",
+      "HANDOFF"
+    ],
+    "CQ_14": [
+      "HANDOFF",
+      "SCOPE_BOUND"
+    ]
+  },
+  "validation_report": {
+    "last_validated": "not_yet_validated",
+    "validator_version": "kb_validator_v1",
+    "overall_status": "pending",
+    "checks": []
+  },
+  "validation_protocol": {
+    "required_checks": [
+      "node_count_in_range_19_to_24",
+      "edge_count_in_range_32_to_40",
+      "all_edge_ids_unique_EDGE_NNN",
+      "all_node_ids_unique",
+      "dependency_edges_acyclic",
+      "conflict_edges_have_negative_tension_and_resolution_rule",
+      "high_risk_nodes_have_acceptance_tests_and_human_review",
+      "high_coupling_nodes_have_revisit_triggers",
+      "priority_order_contains_every_node_exactly_once",
+      "every_cq_ref_resolves",
+      "every_evidence_ref_resolves_to_source_registry",
+      "SRC_HEURISTIC_PRIOR_in_source_registry",
+      "no_derived_fields_hand_computed_before_formula_tool"
+    ],
+    "pass_threshold": "all required checks pass"
+  },
+  "evaluation_suite": {
+    "eval_set_id": "intent_elicit_heuristic_v1",
+    "eval_type": "heuristic_prior",
+    "description": "Heuristic evaluation criteria for intent elicitation subdomain; no observed dataset",
+    "metrics": [
+      "intent_accuracy",
+      "slot_em",
+      "turns_to_resolve",
+      "task_success_rate",
+      "user_satisfaction_proxy"
+    ],
+    "pass_criteria": "all node acceptance_tests pass in shadow mode; eval_intent metric dashboard green",
+    "notes": "no benchmark dataset supplied; all scores are heuristic priors"
+  }
+}

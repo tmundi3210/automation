@@ -1,0 +1,5973 @@
+{
+  "domain": "train_infra",
+  "domain_label": "GPU Training Infrastructure & Cost (LLM Engineering subdomain)",
+  "purpose": "session_bounded_stepwise_execution_for_gpu_training_infrastructure_cost_modeling_and_distributed_training_configuration",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "scope covers GPU rental, VRAM math, distributed training (FSDP/ZeRO), mixed precision, multi-model scheduling, and cost modeling",
+    "target workload is fine-tuning or pretraining of LLMs from 1B to 175B parameters",
+    "GPU types considered: A100 40/80GB, H100 80GB, L40S, consumer (RTX 4090) on cloud providers"
+  ],
+  "exclusions": [
+    "inference serving infrastructure (separate domain)",
+    "model architecture design decisions",
+    "data curation and quality (separate KB)",
+    "TPU-specific training",
+    "on-device or edge training"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What GPU type and count is required to train a 70B parameter model with 8K context in bf16?",
+      "must_be_answerable_from": [
+        "nodes",
+        "glossary"
+      ],
+      "acceptance_condition": "GPU_SIZING and VRAM_MATH provide the formula and answer",
+      "covered_by": [
+        "GPU_SIZING",
+        "VRAM_MATH",
+        "CLOUD_PROVIDER"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What is the total training cost estimate for a 7B model trained on 140B tokens on H100 spot instances?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "COST_MODEL and SPOT_CLOUD provide formula and estimate",
+      "covered_by": [
+        "COST_MODEL",
+        "SPOT_CLOUD",
+        "CLOUD_PROVIDER",
+        "GPU_SIZING"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How is peak VRAM calculated for a 13B model with ZeRO-2 and gradient checkpointing enabled?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "VRAM_MATH + ZERO_SHARDING + GRAD_CKPT cover all components",
+      "covered_by": [
+        "VRAM_MATH",
+        "ZERO_SHARDING",
+        "GRAD_CKPT",
+        "GRAD_ACCUM"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What checkpoint strategy minimizes recovery loss from spot preemption at minimum storage cost?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "CKPT_INFRA + CA_06 address the tradeoff",
+      "covered_by": [
+        "CKPT_INFRA",
+        "SPOT_CLOUD",
+        "FAULT_TOL"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "When should spot instances be avoided in favour of on-demand for distributed training?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "SPOT_CLOUD + CA_02 + CA_05 define conditions",
+      "covered_by": [
+        "SPOT_CLOUD",
+        "CLOUD_PROVIDER",
+        "MULTI_MODEL_SCHED"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "What is the recommended parallelism strategy for a 65B model on 32 H100 GPUs connected via InfiniBand?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "ZERO_SHARDING, FSDP_CONFIG, TENSOR_PIPE_PAR, NET_TOPO provide decision logic",
+      "covered_by": [
+        "ZERO_SHARDING",
+        "FSDP_CONFIG",
+        "TENSOR_PIPE_PAR",
+        "NET_TOPO"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How does QLoRA reduce VRAM and what accuracy tradeoff should be expected vs bf16 full fine-tuning?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "QUANT_TRAIN + CA_04 define mechanism and tradeoff",
+      "covered_by": [
+        "QUANT_TRAIN",
+        "MIXED_PREC",
+        "VRAM_MATH"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How is training loss divergence detected and recovered in a long-running training job?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "LOSS_MONITOR + CKPT_INFRA define detection and recovery",
+      "covered_by": [
+        "LOSS_MONITOR",
+        "CKPT_INFRA",
+        "FAULT_TOL"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is model FLOP utilization (MFU) computed and what does a low value indicate?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "MFU_MONITOR + COST_MODEL explain formula and bottleneck attribution",
+      "covered_by": [
+        "MFU_MONITOR",
+        "COST_MODEL",
+        "MIXED_PREC"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What makes a training data pipeline GPU-bound vs data-bound and how is the bottleneck resolved?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "DATA_PIPE + EC_07 + MFU_MONITOR cover the diagnosis",
+      "covered_by": [
+        "DATA_PIPE",
+        "MFU_MONITOR"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How should concurrent fine-tuning jobs be scheduled on a shared GPU cluster to avoid deadlocks?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "MULTI_MODEL_SCHED + EC_06 + FAULT_TOL define the scheduling constraints",
+      "covered_by": [
+        "MULTI_MODEL_SCHED",
+        "FAULT_TOL",
+        "GPU_SIZING"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "How does Chinchilla scaling law inform the choice between training a larger model for fewer tokens vs smaller model for more tokens?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "SCALING_LAW + CA_07 address the tradeoff",
+      "covered_by": [
+        "SCALING_LAW",
+        "COST_MODEL",
+        "GPU_SIZING"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "MFU",
+      "definition": "Model Flop Utilization: ratio of achieved FLOP/s to theoretical peak hardware FLOP/s; measures training efficiency",
+      "synonyms": [
+        "model_flop_utilization"
+      ],
+      "not_same_as": [
+        "GPU utilization (nvidia-smi)"
+      ],
+      "used_by_nodes": [
+        "MFU_MONITOR",
+        "COST_MODEL",
+        "TENSOR_PIPE_PAR"
+      ]
+    },
+    {
+      "term": "ZeRO",
+      "definition": "Zero Redundancy Optimizer: DeepSpeed memory optimization that partitions optimizer states, gradients, and parameters across data-parallel ranks",
+      "synonyms": [
+        "ZeRO-1",
+        "ZeRO-2",
+        "ZeRO-3"
+      ],
+      "not_same_as": [
+        "FSDP (different implementation of same concept)"
+      ],
+      "used_by_nodes": [
+        "ZERO_SHARDING"
+      ]
+    },
+    {
+      "term": "FSDP",
+      "definition": "Fully Sharded Data Parallel: PyTorch-native implementation of parameter+gradient+optimizer sharding across data-parallel ranks",
+      "synonyms": [
+        "fully_sharded_data_parallel"
+      ],
+      "not_same_as": [
+        "ZeRO (different implementation)",
+        "DDP"
+      ],
+      "used_by_nodes": [
+        "FSDP_CONFIG"
+      ]
+    },
+    {
+      "term": "bf16",
+      "definition": "bfloat16: 16-bit float with 8-bit exponent (same as fp32); preferred over fp16 for LLM training due to larger dynamic range avoiding overflow",
+      "synonyms": [
+        "bfloat16"
+      ],
+      "not_same_as": [
+        "fp16 (smaller exponent, overflow risk)",
+        "fp32"
+      ],
+      "used_by_nodes": [
+        "MIXED_PREC",
+        "QUANT_TRAIN"
+      ]
+    },
+    {
+      "term": "QLoRA",
+      "definition": "Quantized Low-Rank Adaptation: fine-tuning with 4-bit NF4 quantized base model and bf16 LoRA adapters; enables 70B fine-tuning on single 80GB GPU",
+      "synonyms": [
+        "quantized_lora"
+      ],
+      "not_same_as": [
+        "full fine-tuning",
+        "standard LoRA (bf16 base)"
+      ],
+      "used_by_nodes": [
+        "QUANT_TRAIN"
+      ]
+    },
+    {
+      "term": "Chinchilla",
+      "definition": "DeepMind 2022 scaling law showing compute-optimal training requires equal scaling of model size and training tokens; N_opt proportional to D_opt proportional to sqrt(C)",
+      "synonyms": [
+        "chinchilla_scaling",
+        "compute_optimal"
+      ],
+      "not_same_as": [
+        "Kaplan scaling (undertrained large models)"
+      ],
+      "used_by_nodes": [
+        "SCALING_LAW",
+        "COST_MODEL"
+      ]
+    },
+    {
+      "term": "spot_instance",
+      "definition": "Cloud GPU instance offered at 60-90% discount with risk of preemption when provider reclaims capacity; requires checkpoint-on-preemption",
+      "synonyms": [
+        "preemptible_instance",
+        "spot_gpu"
+      ],
+      "not_same_as": [
+        "on-demand instance",
+        "reserved instance"
+      ],
+      "used_by_nodes": [
+        "SPOT_CLOUD",
+        "CKPT_INFRA"
+      ]
+    },
+    {
+      "term": "FlashAttention",
+      "definition": "IO-aware attention algorithm using tiling to reduce memory from O(N^2) to O(N) and increase arithmetic intensity; mandatory for long-context training",
+      "synonyms": [
+        "flash_attn",
+        "FlashAttn-2",
+        "FlashAttn-3"
+      ],
+      "not_same_as": [
+        "standard attention",
+        "xformers attention"
+      ],
+      "used_by_nodes": [
+        "FLASH_ATTN"
+      ]
+    },
+    {
+      "term": "NVLink",
+      "definition": "NVIDIA high-bandwidth intra-node GPU interconnect; required for efficient tensor parallelism within node; bandwidth 600 GB/s vs 64 GB/s PCIe",
+      "synonyms": [
+        "nvlink",
+        "nvswitch"
+      ],
+      "not_same_as": [
+        "InfiniBand (inter-node)",
+        "PCIe (slower intra-node)"
+      ],
+      "used_by_nodes": [
+        "NET_TOPO",
+        "TENSOR_PIPE_PAR"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "VRAM_MATH",
+      "COST_MODEL",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "VRAM_MATH",
+      "COST_MODEL",
+      "SCALING_LAW"
+    ],
+    "probabilistic_modeling": [
+      "SCALING_LAW",
+      "QUANT_TRAIN"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "CKPT_INFRA",
+      "FAULT_TOL",
+      "SPOT_CLOUD"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "LOSS_MONITOR",
+      "MFU_MONITOR"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow"
+    ],
+    "software_schema_engineering": [
+      "schema_contract",
+      "traceability_matrix"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for GPU training infrastructure work units derived from practitioner knowledge of cloud GPU economics, distributed training, and LLM scaling; no measured dataset supplied",
+      "citation_or_locator": "",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "GPU pricing and availability change frequently"
+      ]
+    },
+    {
+      "source_id": "SRC_KLEPPMANN_DDIA",
+      "source_type": "book_reference",
+      "label_eligibility": [
+        "heuristic",
+        "expert_estimate"
+      ],
+      "description": "Kleppmann, Designing Data-Intensive Applications — referenced for fault tolerance, checkpointing, and distributed systems patterns",
+      "citation_or_locator": "Kleppmann (2017) Designing Data-Intensive Applications, O'Reilly",
+      "supports": [
+        "fault tolerance patterns",
+        "checkpoint consistency",
+        "distributed systems reliability"
+      ],
+      "does_not_support": [
+        "GPU-specific metrics",
+        "LLM-specific scaling laws"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "published_book",
+        "activity": "reference",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "general distributed systems; not GPU-specific"
+      ]
+    },
+    {
+      "source_id": "SRC_HUYEN_DMLS",
+      "source_type": "book_reference",
+      "label_eligibility": [
+        "heuristic",
+        "expert_estimate"
+      ],
+      "description": "Huyen, Designing Machine Learning Systems — referenced for infra/cost modeling and training infrastructure patterns",
+      "citation_or_locator": "Huyen (2022) Designing Machine Learning Systems, O'Reilly",
+      "supports": [
+        "training infrastructure design",
+        "cost modeling",
+        "MLOps patterns"
+      ],
+      "does_not_support": [
+        "GPU-specific VRAM math",
+        "LLM-specific parallelism configs"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "published_book",
+        "activity": "reference",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "general ML systems; pre-dates LLM-scale infra specifics"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "GPU_SIZING",
+      "topic": "gpu_instance_sizing",
+      "definition": "Select GPU instance type (A100/H100/L40S/consumer) and quantity by matching model parameter count, activation memory, and batch size to VRAM budget and per-GPU FLOP throughput.",
+      "node_type": "work_unit",
+      "group": "compute_planning",
+      "scope_boundary": {
+        "included": [
+          "GPU VRAM budget calculation",
+          "instance type comparison",
+          "FLOP throughput vs cost",
+          "spot vs on-demand tradeoff"
+        ],
+        "excluded": [
+          "CPU training",
+          "TPU-specific tuning",
+          "networking topology details"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "distributed_training",
+        "cloud_infrastructure"
+      ],
+      "specialists": [
+        "ml_infra_engineer",
+        "cloud_architect"
+      ],
+      "contradictors": [
+        "cpu_only_advocate",
+        "tpu_advocate"
+      ],
+      "inputs": [
+        "model parameter count",
+        "sequence length",
+        "batch size targets",
+        "cloud provider pricing sheet"
+      ],
+      "outputs": [
+        "instance type recommendation",
+        "VRAM utilization estimate",
+        "cost-per-token estimate"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.72,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.9,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.6,
+        "risk_score": 0.71,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.59,
+        "final_importance": 0.78
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.7,
+        "uncertainty_interval": [
+          0.15,
+          0.5
+        ],
+        "posterior_importance": 0.57,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Correct sizing prevents OOM crashes and avoids over-provisioning cost",
+          "example": "H100 80GB fits 70B bf16 model with ZeRO-3"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prices shift quarterly; locked instance type may no longer be cost-optimal",
+          "example": "A100 spot price spikes during peak demand"
+        }
+      ],
+      "failure_modes": [
+        "VRAM OOM at runtime",
+        "underestimating activation memory for long contexts",
+        "ignoring interconnect bandwidth bottleneck"
+      ],
+      "acceptance_tests": [
+        "VRAM budget formula verified against actual peak allocation",
+        "cost-per-token within 20% of target budget"
+      ],
+      "revisit_triggers": [
+        "new GPU generation released",
+        "spot price exceeds on-demand threshold",
+        "sequence length increases >2x"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "VRAM_MATH",
+      "topic": "vram_memory_math",
+      "definition": "Compute peak GPU VRAM demand: parameter bytes (dtype×params) + optimizer states (Adam 8×params in fp32) + gradients + activation checkpointing footprint + KV-cache for context length.",
+      "node_type": "work_unit",
+      "group": "compute_planning",
+      "scope_boundary": {
+        "included": [
+          "parameter memory",
+          "optimizer state memory",
+          "gradient memory",
+          "activation memory",
+          "KV-cache estimate"
+        ],
+        "excluded": [
+          "model architecture design",
+          "quantization internals",
+          "hardware register memory"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "distributed_training",
+        "cloud_infrastructure"
+      ],
+      "specialists": [
+        "ml_infra_engineer",
+        "systems_engineer"
+      ],
+      "contradictors": [
+        "rule_of_thumb_only_advocate"
+      ],
+      "inputs": [
+        "model parameter count",
+        "dtype (fp16/bf16/fp8)",
+        "optimizer choice",
+        "batch size",
+        "sequence length"
+      ],
+      "outputs": [
+        "peak VRAM estimate",
+        "memory breakdown table",
+        "safe batch size upper bound"
+      ],
+      "dependencies": [
+        "GPU_SIZING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.9,
+        "business_value": 0.82,
+        "user_value": 0.68,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.45,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.69,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.44,
+        "lock_score": 0.64,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.72,
+        "uncertainty_interval": [
+          0.12,
+          0.45
+        ],
+        "posterior_importance": 0.6,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents OOM surprises; enables confident batch-size selection",
+          "example": "70B bf16 params=140GB; +Adam=280GB; needs 4×H100 with ZeRO-3"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Activation memory depends on micro-batch and layer count; hard to predict exactly",
+          "example": "transformer activations scale as O(seq_len×hidden×layers)"
+        }
+      ],
+      "failure_modes": [
+        "forgetting optimizer state memory (largest component)",
+        "ignoring activation checkpoint overhead",
+        "KV-cache omitted for long contexts"
+      ],
+      "acceptance_tests": [
+        "formula reproduces known OOM threshold on reference model",
+        "peak VRAM within 10% of profiled actual"
+      ],
+      "revisit_triggers": [
+        "sequence length doubles",
+        "batch size changes",
+        "new optimizer added",
+        "quantization dtype changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SPOT_CLOUD",
+      "topic": "spot_preemptible_cloud_strategy",
+      "definition": "Design training jobs to exploit spot/preemptible GPU instances (60-90% discount) via checkpoint-on-preemption hooks, restart automation, and mixed on-demand fallback.",
+      "node_type": "work_unit",
+      "group": "cost_optimization",
+      "scope_boundary": {
+        "included": [
+          "spot price monitoring",
+          "preemption hooks",
+          "checkpoint-on-interrupt",
+          "mixed fleet strategy"
+        ],
+        "excluded": [
+          "reserved instance pricing",
+          "CPU spot usage",
+          "networking SLA"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "distributed_training",
+        "cloud_infrastructure"
+      ],
+      "specialists": [
+        "cloud_cost_engineer",
+        "devops_engineer"
+      ],
+      "contradictors": [
+        "on_demand_only_advocate"
+      ],
+      "inputs": [
+        "cloud provider spot API",
+        "checkpointing system",
+        "job scheduler"
+      ],
+      "outputs": [
+        "spot-aware training script",
+        "preemption handler",
+        "expected cost savings estimate"
+      ],
+      "dependencies": [
+        "GPU_SIZING",
+        "CKPT_INFRA"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_05"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.9,
+        "user_value": 0.55,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.6,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.62,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.28,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "60-90% cost reduction on comparable throughput vs on-demand",
+          "example": "GCP preemptible A100 at ~30% on-demand price"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Preemption rate spikes during peak; can double wall-clock time if unhandled",
+          "example": "AWS spot interruption rate for p4d can reach 20%/hr"
+        }
+      ],
+      "failure_modes": [
+        "no checkpoint-on-preemption causing full restart loss",
+        "relying on single-AZ spot pool",
+        "ignoring placement group needs for multi-node"
+      ],
+      "acceptance_tests": [
+        "preemption simulation test passes within 60s checkpoint save",
+        "job resumes from checkpoint within 5 min of restart"
+      ],
+      "revisit_triggers": [
+        "spot market prices spike above on-demand",
+        "new GPU generation spot availability emerges",
+        "training run exceeds 7-day window"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ZERO_SHARDING",
+      "topic": "zero_optimizer_state_sharding",
+      "definition": "Apply DeepSpeed ZeRO stages (1: optimizer shards, 2: +gradient shards, 3: +parameter shards) to distribute memory across data-parallel ranks, enabling training of models larger than single-GPU VRAM.",
+      "node_type": "work_unit",
+      "group": "distributed_training",
+      "scope_boundary": {
+        "included": [
+          "ZeRO stage selection",
+          "optimizer state partitioning",
+          "gradient aggregation protocol",
+          "parameter offload to CPU/NVMe"
+        ],
+        "excluded": [
+          "tensor parallelism",
+          "pipeline parallelism",
+          "model architecture changes"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "zero_sharding",
+        "distributed_training",
+        "memory_optimization"
+      ],
+      "specialists": [
+        "distributed_ml_engineer"
+      ],
+      "contradictors": [
+        "single_gpu_only_advocate"
+      ],
+      "inputs": [
+        "DeepSpeed or FSDP config",
+        "model parameter count",
+        "number of GPU ranks",
+        "NVMe bandwidth if offloading"
+      ],
+      "outputs": [
+        "ZeRO stage config",
+        "per-GPU VRAM reduction factor",
+        "communication overhead estimate"
+      ],
+      "dependencies": [
+        "VRAM_MATH",
+        "GPU_SIZING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.62,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.62,
+        "risk_score": 0.7,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.61,
+        "final_importance": 0.77
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "ZeRO-3 enables training models 8-64× larger than single-GPU VRAM",
+          "example": "65B model on 8×A100 with ZeRO-3 optimizer offload"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "ZeRO-3 all-gather overhead can reduce throughput by 10-30% vs ZeRO-1",
+          "example": "inter-node ZeRO-3 saturates 400Gb InfiniBand"
+        }
+      ],
+      "failure_modes": [
+        "unnecessary ZeRO-3 on models fitting ZeRO-1 (wasted comms)",
+        "forgetting gradient checkpointing with ZeRO-3",
+        "CPU offload causing PCIe bottleneck"
+      ],
+      "acceptance_tests": [
+        "training step completes without OOM on target model size",
+        "MFU (model flop utilization) >35% maintained"
+      ],
+      "revisit_triggers": [
+        "model size changes substantially",
+        "GPU count or topology changes",
+        "new ZeRO implementation released"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FSDP_CONFIG",
+      "topic": "fsdp_sharding_strategy",
+      "definition": "Configure PyTorch FSDP (Fully Sharded Data Parallel) sharding policy: FULL_SHARD vs SHARD_GRAD_OP vs NO_SHARD, wrapping policy per transformer block, and mixed-precision compute/reduce dtypes.",
+      "node_type": "work_unit",
+      "group": "distributed_training",
+      "scope_boundary": {
+        "included": [
+          "FSDP sharding policy",
+          "transformer auto-wrap",
+          "mixed precision policy",
+          "backward-prefetch strategy",
+          "CPU offload option"
+        ],
+        "excluded": [
+          "DeepSpeed ZeRO specifics",
+          "model architecture design",
+          "optimizer algorithm"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "fsdp",
+        "distributed_training",
+        "pytorch"
+      ],
+      "specialists": [
+        "pytorch_distributed_engineer"
+      ],
+      "contradictors": [
+        "tensorflow_advocate"
+      ],
+      "inputs": [
+        "PyTorch FSDP API",
+        "transformer model code",
+        "GPU topology"
+      ],
+      "outputs": [
+        "FSDP config file",
+        "wrapping policy spec",
+        "throughput benchmark result"
+      ],
+      "dependencies": [
+        "ZERO_SHARDING",
+        "VRAM_MATH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.75,
+        "user_value": 0.58,
+        "technical_complexity": 0.8,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.48,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.66,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.62,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.74,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Native PyTorch integration with no external dependency; composable with torch.compile",
+          "example": "FSDP + compile on LLaMA achieves near-linear scaling"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Auto-wrap policy choice heavily affects performance; wrong wrap can halve MFU",
+          "example": "wrapping at linear layers vs full block changes all-gather granularity"
+        }
+      ],
+      "failure_modes": [
+        "incorrect wrap policy causing extra all-gather",
+        "forgetting to flatten parameters for older FSDP",
+        "mixed-precision mismatch between compute and reduce dtype"
+      ],
+      "acceptance_tests": [
+        "FSDP training step runs on reference model without error",
+        "throughput within 80% of theoretical peak"
+      ],
+      "revisit_triggers": [
+        "PyTorch version major upgrade",
+        "model architecture changes transformer structure",
+        "GPU interconnect topology changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "MIXED_PREC",
+      "topic": "mixed_precision_training",
+      "definition": "Configure automatic mixed precision (AMP) with master weights in fp32, compute in bf16 or fp16, gradient scaling for fp16, and optional fp8 via Transformer Engine for H100 hardware acceleration.",
+      "node_type": "work_unit",
+      "group": "training_configuration",
+      "scope_boundary": {
+        "included": [
+          "bf16 vs fp16 choice",
+          "fp32 master weights",
+          "gradient scaling",
+          "loss scaling",
+          "fp8 compute via TE"
+        ],
+        "excluded": [
+          "quantization-aware training",
+          "post-training quantization",
+          "int8 inference"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "mixed_precision",
+        "amp",
+        "numerical_stability"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "hardware_engineer"
+      ],
+      "contradictors": [
+        "fp32_only_advocate"
+      ],
+      "inputs": [
+        "GPU architecture (A100/H100)",
+        "model numerical stability profile",
+        "AMP library"
+      ],
+      "outputs": [
+        "AMP config",
+        "loss scale log",
+        "training stability report"
+      ],
+      "dependencies": [
+        "GPU_SIZING",
+        "VRAM_MATH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.7,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.62,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.68,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "2× VRAM reduction vs fp32; 2-3× throughput on tensor cores without accuracy loss",
+          "example": "bf16 training of GPT-3 scale achieves identical loss curves to fp32"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "fp16 overflow risk on models with large logit variance; bf16 preferred for stability",
+          "example": "fp16 gradient overflow causes NaN loss spikes in large LLMs"
+        }
+      ],
+      "failure_modes": [
+        "fp16 NaN from loss overflow without gradient scaling",
+        "using fp16 on architectures prone to logit explosion",
+        "fp8 calibration skew causing underflow"
+      ],
+      "acceptance_tests": [
+        "training loss curve matches fp32 baseline within 1%",
+        "no NaN/Inf in 1000 steps on target model"
+      ],
+      "revisit_triggers": [
+        "model architecture changes numerical range",
+        "hardware upgrade changes tensor core support",
+        "fp8 standard library updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CKPT_INFRA",
+      "topic": "checkpoint_save_restore",
+      "definition": "Design checkpointing strategy: frequency (steps), storage backend (NVMe/S3/GCS), async save to overlap with training, sharded checkpoint format for large models, and restore validation.",
+      "node_type": "work_unit",
+      "group": "reliability_engineering",
+      "scope_boundary": {
+        "included": [
+          "checkpoint frequency",
+          "async checkpoint save",
+          "sharded checkpoint format",
+          "restore validation",
+          "spot preemption hooks"
+        ],
+        "excluded": [
+          "model architecture",
+          "training objective",
+          "data pipeline checkpointing"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "checkpointing",
+        "fault_tolerance",
+        "storage"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "storage_engineer"
+      ],
+      "contradictors": [
+        "checkpoint_free_advocate"
+      ],
+      "inputs": [
+        "storage backend",
+        "model size",
+        "training duration estimate",
+        "spot preemption risk"
+      ],
+      "outputs": [
+        "checkpoint config",
+        "restore test report",
+        "storage cost estimate"
+      ],
+      "dependencies": [
+        "GPU_SIZING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_08"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.65,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.6,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.69,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.63,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents full restart loss on preemption; enables experiment branching",
+          "example": "async checkpoint on 70B adds <2% overhead with NVMe staging"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Checkpoint storage cost accumulates; undeleted checkpoints can exceed compute cost",
+          "example": "1TB model × 100 checkpoints = 100TB S3 cost"
+        }
+      ],
+      "failure_modes": [
+        "checkpoint corruption undetected until restore",
+        "async save race condition corrupting state",
+        "no restore validation before training continues"
+      ],
+      "acceptance_tests": [
+        "restore from checkpoint produces identical loss on held-out batch",
+        "async save completes before next checkpoint window"
+      ],
+      "revisit_triggers": [
+        "model size changes requiring new shard format",
+        "storage backend changed",
+        "preemption rate increases"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "TENSOR_PIPE_PAR",
+      "topic": "tensor_pipeline_parallelism",
+      "definition": "Combine tensor parallelism (split weight matrices across GPUs within a node) and pipeline parallelism (split layers across nodes) for models too large for ZeRO-3 alone or to reduce all-gather communication.",
+      "node_type": "work_unit",
+      "group": "distributed_training",
+      "scope_boundary": {
+        "included": [
+          "tensor parallel degree",
+          "pipeline stages",
+          "micro-batch pipeline schedule (1F1B)",
+          "bubble fraction",
+          "inter-layer activation shape"
+        ],
+        "excluded": [
+          "data parallelism (covered by ZeRO)",
+          "model architecture changes",
+          "CPU training"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "tensor_parallelism",
+        "pipeline_parallelism",
+        "distributed_training"
+      ],
+      "specialists": [
+        "distributed_systems_engineer"
+      ],
+      "contradictors": [
+        "data_parallel_only_advocate"
+      ],
+      "inputs": [
+        "Megatron-LM or NeMo config",
+        "GPU topology (NVLink vs IB)",
+        "model architecture layer plan"
+      ],
+      "outputs": [
+        "3D parallelism config",
+        "pipeline bubble analysis",
+        "MFU report"
+      ],
+      "dependencies": [
+        "ZERO_SHARDING",
+        "FSDP_CONFIG",
+        "GPU_SIZING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.75,
+        "user_value": 0.58,
+        "technical_complexity": 0.9,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.55,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.65,
+        "risk_score": 0.72,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.46,
+        "lock_score": 0.56,
+        "final_importance": 0.75
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.68,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.28,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.2,
+          0.58
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables training 100B+ models on multi-node clusters with near-linear scaling",
+          "example": "GPT-3 175B trained with TP=8 PP=16 DP=96"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.72,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Pipeline bubbles reduce GPU utilization; PP adds complex schedule and debugging",
+          "example": "PP=8 with 1F1B schedule has ~15% bubble fraction"
+        }
+      ],
+      "failure_modes": [
+        "pipeline bubble exceeding 20% causing poor MFU",
+        "tensor parallelism exceeding NVLink bandwidth causing IB saturation",
+        "incorrect micro-batch count for pipeline depth"
+      ],
+      "acceptance_tests": [
+        "end-to-end training step completes on target cluster without hang",
+        "MFU >40% on >4-node job"
+      ],
+      "revisit_triggers": [
+        "cluster topology changes",
+        "model depth or width changes",
+        "micro-batch strategy changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "COST_MODEL",
+      "topic": "cost_effectiveness_modeling",
+      "definition": "Build a cost model: total_cost = GPU_hours × $/hr; GPU_hours = tokens / (MFU × peak_FLOP × 6P); compare cost-per-quality-point across GPU types, parallelism strategies, and cloud providers.",
+      "node_type": "work_unit",
+      "group": "cost_optimization",
+      "scope_boundary": {
+        "included": [
+          "FLOP-based cost formula",
+          "MFU measurement",
+          "cost-per-quality-point",
+          "provider comparison",
+          "Chinchilla scaling law cost projection"
+        ],
+        "excluded": [
+          "model architecture decisions",
+          "data curation cost",
+          "inference serving cost"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "cost_modeling",
+        "scaling_laws",
+        "flop_accounting"
+      ],
+      "specialists": [
+        "ml_researcher",
+        "finance_engineer"
+      ],
+      "contradictors": [
+        "intuition_only_advocate"
+      ],
+      "inputs": [
+        "MFU measurement",
+        "GPU price sheet",
+        "target token count",
+        "Chinchilla compute-optimal ratio"
+      ],
+      "outputs": [
+        "cost projection spreadsheet",
+        "cost-per-token estimate",
+        "provider recommendation"
+      ],
+      "dependencies": [
+        "GPU_SIZING",
+        "MIXED_PREC",
+        "ZERO_SHARDING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.92,
+        "user_value": 0.78,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.45,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.66,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.62,
+        "final_importance": 0.76
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Converts technical choices to business metrics; prevents over-spend",
+          "example": "H100 at 2.5× A100 cost but 3.2× MFU → better ROI for large models"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "MFU assumptions compound; 2× MFU error doubles budget miss",
+          "example": "MFU assumes perfect all-reduce; IB-limited jobs often <30% MFU"
+        }
+      ],
+      "failure_modes": [
+        "using peak FLOP instead of MFU-adjusted FLOP",
+        "ignoring communication overhead in cost model",
+        "forgetting data storage and egress in total cost"
+      ],
+      "acceptance_tests": [
+        "cost estimate within 25% of actual spend on pilot run",
+        "model selects correct GPU type in A/B decision"
+      ],
+      "revisit_triggers": [
+        "GPU pricing changes >20%",
+        "new hardware generation launches",
+        "MFU measurements updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MFU_MONITOR",
+      "topic": "mfu_throughput_monitoring",
+      "definition": "Instrument training loops to measure Model Flop Utilization (MFU = achieved_FLOP / peak_hardware_FLOP) and tokens/sec, detect throughput regressions, and attribute bottlenecks (compute vs memory vs communication).",
+      "node_type": "work_unit",
+      "group": "observability",
+      "scope_boundary": {
+        "included": [
+          "MFU formula implementation",
+          "tokens per second logging",
+          "compute vs comms overlap profiling",
+          "bottleneck attribution"
+        ],
+        "excluded": [
+          "loss curve monitoring",
+          "data pipeline profiling",
+          "serving latency"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "mfu",
+        "performance_monitoring",
+        "profiling"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "performance_engineer"
+      ],
+      "contradictors": [
+        "loss_only_monitor"
+      ],
+      "inputs": [
+        "training framework hooks",
+        "hardware peak FLOP spec",
+        "profiling tooling (nsight/kineto)"
+      ],
+      "outputs": [
+        "MFU dashboard",
+        "throughput regression alerts",
+        "bottleneck report"
+      ],
+      "dependencies": [
+        "MIXED_PREC",
+        "ZERO_SHARDING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.78,
+        "user_value": 0.6,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.35,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.56,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.69,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Catches silent throughput regressions before they compound over long runs",
+          "example": "MFU drop from 45% to 30% detected in hour 2 vs day 3"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.45,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "MFU measurement depends on correct FLOP count formula; errors mislead",
+          "example": "attention FLOP count varies by implementation (flash vs standard)"
+        }
+      ],
+      "failure_modes": [
+        "using peak BFLOAT16 FLOP without accounting for memory-bound ops",
+        "ignoring communication idle time in MFU numerator",
+        "attention FLOP formula discrepancy vs actual ops"
+      ],
+      "acceptance_tests": [
+        "MFU alert fires within 10 min of 20% throughput drop",
+        "profiler correctly attributes bottleneck source in 3 test scenarios"
+      ],
+      "revisit_triggers": [
+        "new GPU type added with different peak FLOP",
+        "parallelism strategy changes",
+        "training framework major version upgrade"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "GRAD_ACCUM",
+      "topic": "gradient_accumulation",
+      "definition": "Accumulate gradients over micro-batches to achieve target global batch size (global_batch = micro_batch × grad_accum_steps × DP_degree) without exceeding per-GPU VRAM.",
+      "node_type": "work_unit",
+      "group": "training_configuration",
+      "scope_boundary": {
+        "included": [
+          "micro-batch size",
+          "gradient accumulation steps",
+          "global batch size formula",
+          "interaction with pipeline parallelism"
+        ],
+        "excluded": [
+          "optimizer algorithm internals",
+          "learning rate schedule",
+          "data loading"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "gradient_accumulation",
+        "batch_size_scaling"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "large_batch_only_advocate"
+      ],
+      "inputs": [
+        "VRAM budget",
+        "target global batch size",
+        "DP degree",
+        "pipeline micro-batches"
+      ],
+      "outputs": [
+        "gradient accumulation config",
+        "effective batch size verification log"
+      ],
+      "dependencies": [
+        "VRAM_MATH",
+        "ZERO_SHARDING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.62,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.55,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.71,
+        "final_importance": 0.65
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.27,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.15,
+          0.42
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Decouples batch size from VRAM constraint enabling Chinchilla-optimal batch",
+          "example": "train with global_batch=2M tokens on 8 GPUs via grad_accum=32"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Extra accumulation steps proportionally reduce throughput vs data-parallel scaling",
+          "example": "grad_accum=16 is 16× slower than same batch with 16× GPUs"
+        }
+      ],
+      "failure_modes": [
+        "forgetting grad_accum interaction with pipeline PP micro-batches",
+        "incorrect global batch size causing suboptimal LR schedule",
+        "gradient norm accumulation bug causing wrong effective LR"
+      ],
+      "acceptance_tests": [
+        "global batch size matches target token count per step",
+        "loss curve matches reference with equivalent global batch"
+      ],
+      "revisit_triggers": [
+        "DP degree changes",
+        "pipeline configuration changes",
+        "target batch size changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "GRAD_CKPT",
+      "topic": "activation_gradient_checkpointing",
+      "definition": "Enable selective recomputation of activations during backward pass (trading compute for memory) to reduce activation memory from O(seq_len×layers) to O(sqrt(layers)) or per-checkpoint-segment.",
+      "node_type": "work_unit",
+      "group": "memory_optimization",
+      "scope_boundary": {
+        "included": [
+          "full vs selective checkpointing",
+          "checkpoint segment granularity",
+          "recompute overhead estimate",
+          "interaction with flash attention"
+        ],
+        "excluded": [
+          "weight gradient computation (always done)",
+          "optimizer states",
+          "KV-cache"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "activation_checkpointing",
+        "memory_optimization"
+      ],
+      "specialists": [
+        "ml_engineer"
+      ],
+      "contradictors": [
+        "memory_unlimited_advocate"
+      ],
+      "inputs": [
+        "model layer structure",
+        "activation memory profile",
+        "compute budget"
+      ],
+      "outputs": [
+        "checkpointing config",
+        "recompute overhead measurement (% throughput loss)"
+      ],
+      "dependencies": [
+        "VRAM_MATH",
+        "MIXED_PREC"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.75,
+        "user_value": 0.65,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.6,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.69,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Reduces activation memory by 5-10× enabling longer contexts or larger batches",
+          "example": "seq_len 8192 becomes feasible with full checkpointing on A100 40GB"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Full checkpointing adds ~33% compute overhead; selective checkpointing reduces this to 5-10%",
+          "example": "recomputing attention doubles FLOPs for that layer"
+        }
+      ],
+      "failure_modes": [
+        "applying checkpointing to layers already covered by flash-attn (double overhead)",
+        "incorrect checkpoint segment boundaries causing memory spike",
+        "checkpointing disabled silently in some framework integrations"
+      ],
+      "acceptance_tests": [
+        "activation memory reduced by >50% vs no-checkpointing baseline",
+        "throughput loss within target budget (<15%)"
+      ],
+      "revisit_triggers": [
+        "sequence length changes substantially",
+        "flash attention replaces standard attention",
+        "model depth changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "DATA_PIPE",
+      "topic": "training_data_pipeline",
+      "definition": "Engineer data pipeline to feed GPU with tokenized batches at target throughput: sharded dataset format (WebDataset/MDS), prefetching, worker count tuning, and CPU-GPU transfer overlap.",
+      "node_type": "work_unit",
+      "group": "data_infrastructure",
+      "scope_boundary": {
+        "included": [
+          "sharded dataset format",
+          "prefetch buffer sizing",
+          "dataloader worker count",
+          "CPU preprocessing overlap",
+          "streaming vs cached"
+        ],
+        "excluded": [
+          "data curation and quality",
+          "tokenizer training",
+          "dataset filtering logic"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "data_pipeline",
+        "io_throughput",
+        "distributed_data"
+      ],
+      "specialists": [
+        "data_engineer",
+        "mlops_engineer"
+      ],
+      "contradictors": [
+        "single_worker_advocate"
+      ],
+      "inputs": [
+        "dataset size and sharding",
+        "tokenizer",
+        "CPU core count",
+        "network storage bandwidth"
+      ],
+      "outputs": [
+        "data pipeline config",
+        "throughput benchmark (samples/sec vs GPU util)",
+        "bottleneck report"
+      ],
+      "dependencies": [
+        "GPU_SIZING",
+        "MFU_MONITOR"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.8,
+        "user_value": 0.62,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.42,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.45,
+        "risk_score": 0.58,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.68,
+        "final_importance": 0.68
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Data-starved GPU is wasted money; proper pipeline maintains >95% GPU util",
+          "example": "WebDataset streaming from GCS sustains 800 samples/s on 8×H100"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Overprovisioned workers waste CPU/RAM without GPU benefit",
+          "example": "256 workers on 8-GPU node adds RAM pressure with no throughput gain"
+        }
+      ],
+      "failure_modes": [
+        "data pipeline bottleneck masking GPU underutilization",
+        "tokenization on critical path (should be pre-tokenized)",
+        "sharding imbalance causing some workers to stall"
+      ],
+      "acceptance_tests": [
+        "GPU utilization >90% during data-loading phases",
+        "pipeline throughput exceeds GPU consumption rate by 20%"
+      ],
+      "revisit_triggers": [
+        "dataset size changes order of magnitude",
+        "storage backend changes",
+        "model sequence length changes (rebatch)"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "MULTI_MODEL_SCHED",
+      "topic": "multi_model_training_scheduling",
+      "definition": "Schedule concurrent fine-tuning jobs across a shared GPU cluster: time-slicing vs spatial partitioning, priority queuing, GPU-memory-aware placement, and fair-share resource allocation.",
+      "node_type": "work_unit",
+      "group": "cluster_scheduling",
+      "scope_boundary": {
+        "included": [
+          "GPU memory-aware job placement",
+          "time-sliced vs spatial partitioning",
+          "priority queue design",
+          "fair-share allocation",
+          "gang scheduling for distributed jobs"
+        ],
+        "excluded": [
+          "single-model training internals",
+          "serving inference scheduling",
+          "CPU job scheduling"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "cluster_scheduling",
+        "resource_allocation",
+        "gang_scheduling"
+      ],
+      "specialists": [
+        "cluster_scheduler_engineer",
+        "mlops_engineer"
+      ],
+      "contradictors": [
+        "sequential_only_advocate"
+      ],
+      "inputs": [
+        "GPU cluster topology",
+        "job VRAM requirements",
+        "training durations",
+        "priority policies"
+      ],
+      "outputs": [
+        "scheduler config",
+        "cluster utilization dashboard",
+        "job queue SLA report"
+      ],
+      "dependencies": [
+        "GPU_SIZING",
+        "COST_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_11",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.75,
+        "business_value": 0.82,
+        "user_value": 0.58,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.66,
+        "confidence_score": 0.48,
+        "revisit_pressure": 0.44,
+        "lock_score": 0.59,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.36,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.75,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.22,
+          0.58
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Increases cluster utilization from 40% to 80%+ vs serial queuing",
+          "example": "gang scheduling on Slurm with GPU-aware bin-packing achieves 78% util"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Gang scheduling deadlock risk when multiple large jobs compete for partial resources",
+          "example": "two 8-GPU jobs each waiting for 8 GPUs cause deadlock in 16-GPU cluster"
+        }
+      ],
+      "failure_modes": [
+        "gang deadlock from partial resource allocation",
+        "ignoring NVLink locality in placement causing IB bottleneck",
+        "preempting long jobs too aggressively causing repeated restarts"
+      ],
+      "acceptance_tests": [
+        "no deadlock in 24h cluster simulation with mixed job sizes",
+        "average cluster utilization >70% under mixed load"
+      ],
+      "revisit_triggers": [
+        "cluster size changes",
+        "new model sizes introduced",
+        "SLA requirements change"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "NET_TOPO",
+      "topic": "gpu_cluster_network_topology",
+      "definition": "Choose and configure intra-node (NVLink/NVSwitch) and inter-node (InfiniBand 400Gb vs RoCE) networking to match all-reduce and all-gather communication patterns for chosen parallelism strategy.",
+      "node_type": "work_unit",
+      "group": "cluster_networking",
+      "scope_boundary": {
+        "included": [
+          "NVLink vs PCIe intra-node",
+          "InfiniBand vs RoCE inter-node",
+          "all-reduce bandwidth planning",
+          "NCCL topology config",
+          "rail-optimized fabric"
+        ],
+        "excluded": [
+          "model architecture",
+          "optimizer algorithm",
+          "storage networking"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "networking",
+        "nccl",
+        "all_reduce"
+      ],
+      "specialists": [
+        "network_engineer",
+        "systems_engineer"
+      ],
+      "contradictors": [
+        "single_node_only_advocate"
+      ],
+      "inputs": [
+        "parallelism strategy",
+        "GPU count",
+        "model communication volume",
+        "cloud provider network options"
+      ],
+      "outputs": [
+        "NCCL topology file",
+        "bandwidth test results",
+        "communication overhead estimate"
+      ],
+      "dependencies": [
+        "GPU_SIZING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.72,
+        "user_value": 0.52,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.69,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.6,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Correct topology config unlocks 3-8× communication throughput vs misconfigured default",
+          "example": "NCCL with rail-optimized IB achieves 380 Gb/s vs 120 Gb/s with wrong topology file"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Cloud providers abstract topology; actual bandwidth often 60-80% of advertised",
+          "example": "AWS EFA on p4d achieves 380 Gb/s aggregate but per-flow limited"
+        }
+      ],
+      "failure_modes": [
+        "wrong NCCL topology file causing tree instead of ring all-reduce",
+        "PCIe bottleneck for NVLink-capable nodes due to wrong device mapping",
+        "ignoring RDMA routing for multi-rail InfiniBand"
+      ],
+      "acceptance_tests": [
+        "NCCL bandwidth test achieves >80% of theoretical peak",
+        "all-reduce time matches predicted communication volume / bandwidth"
+      ],
+      "revisit_triggers": [
+        "cluster topology changes (new nodes added)",
+        "parallelism strategy changes",
+        "cloud provider updates networking"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "FLASH_ATTN",
+      "topic": "flash_attention_integration",
+      "definition": "Integrate FlashAttention-2/3 to replace standard attention: O(N) memory vs O(N²), higher arithmetic intensity, fused softmax+dropout, and support for variable-length sequences and sliding-window attention.",
+      "node_type": "work_unit",
+      "group": "kernel_optimization",
+      "scope_boundary": {
+        "included": [
+          "FlashAttention kernel selection",
+          "causal vs bidirectional mask",
+          "variable-length sequence packing",
+          "sliding window support",
+          "integration with gradient checkpointing"
+        ],
+        "excluded": [
+          "attention mechanism design",
+          "model architecture changes",
+          "inference-only optimization"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "flash_attention",
+        "kernel_optimization",
+        "memory_efficiency"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "kernel_engineer"
+      ],
+      "contradictors": [
+        "standard_attention_advocate"
+      ],
+      "inputs": [
+        "attention implementation",
+        "GPU architecture (compute capability)",
+        "sequence length distribution"
+      ],
+      "outputs": [
+        "flash attn integration PR",
+        "memory reduction measurement",
+        "throughput improvement benchmark"
+      ],
+      "dependencies": [
+        "GRAD_CKPT",
+        "MIXED_PREC",
+        "VRAM_MATH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.72,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.62,
+        "confidence_score": 0.57,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.7,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.72,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.61,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "2-4× memory reduction and 2-3× speedup for long sequences; near-mandatory for >4K context",
+          "example": "FlashAttn-2 reduces A100 memory for 8K context by 8×"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.42,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Version-specific bugs and limited support for non-standard attention patterns",
+          "example": "FlashAttn causal mask bug in early v2 releases with GQA"
+        }
+      ],
+      "failure_modes": [
+        "kernel version mismatch with transformer architecture",
+        "incorrect causal mask causing non-causal attention",
+        "sequence packing length computation error"
+      ],
+      "acceptance_tests": [
+        "attention output matches standard attention within 1e-3 tolerance",
+        "memory use matches FlashAttn theoretical O(N) scaling"
+      ],
+      "revisit_triggers": [
+        "sequence length increases beyond current kernel support",
+        "new attention variant (GQA/MLA) requires kernel update",
+        "new GPU generation with different SRAM size"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "COMPILE_OPTIM",
+      "topic": "torch_compile_kernel_fusion",
+      "definition": "Apply torch.compile (Dynamo+Inductor) for graph-level fusion, operator reduction, and autotuned triton kernels; manage compile modes (default/reduce-overhead/max-autotune) and dynamic shape handling.",
+      "node_type": "work_unit",
+      "group": "kernel_optimization",
+      "scope_boundary": {
+        "included": [
+          "torch.compile modes",
+          "dynamic shape support",
+          "Triton kernel generation",
+          "graph break diagnosis",
+          "compile cache management"
+        ],
+        "excluded": [
+          "custom CUDA kernel writing",
+          "model architecture",
+          "inference-specific compilation"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "torch_compile",
+        "kernel_fusion",
+        "compiler_optimization"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "compiler_engineer"
+      ],
+      "contradictors": [
+        "eager_mode_only_advocate"
+      ],
+      "inputs": [
+        "PyTorch version >=2.0",
+        "model code",
+        "CUDA version",
+        "dynamic shape requirements"
+      ],
+      "outputs": [
+        "compile config",
+        "graph break report",
+        "throughput improvement measurement"
+      ],
+      "dependencies": [
+        "FLASH_ATTN",
+        "MIXED_PREC",
+        "FSDP_CONFIG"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.62,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.38,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.42,
+        "risk_score": 0.57,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.39,
+        "lock_score": 0.66,
+        "final_importance": 0.66
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "10-30% throughput improvement with zero code change for many transformer architectures",
+          "example": "torch.compile on LLaMA-2 7B achieves 20% tokens/sec improvement"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Graph breaks from dynamic control flow silently fall back to eager mode with no speedup",
+          "example": "data-dependent if-statements cause graph breaks every step"
+        }
+      ],
+      "failure_modes": [
+        "undetected graph breaks eliminating all compile benefit",
+        "dynamic shape recompilation on every batch",
+        "incompatibility between torch.compile and FSDP in older PyTorch"
+      ],
+      "acceptance_tests": [
+        "graph break count =0 in compile trace for standard forward pass",
+        "throughput improvement >5% vs eager baseline"
+      ],
+      "revisit_triggers": [
+        "PyTorch major version update",
+        "model code changes introducing dynamic control flow",
+        "FSDP API changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "QUANT_TRAIN",
+      "topic": "quantization_aware_training_qlora",
+      "definition": "Apply QLoRA (4-bit NF4 base model + bf16 LoRA adapters) or full QAT to dramatically reduce VRAM for fine-tuning while preserving accuracy via double quantization and paged optimizers.",
+      "node_type": "work_unit",
+      "group": "memory_optimization",
+      "scope_boundary": {
+        "included": [
+          "NF4 4-bit quantization",
+          "LoRA adapter training",
+          "double quantization",
+          "paged Adam optimizer",
+          "bitsandbytes integration"
+        ],
+        "excluded": [
+          "post-training quantization for inference",
+          "GPTQ/AWQ (inference-only)",
+          "full fine-tuning without quantization"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "qlora",
+        "quantization",
+        "parameter_efficient_finetuning"
+      ],
+      "specialists": [
+        "ml_researcher",
+        "quantization_engineer"
+      ],
+      "contradictors": [
+        "full_precision_only_advocate"
+      ],
+      "inputs": [
+        "base model weights",
+        "LoRA rank/alpha config",
+        "bitsandbytes library",
+        "GPU compute capability"
+      ],
+      "outputs": [
+        "QLoRA training config",
+        "accuracy vs memory tradeoff report",
+        "adapter checkpoint"
+      ],
+      "dependencies": [
+        "VRAM_MATH",
+        "MIXED_PREC",
+        "GPU_SIZING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.85,
+        "user_value": 0.78,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.42,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.63,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.65,
+        "final_importance": 0.74
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables fine-tuning 70B model on single 80GB GPU; 4× VRAM reduction vs bf16",
+          "example": "QLoRA 70B on A100 80GB: 48GB VRAM vs 140GB for bf16"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Quantization introduces accuracy gap vs bf16 full fine-tune; NF4 gap grows with low rank",
+          "example": "QLoRA 70B underperforms full SFT by 1-3% on domain tasks"
+        }
+      ],
+      "failure_modes": [
+        "dequantization overhead causing 30% throughput loss vs bf16 LoRA",
+        "NF4 calibration mismatch for non-Llama architectures",
+        "paged optimizer causing CUDA synchronization stalls"
+      ],
+      "acceptance_tests": [
+        "QLoRA training loss matches bf16 LoRA within 5% at convergence",
+        "peak VRAM within 10% of theoretical NF4 estimate"
+      ],
+      "revisit_triggers": [
+        "new quantization format released (fp4, mx4)",
+        "new bitsandbytes version changes API",
+        "accuracy gap found unacceptable for target task"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CLOUD_PROVIDER",
+      "topic": "cloud_provider_region_selection",
+      "definition": "Select cloud provider (AWS/GCP/Azure/Lambda/CoreWeave) and region based on GPU availability, egress cost, data residency, spot market depth, and enterprise contract leverage.",
+      "node_type": "work_unit",
+      "group": "cost_optimization",
+      "scope_boundary": {
+        "included": [
+          "provider GPU availability by type",
+          "egress cost comparison",
+          "data residency requirements",
+          "spot market depth",
+          "reserved vs spot vs on-demand mix",
+          "enterprise discount negotiation"
+        ],
+        "excluded": [
+          "GPU hardware design",
+          "model architecture",
+          "serving inference provider"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "cloud_economics",
+        "procurement",
+        "provider_selection"
+      ],
+      "specialists": [
+        "cloud_architect",
+        "procurement_engineer"
+      ],
+      "contradictors": [
+        "single_provider_advocate"
+      ],
+      "inputs": [
+        "GPU type requirements",
+        "data location constraints",
+        "budget",
+        "training duration"
+      ],
+      "outputs": [
+        "provider recommendation",
+        "cost comparison matrix",
+        "risk assessment"
+      ],
+      "dependencies": [
+        "GPU_SIZING",
+        "COST_MODEL"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.88,
+        "user_value": 0.65,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.6,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5,
+        "risk_score": 0.63,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.63,
+        "final_importance": 0.71
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "2-5× cost difference between providers for same GPU; specialist providers (CoreWeave) often cheapest",
+          "example": "CoreWeave H100 at $2.50/hr vs AWS p4de at $3.20/hr"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Specialist providers lack managed services; egress locks data to provider",
+          "example": "CoreWeave has no managed Kubernetes; data egress costs offset compute savings"
+        }
+      ],
+      "failure_modes": [
+        "ignoring egress costs when data is stored in different region/provider",
+        "picking provider without checking actual GPU availability (waitlists exist)",
+        "missing enterprise discount opportunity for committed spend"
+      ],
+      "acceptance_tests": [
+        "cost estimate validated against actual provider pricing page",
+        "GPU availability confirmed before committing data migration"
+      ],
+      "revisit_triggers": [
+        "provider pricing changes >15%",
+        "new GPU generation availability shifts",
+        "data residency regulations change"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "FAULT_TOL",
+      "topic": "distributed_training_fault_tolerance",
+      "definition": "Engineer fault-tolerant distributed training: health checks, elastic agent restart (torchrun/torchelastic), straggler detection, automatic node replacement, and NCCL watchdog timeout configuration.",
+      "node_type": "work_unit",
+      "group": "reliability_engineering",
+      "scope_boundary": {
+        "included": [
+          "torchrun elastic restart",
+          "health check protocol",
+          "straggler detection",
+          "NCCL watchdog timeout",
+          "node replacement automation"
+        ],
+        "excluded": [
+          "hardware reliability improvement",
+          "model checkpointing (covered separately)",
+          "data pipeline fault tolerance"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "fault_tolerance",
+        "elastic_training",
+        "distributed_systems"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "sre_engineer"
+      ],
+      "contradictors": [
+        "manual_restart_advocate"
+      ],
+      "inputs": [
+        "distributed training framework",
+        "cluster management (Kubernetes/Slurm)",
+        "cloud provider node health APIs"
+      ],
+      "outputs": [
+        "fault tolerance config",
+        "MTTR measurement",
+        "restart automation playbook"
+      ],
+      "dependencies": [
+        "CKPT_INFRA",
+        "NET_TOPO"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.55,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.52,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.55,
+        "risk_score": 0.68,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.61,
+        "final_importance": 0.72
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.74,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Node failure without automation causes full job failure and wasted GPU-hours",
+          "example": "elastic restart recovers 8-node job in 4 min vs 2 hr manual restart"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Over-aggressive health checks cause false positives preempting healthy jobs",
+          "example": "NCCL timeout=30s causes spurious restarts on slow all-reduce"
+        }
+      ],
+      "failure_modes": [
+        "NCCL timeout too short causing spurious restarts",
+        "missing health check for GPU memory errors (ECC)",
+        "no straggler mitigation causing permanent stragglers to stall job"
+      ],
+      "acceptance_tests": [
+        "simulated node failure recovers within 10 min",
+        "MTTR for single-node failure <15 min in production"
+      ],
+      "revisit_triggers": [
+        "cluster infrastructure changes",
+        "training framework version upgrade",
+        "job scale changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "SCALING_LAW",
+      "topic": "scaling_law_compute_allocation",
+      "definition": "Apply Chinchilla compute-optimal scaling (N_opt ∝ sqrt(C), D_opt ∝ sqrt(C)) to choose model size and token budget given compute budget C; project capability gains and diminishing returns.",
+      "node_type": "work_unit",
+      "group": "research_planning",
+      "scope_boundary": {
+        "included": [
+          "Chinchilla scaling exponents",
+          "compute-optimal frontier",
+          "capability projection",
+          "diminishing returns modeling",
+          "loss-to-benchmark mapping"
+        ],
+        "excluded": [
+          "specific architecture design",
+          "data quality assessment",
+          "serving cost (inference scaling)"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "scaling_laws",
+        "compute_allocation",
+        "research_planning"
+      ],
+      "specialists": [
+        "ml_researcher",
+        "applied_scientist"
+      ],
+      "contradictors": [
+        "intuition_only_planner"
+      ],
+      "inputs": [
+        "compute budget (FLOPs or $)",
+        "capability target",
+        "Chinchilla exponents",
+        "benchmark-to-loss mapping"
+      ],
+      "outputs": [
+        "compute-optimal (N,D) recommendation",
+        "capability projection curve",
+        "budget sensitivity analysis"
+      ],
+      "dependencies": [
+        "GPU_SIZING"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_12"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.78,
+        "business_value": 0.82,
+        "user_value": 0.72,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.52,
+        "risk_score": 0.66,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.61,
+        "final_importance": 0.73
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.5,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prevents over-parameterizing at fixed compute (pre-Chinchilla error)",
+          "example": "Chinchilla showed GPT-3 was undertrained by 10×; smaller+more-data model better"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Chinchilla laws assume clean data and standard architectures; MoE and instruction-tuned models deviate",
+          "example": "Mixture-of-Experts scaling exponents differ from dense Chinchilla fit"
+        }
+      ],
+      "failure_modes": [
+        "applying Chinchilla exponents without adjusting for data quality",
+        "ignoring inference cost (small model + long context may be costlier to serve)",
+        "benchmark-to-loss mapping breaks at task saturation"
+      ],
+      "acceptance_tests": [
+        "recommended (N,D) within 20% of empirically optimal on pilot compute points",
+        "scaling projection matches 3 historical data points"
+      ],
+      "revisit_triggers": [
+        "new scaling law paper updates exponents",
+        "architecture changes (MoE, SSM) invalidate dense exponents",
+        "downstream task saturates benchmark"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LOSS_MONITOR",
+      "topic": "training_loss_stability_monitoring",
+      "definition": "Monitor training loss curves for divergence, spikes, and plateau; configure loss spike recovery (gradient clipping, LR reduction), NaN/Inf detection, and per-layer gradient norm logging.",
+      "node_type": "work_unit",
+      "group": "observability",
+      "scope_boundary": {
+        "included": [
+          "loss curve logging",
+          "gradient clipping config",
+          "NaN/Inf detection",
+          "gradient norm per layer",
+          "loss spike recovery protocol",
+          "W&B/TensorBoard integration"
+        ],
+        "excluded": [
+          "evaluation benchmark monitoring",
+          "data quality monitoring",
+          "hardware health monitoring"
+        ]
+      },
+      "academic_fields": [
+        "systems_engineering",
+        "machine_learning_engineering"
+      ],
+      "subfields": [
+        "training_stability",
+        "monitoring",
+        "gradient_clipping"
+      ],
+      "specialists": [
+        "ml_engineer",
+        "mlops_engineer"
+      ],
+      "contradictors": [
+        "final_eval_only_advocate"
+      ],
+      "inputs": [
+        "training framework hooks",
+        "experiment tracking system",
+        "gradient clipping library"
+      ],
+      "outputs": [
+        "loss dashboard",
+        "alert config",
+        "gradient norm report",
+        "divergence incident log"
+      ],
+      "dependencies": [
+        "MIXED_PREC",
+        "GRAD_ACCUM",
+        "CKPT_INFRA"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.65,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.48,
+        "risk_score": 0.61,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.67,
+        "final_importance": 0.69
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic",
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.15,
+          0.45
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "GPU pricing or hardware generation changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Early detection of loss spikes saves GPU-hours; gradient clipping prevents divergence",
+          "example": "loss spike detected at step 2400; rollback to step 2000 checkpoint saved 12 GPU-hours"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.4,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Loss monitoring without root-cause tooling leaves engineers blind to cause",
+          "example": "loss spike seen but unclear if data batch, LR, or numerical issue"
+        }
+      ],
+      "failure_modes": [
+        "gradient clipping too aggressive (clipping every step) masking LR issues",
+        "no per-layer norm logging making root cause diagnosis impossible",
+        "alert fatigue from too-sensitive thresholds"
+      ],
+      "acceptance_tests": [
+        "loss spike detected and recovery checkpoint loaded within 30 min",
+        "gradient norm alerts correctly identify pathological layers in 3/3 test cases"
+      ],
+      "revisit_triggers": [
+        "model architecture changes (new layer types)",
+        "LR schedule changes",
+        "mixed precision dtype changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "GPU_SIZING",
+      "to": "VRAM_MATH",
+      "edge_type": "dependency",
+      "relation_strength": 0.92,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.08,
+      "edge_score": 0.08,
+      "edge_heat": 0.22
+    },
+    {
+      "id": "EDGE_002",
+      "from": "VRAM_MATH",
+      "to": "ZERO_SHARDING",
+      "edge_type": "dependency",
+      "relation_strength": 0.9,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.88,
+      "edge_priority": 0.08,
+      "edge_score": 0.08,
+      "edge_heat": 0.22
+    },
+    {
+      "id": "EDGE_003",
+      "from": "VRAM_MATH",
+      "to": "FSDP_CONFIG",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.21
+    },
+    {
+      "id": "EDGE_004",
+      "from": "VRAM_MATH",
+      "to": "GRAD_CKPT",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_005",
+      "from": "VRAM_MATH",
+      "to": "MIXED_PREC",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_006",
+      "from": "VRAM_MATH",
+      "to": "QUANT_TRAIN",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_007",
+      "from": "ZERO_SHARDING",
+      "to": "TENSOR_PIPE_PAR",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_008",
+      "from": "FSDP_CONFIG",
+      "to": "TENSOR_PIPE_PAR",
+      "edge_type": "dependency",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.05,
+      "edge_score": 0.05,
+      "edge_heat": 0.18
+    },
+    {
+      "id": "EDGE_009",
+      "from": "GPU_SIZING",
+      "to": "SPOT_CLOUD",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_010",
+      "from": "CKPT_INFRA",
+      "to": "SPOT_CLOUD",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_011",
+      "from": "CKPT_INFRA",
+      "to": "FAULT_TOL",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_012",
+      "from": "MIXED_PREC",
+      "to": "FLASH_ATTN",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_013",
+      "from": "FLASH_ATTN",
+      "to": "COMPILE_OPTIM",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.05,
+      "edge_score": 0.05,
+      "edge_heat": 0.17
+    },
+    {
+      "id": "EDGE_014",
+      "from": "GPU_SIZING",
+      "to": "COST_MODEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_015",
+      "from": "MIXED_PREC",
+      "to": "COST_MODEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_016",
+      "from": "ZERO_SHARDING",
+      "to": "COST_MODEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_017",
+      "from": "COST_MODEL",
+      "to": "CLOUD_PROVIDER",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_018",
+      "from": "COST_MODEL",
+      "to": "SCALING_LAW",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_019",
+      "from": "GPU_SIZING",
+      "to": "CLOUD_PROVIDER",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_020",
+      "from": "MIXED_PREC",
+      "to": "MFU_MONITOR",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_021",
+      "from": "TENSOR_PIPE_PAR",
+      "to": "MFU_MONITOR",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_022",
+      "from": "ZERO_SHARDING",
+      "to": "MFU_MONITOR",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_023",
+      "from": "MFU_MONITOR",
+      "to": "DATA_PIPE",
+      "edge_type": "causal",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.05,
+      "edge_score": 0.05,
+      "edge_heat": 0.18
+    },
+    {
+      "id": "EDGE_024",
+      "from": "GPU_SIZING",
+      "to": "MULTI_MODEL_SCHED",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_025",
+      "from": "COST_MODEL",
+      "to": "MULTI_MODEL_SCHED",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_026",
+      "from": "NET_TOPO",
+      "to": "ZERO_SHARDING",
+      "edge_type": "causal",
+      "relation_strength": 0.85,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_027",
+      "from": "NET_TOPO",
+      "to": "TENSOR_PIPE_PAR",
+      "edge_type": "causal",
+      "relation_strength": 0.88,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.21
+    },
+    {
+      "id": "EDGE_028",
+      "from": "NET_TOPO",
+      "to": "FSDP_CONFIG",
+      "edge_type": "causal",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_029",
+      "from": "GRAD_ACCUM",
+      "to": "GRAD_CKPT",
+      "edge_type": "causal",
+      "relation_strength": 0.7,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.05,
+      "edge_score": 0.05,
+      "edge_heat": 0.16
+    },
+    {
+      "id": "EDGE_030",
+      "from": "DATA_PIPE",
+      "to": "LOSS_MONITOR",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.05,
+      "edge_score": 0.05,
+      "edge_heat": 0.17
+    },
+    {
+      "id": "EDGE_031",
+      "from": "MIXED_PREC",
+      "to": "LOSS_MONITOR",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_032",
+      "from": "GRAD_ACCUM",
+      "to": "LOSS_MONITOR",
+      "edge_type": "causal",
+      "relation_strength": 0.75,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.05,
+      "edge_score": 0.05,
+      "edge_heat": 0.18
+    },
+    {
+      "id": "EDGE_033",
+      "from": "CKPT_INFRA",
+      "to": "LOSS_MONITOR",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    },
+    {
+      "id": "EDGE_034",
+      "from": "SPOT_CLOUD",
+      "to": "FAULT_TOL",
+      "edge_type": "conflict",
+      "relation_strength": 0.75,
+      "signed_tension": -0.55,
+      "expected_rework_cost": 0.45,
+      "conflict_probability": 0.6,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.41,
+      "edge_score": 0.41,
+      "edge_heat": 0.51,
+      "resolution_rule": "prefer spot with elastic restart; on-demand fallback only when preemption rate>30%/hr"
+    },
+    {
+      "id": "EDGE_035",
+      "from": "QUANT_TRAIN",
+      "to": "MIXED_PREC",
+      "edge_type": "conflict",
+      "relation_strength": 0.72,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.55,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.33,
+      "edge_score": 0.33,
+      "edge_heat": 0.45,
+      "resolution_rule": "use QLoRA only when VRAM is hard constraint; prefer bf16 full fine-tune when VRAM permits"
+    },
+    {
+      "id": "EDGE_036",
+      "from": "TENSOR_PIPE_PAR",
+      "to": "ZERO_SHARDING",
+      "edge_type": "conflict",
+      "relation_strength": 0.78,
+      "signed_tension": -0.5,
+      "expected_rework_cost": 0.4,
+      "conflict_probability": 0.65,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.41,
+      "edge_score": 0.41,
+      "edge_heat": 0.52,
+      "resolution_rule": "start with ZeRO-3 only; add tensor/pipeline parallelism only if ZeRO-3 throughput <35% MFU"
+    },
+    {
+      "id": "EDGE_037",
+      "from": "COMPILE_OPTIM",
+      "to": "FSDP_CONFIG",
+      "edge_type": "conflict",
+      "relation_strength": 0.68,
+      "signed_tension": -0.4,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.55,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.3,
+      "edge_score": 0.3,
+      "edge_heat": 0.42,
+      "resolution_rule": "validate torch.compile+FSDP compatibility on target PyTorch version before production"
+    },
+    {
+      "id": "EDGE_038",
+      "from": "GRAD_CKPT",
+      "to": "FLASH_ATTN",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.35,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.5,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.25,
+      "edge_score": 0.25,
+      "edge_heat": 0.38,
+      "resolution_rule": "disable manual activation checkpointing for attention layers when using FlashAttn (handles internally)"
+    },
+    {
+      "id": "EDGE_039",
+      "from": "SCALING_LAW",
+      "to": "GPU_SIZING",
+      "edge_type": "causal",
+      "relation_strength": 0.82,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.07,
+      "edge_score": 0.07,
+      "edge_heat": 0.2
+    },
+    {
+      "id": "EDGE_040",
+      "from": "CLOUD_PROVIDER",
+      "to": "SPOT_CLOUD",
+      "edge_type": "causal",
+      "relation_strength": 0.8,
+      "signed_tension": 0.0,
+      "expected_rework_cost": 0.0,
+      "conflict_probability": 0.0,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.06,
+      "edge_score": 0.06,
+      "edge_heat": 0.19
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "name": "memory_vs_throughput",
+      "description": "Techniques that reduce VRAM (grad checkpointing, ZeRO-3, QLoRA) increase recompute overhead and reduce throughput; throughput-maximizing configs require more VRAM.",
+      "poles": [
+        "minimize_vram",
+        "maximize_throughput"
+      ],
+      "affected_nodes": [
+        "GRAD_CKPT",
+        "ZERO_SHARDING",
+        "QUANT_TRAIN",
+        "MIXED_PREC",
+        "FLASH_ATTN"
+      ],
+      "resolution_heuristic": "use VRAM floor from GPU_SIZING to determine minimum memory target, then optimize throughput within that constraint"
+    },
+    {
+      "id": "CA_02",
+      "name": "cost_vs_reliability",
+      "description": "Spot/preemptible instances reduce cost by 60-90% but increase job failure probability; on-demand provides SLA but is expensive.",
+      "poles": [
+        "minimize_cost",
+        "maximize_reliability"
+      ],
+      "affected_nodes": [
+        "SPOT_CLOUD",
+        "FAULT_TOL",
+        "CKPT_INFRA",
+        "CLOUD_PROVIDER"
+      ],
+      "resolution_heuristic": "use spot for >72hr training with checkpoint-on-preemption; switch to on-demand for jobs <4hr or deadline-critical"
+    },
+    {
+      "id": "CA_03",
+      "name": "parallelism_complexity_vs_scale",
+      "description": "Higher parallelism degrees (3D parallelism) enable larger models and more GPUs but exponentially increase debugging complexity and communication overhead.",
+      "poles": [
+        "minimize_complexity",
+        "maximize_model_scale"
+      ],
+      "affected_nodes": [
+        "ZERO_SHARDING",
+        "FSDP_CONFIG",
+        "TENSOR_PIPE_PAR",
+        "NET_TOPO"
+      ],
+      "resolution_heuristic": "prefer ZeRO-3 data-parallel until model exceeds 2× GPU VRAM; add tensor parallelism only within node (NVLink); add pipeline parallelism last"
+    },
+    {
+      "id": "CA_04",
+      "name": "quantization_accuracy_vs_vram",
+      "description": "Lower bit-width quantization (4-bit NF4 vs bf16) halves VRAM but introduces accuracy gap that grows with reduced LoRA rank.",
+      "poles": [
+        "minimize_vram",
+        "preserve_accuracy"
+      ],
+      "affected_nodes": [
+        "QUANT_TRAIN",
+        "VRAM_MATH",
+        "MIXED_PREC"
+      ],
+      "resolution_heuristic": "use QLoRA only when model does not fit in bf16; measure accuracy gap on validation set before committing to quantized training"
+    },
+    {
+      "id": "CA_05",
+      "name": "spot_market_depth_vs_cluster_size",
+      "description": "Large multi-node spot jobs require simultaneous availability of many GPUs; spot market depth may not support gang-scheduling requirements.",
+      "poles": [
+        "minimize_cost",
+        "maintain_job_feasibility"
+      ],
+      "affected_nodes": [
+        "SPOT_CLOUD",
+        "MULTI_MODEL_SCHED",
+        "GPU_SIZING"
+      ],
+      "resolution_heuristic": "use spot for single-node or small 2-4 node jobs; use on-demand for jobs requiring >8 nodes to avoid gang-scheduling failures"
+    },
+    {
+      "id": "CA_06",
+      "name": "checkpoint_frequency_vs_storage_cost",
+      "description": "More frequent checkpoints reduce recovery loss from preemption but multiply storage cost for large models.",
+      "poles": [
+        "minimize_recovery_loss",
+        "minimize_storage_cost"
+      ],
+      "affected_nodes": [
+        "CKPT_INFRA",
+        "SPOT_CLOUD",
+        "COST_MODEL"
+      ],
+      "resolution_heuristic": "checkpoint every 500-1000 steps for spot jobs; delete all but last 3 checkpoints; use async save to minimize overhead"
+    },
+    {
+      "id": "CA_07",
+      "name": "scaling_law_vs_inference_cost",
+      "description": "Chinchilla-optimal training favors smaller models trained on more data, but inference cost scales with model size; larger undertrained models may serve cheaper.",
+      "poles": [
+        "minimize_training_cost",
+        "minimize_inference_cost"
+      ],
+      "affected_nodes": [
+        "SCALING_LAW",
+        "COST_MODEL",
+        "GPU_SIZING"
+      ],
+      "resolution_heuristic": "compute total cost = training_cost + inference_cost × expected_requests; optimize combined cost not training cost alone"
+    },
+    {
+      "id": "CA_08",
+      "name": "compile_optimization_vs_debugging",
+      "description": "torch.compile provides throughput gains but makes training stack traces opaque and graph breaks silent; reduces debuggability.",
+      "poles": [
+        "maximize_throughput",
+        "maximize_debuggability"
+      ],
+      "affected_nodes": [
+        "COMPILE_OPTIM",
+        "LOSS_MONITOR",
+        "MFU_MONITOR"
+      ],
+      "resolution_heuristic": "enable torch.compile only after loss curve is stable; maintain eager-mode fallback for debugging sessions"
+    },
+    {
+      "id": "CA_09",
+      "name": "cluster_utilization_vs_job_latency",
+      "description": "Packing many small jobs increases cluster utilization but increases queue wait times for large priority jobs; priority inversion risk.",
+      "poles": [
+        "maximize_cluster_utilization",
+        "minimize_job_queue_latency"
+      ],
+      "affected_nodes": [
+        "MULTI_MODEL_SCHED",
+        "GPU_SIZING",
+        "COST_MODEL"
+      ],
+      "resolution_heuristic": "use fair-share priority with reservation windows for large jobs; preempt low-priority jobs only after 2× expected queue time"
+    },
+    {
+      "id": "CA_10",
+      "name": "data_pipeline_cpu_vs_gpu_balance",
+      "description": "Under-provisioned data pipeline starves GPU; over-provisioned pipeline wastes CPU/memory with no GPU benefit.",
+      "poles": [
+        "minimize_cpu_waste",
+        "prevent_gpu_starvation"
+      ],
+      "affected_nodes": [
+        "DATA_PIPE",
+        "MFU_MONITOR",
+        "GPU_SIZING"
+      ],
+      "resolution_heuristic": "profile GPU idle time during dataloading phase; scale workers until GPU idle time <5% then stop adding workers"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "title": "VRAM_OOM_at_first_step",
+      "description": "Training crashes with OOM on step 1 despite VRAM calculation showing fit; cause is activation memory underestimate or optimizer state materialization spike.",
+      "trigger": "gradient accumulation step 1 peak differs from steady-state estimate",
+      "affected_nodes": [
+        "VRAM_MATH",
+        "GRAD_CKPT",
+        "ZERO_SHARDING"
+      ],
+      "resolution": "profile with torch.cuda.memory_summary at step 1; enable gradient checkpointing; reduce micro-batch by 50% as emergency fix",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_02",
+      "title": "NaN_loss_from_fp16_overflow",
+      "description": "Training loss becomes NaN at step N due to fp16 gradient overflow; undetected without loss monitoring; switch to bf16 or add loss scaling.",
+      "trigger": "large logit variance in model (e.g. deep networks without pre-norm)",
+      "affected_nodes": [
+        "MIXED_PREC",
+        "LOSS_MONITOR"
+      ],
+      "resolution": "switch to bf16; if stuck with fp16, enable GradScaler with initial_scale=2^16 and growth_interval=2000",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_03",
+      "title": "silent_throughput_regression_from_graph_break",
+      "description": "torch.compile graph break causes silent fallback to eager mode; MFU drops 25% with no error message; detected only via MFU monitoring.",
+      "trigger": "model code changed introducing data-dependent control flow",
+      "affected_nodes": [
+        "COMPILE_OPTIM",
+        "MFU_MONITOR"
+      ],
+      "resolution": "run torch._dynamo.explain(model)(batch) to enumerate graph breaks; refactor or use fullgraph=False with break logging",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_04",
+      "title": "checkpoint_corruption_on_preemption",
+      "description": "Async checkpoint write interrupted mid-write by spot preemption; corrupt checkpoint detected only at next restore attempt.",
+      "trigger": "preemption signal arrives during async checkpoint save",
+      "affected_nodes": [
+        "CKPT_INFRA",
+        "SPOT_CLOUD",
+        "FAULT_TOL"
+      ],
+      "resolution": "use atomic write (write to temp file, rename on complete); validate checksum on save; keep last 2 checkpoints as fallback",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_05",
+      "title": "nccl_hang_from_topology_mismatch",
+      "description": "NCCL hangs indefinitely on all-reduce due to topology file mismatch; no error message; detected only via NCCL watchdog timeout.",
+      "trigger": "cluster topology changed but NCCL topo file not updated",
+      "affected_nodes": [
+        "NET_TOPO",
+        "FAULT_TOL",
+        "ZERO_SHARDING"
+      ],
+      "resolution": "set NCCL_DEBUG=INFO; regenerate topology file; set NCCL_TIMEOUT=300 to get actionable timeout error",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_06",
+      "title": "gang_scheduling_deadlock",
+      "description": "Two large training jobs each partially allocated GPUs wait for remaining GPUs indefinitely, causing cluster deadlock.",
+      "trigger": "multi-node jobs submitted simultaneously to under-resourced cluster",
+      "affected_nodes": [
+        "MULTI_MODEL_SCHED",
+        "FAULT_TOL"
+      ],
+      "resolution": "implement all-or-nothing gang scheduling; use backfill scheduling with preemption; set gang reservation timeout",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_07",
+      "title": "data_pipeline_bottleneck_masking_gpu_idle",
+      "description": "GPU shows 100% utilization in nvidia-smi but MFU is 20%; data loading is serialized between GPU steps causing hidden idle time.",
+      "trigger": "datasets stored on network storage with high latency; too few dataloader workers",
+      "affected_nodes": [
+        "DATA_PIPE",
+        "MFU_MONITOR"
+      ],
+      "resolution": "profile with CUDA events to separate compute from idle; prefetch 2+ batches; cache dataset to local NVMe",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_08",
+      "title": "spot_price_spike_exceeding_on_demand",
+      "description": "Spot instance price temporarily exceeds on-demand price during peak demand; auto-scaling continues using spot at higher cost than on-demand.",
+      "trigger": "cloud provider demand surge in target availability zone",
+      "affected_nodes": [
+        "SPOT_CLOUD",
+        "CLOUD_PROVIDER",
+        "COST_MODEL"
+      ],
+      "resolution": "set max spot bid at 90% of on-demand price; implement price monitoring with automatic switch to on-demand fallback",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_09",
+      "title": "qlora_dequantization_throughput_collapse",
+      "description": "QLoRA training achieves lower tokens/sec than bf16 LoRA despite VRAM savings; 4-bit dequantization kernel is memory-bandwidth bottleneck.",
+      "trigger": "small batch size causing dequant overhead to dominate; bitsandbytes version without fused kernels",
+      "affected_nodes": [
+        "QUANT_TRAIN",
+        "MFU_MONITOR"
+      ],
+      "resolution": "upgrade to latest bitsandbytes with fused dequant; increase batch size to amortize dequant cost; consider bf16 LoRA if VRAM permits",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_10",
+      "title": "scaling_law_breakdown_on_instruction_tuning",
+      "description": "Chinchilla compute-optimal model underperforms on instruction-following benchmarks vs smaller model with more RLHF data; scaling law fit on pretraining loss does not transfer.",
+      "trigger": "evaluating instruction-tuned models on MMLU/MT-Bench vs pretraining loss minimization",
+      "affected_nodes": [
+        "SCALING_LAW",
+        "COST_MODEL"
+      ],
+      "resolution": "separate pretraining scaling from fine-tuning scaling; measure downstream task performance directly on pilot scale",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_11",
+      "title": "pipeline_parallelism_bubble_exceeding_20pct",
+      "description": "Pipeline parallel schedule achieves <80% GPU utilization due to pipeline bubble; bubble fraction = (PP-1)/(micro_batches_per_step); too few micro-batches.",
+      "trigger": "pipeline depth PP=8 with only 4 micro-batches per step gives 46% bubble",
+      "affected_nodes": [
+        "TENSOR_PIPE_PAR",
+        "MFU_MONITOR"
+      ],
+      "resolution": "increase micro-batches to >=4×PP; use interleaved 1F1B schedule; reduce PP depth if model fits with ZeRO-3 only",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_12",
+      "title": "fp8_calibration_underflow_on_h100",
+      "description": "FP8 training via Transformer Engine causes loss spike or NaN at initialization due to incorrect scale calibration; rare but silent.",
+      "trigger": "initial scale estimate based on few warmup steps; outlier activations outside fp8 range",
+      "affected_nodes": [
+        "MIXED_PREC",
+        "LOSS_MONITOR"
+      ],
+      "resolution": "use delayed scaling with window=16 steps; monitor amax history; fall back to bf16 for first 100 steps",
+      "evidence_label": "heuristic"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "name": "define_compute_budget_and_model_size",
+      "description": "Set total compute budget ($ or GPU-hours), apply Chinchilla to derive compute-optimal (N,D); define model size.",
+      "actor": "ml_researcher",
+      "inputs": [
+        "compute_budget",
+        "capability_target"
+      ],
+      "outputs": [
+        "model_size_N",
+        "token_budget_D"
+      ],
+      "gate": "Chinchilla projection within 20% of pilot measurements",
+      "node_refs": [
+        "SCALING_LAW",
+        "COST_MODEL"
+      ]
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "name": "compute_vram_budget_and_select_gpu",
+      "description": "Run VRAM math formula for chosen N, seq_len, batch; select GPU type and count; verify cost-per-token.",
+      "actor": "ml_infra_engineer",
+      "inputs": [
+        "model_size_N",
+        "sequence_length",
+        "batch_size_target"
+      ],
+      "outputs": [
+        "gpu_type",
+        "gpu_count",
+        "vram_breakdown"
+      ],
+      "gate": "VRAM estimate reproduced; cost within budget",
+      "node_refs": [
+        "VRAM_MATH",
+        "GPU_SIZING"
+      ]
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "name": "select_cloud_provider_and_region",
+      "description": "Compare providers on GPU availability, egress cost, spot depth; negotiate enterprise discount; confirm data residency.",
+      "actor": "cloud_architect",
+      "inputs": [
+        "gpu_type",
+        "data_location",
+        "budget"
+      ],
+      "outputs": [
+        "provider_selection",
+        "region",
+        "pricing_agreement"
+      ],
+      "gate": "GPU type available in chosen region; cost estimate validated",
+      "node_refs": [
+        "CLOUD_PROVIDER",
+        "SPOT_CLOUD"
+      ]
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "name": "configure_parallelism_strategy",
+      "description": "Choose ZeRO stage or FSDP policy; add tensor/pipeline parallelism only if model exceeds ZeRO-3 VRAM budget; configure network topology.",
+      "actor": "distributed_ml_engineer",
+      "inputs": [
+        "model_size_N",
+        "gpu_count",
+        "gpu_topology"
+      ],
+      "outputs": [
+        "parallelism_config",
+        "nccl_topo_file"
+      ],
+      "gate": "NCCL bandwidth test >80% peak; MFU >35% on pilot run",
+      "node_refs": [
+        "ZERO_SHARDING",
+        "FSDP_CONFIG",
+        "TENSOR_PIPE_PAR",
+        "NET_TOPO"
+      ]
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "name": "configure_mixed_precision_and_kernels",
+      "description": "Set AMP dtype (bf16 preferred); integrate FlashAttention; enable torch.compile; verify no NaN in 100-step pilot.",
+      "actor": "ml_engineer",
+      "inputs": [
+        "gpu_architecture",
+        "model_code",
+        "sequence_length"
+      ],
+      "outputs": [
+        "amp_config",
+        "flash_attn_integration",
+        "compile_config"
+      ],
+      "gate": "Loss matches fp32 baseline within 1%; no NaN in 500 steps",
+      "node_refs": [
+        "MIXED_PREC",
+        "FLASH_ATTN",
+        "COMPILE_OPTIM"
+      ]
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "name": "configure_gradient_accumulation_and_checkpointing",
+      "description": "Set micro-batch and grad_accum_steps for target global batch; enable activation checkpointing if needed; verify effective batch size.",
+      "actor": "ml_engineer",
+      "inputs": [
+        "vram_budget",
+        "target_global_batch",
+        "dp_degree"
+      ],
+      "outputs": [
+        "grad_accum_config",
+        "checkpoint_config"
+      ],
+      "gate": "Global batch size matches target; VRAM within budget",
+      "node_refs": [
+        "GRAD_ACCUM",
+        "GRAD_CKPT"
+      ]
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "name": "setup_checkpointing_and_fault_tolerance",
+      "description": "Configure checkpoint frequency, async save, restore validation; set up elastic restart and health checks; test preemption recovery.",
+      "actor": "mlops_engineer",
+      "inputs": [
+        "storage_backend",
+        "preemption_risk",
+        "job_duration"
+      ],
+      "outputs": [
+        "checkpoint_system",
+        "fault_tolerance_config",
+        "restore_test_report"
+      ],
+      "gate": "Simulated preemption recovers within 10 min; checkpoint restore produces identical loss",
+      "node_refs": [
+        "CKPT_INFRA",
+        "SPOT_CLOUD",
+        "FAULT_TOL"
+      ]
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "name": "setup_data_pipeline",
+      "description": "Shard dataset to WebDataset/MDS format; configure prefetch and worker count; benchmark pipeline throughput vs GPU consumption.",
+      "actor": "data_engineer",
+      "inputs": [
+        "dataset",
+        "tokenizer",
+        "gpu_consumption_rate"
+      ],
+      "outputs": [
+        "data_pipeline_config",
+        "throughput_benchmark"
+      ],
+      "gate": "Pipeline throughput exceeds GPU consumption by 20%; GPU idle <5%",
+      "node_refs": [
+        "DATA_PIPE",
+        "MFU_MONITOR"
+      ]
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "name": "configure_monitoring_and_alerting",
+      "description": "Set up loss curve monitoring, MFU dashboard, gradient norm logging, NaN detection, and cost burn-rate alerts.",
+      "actor": "mlops_engineer",
+      "inputs": [
+        "experiment_tracking_system",
+        "gpu_perf_api",
+        "cost_api"
+      ],
+      "outputs": [
+        "monitoring_config",
+        "alert_runbook"
+      ],
+      "gate": "Loss spike detected in <30 min in test; MFU alert fires on 20% regression",
+      "node_refs": [
+        "LOSS_MONITOR",
+        "MFU_MONITOR",
+        "COST_MODEL"
+      ]
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "name": "launch_and_validate_training_run",
+      "description": "Launch training; monitor first 1000 steps for loss trajectory, MFU, VRAM, cost burn rate; compare against SCALING_LAW projection.",
+      "actor": "ml_engineer",
+      "inputs": [
+        "all_configs",
+        "monitoring_system",
+        "scaling_law_projection"
+      ],
+      "outputs": [
+        "training_run",
+        "validation_report",
+        "go_nogo_decision"
+      ],
+      "gate": "Loss on track with projection; MFU >35%; cost burn within budget",
+      "node_refs": [
+        "SCALING_LAW",
+        "COST_MODEL",
+        "LOSS_MONITOR",
+        "MFU_MONITOR"
+      ]
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "name": "multi_model_scheduling_setup",
+      "description": "Configure cluster scheduler for concurrent fine-tuning jobs with GPU-aware placement, priority queuing, and fair-share allocation.",
+      "actor": "cluster_scheduler_engineer",
+      "inputs": [
+        "cluster_topology",
+        "job_queue",
+        "priority_policy"
+      ],
+      "outputs": [
+        "scheduler_config",
+        "utilization_dashboard"
+      ],
+      "gate": "Cluster utilization >70%; no deadlock in 24h simulation",
+      "node_refs": [
+        "MULTI_MODEL_SCHED",
+        "NET_TOPO"
+      ]
+    },
+    {
+      "step": 12,
+      "id": "WF_12",
+      "name": "cost_effectiveness_review_and_iteration",
+      "description": "After run completion or major milestone, re-evaluate cost-per-quality-point; decide whether to scale up, change GPU type, or adjust parallelism.",
+      "actor": "ml_researcher",
+      "inputs": [
+        "actual_cost",
+        "quality_metrics",
+        "updated_scaling_projection"
+      ],
+      "outputs": [
+        "iteration_recommendation",
+        "updated_cost_model"
+      ],
+      "gate": "Cost-per-quality-point within 25% of projection; decision logged",
+      "node_refs": [
+        "COST_MODEL",
+        "SCALING_LAW",
+        "GPU_SIZING"
+      ]
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "name": "vram_math_before_gpu_purchase",
+      "rule": "Always run VRAM_MATH before GPU_SIZING commitment; never size GPU fleet from parameter count alone.",
+      "dominates": [
+        "GPU_SIZING"
+      ],
+      "condition": "any new model training project",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_02",
+      "name": "bf16_over_fp16_for_large_models",
+      "rule": "Prefer bf16 over fp16 for models with >7B parameters; fp16 overflow risk outweighs marginal throughput difference.",
+      "dominates": [
+        "MIXED_PREC"
+      ],
+      "condition": "model_parameters > 7B",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_03",
+      "name": "zero3_before_tensor_parallel",
+      "rule": "Exhaust ZeRO-3 (or FSDP FULL_SHARD) options before adding tensor or pipeline parallelism; simpler to debug and nearly equivalent memory savings.",
+      "dominates": [
+        "ZERO_SHARDING",
+        "FSDP_CONFIG"
+      ],
+      "condition": "model fits on single node with ZeRO-3",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_04",
+      "name": "flash_attn_mandatory_for_long_context",
+      "rule": "FlashAttention is non-optional for sequence lengths >2048; standard attention O(N^2) memory makes longer contexts infeasible.",
+      "dominates": [
+        "FLASH_ATTN"
+      ],
+      "condition": "sequence_length > 2048",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_05",
+      "name": "chinchilla_over_intuition_for_compute_allocation",
+      "rule": "Use Chinchilla scaling law to set (N,D) for any run >10^21 FLOP; intuition-based sizing is reliably suboptimal.",
+      "dominates": [
+        "SCALING_LAW"
+      ],
+      "condition": "compute_budget > 1e21 FLOP",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_06",
+      "name": "checkpoint_on_preemption_mandatory_for_spot",
+      "rule": "Checkpoint-on-preemption is non-negotiable for spot training jobs; absence makes spot economically worse than on-demand due to full restart loss.",
+      "dominates": [
+        "CKPT_INFRA",
+        "SPOT_CLOUD"
+      ],
+      "condition": "using_spot_instances=true",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_07",
+      "name": "mfu_monitoring_required_before_scaling",
+      "rule": "Measure MFU before scaling to more GPUs; low MFU (<30%) indicates config bug that scaling will not fix and will amplify cost.",
+      "dominates": [
+        "MFU_MONITOR"
+      ],
+      "condition": "considering_scaling_gpu_count",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_08",
+      "name": "atomic_checkpoint_writes",
+      "rule": "All checkpoint writes must be atomic (write-then-rename); non-atomic writes on spot machines cause silent corruption that manifests only at restore time.",
+      "dominates": [
+        "CKPT_INFRA"
+      ],
+      "condition": "always",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_09",
+      "name": "loss_monitor_before_compile",
+      "rule": "Establish loss curve baseline in eager mode before enabling torch.compile; compile graph breaks can silently produce incorrect results.",
+      "dominates": [
+        "LOSS_MONITOR",
+        "COMPILE_OPTIM"
+      ],
+      "condition": "enabling_torch_compile",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "DR_10",
+      "name": "qlora_only_when_vram_constrained",
+      "rule": "Use QLoRA only when the full bf16 LoRA model does not fit; prefer bf16 LoRA when VRAM permits to avoid accuracy gap.",
+      "dominates": [
+        "QUANT_TRAIN"
+      ],
+      "condition": "model_fits_in_bf16_lora",
+      "evidence_label": "heuristic"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "ARW_01",
+      "name": "do_not_change_parallelism_after_cost_commitment",
+      "rule": "Finalize parallelism strategy before committing to reserved GPU instances; changing from ZeRO-3 to 3D parallelism requires software re-architecture.",
+      "prevents_rework_on": [
+        "ZERO_SHARDING",
+        "FSDP_CONFIG",
+        "TENSOR_PIPE_PAR"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_02",
+      "name": "do_not_tune_lr_before_batch_size_fixed",
+      "rule": "Fix global batch size before tuning LR schedule; LR optimal value scales with sqrt(batch_size) under linear warmup.",
+      "prevents_rework_on": [
+        "GRAD_ACCUM",
+        "LOSS_MONITOR"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_03",
+      "name": "do_not_move_data_before_provider_locked",
+      "rule": "Confirm cloud provider and region before migrating training data; cross-provider egress costs can exceed training compute cost.",
+      "prevents_rework_on": [
+        "CLOUD_PROVIDER",
+        "DATA_PIPE"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_04",
+      "name": "do_not_upgrade_framework_mid_run",
+      "rule": "Pin PyTorch and DeepSpeed versions for the duration of a training run; mid-run upgrades cause checkpoint incompatibility.",
+      "prevents_rework_on": [
+        "FSDP_CONFIG",
+        "ZERO_SHARDING",
+        "CKPT_INFRA"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_05",
+      "name": "do_not_change_dtype_mid_training",
+      "rule": "Mixed precision dtype (bf16/fp16/fp8) must be fixed before training starts; changing dtype mid-run invalidates optimizer state.",
+      "prevents_rework_on": [
+        "MIXED_PREC",
+        "LOSS_MONITOR"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_06",
+      "name": "validate_checkpoint_restore_before_long_run",
+      "rule": "Always test checkpoint save-restore cycle on a 100-step pilot before launching multi-day training; silent restore bugs waste entire run.",
+      "prevents_rework_on": [
+        "CKPT_INFRA",
+        "FAULT_TOL"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_07",
+      "name": "do_not_skip_nccl_bandwidth_test",
+      "rule": "Run NCCL bandwidth test on actual cluster before multi-node training; topology file misconfiguration causes 3-5x throughput loss that is hard to diagnose later.",
+      "prevents_rework_on": [
+        "NET_TOPO",
+        "ZERO_SHARDING"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_08",
+      "name": "profile_data_pipeline_before_gpu_scaling",
+      "rule": "Profile data pipeline throughput vs GPU consumption before scaling GPU count; data-bound jobs do not benefit from more GPUs.",
+      "prevents_rework_on": [
+        "DATA_PIPE",
+        "MFU_MONITOR"
+      ],
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "ARW_09",
+      "name": "do_not_apply_qlora_without_accuracy_validation",
+      "rule": "Validate QLoRA accuracy on task-specific eval before committing training budget; accuracy gap may require falling back to bf16 full fine-tuning.",
+      "prevents_rework_on": [
+        "QUANT_TRAIN",
+        "COST_MODEL"
+      ],
+      "evidence_label": "heuristic"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "trigger": "MFU falls below 30% on any training run",
+      "action": "profile bottleneck source (compute/memory/communication); fix before scaling GPU count",
+      "affected_nodes": [
+        "MFU_MONITOR",
+        "NET_TOPO",
+        "DATA_PIPE"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "IP_02",
+      "trigger": "training loss spike or NaN detected",
+      "action": "rollback to last valid checkpoint; diagnose (gradient norm, batch anomaly, dtype overflow); resume",
+      "affected_nodes": [
+        "LOSS_MONITOR",
+        "CKPT_INFRA",
+        "MIXED_PREC"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "IP_03",
+      "trigger": "spot preemption rate exceeds 20%/hr",
+      "action": "switch to on-demand or increase checkpoint frequency to every 200 steps",
+      "affected_nodes": [
+        "SPOT_CLOUD",
+        "CKPT_INFRA",
+        "CLOUD_PROVIDER"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "IP_04",
+      "trigger": "VRAM OOM encountered at runtime",
+      "action": "enable gradient checkpointing; reduce micro-batch; verify VRAM math formula",
+      "affected_nodes": [
+        "VRAM_MATH",
+        "GRAD_CKPT",
+        "ZERO_SHARDING"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "IP_05",
+      "trigger": "cost-per-token exceeds budget by >25%",
+      "action": "audit MFU, GPU type selection, parallelism overhead; consider switching provider or GPU type",
+      "affected_nodes": [
+        "COST_MODEL",
+        "GPU_SIZING",
+        "CLOUD_PROVIDER"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "IP_06",
+      "trigger": "new GPU generation becomes available at lower cost",
+      "action": "re-run VRAM math and cost model for new GPU; compare MFU on pilot run before committing",
+      "affected_nodes": [
+        "GPU_SIZING",
+        "COST_MODEL",
+        "VRAM_MATH"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "IP_07",
+      "trigger": "model architecture changes substantially (new depth/width/attention)",
+      "action": "re-run VRAM math; re-validate FlashAttn compatibility; re-profile MFU",
+      "affected_nodes": [
+        "VRAM_MATH",
+        "FLASH_ATTN",
+        "MIXED_PREC"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "IP_08",
+      "trigger": "cluster utilization drops below 60%",
+      "action": "review scheduler config for gang deadlock; audit job queue for priority inversion; tune fair-share weights",
+      "affected_nodes": [
+        "MULTI_MODEL_SCHED",
+        "GPU_SIZING",
+        "NET_TOPO"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "IP_09",
+      "trigger": "Chinchilla scaling projection misses by >30% at intermediate compute point",
+      "action": "run additional pilot points; check data quality and architecture assumptions; consider architecture-specific exponents",
+      "affected_nodes": [
+        "SCALING_LAW",
+        "COST_MODEL"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "IP_10",
+      "trigger": "torch.compile throughput improvement <5% or causes regression",
+      "action": "enumerate graph breaks; profile eager vs compiled step; disable compile if debugging needed",
+      "affected_nodes": [
+        "COMPILE_OPTIM",
+        "MFU_MONITOR",
+        "LOSS_MONITOR"
+      ],
+      "priority": "low"
+    }
+  ],
+  "priority_order": [
+    "VRAM_MATH",
+    "GPU_SIZING",
+    "COST_MODEL",
+    "SCALING_LAW",
+    "MIXED_PREC",
+    "ZERO_SHARDING",
+    "FLASH_ATTN",
+    "CKPT_INFRA",
+    "FSDP_CONFIG",
+    "LOSS_MONITOR",
+    "NET_TOPO",
+    "FAULT_TOL",
+    "QUANT_TRAIN",
+    "CLOUD_PROVIDER",
+    "TENSOR_PIPE_PAR",
+    "DATA_PIPE",
+    "MFU_MONITOR",
+    "GRAD_CKPT",
+    "GRAD_ACCUM",
+    "SPOT_CLOUD",
+    "MULTI_MODEL_SCHED",
+    "COMPILE_OPTIM"
+  ],
+  "priority_rationale": "VRAM_MATH and GPU_SIZING are gating: wrong sizing causes OOM or budget failure before training starts. COST_MODEL and SCALING_LAW inform all GPU decisions. MIXED_PREC and ZERO_SHARDING are near-universal enablers. FLASH_ATTN is mandatory for long context. CKPT_INFRA is critical for any spot-based run. LOSS_MONITOR prevents GPU-hour waste on diverging runs.",
+  "evaluation_suite": {
+    "description": "Offline evaluation suite for GPU training infrastructure knowledge base",
+    "eval_sets": [
+      {
+        "id": "ES_01",
+        "name": "vram_calculation_accuracy",
+        "type": "formula_verification",
+        "description": "Verify VRAM math formula produces correct estimates for reference models",
+        "covers_nodes": [
+          "VRAM_MATH",
+          "GPU_SIZING"
+        ],
+        "acceptance_threshold": 0.9
+      },
+      {
+        "id": "ES_02",
+        "name": "cost_model_calibration",
+        "type": "budget_estimation",
+        "description": "Verify cost model estimates match actual cloud billing within 25%",
+        "covers_nodes": [
+          "COST_MODEL",
+          "SPOT_CLOUD",
+          "CLOUD_PROVIDER"
+        ],
+        "acceptance_threshold": 0.75
+      },
+      {
+        "id": "ES_03",
+        "name": "parallelism_config_correctness",
+        "type": "integration_test",
+        "description": "Verify distributed training config passes NCCL bandwidth test and pilot run",
+        "covers_nodes": [
+          "ZERO_SHARDING",
+          "FSDP_CONFIG",
+          "TENSOR_PIPE_PAR",
+          "NET_TOPO"
+        ],
+        "acceptance_threshold": 0.8
+      },
+      {
+        "id": "ES_04",
+        "name": "checkpoint_restore_integrity",
+        "type": "fault_tolerance_test",
+        "description": "Verify checkpoint save-restore cycle produces identical loss",
+        "covers_nodes": [
+          "CKPT_INFRA",
+          "FAULT_TOL"
+        ],
+        "acceptance_threshold": 0.95
+      },
+      {
+        "id": "ES_05",
+        "name": "mfu_monitoring_coverage",
+        "type": "observability_test",
+        "description": "Verify MFU monitoring detects 20% throughput regression within 10 min",
+        "covers_nodes": [
+          "MFU_MONITOR",
+          "LOSS_MONITOR"
+        ],
+        "acceptance_threshold": 0.85
+      }
+    ]
+  },
+  "change_control": {
+    "version": "1.0.0",
+    "status": "draft",
+    "last_modified": "2026-06-23",
+    "change_log": [
+      {
+        "version": "1.0.0",
+        "date": "2026-06-23",
+        "author": "generator",
+        "summary": "Initial KB generation for infra__train_infra subdomain"
+      }
+    ],
+    "review_required_for_changes_to": [
+      "nodes",
+      "edges",
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "auto_approved_changes": [
+      "glossary_additions",
+      "edge_case_additions",
+      "workflow_step_descriptions"
+    ]
+  },
+  "traceability_matrix": {
+    "requirement_to_node": {
+      "R01_gpu_sizing_accuracy": [
+        "GPU_SIZING",
+        "VRAM_MATH"
+      ],
+      "R02_cost_modeling": [
+        "COST_MODEL",
+        "CLOUD_PROVIDER",
+        "SPOT_CLOUD"
+      ],
+      "R03_distributed_training": [
+        "ZERO_SHARDING",
+        "FSDP_CONFIG",
+        "TENSOR_PIPE_PAR",
+        "NET_TOPO"
+      ],
+      "R04_memory_optimization": [
+        "MIXED_PREC",
+        "GRAD_CKPT",
+        "QUANT_TRAIN",
+        "FLASH_ATTN"
+      ],
+      "R05_fault_tolerance": [
+        "CKPT_INFRA",
+        "FAULT_TOL",
+        "SPOT_CLOUD"
+      ],
+      "R06_throughput_monitoring": [
+        "MFU_MONITOR",
+        "DATA_PIPE",
+        "COMPILE_OPTIM"
+      ],
+      "R07_scaling_law_application": [
+        "SCALING_LAW",
+        "COST_MODEL"
+      ],
+      "R08_multi_model_scheduling": [
+        "MULTI_MODEL_SCHED",
+        "GPU_SIZING"
+      ]
+    },
+    "node_to_workflow": {
+      "GPU_SIZING": [
+        "WF_02",
+        "WF_12"
+      ],
+      "VRAM_MATH": [
+        "WF_02"
+      ],
+      "SPOT_CLOUD": [
+        "WF_03",
+        "WF_07"
+      ],
+      "ZERO_SHARDING": [
+        "WF_04"
+      ],
+      "FSDP_CONFIG": [
+        "WF_04"
+      ],
+      "MIXED_PREC": [
+        "WF_05"
+      ],
+      "CKPT_INFRA": [
+        "WF_07"
+      ],
+      "TENSOR_PIPE_PAR": [
+        "WF_04"
+      ],
+      "COST_MODEL": [
+        "WF_01",
+        "WF_09",
+        "WF_10",
+        "WF_12"
+      ],
+      "MFU_MONITOR": [
+        "WF_08",
+        "WF_09",
+        "WF_10"
+      ],
+      "GRAD_ACCUM": [
+        "WF_06"
+      ],
+      "GRAD_CKPT": [
+        "WF_06"
+      ],
+      "DATA_PIPE": [
+        "WF_08"
+      ],
+      "MULTI_MODEL_SCHED": [
+        "WF_11"
+      ],
+      "NET_TOPO": [
+        "WF_04",
+        "WF_11"
+      ],
+      "FLASH_ATTN": [
+        "WF_05"
+      ],
+      "COMPILE_OPTIM": [
+        "WF_05"
+      ],
+      "QUANT_TRAIN": [],
+      "CLOUD_PROVIDER": [
+        "WF_03"
+      ],
+      "FAULT_TOL": [
+        "WF_07"
+      ],
+      "SCALING_LAW": [
+        "WF_01",
+        "WF_10",
+        "WF_12"
+      ],
+      "LOSS_MONITOR": [
+        "WF_09",
+        "WF_10"
+      ]
+    }
+  },
+  "validation_protocol": {
+    "schema_version_check": true,
+    "required_keys_check": true,
+    "node_count_check": {
+      "min": 19,
+      "max": 24
+    },
+    "edge_count_check": {
+      "min": 32,
+      "max": 40
+    },
+    "conflict_axes_count_check": {
+      "min": 8,
+      "max": 10
+    },
+    "edge_cases_count_check": {
+      "min": 10,
+      "max": 12
+    },
+    "workflow_count_check": {
+      "min": 9,
+      "max": 12
+    },
+    "competency_questions_count_check": {
+      "min": 10,
+      "max": 14
+    },
+    "dominance_rules_count_check": {
+      "min": 7,
+      "max": 12
+    },
+    "anti_rework_rules_count_check": {
+      "min": 7,
+      "max": 12
+    },
+    "iteration_protocol_count_check": {
+      "min": 6,
+      "max": 10
+    },
+    "priority_order_completeness_check": true,
+    "edge_type_whitelist": [
+      "dependency",
+      "constraint",
+      "conflict",
+      "causal",
+      "sequence",
+      "feedback",
+      "similarity"
+    ],
+    "conflict_edges_require_resolution_rule": true,
+    "high_risk_nodes_require_acceptance_tests": true,
+    "high_coupling_nodes_require_revisit_triggers": true,
+    "acyclic_dependency_check": true,
+    "derived_fields_set_to_zero_before_formula_run": true
+  },
+  "validation_report": {
+    "overall_status": "pending",
+    "checks": [],
+    "generated_at": "2026-06-23"
+  }
+}

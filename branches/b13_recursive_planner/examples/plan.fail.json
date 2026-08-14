@@ -1,0 +1,82 @@
+{
+  "plan_id": "broken_pipeline_demo",
+  "root": "F0",
+  "ranking_name": "remaining_decomposition_budget",
+  "depth_cap": 1,
+  "nodes": [
+    {
+      "id": "F0",
+      "goal": "Deliver the data pipeline",
+      "type": "pipeline_goal",
+      "arity": 2,
+      "parent": null,
+      "children": ["F1", "F2"],
+      "ranking_value": 30,
+      "preconditions": ["inputs_available"],
+      "postconditions": ["data_ingested", "data_published"],
+      "acceptance_tests": [],
+      "fallbacks": [
+        {"id": "FBF0", "trigger": "upstream_feed_unavailable", "action": "serve last-known-good snapshot and alert"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "decomposed"
+    },
+    {
+      "id": "F1",
+      "goal": "Ingest raw data",
+      "type": "ingest_phase",
+      "arity": 1,
+      "parent": "F0",
+      "children": ["F1a"],
+      "ranking_value": 20,
+      "preconditions": ["inputs_available"],
+      "postconditions": ["data_ingested"],
+      "acceptance_tests": [],
+      "fallbacks": [
+        {"id": "FBF1", "trigger": "parser_rejects_record", "action": "route bad records to a dead-letter queue and continue"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "decomposed"
+    },
+    {
+      "id": "F1a",
+      "goal": "Write ingested rows to the warehouse",
+      "type": "ingest_task",
+      "arity": 0,
+      "parent": "F1",
+      "children": [],
+      "ranking_value": 20,
+      "preconditions": ["inputs_available"],
+      "postconditions": ["data_ingested"],
+      "acceptance_tests": [
+        {"id": "AT_F1a_1", "desc": "row count in warehouse equals validated source row count"}
+      ],
+      "fallbacks": [
+        {"id": "FBF1a", "trigger": "warehouse_write_timeout", "action": "retry with backoff then buffer to object storage"}
+      ],
+      "single_point_of_failure": false,
+      "spof_reason": null,
+      "status": "ready"
+    },
+    {
+      "id": "F2",
+      "goal": "Publish data to the single legacy mainframe sink",
+      "type": "publish_task",
+      "arity": 0,
+      "parent": "F0",
+      "children": [],
+      "ranking_value": 25,
+      "preconditions": ["data_ingested"],
+      "postconditions": ["data_published"],
+      "acceptance_tests": [
+        {"id": "AT_F2_1", "desc": "downstream consumer confirms receipt of the published batch"}
+      ],
+      "fallbacks": [],
+      "single_point_of_failure": true,
+      "spof_reason": null,
+      "status": "ready"
+    }
+  ]
+}

@@ -1,0 +1,2568 @@
+{
+  "domain": "turlock_business_discovery",
+  "domain_label": "Turlock Independent-Business Discovery & Census Methodology",
+  "purpose": "A bounded, verifiable method for autonomously assembling a near-complete census of independent (non-chain) businesses in Turlock, CA by ingesting and reliability-ranking multiple public sources, resolving and deduplicating entities across them, classifying each by independence and premise type, verifying that each is currently active and inside the geographic boundary, attaching per-record provenance and source-agreement confidence, estimating remaining coverage via capture-recapture, modeling revenue only as a labeled benchmark estimate (never as fact), and gating each finished record into categorization with a definition-of-done.",
+  "assumptions": [
+    "only public business data and public records (e.g. county FBN filings, city business-tax certificates) are used; no private or personal owner data beyond what those public records expose",
+    "the target geography is the City of Turlock, Stanislaus County, California, ZIP 95380 and 95382, plus a labeled greater-Turlock fringe of unincorporated edges",
+    "per-business revenue for a private shop is not public; revenue is modeled only as an explicitly labeled industry-benchmark estimate, never stated as an actual dollar figure for a named business",
+    "sources are accessed in accordance with their terms of service; bot-blocked or JS-rendered pages are handled by lawful triangulation rather than circumvention",
+    "the census is a point-in-time artifact that goes stale and must be re-verified on a cadence; completeness is estimated, not assumed"
+  ],
+  "exclusions": [
+    "categorizing or tagging businesses by line of trade \u2014 that is the downstream categorization KB this one hands off to",
+    "scoring, ranking, or recommending businesses for any commercial purpose",
+    "collecting private personal data about owners (home address, finances, family) beyond what a public FBN or tax-certificate filing already discloses",
+    "national chains, franchises, and corporate-owned outlets except as the explicit out-of-scope class the independence filter removes",
+    "businesses wholly outside the defined Turlock geographic boundary"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What exactly is the census trying to capture, and how do we know when it is complete enough to stop?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "CENSUS_GOAL defines the in-scope universe and a bounded stop condition; COVERAGE_ESTIMATION supplies the completeness estimate that decides when to stop",
+      "covered_by": [
+        "CENSUS_GOAL",
+        "COVERAGE_ESTIMATION"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "Which public sources exist, and how trustworthy is each for discovering independent Turlock businesses?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SOURCE_INVENTORY enumerates the sources and assigns each a reliability rank with the bias it carries",
+      "covered_by": [
+        "SOURCE_INVENTORY"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How are the authoritative curated seeds (Chamber directory, Downtown association list) ingested, and why is neither sufficient alone?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "CHAMBER_SEED and DOWNTOWN_LIST describe ingestion and the membership/footprint coverage gap each leaves",
+      "covered_by": [
+        "CHAMBER_SEED",
+        "DOWNTOWN_LIST"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How do county FBN filings and city business-tax certificates serve as ownership and licensing ground-truth?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "FBN_OWNERSHIP links DBA to owner from filings and TAX_CERT_LAYER describes the licensing census and how to request it",
+      "covered_by": [
+        "FBN_OWNERSHIP",
+        "TAX_CERT_LAYER"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How are crowd directories and social platforms harvested without importing chain and stale-listing bias, and what is done when a source is bot-blocked, returns HTTP 403, or renders only via JavaScript?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "CROWD_DIRECTORIES and SOCIAL_SIGNALS explain harvesting with bias correction and existence/freshness signals, and BLOCKED_SOURCE_TACTICS lists the lawful fallbacks (snippet triangulation, cached views, mirrors, manual capture)",
+      "covered_by": [
+        "CROWD_DIRECTORIES",
+        "SOCIAL_SIGNALS",
+        "BLOCKED_SOURCE_TACTICS"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How are the same business's records from different sources merged into one without false merges or splits?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "ENTITY_RESOLUTION specifies name/address/phone normalization and the fuzzy-match plus blocking rule",
+      "covered_by": [
+        "ENTITY_RESOLUTION"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How is an independent business distinguished from a chain or franchise so only in-scope entities are kept?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "INDIE_VS_CHAIN gives the operational signals and the keep/drop rule for the independence filter",
+      "covered_by": [
+        "INDIE_VS_CHAIN"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How is a record classified as storefront, home-based, or mobile/service-area, and how are sibling locations under one owner consolidated?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PREMISE_TYPE_CLASS defines the three premise types and their verification paths and MULTILOC_CONSOLIDATION links sibling locations to one owner while keeping each premise distinct",
+      "covered_by": [
+        "PREMISE_TYPE_CLASS",
+        "MULTILOC_CONSOLIDATION"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is a business verified as currently active versus closed or defunct?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "ACTIVE_VS_CLOSED lists the freshness signals and the rule that marks a record active, dormant, or closed",
+      "covered_by": [
+        "ACTIVE_VS_CLOSED"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What geographic boundary counts as Turlock, and how are unincorporated and ZIP-edge cases decided?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "GEO_BOUNDARY defines city limits, the 95380/95382 ZIPs, and the labeled greater-Turlock fringe rule",
+      "covered_by": [
+        "GEO_BOUNDARY"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "What must each record contain before it is allowed forward, how is its provenance and source-agreement confidence recorded, and how is revenue represented honestly?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "PROVENANCE_CONFIDENCE attaches per-field sources and a confidence label, RECORD_SCHEMA defines the canonical required fields, and REVENUE_ESTIMATION represents revenue only as a labeled benchmark estimate with confidence and a confirmation path",
+      "covered_by": [
+        "PROVENANCE_CONFIDENCE",
+        "RECORD_SCHEMA",
+        "REVENUE_ESTIMATION"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "What are the legal and ethical limits on which data may be collected and from where?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "SOURCING_ETHICS states the public-data-only rule, ToS respect, and the prohibition on private owner data",
+      "covered_by": [
+        "SOURCING_ETHICS"
+      ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "How does the catalog stay current as businesses open, move, and close, and what definition-of-done lets a verified record pass to categorization?",
+      "must_be_answerable_from": [
+        "nodes",
+        "iteration_protocol",
+        "workflow"
+      ],
+      "acceptance_condition": "FRESHNESS_CADENCE sets the re-verification cadence and staleness triggers and HANDOFF_GATE states the pass conditions a record must meet before it leaves discovery",
+      "covered_by": [
+        "FRESHNESS_CADENCE",
+        "HANDOFF_GATE"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "FBN (Fictitious Business Name)",
+      "definition": "A statement filed with the Stanislaus County Clerk-Recorder when a business operates under a name other than the owner's legal name; the public filing links a DBA to its registrant(s) and a filing date, serving as ownership ground-truth."
+    },
+    {
+      "term": "business-tax certificate",
+      "definition": "The City of Turlock's business license/tax registration that nearly every business operating in city limits must hold; the roster (obtainable by public-records request) is the closest thing to a licensing census of in-city businesses."
+    },
+    {
+      "term": "capture-recapture",
+      "definition": "An estimation technique borrowed from ecology: counting how many businesses appear in two independent source lists and how many overlap lets you estimate the total population, including the unseen tail neither list captured."
+    },
+    {
+      "term": "entity resolution",
+      "definition": "The process of deciding that two records from different sources refer to the same real-world business (or that they do not), using normalized name, address, and phone plus fuzzy matching within blocking keys."
+    },
+    {
+      "term": "blocking key",
+      "definition": "A coarse grouping (e.g. normalized street number plus ZIP, or phone area+prefix) used to limit fuzzy comparison to plausible candidate pairs instead of comparing every record against every other."
+    },
+    {
+      "term": "premise type",
+      "definition": "Whether a business operates from a public-facing storefront, from a residence (home-based), or as a mobile/service-area operator with no fixed customer-facing address; it changes how the business is found and verified."
+    },
+    {
+      "term": "snippet triangulation",
+      "definition": "Reconstructing a fact from a blocked or JS-only page using the search-engine result snippet, the page title, and corroborating mentions on other reachable pages, instead of loading the blocked page itself."
+    },
+    {
+      "term": "source-agreement confidence",
+      "definition": "A per-record confidence label derived from how many independent sources corroborate the same name, address, and status, and from the reliability rank of those sources."
+    },
+    {
+      "term": "revenue-per-employee benchmark",
+      "definition": "An industry-average ratio of annual revenue to headcount (or to square footage) published for a sector; multiplied by an observable size signal it yields a labeled revenue estimate band, never an actual figure for a named shop."
+    },
+    {
+      "term": "near-complete census",
+      "definition": "A discovery target that aims to enumerate essentially all in-scope independent businesses, accepting a small estimated unseen tail, with the completeness percentage itself reported as a measured quantity."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "CENSUS_GOAL",
+      "topic": "census_target_definition_and_stop_condition",
+      "definition": "Fix the discovery target as a near-complete census of every independent, currently-operating business physically located in Turlock, with an explicit stop condition rather than an open-ended crawl. The in-scope universe is defined positively (independent, active, inside the boundary) and the run ends when capture-recapture estimates remaining unseen businesses below a stated threshold and the curated and licensing layers are both exhausted.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "scope_boundary": {
+        "included": [
+          "positive in-scope definition",
+          "bounded stop condition",
+          "point-in-time census framing"
+        ],
+        "excluded": [
+          "categorization",
+          "ranking or scoring businesses"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A stated stop condition prevents an unbounded crawl that never declares completeness",
+          "example": "stopping when capture-recapture estimates fewer than ~5% of independents unseen and the city certificate roster is fully reconciled",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A fixed completeness threshold can declare done while a whole hard-to-find class (home-based) stays underrepresented",
+          "example": "hitting 95% on storefronts while mobile detailers remain mostly invisible",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "treating discovery as endless so it never hands off",
+        "defining scope so loosely that chains and out-of-town entities leak in"
+      ],
+      "acceptance_tests": [
+        "the goal states the positive in-scope test, the geographic and independence filters by reference, and a numeric completeness stop condition"
+      ],
+      "revisit_triggers": [
+        "the sponsor changes the in-scope definition",
+        "the completeness threshold proves unreachable for a business class"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.82,
+        "user_value": 0.86,
+        "technical_complexity": 0.3,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.14,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "the in-scope definition or completeness threshold is restated"
+      }
+    },
+    {
+      "id": "SOURCE_INVENTORY",
+      "topic": "public_source_inventory_and_reliability_ranking",
+      "definition": "Enumerate and reliability-rank every public source feeding the census: City of Turlock business-tax certificates and county FBN filings as authoritative ground-truth; the Chamber member directory and Downtown association list as curated but partial seeds; Google Maps/Places, Yelp, and YellowPages as broad but chain-polluted and stale-prone crowd directories; OpenStreetMap as a sparse but clean geo layer; and Instagram, Facebook, and NextDoor as freshness and existence signals only. Each source gets a rank, its known bias, and the role it is trusted for.",
+      "group": "frame",
+      "dependencies": [
+        "CENSUS_GOAL"
+      ],
+      "competency_question_refs": [
+        "CQ_02"
+      ],
+      "scope_boundary": {
+        "included": [
+          "full source list",
+          "per-source reliability rank and bias",
+          "the role each source is trusted for"
+        ],
+        "excluded": [
+          "the ingestion mechanics of any one source",
+          "entity merging"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Ranking sources by reliability stops a single noisy directory from outvoting authoritative records",
+          "example": "a city tax-certificate entry overriding a stale Yelp 'permanently closed' flag",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A fixed ranking can be wrong for a specific field where a low-ranked source is actually best",
+          "example": "Instagram being the freshest signal that a downtown cafe is still open this week",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "treating every source as equally trustworthy and merging garbage",
+        "omitting the licensing layer and missing businesses no directory lists"
+      ],
+      "acceptance_tests": [
+        "each named source has a reliability rank, its dominant bias, and the specific role (ground-truth, seed, breadth, or freshness signal) it is assigned"
+      ],
+      "revisit_triggers": [
+        "a source goes offline, changes access policy, or proves systematically wrong",
+        "a new public source becomes available"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.82,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.35,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "update_signal": "a source's availability, access policy, or trustworthiness changes"
+      }
+    },
+    {
+      "id": "SOURCING_ETHICS",
+      "topic": "public_data_only_legality_and_tos",
+      "definition": "Bind the whole pipeline to public business data only, accessed within each source's terms of service. The rule set: ingest only information a business or a public agency has published; respect robots and rate limits rather than circumventing anti-bot controls; never collect private personal data about owners beyond what a public FBN or tax-certificate filing already exposes; and treat any private/personal detail (home address used only as a residence, family, finances) as out of scope even when technically reachable.",
+      "group": "frame",
+      "dependencies": [
+        "CENSUS_GOAL"
+      ],
+      "competency_question_refs": [
+        "CQ_12"
+      ],
+      "scope_boundary": {
+        "included": [
+          "public-data-only rule",
+          "ToS and rate-limit respect",
+          "owner privacy boundary beyond public records"
+        ],
+        "excluded": [
+          "the technical block-handling tactics",
+          "field-level provenance"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A bright-line public-only rule keeps the census defensible and avoids privacy and ToS liability",
+          "example": "publishing an FBN registrant name but never the owner's unrelated home phone scraped elsewhere",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The strict boundary leaves some genuinely useful owner-linkage signals on the table",
+          "example": "declining to cross-reference a personal social profile that would confirm ownership",
+          "weight": 0.5
+        }
+      ],
+      "failure_modes": [
+        "scraping a source in violation of its ToS to fill a gap",
+        "recording private owner details a public record never disclosed"
+      ],
+      "acceptance_tests": [
+        "every collected field traces to a public source, no source was accessed against its ToS, and no private owner datum beyond public records is stored"
+      ],
+      "revisit_triggers": [
+        "a source's ToS changes",
+        "a new privacy regulation alters what public data may be retained"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.7,
+        "user_value": 0.8,
+        "technical_complexity": 0.35,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.6,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.14,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.18,
+          0.46
+        ],
+        "update_signal": "a source ToS or privacy rule that governs collection changes"
+      }
+    },
+    {
+      "id": "GEO_BOUNDARY",
+      "topic": "turlock_geographic_boundary_definition",
+      "definition": "Define what counts as Turlock so a record's location decides inclusion deterministically. The core is the incorporated City of Turlock limits; the practical net is ZIP 95380 and 95382; and a labeled greater-Turlock fringe covers unincorporated Stanislaus pockets that share the Turlock identity and mailing city. Each record carries a boundary tag (in-city, in-ZIP, or fringe) so downstream consumers can include or exclude the fringe explicitly.",
+      "group": "frame",
+      "dependencies": [
+        "CENSUS_GOAL"
+      ],
+      "competency_question_refs": [
+        "CQ_10"
+      ],
+      "scope_boundary": {
+        "included": [
+          "city-limit core",
+          "ZIP 95380/95382 net",
+          "labeled unincorporated fringe rule"
+        ],
+        "excluded": [
+          "premise-type classification",
+          "active/closed status"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A boundary tag per record lets the fringe be included or dropped without re-running discovery",
+          "example": "excluding an unincorporated almond-huller that mails as Turlock when only in-city retail is wanted",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "ZIP boundaries and city limits disagree, so any single rule mis-tags edge addresses",
+          "example": "a 95380 address that sits in unincorporated county, not the city",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "using ZIP as a proxy for city limits and over-including fringe businesses silently",
+        "dropping a legitimately in-city business whose listing shows a neighboring town"
+      ],
+      "acceptance_tests": [
+        "each record carries an explicit boundary tag (in-city / in-ZIP / fringe) and the tag rule is documented against city limits and the 95380/95382 ZIPs"
+      ],
+      "revisit_triggers": [
+        "an annexation changes city limits",
+        "a ZIP boundary is redrawn"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.74,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.35,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "city limits or ZIP boundaries change"
+      }
+    },
+    {
+      "id": "CHAMBER_SEED",
+      "topic": "chamber_member_directory_seed_ingestion",
+      "definition": "Ingest the Turlock Chamber of Commerce member directory as the first authoritative, human-curated seed: it is categorized, address- and phone-bearing, and almost entirely real local businesses. Its hard limit is that membership is voluntary and paid, so it captures perhaps a minority of all businesses and skews toward established, civic-minded firms; it is a high-precision, low-recall seed that must be supplemented, never treated as the universe.",
+      "group": "seed_ingestion",
+      "dependencies": [
+        "SOURCE_INVENTORY",
+        "SOURCING_ETHICS"
+      ],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "scope_boundary": {
+        "included": [
+          "categorized member-directory ingestion",
+          "high-precision seed records",
+          "membership-coverage gap"
+        ],
+        "excluded": [
+          "crowd-directory harvesting",
+          "the licensing census"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The Chamber directory yields clean, real, pre-categorized seeds that anchor entity resolution",
+          "example": "a member entry with verified name, suite, and phone becomes a high-confidence anchor record",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Membership bias means whole swaths of newer or smaller independents are simply absent",
+          "example": "a one-year-old home-based bakery that never joined the Chamber",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "mistaking the member list for the full population and under-searching",
+        "carrying a lapsed member as active without re-verification"
+      ],
+      "acceptance_tests": [
+        "member records are ingested with name, address, phone, and source tag, and the run records that this layer is high-precision but partial"
+      ],
+      "revisit_triggers": [
+        "the Chamber publishes an updated directory",
+        "membership terms or directory format change"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.78,
+        "technical_complexity": 0.4,
+        "risk_if_wrong": 0.66,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.3,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.14,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "the Chamber member directory is republished or restructured"
+      }
+    },
+    {
+      "id": "DOWNTOWN_LIST",
+      "topic": "downtown_association_list_ingestion",
+      "definition": "Ingest the Downtown Turlock Property Owners Association / shopdowntownturlock business listing as a dense, high-precision seed for the independent retail, dining, and service core where chains are sparse and independents cluster. It covers a small geographic footprint exhaustively, complementing the Chamber's breadth; its limit is exactly that footprint \u2014 it says nothing about businesses outside the downtown district.",
+      "group": "seed_ingestion",
+      "dependencies": [
+        "SOURCE_INVENTORY",
+        "SOURCING_ETHICS"
+      ],
+      "competency_question_refs": [
+        "CQ_03"
+      ],
+      "scope_boundary": {
+        "included": [
+          "downtown district retail/dining/service listing",
+          "dense independent coverage of a small footprint",
+          "footprint-bounded recall"
+        ],
+        "excluded": [
+          "citywide breadth",
+          "ownership ground-truth"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The downtown list near-exhaustively captures the densest cluster of independents in one pass",
+          "example": "an entire block of Main Street independents enumerated where Yelp shows gaps",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Its tight footprint gives a false sense of completeness if mistaken for citywide coverage",
+          "example": "treating full downtown coverage as 90% of all Turlock independents",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "promotional listings that include a temporary pop-up as a permanent business",
+        "assuming downtown completeness generalizes citywide"
+      ],
+      "acceptance_tests": [
+        "downtown-district businesses are ingested with name, address, and source tag, and the record set is marked footprint-bounded to the downtown district"
+      ],
+      "revisit_triggers": [
+        "the association republishes its directory",
+        "the downtown district boundary is redrawn"
+      ],
+      "base": {
+        "criticality": 0.76,
+        "business_value": 0.76,
+        "user_value": 0.78,
+        "technical_complexity": 0.38,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.3,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.14,
+        "downside_weight": 0.4,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "the downtown association listing is republished"
+      }
+    },
+    {
+      "id": "TAX_CERT_LAYER",
+      "topic": "city_business_tax_certificate_licensing_census",
+      "definition": "Add the City of Turlock business-tax certificate roster as the licensing census \u2014 the single source closest to enumerating every business operating in city limits, because nearly all must register. Obtain it via a public-records request to the city (the roster is public though some fields may be withheld), then reconcile it against the directory seeds: certificate-only entries are businesses no directory listed, and directory-only entries flag possible unlicensed, closed, or fringe cases.",
+      "group": "ground_truth",
+      "dependencies": [
+        "SOURCE_INVENTORY",
+        "SOURCING_ETHICS",
+        "GEO_BOUNDARY"
+      ],
+      "competency_question_refs": [
+        "CQ_04"
+      ],
+      "scope_boundary": {
+        "included": [
+          "licensing-census ingestion",
+          "public-records request procedure",
+          "reconciliation against directory seeds"
+        ],
+        "excluded": [
+          "FBN owner linkage",
+          "categorization"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "The certificate roster surfaces the long tail of businesses that no public directory ever lists",
+          "example": "a home-based bookkeeper holding a city certificate but absent from Yelp, Google, and the Chamber",
+          "weight": 0.84
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The roster lags real status and may withhold fields, so it needs cross-verification",
+          "example": "a certificate still on file months after the shop quietly closed",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "treating a stale certificate as proof a business is still active",
+        "failing to request the roster and missing the licensing layer entirely"
+      ],
+      "acceptance_tests": [
+        "the city certificate roster is obtained via documented public-records request and reconciled against the seeds, producing certificate-only and directory-only difference lists"
+      ],
+      "revisit_triggers": [
+        "the city publishes an updated roster",
+        "the public-records request process or released fields change"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.82,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.4,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.24,
+          0.56
+        ],
+        "update_signal": "the city certificate roster is reissued or its released fields change"
+      }
+    },
+    {
+      "id": "FBN_OWNERSHIP",
+      "topic": "county_fbn_filings_owner_linkage",
+      "definition": "Use Stanislaus County FBN (fictitious business name) filings as ownership ground-truth: each public statement links a DBA to its registrant name(s), business address, and filing/expiration date. This resolves who actually owns a trade name, distinguishes independents from corporate DBAs, and powers single-owner multi-location consolidation. Only the public filing fields are used; no private owner data beyond the registrant information the filing itself discloses.",
+      "group": "ground_truth",
+      "dependencies": [
+        "SOURCE_INVENTORY",
+        "SOURCING_ETHICS"
+      ],
+      "competency_question_refs": [
+        "CQ_04"
+      ],
+      "scope_boundary": {
+        "included": [
+          "DBA-to-registrant linkage",
+          "filing date and expiry as activity signal",
+          "independence and ownership grounding"
+        ],
+        "excluded": [
+          "private owner data beyond the filing",
+          "premise classification"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "FBN filings authoritatively tie a trade name to an owner, enabling correct multi-location grouping",
+          "example": "two differently-named storefronts shown to share one registrant on file",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "FBN data is lumpy: not every business files, filings expire, and registrants can be holding entities",
+          "example": "an active independent that never filed an FBN because it trades under the owner's legal name",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "assuming every business has an FBN and dropping those that lawfully do not",
+        "treating an expired FBN as proof of closure"
+      ],
+      "acceptance_tests": [
+        "matched records carry the FBN registrant linkage and filing date, and absence of an FBN is recorded as unknown rather than disqualifying"
+      ],
+      "revisit_triggers": [
+        "a new FBN filing or renewal posts for a tracked name",
+        "the county changes how filings are published"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.78,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "a tracked business's FBN filing posts, renews, or lapses"
+      }
+    },
+    {
+      "id": "CROWD_DIRECTORIES",
+      "topic": "crowd_directory_harvesting_bias_correction",
+      "definition": "Harvest the broad crowd directories \u2014 Google Maps/Places, Yelp, YellowPages, and OpenStreetMap \u2014 for breadth and geo coordinates, then correct their two structural biases before trusting a listing: they over-include national chains (filtered by the independence rule) and they retain stale or duplicate listings (filtered by the active/closed check). These sources maximize recall but their raw output is treated as candidate leads, not verified records.",
+      "group": "harvest",
+      "dependencies": [
+        "SOURCE_INVENTORY",
+        "SOURCING_ETHICS",
+        "GEO_BOUNDARY"
+      ],
+      "competency_question_refs": [
+        "CQ_05"
+      ],
+      "scope_boundary": {
+        "included": [
+          "broad listing harvest",
+          "geo-coordinate capture",
+          "chain and staleness bias correction as candidates"
+        ],
+        "excluded": [
+          "final active/closed adjudication",
+          "the independence rule definition"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Crowd directories deliver the widest first-pass net, catching businesses the curated seeds miss",
+          "example": "a strip-mall nail salon present on Google Maps but absent from every curated list",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Raw crowd data is heavy with chains, duplicates, and ghost listings that pollute the census if trusted",
+          "example": "three Yelp entries for one cafe plus a closed location still showing five stars",
+          "weight": 0.68
+        }
+      ],
+      "failure_modes": [
+        "importing chain outlets that the independence filter should remove",
+        "trusting a stale listing as an active business"
+      ],
+      "acceptance_tests": [
+        "harvested listings enter as candidate leads with geo coordinates and are flagged for the independence and active/closed checks before being trusted"
+      ],
+      "revisit_triggers": [
+        "a directory changes its data layout or access policy",
+        "a re-harvest reveals new or removed listings"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.35,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.2,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.24,
+          0.56
+        ],
+        "update_signal": "a crowd directory's layout, access, or listing set changes"
+      }
+    },
+    {
+      "id": "SOCIAL_SIGNALS",
+      "topic": "social_platforms_as_existence_and_freshness_signals",
+      "definition": "Use Instagram, Facebook, and NextDoor not as directories but as existence-and-freshness signals: an active business page, a recent post, recent reviews, or neighbor mentions corroborate that a business exists and is currently operating, and sometimes surface micro-businesses (home bakers, mobile vendors) that appear nowhere else. Their data is unstructured and self-promotional, so they confirm existence and recency but never alone establish a verified address or independence status.",
+      "group": "harvest",
+      "dependencies": [
+        "SOURCE_INVENTORY",
+        "SOURCING_ETHICS"
+      ],
+      "competency_question_refs": [
+        "CQ_05"
+      ],
+      "scope_boundary": {
+        "included": [
+          "existence and recency corroboration",
+          "discovery of social-only micro-businesses",
+          "freshness signal extraction"
+        ],
+        "excluded": [
+          "authoritative address or independence determination",
+          "private personal content"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A recent social post is often the freshest available proof a small business is still active",
+          "example": "a home cookie maker's weekly Instagram drop confirming current operation absent any directory entry",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Social presence is noisy and self-promotional, easily overstating permanence or location",
+          "example": "a one-off pop-up posting as if it were a standing storefront",
+          "weight": 0.62
+        }
+      ],
+      "failure_modes": [
+        "minting a record from a social page with no corroborating address or license",
+        "scraping private personal content rather than public business posts"
+      ],
+      "acceptance_tests": [
+        "social signals are recorded only as existence/freshness corroboration with a date, never as the sole source for address or independence"
+      ],
+      "revisit_triggers": [
+        "a platform changes public-content access",
+        "a tracked page goes dormant or reactivates"
+      ],
+      "base": {
+        "criticality": 0.68,
+        "business_value": 0.7,
+        "user_value": 0.74,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.66,
+        "irreversibility": 0.3,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.2,
+        "downside_weight": 0.42,
+        "uncertainty_interval": [
+          0.24,
+          0.56
+        ],
+        "update_signal": "a platform's public access or a tracked page's activity changes"
+      }
+    },
+    {
+      "id": "BLOCKED_SOURCE_TACTICS",
+      "topic": "handling_bot_blocked_403_js_rendered_sources",
+      "definition": "Handle sources that bot-block, return HTTP 403, or render only via JavaScript without violating their terms: reconstruct facts from search-result snippets and page titles (snippet triangulation), read cached or archived views, use alternative mirrors or the source's own structured exports/APIs where offered, and fall back to one-off manual capture for a small high-value set. The aim is lawful data recovery, never circumvention of anti-bot protections.",
+      "group": "harvest",
+      "dependencies": [
+        "CROWD_DIRECTORIES",
+        "SOURCING_ETHICS"
+      ],
+      "competency_question_refs": [
+        "CQ_05"
+      ],
+      "scope_boundary": {
+        "included": [
+          "snippet triangulation",
+          "cached/archived views",
+          "mirrors and official exports",
+          "manual capture fallback"
+        ],
+        "excluded": [
+          "bypassing anti-bot or paywall controls",
+          "scraping in violation of ToS"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Snippet and cache triangulation recovers most needed facts from a blocked page without touching it",
+          "example": "reading a restaurant's address and hours from the search snippet when the live page returns 403",
+          "weight": 0.78
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Triangulated facts are partial and can be outdated relative to the live page",
+          "example": "a cached snapshot showing old hours after the business changed them",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "escalating to circumvention that breaches ToS when blocked",
+        "treating a stale cached snapshot as current without dating it"
+      ],
+      "acceptance_tests": [
+        "each blocked-source fact is recovered by a lawful fallback (snippet, cache, mirror, official export, or manual capture) and tagged with its recovery method and date"
+      ],
+      "revisit_triggers": [
+        "a source tightens or relaxes its anti-bot posture",
+        "a cached or mirror source disappears"
+      ],
+      "base": {
+        "criticality": 0.74,
+        "business_value": 0.72,
+        "user_value": 0.76,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.66,
+        "irreversibility": 0.4,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.74,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.26,
+          0.58
+        ],
+        "update_signal": "a source's blocking behavior or a fallback's availability changes"
+      }
+    },
+    {
+      "id": "ENTITY_RESOLUTION",
+      "topic": "cross_source_entity_resolution_and_dedup",
+      "definition": "Merge records that refer to the same real business and split those that do not. Normalize names (drop legal suffixes, casing, punctuation), addresses (USPS-style standardization of suite and street), and phones (E.164) to canonical forms; group candidates by blocking keys (street-number+ZIP, phone prefix) to bound comparisons; then fuzzy-match within blocks on a weighted name+address+phone score, merging above a high threshold and flagging the ambiguous middle band for review.",
+      "group": "resolve",
+      "dependencies": [
+        "CHAMBER_SEED",
+        "DOWNTOWN_LIST",
+        "TAX_CERT_LAYER",
+        "FBN_OWNERSHIP",
+        "CROWD_DIRECTORIES",
+        "SOCIAL_SIGNALS",
+        "BLOCKED_SOURCE_TACTICS"
+      ],
+      "competency_question_refs": [
+        "CQ_06"
+      ],
+      "scope_boundary": {
+        "included": [
+          "name/address/phone normalization",
+          "blocking-keyed fuzzy matching",
+          "merge/flag thresholds"
+        ],
+        "excluded": [
+          "multi-location owner grouping",
+          "active/closed adjudication"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Blocking plus weighted fuzzy matching deduplicates at scale without comparing every pair",
+          "example": "collapsing 'Joe's Tacos', 'Joes Taco Shop', and a phone-only listing into one record",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Aggressive matching merges genuinely distinct neighbors; cautious matching leaves duplicates",
+          "example": "two unrelated salons in the same plaza wrongly merged on a shared suite number",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "false merge of two distinct businesses sharing an address",
+        "false split of one business listed under a DBA and a legal name"
+      ],
+      "acceptance_tests": [
+        "normalized name/address/phone fields exist, candidate pairs are formed within blocking keys, and a documented score threshold drives merge-versus-flag decisions"
+      ],
+      "revisit_triggers": [
+        "new source records arrive to reconcile",
+        "review reveals systematic false merges or splits"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.82,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.5,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.26,
+          0.6
+        ],
+        "update_signal": "new records arrive or match thresholds are retuned"
+      }
+    },
+    {
+      "id": "INDIE_VS_CHAIN",
+      "topic": "independent_versus_chain_franchise_filter",
+      "definition": "Apply the in-scope filter that keeps independents and removes chains and franchises. Operational signals of a chain/franchise: membership in a national or regional brand with many identical outlets, corporate ownership or a franchise agreement, and standardized branding not locally owned. Locally-owned single or small multi-unit operators are independent and in-scope; a franchised outlet of a national brand is out-of-scope even though a local person owns it, and is tagged with the reason it was dropped.",
+      "group": "classify",
+      "dependencies": [
+        "ENTITY_RESOLUTION",
+        "FBN_OWNERSHIP"
+      ],
+      "competency_question_refs": [
+        "CQ_07"
+      ],
+      "scope_boundary": {
+        "included": [
+          "independence signals",
+          "chain/franchise drop rule",
+          "drop-reason tagging"
+        ],
+        "excluded": [
+          "premise type",
+          "revenue estimation"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A clear franchise test prevents national outlets from inflating the independent census",
+          "example": "dropping a nationally-branded sandwich franchise while keeping the family-owned deli next door",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The franchise/independent line is genuinely fuzzy for local franchisees and regional mini-chains",
+          "example": "a three-store local coffee brand that is arguably an independent small chain",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "keeping a national franchise because it is locally owned",
+        "dropping a legitimate local mini-chain as if it were a national chain"
+      ],
+      "acceptance_tests": [
+        "each record gets an independent/chain verdict with the signal that drove it, and dropped chains are retained with a drop-reason rather than silently discarded"
+      ],
+      "revisit_triggers": [
+        "an independent is acquired by or converts to a franchise",
+        "the in-scope definition of independence is refined"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.45,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.24,
+          0.54
+        ],
+        "update_signal": "a business changes ownership/franchise status or the independence rule is refined"
+      }
+    },
+    {
+      "id": "PREMISE_TYPE_CLASS",
+      "topic": "storefront_homebased_mobile_classification",
+      "definition": "Classify each independent by premise type because each is discovered and verified differently: a storefront has a public commercial address and signage and is verifiable on the map and by visit; a home-based business operates from a residence and is found mainly via the certificate roster, FBN, or social signals rather than walk-by; a mobile/service-area business (food truck, detailer, contractor) has no fixed customer address and is verified by service-area and activity signals. The type sets which verification path applies.",
+      "group": "classify",
+      "dependencies": [
+        "ENTITY_RESOLUTION",
+        "TAX_CERT_LAYER"
+      ],
+      "competency_question_refs": [
+        "CQ_08"
+      ],
+      "scope_boundary": {
+        "included": [
+          "storefront / home-based / mobile typing",
+          "premise-specific verification path",
+          "address-visibility signals"
+        ],
+        "excluded": [
+          "active/closed adjudication",
+          "independence verdict"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Typing premise routes each record to the verification method that can actually confirm it",
+          "example": "verifying a mobile detailer by service-area and recent bookings instead of a nonexistent storefront",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Premise type is mutable and ambiguous; a home-based business can be partly storefront-like",
+          "example": "a home bakery that also sells at a weekly stall, blurring home-based and mobile",
+          "weight": 0.58
+        }
+      ],
+      "failure_modes": [
+        "expecting a storefront for a home-based business and marking it closed when none is found",
+        "publishing a residential address that the public record treats only as a registrant address"
+      ],
+      "acceptance_tests": [
+        "each record carries a premise-type tag and the verification path implied by that type is applied"
+      ],
+      "revisit_triggers": [
+        "a business moves from home-based to a storefront or vice versa",
+        "a mobile operator establishes a fixed location"
+      ],
+      "base": {
+        "criticality": 0.78,
+        "business_value": 0.74,
+        "user_value": 0.8,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.35,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.22,
+          0.52
+        ],
+        "update_signal": "a business's premise type changes"
+      }
+    },
+    {
+      "id": "ACTIVE_VS_CLOSED",
+      "topic": "active_dormant_closed_verification",
+      "definition": "Adjudicate whether each candidate is currently operating. Freshness signals that raise the active score: recent reviews, a recent social post, current posted hours, a live phone, a valid current-year tax certificate, and an unexpired FBN; signals of closure: 'permanently closed' flags, disconnected phone, no activity across sources for an extended window, and a lapsed certificate. The rule assigns active, dormant (no recent signal but not confirmed closed), or closed, requiring at least one strong recent signal to mark active.",
+      "group": "classify",
+      "dependencies": [
+        "ENTITY_RESOLUTION",
+        "SOCIAL_SIGNALS",
+        "TAX_CERT_LAYER"
+      ],
+      "competency_question_refs": [
+        "CQ_09"
+      ],
+      "scope_boundary": {
+        "included": [
+          "freshness and closure signals",
+          "active/dormant/closed rule",
+          "recency thresholds"
+        ],
+        "excluded": [
+          "premise typing",
+          "boundary tagging"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Requiring a recent strong signal to mark active keeps ghost listings out of the census",
+          "example": "downgrading a five-star Yelp page to closed once its phone is dead and the storefront is vacant",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Quiet but real businesses with little online footprint get wrongly marked dormant or closed",
+          "example": "an old-school machine shop with no reviews and no posts that is fully operating",
+          "weight": 0.66
+        }
+      ],
+      "failure_modes": [
+        "marking a low-footprint active business as closed for lack of online signal",
+        "carrying a closed business as active on a single stale source"
+      ],
+      "acceptance_tests": [
+        "each record gets an active/dormant/closed status backed by at least one cited recent signal, with the signal's date recorded"
+      ],
+      "revisit_triggers": [
+        "a fresh signal contradicts the stored status",
+        "the recency window for 'active' is retuned"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.8,
+        "user_value": 0.84,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.24,
+          0.56
+        ],
+        "update_signal": "a fresh activity or closure signal arrives for a record"
+      }
+    },
+    {
+      "id": "MULTILOC_CONSOLIDATION",
+      "topic": "single_owner_multi_location_consolidation",
+      "definition": "Group sibling locations under one owner while keeping each premise as a distinct record. Using FBN registrant linkage, shared phone or website, and common branding, link locations to a single owner entity; then keep each physical location as its own record (so the census counts premises correctly) but attach the shared owner_id. This prevents both over-counting one business as many unrelated entries and under-counting by collapsing distinct locations into one.",
+      "group": "resolve",
+      "dependencies": [
+        "ENTITY_RESOLUTION",
+        "FBN_OWNERSHIP"
+      ],
+      "competency_question_refs": [
+        "CQ_08"
+      ],
+      "scope_boundary": {
+        "included": [
+          "owner-entity linkage across locations",
+          "per-premise record retention",
+          "shared owner_id assignment"
+        ],
+        "excluded": [
+          "chain/franchise dropping",
+          "revenue estimation"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "An owner_id over distinct premise records counts locations right without losing the ownership link",
+          "example": "two storefronts of one local taqueria kept as two records sharing one owner_id",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Owner-grouping signals are weak and can falsely link unrelated businesses sharing a strip-mall phone",
+          "example": "a shared answering service number wrongly linking two unrelated tenants",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "collapsing two real locations into one and under-counting premises",
+        "linking unrelated businesses on a coincidental shared contact"
+      ],
+      "acceptance_tests": [
+        "sibling locations carry a shared owner_id while remaining distinct premise records, with the linking signal cited"
+      ],
+      "revisit_triggers": [
+        "an owner opens or closes a location",
+        "a linkage is found to be coincidental and must be split"
+      ],
+      "base": {
+        "criticality": 0.76,
+        "business_value": 0.74,
+        "user_value": 0.76,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.4,
+        "confidence": 0.64,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.76,
+        "evidence_confidence": 0.62,
+        "failure_rate": 0.18,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.24,
+          0.54
+        ],
+        "update_signal": "an owner adds, closes, or reorganizes locations"
+      }
+    },
+    {
+      "id": "PROVENANCE_CONFIDENCE",
+      "topic": "per_record_provenance_and_source_agreement_confidence",
+      "definition": "Attach to every record the provenance of each field \u2014 which source asserted it and when \u2014 and derive a source-agreement confidence label from how many independent sources corroborate the core facts (name, address, status) weighted by each source's reliability rank. A name confirmed by the city certificate, an FBN, and Google scores high; a name seen only on one stale directory scores low. The label travels with the record so consumers know how trustworthy each field is.",
+      "group": "assemble",
+      "dependencies": [
+        "ENTITY_RESOLUTION",
+        "INDIE_VS_CHAIN",
+        "PREMISE_TYPE_CLASS",
+        "ACTIVE_VS_CLOSED",
+        "GEO_BOUNDARY"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "scope_boundary": {
+        "included": [
+          "per-field source attribution with dates",
+          "reliability-weighted agreement scoring",
+          "confidence label on the record"
+        ],
+        "excluded": [
+          "the population-level completeness estimate",
+          "the handoff gate"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Field-level provenance lets a consumer trust a high-agreement address and distrust a single-source one",
+          "example": "a tri-source-confirmed address marked high-confidence versus a phone seen only on YellowPages",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Agreement can be spuriously high when directories copy each other rather than observing independently",
+          "example": "Yelp, YellowPages, and a data aggregator all echoing one wrong address",
+          "weight": 0.64
+        }
+      ],
+      "failure_modes": [
+        "counting correlated copycat sources as independent corroboration",
+        "losing the source trail so a disputed field cannot be adjudicated"
+      ],
+      "acceptance_tests": [
+        "every core field carries its source(s) and date, and a reliability-weighted source-agreement confidence label is computed and stored on the record"
+      ],
+      "revisit_triggers": [
+        "a new source corroborates or contradicts a field",
+        "source independence assumptions are revised"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.4,
+        "confidence": 0.66,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.18,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.24,
+          0.54
+        ],
+        "update_signal": "a source is added or its independence weighting changes"
+      }
+    },
+    {
+      "id": "REVENUE_ESTIMATION",
+      "topic": "labeled_benchmark_revenue_estimate_only",
+      "definition": "Model revenue for a private shop only as an explicitly labeled estimate, never as fact, because per-business revenue is not public. Take a published industry benchmark (revenue-per-employee or revenue-per-square-foot for the sector), scale it by an observable size signal (estimated headcount, storefront square footage, seat count), and emit a band tagged 'estimate, not actual' with a confidence level and a note on what would confirm it (e.g. owner disclosure, a public filing). No dollar revenue is ever stated for a named business as a fact, and no fabricated financials are produced.",
+      "group": "assemble",
+      "dependencies": [
+        "INDIE_VS_CHAIN",
+        "PREMISE_TYPE_CLASS",
+        "PROVENANCE_CONFIDENCE"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "scope_boundary": {
+        "included": [
+          "benchmark-times-size-signal estimate band",
+          "explicit 'estimate, not actual' tag with confidence",
+          "confirmation-path note"
+        ],
+        "excluded": [
+          "any stated actual revenue for a named business",
+          "private financial records"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A labeled benchmark band gives a usable size sense without ever asserting a false dollar figure",
+          "example": "a ~6-seat cafe tagged with an industry revenue-per-seat band marked estimate, not actual, medium confidence",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Benchmark estimates can be wildly off for an atypical business and may be misread as fact if labeling slips",
+          "example": "a high-margin specialty shop far above its sector's revenue-per-sqft benchmark",
+          "weight": 0.7
+        }
+      ],
+      "failure_modes": [
+        "dropping the 'estimate, not actual' label so a band reads as a real figure",
+        "fabricating a precise revenue number to seem authoritative"
+      ],
+      "acceptance_tests": [
+        "any revenue value is a labeled benchmark band with a named ratio, the size signal used, a confidence level, and a confirmation path; no actual dollar revenue is stated for a named business"
+      ],
+      "revisit_triggers": [
+        "a better size signal is observed",
+        "an updated industry benchmark is published"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.72,
+        "user_value": 0.78,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.66,
+        "irreversibility": 0.55,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.58,
+        "failure_rate": 0.2,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.28,
+          0.6
+        ],
+        "update_signal": "a size signal or published industry benchmark changes"
+      }
+    },
+    {
+      "id": "RECORD_SCHEMA",
+      "topic": "canonical_business_record_schema",
+      "definition": "Define the canonical record every business must satisfy before it can be categorized: a stable id and owner_id; canonical name and any DBA; standardized address with boundary tag; phone and website; premise type; independence verdict; active/dormant/closed status with date; per-field provenance and source-agreement confidence; any labeled revenue estimate band; and a last-verified timestamp. The schema is the contract that makes records comparable, dedup-able, and gate-checkable.",
+      "group": "assemble",
+      "dependencies": [
+        "PROVENANCE_CONFIDENCE",
+        "MULTILOC_CONSOLIDATION",
+        "REVENUE_ESTIMATION"
+      ],
+      "competency_question_refs": [
+        "CQ_11"
+      ],
+      "scope_boundary": {
+        "included": [
+          "required field set and types",
+          "id and owner_id keys",
+          "status, provenance, and verification fields"
+        ],
+        "excluded": [
+          "the completeness estimate",
+          "trade categorization fields"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A fixed schema makes records uniformly gate-checkable and safe to hand off",
+          "example": "the gate can mechanically reject any record missing a boundary tag or a status date",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "An over-strict schema can block otherwise-good records over a single hard-to-fill field",
+          "example": "a verified storefront stalled only because no website field exists",
+          "weight": 0.55
+        }
+      ],
+      "failure_modes": [
+        "letting records through with missing required fields",
+        "schema drift so different runs emit incompatible records"
+      ],
+      "acceptance_tests": [
+        "the schema lists every required field with its type and which are mandatory for handoff, including provenance, status, boundary, and any labeled revenue estimate"
+      ],
+      "revisit_triggers": [
+        "a new required field is needed downstream",
+        "categorization changes its input contract"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.78,
+        "user_value": 0.8,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.74,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.45,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.14,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.2,
+          0.48
+        ],
+        "update_signal": "the required-field contract changes"
+      }
+    },
+    {
+      "id": "COVERAGE_ESTIMATION",
+      "topic": "capture_recapture_completeness_estimation",
+      "definition": "Estimate how many independent Turlock businesses remain unseen so completeness is measured, not assumed. Treat two genuinely independent source lists (e.g. the city certificate roster versus the union of crowd directories) as two capture occasions: from the counts in each and their overlap, a Lincoln-Petersen-style estimate yields the total population and thus the unseen tail. Repeating across independent source pairs brackets the estimate and tells the run when the marginal new source adds too little to continue.",
+      "group": "synthesis",
+      "dependencies": [
+        "RECORD_SCHEMA",
+        "TAX_CERT_LAYER",
+        "CROWD_DIRECTORIES"
+      ],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "scope_boundary": {
+        "included": [
+          "capture-recapture across independent source pairs",
+          "population and unseen-tail estimate",
+          "diminishing-returns stop signal"
+        ],
+        "excluded": [
+          "the in-scope definition itself",
+          "per-record confidence"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "Capture-recapture converts 'we found a lot' into a defensible completeness percentage",
+          "example": "two lists of ~600 with ~400 overlap implying a population near 900 and ~33% still unseen",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "The estimate breaks when sources are not truly independent or capture probabilities differ by business type",
+          "example": "both lists systematically missing the same home-based segment, hiding a real gap",
+          "weight": 0.7
+        }
+      ],
+      "failure_modes": [
+        "using correlated sources as the two captures and overstating completeness",
+        "ignoring heterogeneous capture so the tail is underestimated"
+      ],
+      "acceptance_tests": [
+        "a population and unseen-tail estimate is computed from at least one independent source pair, with the independence assumption stated and a diminishing-returns stop signal derived"
+      ],
+      "revisit_triggers": [
+        "a new independent source allows a fresh recapture",
+        "the population estimate shifts materially after a new ingest"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.8,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.76,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.6,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.28,
+          0.6
+        ],
+        "update_signal": "a new independent source enables another recapture estimate"
+      }
+    },
+    {
+      "id": "FRESHNESS_CADENCE",
+      "topic": "catalog_freshness_and_reverification_cadence",
+      "definition": "Keep the census from silently rotting by setting a re-verification cadence and staleness triggers. Records carry a last-verified timestamp; a base cadence (e.g. quarterly) requeues each record for a freshness re-check, while event triggers \u2014 a 'permanently closed' flag appearing, a certificate lapse, a new FBN, a phone going dead, or a coverage-estimate shift \u2014 requeue specific records sooner. Stale records are flagged rather than trusted, so age becomes a visible, actionable property.",
+      "group": "synthesis",
+      "dependencies": [
+        "RECORD_SCHEMA",
+        "ACTIVE_VS_CLOSED"
+      ],
+      "competency_question_refs": [
+        "CQ_13"
+      ],
+      "scope_boundary": {
+        "included": [
+          "re-verification cadence",
+          "event-based staleness triggers",
+          "last-verified aging"
+        ],
+        "excluded": [
+          "the initial verification rules",
+          "the completeness estimate"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A cadence plus triggers catches closures and moves before the census misleads consumers",
+          "example": "a quarterly recheck flipping a now-vacant storefront to closed within the cycle",
+          "weight": 0.8
+        }
+      ],
+      "cons": [
+        {
+          "claim": "Too-frequent re-verification burns effort re-confirming stable, long-lived businesses",
+          "example": "re-checking a 30-year hardware store every month for no change",
+          "weight": 0.56
+        }
+      ],
+      "failure_modes": [
+        "no cadence so the catalog quietly drifts out of date",
+        "treating an old last-verified date as if it were current"
+      ],
+      "acceptance_tests": [
+        "every record has a last-verified timestamp, a base re-verification cadence exists, and event triggers requeue specific records ahead of the cadence"
+      ],
+      "revisit_triggers": [
+        "the cadence proves too frequent or too sparse",
+        "a new staleness signal type is identified"
+      ],
+      "base": {
+        "criticality": 0.78,
+        "business_value": 0.76,
+        "user_value": 0.8,
+        "technical_complexity": 0.45,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.35,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.64,
+        "failure_rate": 0.16,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.2,
+          0.5
+        ],
+        "update_signal": "a staleness trigger fires or the cadence is tuned"
+      }
+    },
+    {
+      "id": "HANDOFF_GATE",
+      "topic": "definition_of_done_handoff_to_categorization",
+      "definition": "Gate each verified record into categorization with an explicit definition-of-done: it satisfies the canonical schema; it is inside the geographic boundary with a tag; it passes the independence filter as in-scope; it is marked active (or explicitly carried as dormant with that flag); it has a source-agreement confidence at or above the threshold; any revenue value is a labeled estimate; and it carries a current last-verified timestamp. Records failing any condition are held in discovery with the failed condition named, never passed forward silently.",
+      "group": "synthesis",
+      "dependencies": [
+        "RECORD_SCHEMA",
+        "COVERAGE_ESTIMATION",
+        "FRESHNESS_CADENCE",
+        "SOURCING_ETHICS"
+      ],
+      "competency_question_refs": [
+        "CQ_13"
+      ],
+      "scope_boundary": {
+        "included": [
+          "definition-of-done pass conditions",
+          "hold-with-reason for failures",
+          "handoff to categorization"
+        ],
+        "excluded": [
+          "assigning trade categories",
+          "post-handoff maintenance"
+        ]
+      },
+      "pros": [
+        {
+          "claim": "A definition-of-done stops half-verified records from polluting categorization downstream",
+          "example": "holding a record with only single-source confirmation until a second source corroborates it",
+          "weight": 0.82
+        }
+      ],
+      "cons": [
+        {
+          "claim": "A strict gate can starve categorization of borderline-but-real businesses that never quite clear it",
+          "example": "a real low-footprint shop stuck below the confidence threshold indefinitely",
+          "weight": 0.6
+        }
+      ],
+      "failure_modes": [
+        "passing records that miss a required field or fall below confidence",
+        "silently dropping failed records instead of holding them with a reason"
+      ],
+      "acceptance_tests": [
+        "a record advances only when it meets every pass condition (schema, boundary, independence, active status, confidence threshold, labeled revenue, fresh timestamp), and failures are held with the failed condition named"
+      ],
+      "revisit_triggers": [
+        "the confidence threshold or required conditions change",
+        "categorization revises its intake contract"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.84,
+        "irreversibility": 0.5,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.66,
+        "failure_rate": 0.16,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "update_signal": "the definition-of-done conditions or the categorization intake contract change"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "CENSUS_GOAL",
+      "to": "SOURCE_INVENTORY",
+      "edge_type": "dependency",
+      "why_related": "the source inventory is assembled to serve the census target the goal defines",
+      "relation_strength": 0.85
+    },
+    {
+      "from": "CENSUS_GOAL",
+      "to": "SOURCING_ETHICS",
+      "edge_type": "dependency",
+      "why_related": "the ethics boundary scopes which sources the goal may draw on",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "CENSUS_GOAL",
+      "to": "GEO_BOUNDARY",
+      "edge_type": "dependency",
+      "why_related": "the geographic boundary operationalizes the 'in Turlock' clause of the goal",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "SOURCE_INVENTORY",
+      "to": "CHAMBER_SEED",
+      "edge_type": "dependency",
+      "why_related": "the Chamber seed is one ranked source drawn from the inventory",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "SOURCE_INVENTORY",
+      "to": "DOWNTOWN_LIST",
+      "edge_type": "dependency",
+      "why_related": "the downtown list is one ranked source drawn from the inventory",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "SOURCE_INVENTORY",
+      "to": "TAX_CERT_LAYER",
+      "edge_type": "dependency",
+      "why_related": "the licensing census is the top-ranked ground-truth source in the inventory",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SOURCE_INVENTORY",
+      "to": "FBN_OWNERSHIP",
+      "edge_type": "dependency",
+      "why_related": "FBN filings are the ownership ground-truth source ranked in the inventory",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "SOURCE_INVENTORY",
+      "to": "CROWD_DIRECTORIES",
+      "edge_type": "dependency",
+      "why_related": "the crowd directories are the breadth sources ranked and bias-flagged in the inventory",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "SOURCE_INVENTORY",
+      "to": "SOCIAL_SIGNALS",
+      "edge_type": "dependency",
+      "why_related": "social platforms are the freshness-signal sources ranked in the inventory",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "SOURCING_ETHICS",
+      "to": "TAX_CERT_LAYER",
+      "edge_type": "constraint",
+      "why_related": "the certificate roster is used only as a public record within disclosure limits",
+      "relation_strength": 0.66
+    },
+    {
+      "from": "SOURCING_ETHICS",
+      "to": "FBN_OWNERSHIP",
+      "edge_type": "constraint",
+      "why_related": "only the public FBN fields are used; no private owner data beyond the filing",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "GEO_BOUNDARY",
+      "to": "TAX_CERT_LAYER",
+      "edge_type": "dependency",
+      "why_related": "the certificate reconciliation is scoped to the city/boundary the geo rule defines",
+      "relation_strength": 0.68
+    },
+    {
+      "from": "CROWD_DIRECTORIES",
+      "to": "BLOCKED_SOURCE_TACTICS",
+      "edge_type": "dependency",
+      "why_related": "block-handling fallbacks are invoked when crowd directories bot-block or render via JS",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "SOURCING_ETHICS",
+      "to": "BLOCKED_SOURCE_TACTICS",
+      "edge_type": "constraint",
+      "why_related": "block-handling must use lawful recovery, never circumvention of anti-bot controls",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "CHAMBER_SEED",
+      "to": "ENTITY_RESOLUTION",
+      "edge_type": "dependency",
+      "why_related": "Chamber seeds are high-precision anchors fed into resolution",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "TAX_CERT_LAYER",
+      "to": "ENTITY_RESOLUTION",
+      "edge_type": "dependency",
+      "why_related": "certificate entries are reconciled and merged during entity resolution",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "CROWD_DIRECTORIES",
+      "to": "ENTITY_RESOLUTION",
+      "edge_type": "dependency",
+      "why_related": "crowd candidate leads are deduplicated against anchors in resolution",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "ENTITY_RESOLUTION",
+      "to": "INDIE_VS_CHAIN",
+      "edge_type": "dependency",
+      "why_related": "the independence filter runs on resolved single entities, not raw duplicates",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "ENTITY_RESOLUTION",
+      "to": "PREMISE_TYPE_CLASS",
+      "edge_type": "dependency",
+      "why_related": "premise typing classifies a resolved entity's address situation",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "ENTITY_RESOLUTION",
+      "to": "ACTIVE_VS_CLOSED",
+      "edge_type": "dependency",
+      "why_related": "activity adjudication runs per resolved entity over its merged signals",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "SOCIAL_SIGNALS",
+      "to": "ACTIVE_VS_CLOSED",
+      "edge_type": "dependency",
+      "why_related": "recent social activity is a primary freshness signal for the active/closed rule",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "ENTITY_RESOLUTION",
+      "to": "MULTILOC_CONSOLIDATION",
+      "edge_type": "dependency",
+      "why_related": "owner grouping operates on already-resolved distinct location records",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "FBN_OWNERSHIP",
+      "to": "MULTILOC_CONSOLIDATION",
+      "edge_type": "dependency",
+      "why_related": "shared FBN registrants link sibling locations to one owner",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "ACTIVE_VS_CLOSED",
+      "to": "PROVENANCE_CONFIDENCE",
+      "edge_type": "dependency",
+      "why_related": "the status signals and their sources feed the source-agreement confidence",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "PROVENANCE_CONFIDENCE",
+      "to": "REVENUE_ESTIMATION",
+      "edge_type": "dependency",
+      "why_related": "the revenue estimate's confidence is bounded by the underlying record confidence",
+      "relation_strength": 0.64
+    },
+    {
+      "from": "INDIE_VS_CHAIN",
+      "to": "REVENUE_ESTIMATION",
+      "edge_type": "dependency",
+      "why_related": "the sector benchmark used depends on the business being an in-scope independent",
+      "relation_strength": 0.6
+    },
+    {
+      "from": "PROVENANCE_CONFIDENCE",
+      "to": "RECORD_SCHEMA",
+      "edge_type": "dependency",
+      "why_related": "the schema carries the provenance and confidence fields the record must hold",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "RECORD_SCHEMA",
+      "to": "COVERAGE_ESTIMATION",
+      "edge_type": "dependency",
+      "why_related": "capture-recapture counts operate over schema-conformant resolved records",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "RECORD_SCHEMA",
+      "to": "FRESHNESS_CADENCE",
+      "edge_type": "dependency",
+      "why_related": "the last-verified field that the cadence ages lives in the schema",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "ACTIVE_VS_CLOSED",
+      "to": "FRESHNESS_CADENCE",
+      "edge_type": "dependency",
+      "why_related": "re-verification re-runs the active/closed check on aged records",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "RECORD_SCHEMA",
+      "to": "HANDOFF_GATE",
+      "edge_type": "dependency",
+      "why_related": "the gate checks each record against the canonical schema",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "COVERAGE_ESTIMATION",
+      "to": "HANDOFF_GATE",
+      "edge_type": "dependency",
+      "why_related": "the completeness estimate decides when the census as a whole is ready to hand off",
+      "relation_strength": 0.66
+    },
+    {
+      "from": "FRESHNESS_CADENCE",
+      "to": "ACTIVE_VS_CLOSED",
+      "edge_type": "feedback",
+      "why_related": "a staleness trigger requeues a record back through activity adjudication",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "COVERAGE_ESTIMATION",
+      "to": "SOURCE_INVENTORY",
+      "edge_type": "feedback",
+      "why_related": "a large estimated unseen tail sends the run back to add or re-rank sources",
+      "relation_strength": 0.66
+    },
+    {
+      "from": "TAX_CERT_LAYER",
+      "to": "CROWD_DIRECTORIES",
+      "edge_type": "conflict",
+      "why_related": "the authoritative certificate roster and a stale crowd listing can disagree on whether a business exists or is open",
+      "relation_strength": 0.6,
+      "resolution_rule": "prefer the higher-ranked source for the disputed field: a current certificate overrides a stale directory on existence, but a fresh directory/social signal can override the roster on current status"
+    },
+    {
+      "from": "INDIE_VS_CHAIN",
+      "to": "COVERAGE_ESTIMATION",
+      "edge_type": "conflict",
+      "why_related": "dropping franchise outlets shrinks the kept set even as recapture estimates a larger total population including those out-of-scope entries",
+      "relation_strength": 0.55,
+      "resolution_rule": "compute capture-recapture only over the in-scope independent set so the completeness percentage measures independents, not all businesses"
+    },
+    {
+      "from": "ACTIVE_VS_CLOSED",
+      "to": "FBN_OWNERSHIP",
+      "edge_type": "conflict",
+      "why_related": "an expired FBN can imply closure while fresh social or review signals show the business is still operating",
+      "relation_strength": 0.55,
+      "resolution_rule": "treat an expired FBN as a weak closure signal only; a single strong recent activity signal overrides it and marks the business active"
+    },
+    {
+      "from": "INDIE_VS_CHAIN",
+      "to": "REVENUE_ESTIMATION",
+      "edge_type": "causal",
+      "why_related": "the independence verdict and its sector determine which revenue benchmark is applied",
+      "relation_strength": 0.6,
+      "causal_confidence": 0.62
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "recall_breadth_vs_precision_noise",
+      "description": "Broad crowd directories maximize recall but inject chains, duplicates, and ghost listings, while curated seeds are precise but partial.",
+      "poles": [
+        "maximize recall from crowd sources",
+        "maximize precision from curated seeds"
+      ],
+      "resolution_hint": "treat crowd listings as candidate leads filtered by the independence and active/closed checks, anchored to curated and licensing seeds",
+      "affected_nodes": [
+        "CROWD_DIRECTORIES",
+        "CHAMBER_SEED",
+        "TAX_CERT_LAYER"
+      ]
+    },
+    {
+      "name": "authoritative_lag_vs_fresh_noise",
+      "description": "Authoritative records (certificates, FBN) are trustworthy but lag real status; fresh signals (social, reviews) are current but noisy and self-promotional.",
+      "poles": [
+        "trust authoritative but lagging records",
+        "trust fresh but noisy signals"
+      ],
+      "resolution_hint": "use authoritative sources for existence and ownership, fresh signals for current status, and reconcile per field",
+      "affected_nodes": [
+        "TAX_CERT_LAYER",
+        "FBN_OWNERSHIP",
+        "SOCIAL_SIGNALS",
+        "ACTIVE_VS_CLOSED"
+      ]
+    },
+    {
+      "name": "aggressive_merge_vs_cautious_split",
+      "description": "Aggressive entity matching collapses duplicates but risks false merges; cautious matching avoids false merges but leaves duplicates inflating the count.",
+      "poles": [
+        "merge aggressively",
+        "split cautiously"
+      ],
+      "resolution_hint": "merge only above a high weighted-match threshold and route the ambiguous band to review rather than auto-deciding",
+      "affected_nodes": [
+        "ENTITY_RESOLUTION",
+        "MULTILOC_CONSOLIDATION"
+      ]
+    },
+    {
+      "name": "completeness_push_vs_stop_cost",
+      "description": "Chasing the last few percent of the unseen tail costs disproportionate effort against a near-complete census that is good enough to hand off.",
+      "poles": [
+        "push for total completeness",
+        "stop at good-enough coverage"
+      ],
+      "resolution_hint": "stop when capture-recapture shows the unseen tail below threshold and the marginal new source adds little",
+      "affected_nodes": [
+        "CENSUS_GOAL",
+        "COVERAGE_ESTIMATION",
+        "SOURCE_INVENTORY"
+      ]
+    },
+    {
+      "name": "data_recovery_vs_tos_respect",
+      "description": "Recovering data from a bot-blocked or JS-only page conflicts with respecting the source's terms and anti-bot controls.",
+      "poles": [
+        "recover the blocked data",
+        "respect ToS and anti-bot controls"
+      ],
+      "resolution_hint": "use only lawful fallbacks (snippet, cache, mirror, official export, manual capture); never circumvent protections",
+      "affected_nodes": [
+        "BLOCKED_SOURCE_TACTICS",
+        "SOURCING_ETHICS",
+        "CROWD_DIRECTORIES"
+      ]
+    },
+    {
+      "name": "owner_linkage_value_vs_privacy",
+      "description": "Linking businesses to owners adds analytic value but pressures the boundary against collecting private personal owner data.",
+      "poles": [
+        "maximize owner linkage",
+        "minimize personal-data exposure"
+      ],
+      "resolution_hint": "link owners only via public FBN/certificate fields and never store private owner detail beyond those records",
+      "affected_nodes": [
+        "FBN_OWNERSHIP",
+        "MULTILOC_CONSOLIDATION",
+        "SOURCING_ETHICS"
+      ]
+    },
+    {
+      "name": "strict_boundary_vs_fringe_inclusion",
+      "description": "Restricting to city limits is clean but drops Turlock-identifying fringe businesses; including the ZIP/fringe widens coverage but admits non-city entities.",
+      "poles": [
+        "restrict to city limits",
+        "include the greater-Turlock fringe"
+      ],
+      "resolution_hint": "tag every record in-city/in-ZIP/fringe so the fringe can be included or excluded without re-running discovery",
+      "affected_nodes": [
+        "GEO_BOUNDARY",
+        "CENSUS_GOAL",
+        "TAX_CERT_LAYER"
+      ]
+    },
+    {
+      "name": "estimate_usefulness_vs_factual_honesty",
+      "description": "A revenue estimate is useful for sizing but risks being read as a factual figure for a private business whose revenue is not public.",
+      "poles": [
+        "provide a usable revenue number",
+        "never assert revenue as fact"
+      ],
+      "resolution_hint": "emit only a labeled benchmark band tagged 'estimate, not actual' with confidence and a confirmation path",
+      "affected_nodes": [
+        "REVENUE_ESTIMATION",
+        "PROVENANCE_CONFIDENCE"
+      ]
+    },
+    {
+      "name": "strict_gate_vs_throughput",
+      "description": "A strict definition-of-done protects categorization from bad records but can starve it of borderline-but-real businesses.",
+      "poles": [
+        "enforce a strict handoff gate",
+        "maximize handoff throughput"
+      ],
+      "resolution_hint": "hold failing records with the named failed condition for re-verification rather than dropping or force-passing them",
+      "affected_nodes": [
+        "HANDOFF_GATE",
+        "RECORD_SCHEMA",
+        "PROVENANCE_CONFIDENCE"
+      ]
+    },
+    {
+      "name": "verification_freshness_vs_effort",
+      "description": "Frequent re-verification keeps the catalog current but wastes effort re-confirming stable long-lived businesses.",
+      "poles": [
+        "re-verify frequently",
+        "conserve verification effort"
+      ],
+      "resolution_hint": "run a modest base cadence and let event triggers requeue specific records sooner",
+      "affected_nodes": [
+        "FRESHNESS_CADENCE",
+        "ACTIVE_VS_CLOSED"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "A business appears on Yelp and Google but the storefront is vacant and the phone is dead",
+      "trigger": "crowd listings show a business that has actually closed",
+      "affected_nodes": [
+        "CROWD_DIRECTORIES",
+        "ACTIVE_VS_CLOSED"
+      ],
+      "mitigation": "require a recent strong activity signal to mark active; absent it, downgrade to dormant or closed with the dead-phone evidence dated",
+      "severity": "high"
+    },
+    {
+      "description": "Two unrelated businesses share a suite number in the same plaza and fuzzy-match as one",
+      "trigger": "address normalization collides distinct tenants on a shared suite",
+      "affected_nodes": [
+        "ENTITY_RESOLUTION",
+        "MULTILOC_CONSOLIDATION"
+      ],
+      "mitigation": "require name and phone agreement, not address alone, above the merge threshold and flag suite-only matches for review",
+      "severity": "high"
+    },
+    {
+      "description": "A locally-owned national franchise outlet looks independent because the owner is a local resident",
+      "trigger": "a franchisee of a national brand is locally owned",
+      "affected_nodes": [
+        "INDIE_VS_CHAIN",
+        "FBN_OWNERSHIP"
+      ],
+      "mitigation": "drop as out-of-scope on the franchise-agreement and national-branding signals despite local ownership, tagging the drop reason",
+      "severity": "medium"
+    },
+    {
+      "description": "A home-based business has no storefront and is marked closed because none is found on the map",
+      "trigger": "verification expects a storefront for a home-based business",
+      "affected_nodes": [
+        "PREMISE_TYPE_CLASS",
+        "ACTIVE_VS_CLOSED"
+      ],
+      "mitigation": "type it home-based first and verify via certificate, FBN, and social activity rather than a storefront visit",
+      "severity": "medium"
+    },
+    {
+      "description": "A crowd directory returns HTTP 403 and the listing renders only via JavaScript",
+      "trigger": "a bot-blocked or JS-only source page",
+      "affected_nodes": [
+        "BLOCKED_SOURCE_TACTICS",
+        "CROWD_DIRECTORIES"
+      ],
+      "mitigation": "recover the facts via snippet, cached view, mirror, or official export and tag the recovery method and date, never circumventing the block",
+      "severity": "medium"
+    },
+    {
+      "description": "The city certificate roster shows a certificate still on file months after the shop closed",
+      "trigger": "a lagging authoritative record contradicts fresh closure signals",
+      "affected_nodes": [
+        "TAX_CERT_LAYER",
+        "ACTIVE_VS_CLOSED"
+      ],
+      "mitigation": "let a fresh closure signal override the lagging roster on current status while keeping the roster as the existence record",
+      "severity": "medium"
+    },
+    {
+      "description": "Three directories echo the same wrong address, creating false high agreement",
+      "trigger": "correlated copycat sources are counted as independent corroboration",
+      "affected_nodes": [
+        "PROVENANCE_CONFIDENCE",
+        "CROWD_DIRECTORIES"
+      ],
+      "mitigation": "discount correlated aggregator sources in the agreement weighting and require an authoritative source to confirm a disputed address",
+      "severity": "medium"
+    },
+    {
+      "description": "An active machine shop with no reviews, posts, or website is wrongly marked dormant",
+      "trigger": "a real low-online-footprint business lacks fresh signals",
+      "affected_nodes": [
+        "ACTIVE_VS_CLOSED",
+        "TAX_CERT_LAYER"
+      ],
+      "mitigation": "accept a current tax certificate or a live phone as a sufficient activity signal so offline-but-real businesses stay active",
+      "severity": "medium"
+    },
+    {
+      "description": "A revenue band is shown without its 'estimate, not actual' label and reads as a real figure",
+      "trigger": "the estimate label is dropped in output",
+      "affected_nodes": [
+        "REVENUE_ESTIMATION",
+        "RECORD_SCHEMA"
+      ],
+      "mitigation": "make the 'estimate, not actual' tag, the benchmark, and the confidence mandatory schema fields that the gate enforces",
+      "severity": "high"
+    },
+    {
+      "description": "A 95380 address actually sits in unincorporated county, not the city",
+      "trigger": "ZIP is used as a proxy for city limits",
+      "affected_nodes": [
+        "GEO_BOUNDARY",
+        "TAX_CERT_LAYER"
+      ],
+      "mitigation": "tag it in-ZIP/fringe rather than in-city and let the consumer decide whether to include the fringe",
+      "severity": "low"
+    },
+    {
+      "description": "Both the certificate roster and the crowd directories miss the same home-based segment, hiding a coverage gap",
+      "trigger": "the two capture sources are not independent for one business class",
+      "affected_nodes": [
+        "COVERAGE_ESTIMATION",
+        "PREMISE_TYPE_CLASS"
+      ],
+      "mitigation": "estimate capture separately by premise type and add a source (social, FBN) that captures the missed class before claiming completeness",
+      "severity": "high"
+    },
+    {
+      "description": "A business with only a single stale-source listing is pushed to categorization",
+      "trigger": "a record below the confidence threshold reaches the handoff gate",
+      "affected_nodes": [
+        "HANDOFF_GATE",
+        "PROVENANCE_CONFIDENCE"
+      ],
+      "mitigation": "hold it in discovery with 'below confidence threshold' named and requeue for a second-source confirmation",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "Define the census target and stop condition",
+      "node_ref": "CENSUS_GOAL",
+      "description": "Fix the in-scope universe and the completeness threshold that ends the run",
+      "artifact": "census scope statement",
+      "gate": "the positive in-scope test, boundary and independence references, and a numeric stop condition are stated"
+    },
+    {
+      "action": "Inventory and reliability-rank the public sources",
+      "node_ref": "SOURCE_INVENTORY",
+      "description": "List every source with its rank, bias, and trusted role",
+      "artifact": "ranked source register",
+      "gate": "each source has a rank, a bias note, and an assigned role"
+    },
+    {
+      "action": "Set the ethics and geographic boundaries",
+      "node_ref": "GEO_BOUNDARY",
+      "description": "Define public-data-only limits and the city/ZIP/fringe boundary rule",
+      "artifact": "scope-and-ethics boundary doc",
+      "gate": "the public-data rule and the in-city/in-ZIP/fringe tag rule are documented"
+    },
+    {
+      "action": "Ingest the curated seeds",
+      "node_ref": "CHAMBER_SEED",
+      "description": "Load Chamber and downtown-association listings as high-precision anchors",
+      "artifact": "seed anchor set",
+      "gate": "seed records carry name, address, and source tag and are marked partial-coverage"
+    },
+    {
+      "action": "Obtain and reconcile the licensing and ownership ground-truth",
+      "node_ref": "TAX_CERT_LAYER",
+      "description": "Request the city certificate roster and pull county FBN filings, reconciling against seeds",
+      "artifact": "ground-truth roster with difference lists",
+      "gate": "the certificate roster is obtained and certificate-only and directory-only lists exist"
+    },
+    {
+      "action": "Harvest crowd directories and handle blocked sources",
+      "node_ref": "CROWD_DIRECTORIES",
+      "description": "Pull broad listings with geo, recovering blocked-source facts lawfully",
+      "artifact": "candidate-lead pool with geo and recovery tags",
+      "gate": "leads carry geo coordinates and blocked-source facts are tagged with their recovery method"
+    },
+    {
+      "action": "Resolve entities and deduplicate across sources",
+      "node_ref": "ENTITY_RESOLUTION",
+      "description": "Normalize and fuzzy-match within blocking keys to merge duplicates",
+      "artifact": "resolved entity set",
+      "gate": "normalized fields exist and a documented threshold drives merge-versus-flag decisions"
+    },
+    {
+      "action": "Classify independence, premise type, and activity status",
+      "node_ref": "ACTIVE_VS_CLOSED",
+      "description": "Apply the independence filter, premise typing, and active/closed adjudication",
+      "artifact": "classified record set",
+      "gate": "each record has an independence verdict, premise type, and a status backed by a dated signal"
+    },
+    {
+      "action": "Consolidate owners and attach provenance and revenue estimates",
+      "node_ref": "PROVENANCE_CONFIDENCE",
+      "description": "Group owner siblings, attach field provenance and confidence, add labeled revenue bands",
+      "artifact": "enriched record set",
+      "gate": "each record has source-agreement confidence and any revenue value is a labeled estimate band"
+    },
+    {
+      "action": "Assemble records against the canonical schema",
+      "node_ref": "RECORD_SCHEMA",
+      "description": "Populate every required field into the canonical record contract",
+      "artifact": "schema-conformant records",
+      "gate": "every required field is present with its type for each record"
+    },
+    {
+      "action": "Estimate coverage and set the freshness cadence",
+      "node_ref": "COVERAGE_ESTIMATION",
+      "description": "Run capture-recapture over independents and schedule re-verification",
+      "artifact": "completeness report and refresh schedule",
+      "gate": "an unseen-tail estimate over the in-scope set and a re-verification cadence with triggers exist"
+    },
+    {
+      "action": "Gate verified records into categorization",
+      "node_ref": "HANDOFF_GATE",
+      "description": "Pass only records meeting the definition-of-done; hold the rest with reasons",
+      "artifact": "handoff-ready record set",
+      "gate": "advancing records meet every pass condition and failures are held with the named failed condition"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "Public-data-and-ToS ethics dominates every collection choice",
+      "rationale": "a single ToS or privacy breach can invalidate the whole census and expose liability",
+      "trigger": "any source access or owner-data decision",
+      "action": "block any collection that breaches ToS or stores private owner data beyond public records"
+    },
+    {
+      "rule": "Authoritative ground-truth dominates crowd sources on existence and ownership",
+      "rationale": "certificates and FBN filings are verified records while crowd listings are unverified",
+      "trigger": "a crowd listing disagrees with the certificate or FBN on whether a business exists or who owns it",
+      "action": "trust the authoritative record for existence and ownership"
+    },
+    {
+      "rule": "A fresh strong activity signal dominates a lagging authoritative status",
+      "rationale": "rosters and FBN expiry lag real-world opening and closing",
+      "trigger": "fresh activity contradicts a lagging certificate or expired FBN on current status",
+      "action": "let the fresh signal set current status while keeping the authoritative existence record"
+    },
+    {
+      "rule": "The independence filter dominates inclusion regardless of recall pressure",
+      "rationale": "chains and franchises are out of scope no matter how easily found",
+      "trigger": "a franchise or chain outlet is a candidate for inclusion",
+      "action": "drop it as out-of-scope with a tagged drop reason"
+    },
+    {
+      "rule": "Labeled-estimate honesty dominates any demand for a revenue figure",
+      "rationale": "private revenue is not public and must never be asserted as fact",
+      "trigger": "a revenue value is requested or emitted",
+      "action": "emit only a labeled benchmark band with confidence and a confirmation path, never an actual figure"
+    },
+    {
+      "rule": "The high merge threshold dominates the urge to collapse near-matches",
+      "rationale": "a false merge silently loses a real business and corrupts the count",
+      "trigger": "two records match only on a weak shared signal like a suite number",
+      "action": "hold the pair for review rather than auto-merging"
+    },
+    {
+      "rule": "In-scope capture-recapture dominates whole-population counting for completeness",
+      "rationale": "completeness is about independents, not all businesses including dropped chains",
+      "trigger": "a completeness percentage is computed",
+      "action": "run the estimate only over the in-scope independent set"
+    },
+    {
+      "rule": "The definition-of-done dominates handoff throughput",
+      "rationale": "a bad record poisons categorization more than a delayed good one",
+      "trigger": "a record fails any pass condition at the gate",
+      "action": "hold it with the named failed condition instead of passing it forward"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "Reliability-rank sources before merging any of their records",
+      "prevents": "a noisy directory overriding authoritative ground-truth and forcing a later re-merge"
+    },
+    {
+      "rule": "Normalize name, address, and phone before fuzzy matching",
+      "prevents": "false merges and splits that must be unpicked downstream"
+    },
+    {
+      "rule": "Type premise (storefront/home/mobile) before adjudicating active versus closed",
+      "prevents": "marking home-based and mobile businesses closed for lacking a storefront"
+    },
+    {
+      "rule": "Request the city certificate roster early in the run",
+      "prevents": "discovering the long-tail licensing layer only after the crowd harvest is already 'done'"
+    },
+    {
+      "rule": "Use only lawful fallbacks for blocked sources from the start",
+      "prevents": "a ToS-breaching scrape that taints records and must be discarded"
+    },
+    {
+      "rule": "Make the 'estimate, not actual' revenue tag a mandatory schema field",
+      "prevents": "an unlabeled band being read as fact and having to be retracted"
+    },
+    {
+      "rule": "Compute capture-recapture only over the in-scope independent set",
+      "prevents": "a completeness figure inflated by out-of-scope chains that must be recomputed"
+    },
+    {
+      "rule": "Set the re-verification cadence when records are first assembled",
+      "prevents": "a stale catalog that must be re-verified wholesale later"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "the coverage estimate shows a large unseen tail",
+      "action": "add or re-rank sources and re-harvest before claiming completeness",
+      "nodes": [
+        "COVERAGE_ESTIMATION",
+        "SOURCE_INVENTORY",
+        "CROWD_DIRECTORIES"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "a new public source or an updated roster becomes available",
+      "action": "ingest it, re-resolve entities, and recompute coverage",
+      "nodes": [
+        "SOURCE_INVENTORY",
+        "ENTITY_RESOLUTION",
+        "COVERAGE_ESTIMATION"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "review reveals systematic false merges or splits",
+      "action": "retune normalization and match thresholds and re-run resolution",
+      "nodes": [
+        "ENTITY_RESOLUTION",
+        "MULTILOC_CONSOLIDATION"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "a staleness trigger fires for a record (closure flag, lapsed certificate, dead phone)",
+      "action": "requeue the record through activity adjudication and update its status and timestamp",
+      "nodes": [
+        "FRESHNESS_CADENCE",
+        "ACTIVE_VS_CLOSED"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "a business changes ownership or franchise status",
+      "action": "re-run the independence filter and owner consolidation for it",
+      "nodes": [
+        "INDIE_VS_CHAIN",
+        "MULTILOC_CONSOLIDATION"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "the categorization intake contract changes",
+      "action": "revise the schema and the definition-of-done and re-gate held records",
+      "nodes": [
+        "RECORD_SCHEMA",
+        "HANDOFF_GATE"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "a source ToS or privacy rule changes",
+      "action": "re-scope collection from that source and purge any now-disallowed fields",
+      "nodes": [
+        "SOURCING_ETHICS",
+        "SOURCE_INVENTORY"
+      ],
+      "priority": 1
+    }
+  ],
+  "priority_rationale": "The frame nodes (goal, source inventory, ethics, boundary) come first because every downstream choice depends on knowing the target, the trusted sources, the legal limits, and what counts as Turlock; ingestion and harvesting feed entity resolution, which must precede all classification; classification, provenance, owner consolidation, and labeled revenue estimation enrich resolved entities into the canonical schema; and coverage estimation, freshness cadence, and the handoff gate come last because they compose the assembled records into a measured, maintained, gate-checked census ready for categorization.",
+  "eval_objective": "verify_core_properties_of_turlock_business_discovery_kb"
+}

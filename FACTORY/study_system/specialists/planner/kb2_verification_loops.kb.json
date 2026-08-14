@@ -1,0 +1,3859 @@
+{
+ "domain": "study_system_planner_verification_loops",
+ "domain_label": "Study System — Planner: The Three-Layer Verification Loop & the Observed Failure Taxonomy",
+ "purpose": "A method for the FACTORY build planner to run the mandatory three-layer verification loop on every build pass (builder ledger -> independent fresh-context audit vs code at a named HEAD SHA -> runtime self-check) so that 'reported complete' never substitutes for 'verified complete', and to apply the five documented incident rules (BKT silent revert, GitHub sync clobber, D-1 writeEdge bypass, D-3 TermLink gap, Slice 7 phantom-build) each to the layer that catches it — a build honesty discipline distinct from sysloops' runtime nightly loop.",
+ "empirical_status": "heuristic_prior_not_observed_dataset",
+ "assumptions": [
+  "no observed run of a planner-orchestrated build is supplied as a labeled dataset; the five incidents are documented in the repo's own build history (PROTOCOL.md, SLICE_6_5.md, NEW_FEATURES_PLAN.md) and are cited [FACT-source] verbatim; the loop design around them is [ESTIMATE] design synthesis",
+  "the independent audit is a SEPARATE context (a second model / Codex), not the builder; the builder's own 'complete/verified' is never acceptance",
+  "'idempotent' and 'loop' here are BUILD-TIME senses (a duplicate-safe import re-run; the verification loop of a pass), not sysloops' runtime senses",
+  "acceptance is artifact-existence + behavior verified at a named HEAD SHA, never a ledger row or a design intention"
+ ],
+ "exclusions": [
+  "the runtime nightly-analysis loop, self-metrics scorecard, and runtime degraded-mode (owned by sysloops; planner's degraded-honest principle applies to BUILD honesty, not the nightly plan)",
+  "writing or fixing the app's code (the build agent does that under the governing specialist)",
+  "the internal design of any invariant or import the audit verifies (owned by the domain specialist; planner verifies it holds in code)",
+  "slice decomposition/sequencing (kb1) and owner-gate design / continuous-mode discipline (kb3)",
+  "inventing any exam-blueprint number, endpoint, price or clinical fact"
+ ],
+ "schema_version": "1.3",
+ "generation_metadata": {
+  "mode": "KB_GENERATION",
+  "generator_prompt_version": "1.4.1",
+  "kb_schema_version": "1.3",
+  "compatibility_target": "v1.3-style KB objects",
+  "density_mode_selected": "dense",
+  "source_grounding_status": "repo_documents_plus_heuristic",
+  "calculation_mode": "heuristic_estimate"
+ },
+ "schema_contract": {
+  "schema_language": "json_schema_2020_12_compatible",
+  "additional_properties_allowed": false,
+  "external_validation_required": true,
+  "structured_outputs_recommended": true,
+  "duplicate_key_detection_required": true,
+  "strict_json_required": true,
+  "enum_values_closed": true,
+  "kb_schema_version": "1.3",
+  "compatibility_target": "v1.3-style KB objects"
+ },
+ "input_summary": {
+  "domain_supplied": true,
+  "domain_context_supplied": true,
+  "purpose_hint_supplied": true,
+  "observed_data_supplied": false,
+  "expert_judgment_supplied": false,
+  "experimental_or_benchmark_evidence_supplied": false,
+  "source_material_supplied": true,
+  "density_mode": "dense",
+  "human_review_policy_supplied": false,
+  "section_text_supplied": true,
+  "existing_schema_supplied": true,
+  "evaluation_criteria_supplied": false,
+  "risk_tolerance_supplied": false,
+  "stakeholder_context_supplied": false,
+  "version_baseline_supplied": false
+ },
+ "competency_questions": [
+  {
+   "id": "CQ_01",
+   "question": "Why is 'reported complete' never 'verified complete', and what track record motivates the loop?",
+   "must_be_answerable_from": [
+    "PLN2_FRAME"
+   ],
+   "acceptance_condition": "states that three independent audits each caught a gap a 'complete/verified' report missed, so the builder's claim is never acceptance",
+   "covered_by": [
+    "PLN2_FRAME",
+    "LEDGER_NOT_ACCEPTANCE"
+   ]
+  },
+  {
+   "id": "CQ_02",
+   "question": "What are the three layers of the verification loop and why are all three needed?",
+   "must_be_answerable_from": [
+    "THREE_LAYER_LOOP"
+   ],
+   "acceptance_condition": "names builder ledger -> independent audit -> runtime self-check, mandatory and unskippable, with each catching a distinct failure class",
+   "covered_by": [
+    "THREE_LAYER_LOOP"
+   ]
+  },
+  {
+   "id": "CQ_03",
+   "question": "What is the builder ledger and why is it not acceptance?",
+   "must_be_answerable_from": [
+    "BUILDER_LEDGER"
+   ],
+   "acceptance_condition": "an append-only dated row (slice, result, per-check PASS/FAIL/BLOCKED-BY-GATE, gates awaiting owner) that the audit diffs against, but which is not itself acceptance",
+   "covered_by": [
+    "BUILDER_LEDGER",
+    "LEDGER_NOT_ACCEPTANCE"
+   ]
+  },
+  {
+   "id": "CQ_04",
+   "question": "How does the independent audit work, and what does it catch?",
+   "must_be_answerable_from": [
+    "INDEPENDENT_AUDIT"
+   ],
+   "acceptance_condition": "a fresh-context diff of the ledger claim against code at a named HEAD SHA; caught D-1, D-3 and the bulk-endpoint parity gap",
+   "covered_by": [
+    "INDEPENDENT_AUDIT"
+   ]
+  },
+  {
+   "id": "CQ_05",
+   "question": "Why does model/logic code need a runtime self-check?",
+   "must_be_answerable_from": [
+    "RUNTIME_SELF_CHECK"
+   ],
+   "acceptance_condition": "a version marker + refuse-revert behavioral check, because layers 1-2 reduce but do not close the clobber window; catches the BKT revert and the Slice 7 phantom",
+   "covered_by": [
+    "RUNTIME_SELF_CHECK"
+   ]
+  },
+  {
+   "id": "CQ_06",
+   "question": "What counts as acceptance, and what is graded FAIL?",
+   "must_be_answerable_from": [
+    "ARTIFACT_EXISTENCE"
+   ],
+   "acceptance_condition": "acceptance = artifact-exists-in-code AND behaves-as-specified at a named SHA; a reported-complete claim with no artifact is FAIL",
+   "covered_by": [
+    "ARTIFACT_EXISTENCE",
+    "LEDGER_NOT_ACCEPTANCE"
+   ]
+  },
+  {
+   "id": "CQ_07",
+   "question": "What does the BKT silent-revert incident force?",
+   "must_be_answerable_from": [
+    "INC1_BKT_REVERT"
+   ],
+   "acceptance_condition": "after any revert re-run the affected slice's behavioral self-checks; a model/logic revert re-runs its acceptance checks; caught by layer 3",
+   "covered_by": [
+    "INC1_BKT_REVERT"
+   ]
+  },
+  {
+   "id": "CQ_08",
+   "question": "What does the GitHub sync-clobber incident force?",
+   "must_be_answerable_from": [
+    "INC2_SYNC_REVERT"
+   ],
+   "acceptance_condition": "unsynced=unfinished; after every 'Synced N commits' event diff the last pass vs code and restore before advancing; docs pushed only between passes; caught by layer 2",
+   "covered_by": [
+    "INC2_SYNC_REVERT"
+   ]
+  },
+  {
+   "id": "CQ_09",
+   "question": "How are the D-1 bypass and D-3 gap graded, and how is import idempotency proven?",
+   "must_be_answerable_from": [
+    "INC3_WRITEEDGE_BYPASS"
+   ],
+   "acceptance_condition": "a sole-write-path invariant is verified against code (D-1) and a recorded-complete-without-artifact is FAIL (D-3); idempotency proven by re-running the import with counts unchanged",
+   "covered_by": [
+    "INC3_WRITEEDGE_BYPASS",
+    "INC4_TERMLINK_GAP",
+    "IDEMPOTENCY_ACCEPTANCE"
+   ]
+  },
+  {
+   "id": "CQ_10",
+   "question": "Why is a slice with an off-repo runtime dependency not shipped?",
+   "must_be_answerable_from": [
+    "INC5_SLICE7_PHANTOM"
+   ],
+   "acceptance_condition": "the Slice 7 phantom (off-repo Worker) shows a slice whose runtime dependency is not in the repo is graded PARTIAL, not done; flag phantom deps as blockers; caught by layers 2+3",
+   "covered_by": [
+    "INC5_SLICE7_PHANTOM"
+   ]
+  },
+  {
+   "id": "CQ_11",
+   "question": "Why does a degraded-honest partial beat a phantom-complete?",
+   "must_be_answerable_from": [
+    "DEGRADED_HONEST"
+   ],
+   "acceptance_condition": "a valid partial with the gap named in the ledger is auditable and rebuildable; a phantom-complete hides the gap until production",
+   "covered_by": [
+    "DEGRADED_HONEST"
+   ]
+  },
+  {
+   "id": "CQ_12",
+   "question": "How does planner's verification loop stay disjoint from sysloops' runtime loop?",
+   "must_be_answerable_from": [
+    "SIBLING_FENCE_SYSLOOPS_KB2"
+   ],
+   "acceptance_condition": "loop/idempotent/router are used in build-time senses; runtime-loop-internal verification questions defer to sysloops",
+   "covered_by": [
+    "SIBLING_FENCE_SYSLOOPS_KB2"
+   ]
+  }
+ ],
+ "glossary": [
+  {
+   "term": "three-layer verification loop",
+   "definition": "the mandatory, unskippable loop planner runs on every pass: (1) builder ledger, (2) independent fresh-context audit vs code at a named HEAD SHA, (3) runtime self-check; each catches a distinct failure class and the builder's own claim is never acceptance [FACT-source: SLICE_6_5.md ledger-truth note]"
+  },
+  {
+   "term": "builder ledger",
+   "definition": "layer 1 — an append-only dated PROGRESS row (slice, one-line result, each acceptance check PASS/FAIL/BLOCKED-BY-GATE, gates awaiting owner) that history is never rewritten over; the audit's diff input, not acceptance [FACT-source: PROTOCOL step 7]"
+  },
+  {
+   "term": "independent audit",
+   "definition": "layer 2 — a fresh-context pass (a second model/Codex, not the builder) diffing the ledger claim against actual code at a named HEAD SHA; caught D-1, D-3 and the bulk-endpoint parity gap [FACT-source: SLICE_6_5.md G0 at origin/main f43cc69]"
+  },
+  {
+   "term": "runtime self-check",
+   "definition": "layer 3 — a version marker + behavioral check on model/logic code that refuses a reverted model, needed because layers 1-2 reduce but do not close the clobber window [FACT-source: PROTOCOL sync-discipline rule 4]"
+  },
+  {
+   "term": "reported!=verified",
+   "definition": "the binding principle that a builder's 'complete/verified' is never acceptance; acceptance is independent verification of artifact-existence + behavior, because three separate audits each overturned a 'complete' report [FACT-source: SLICE_6_5.md ledger-truth note]"
+  },
+  {
+   "term": "BKT silent revert (Incident 1)",
+   "definition": "a version-history revert of a bad visual change silently rolled back the BKT model fix; forces: after any revert re-run behavioral self-checks, a model/logic revert re-runs acceptance; caught by layer 3 [FACT-source: PROTOCOL]"
+  },
+  {
+   "term": "GitHub sync clobber (Incident 2)",
+   "definition": "two-way sync clobbered built work twice (bkt_evidence; Slice 6.5 Pass 1 via a 4-commit doc-sync); forces: unsynced=unfinished, diff-and-restore after every 'Synced N commits', docs pushed only between passes; caught by layer 2 [FACT-source: PROTOCOL sync discipline]"
+  },
+  {
+   "term": "writeEdge bypass / D-1 (Incident 3)",
+   "definition": "kgImport created edges via ConceptEdge.create, bypassing the writeEdge sole-write-path invariant while reporting complete; forces: invariants are code-verified acceptance items, import idempotency proven by re-run with counts unchanged; caught by layer 2 [FACT-source: SLICE_6_5.md G0 D-1]"
+  },
+  {
+   "term": "TermLink gap / D-3 (Incident 4)",
+   "definition": "the TermLink entity + linkTerms function were never built though Step 1 was recorded complete; forces: recorded-complete-without-artifact = FAIL, acceptance is artifact-existence + behavior not the ledger row; caught by layer 2 [FACT-source: SLICE_6_5.md G0 D-3]"
+  },
+  {
+   "term": "Slice 7 phantom-build (Incident 5)",
+   "definition": "the media build was reported but delegated to an off-repo home-lab Worker absent from the repo (w_optimized/VoiceQueue dead ends), graded PARTIAL; forces: a slice whose runtime dependency is not in the repo is not shipped, flag phantom deps as blockers; caught by layers 2+3 [FACT-source: NEW_FEATURES_PLAN §5]"
+  },
+  {
+   "term": "idempotency (build-time, as acceptance)",
+   "definition": "a duplicate-safe re-run of an import/build, proven by re-running the same import and confirming unchanged counts (duplicates rejected, dangling-drop preserved); planner verifies it, the owning specialist designs it — distinct from sysloops' runtime nightly-re-run idempotency [FACT-source: SLICE_6_5.md D-1 acceptance]"
+  },
+  {
+   "term": "degraded-honest > phantom-complete",
+   "definition": "a valid partial with the gap named in the ledger always beats a report of complete that isn't; the build-time analog of sysloops' 'a valid degraded plan beats a rich broken one' [FACT-source: SLICE_6_5.md D-2/D-3; NEW_FEATURES_PLAN §5]"
+  }
+ ],
+ "lens_coverage": {
+  "knowledge_representation": [
+   "glossary"
+  ],
+  "expert_systems": [
+   "dominance_rules",
+   "iteration_protocol"
+  ],
+  "graph_modeling": [
+   "edges",
+   "conflict_axes"
+  ],
+  "mathematical_scoring": [
+   "math_model"
+  ],
+  "probabilistic_modeling": [
+   "nodes"
+  ],
+  "risk_analysis": [
+   "edge_cases"
+  ],
+  "workflow_design": [
+   "workflow"
+  ],
+  "validation_and_qa": [
+   "validation_protocol"
+  ],
+  "conflict_management": [
+   "conflict_axes",
+   "dominance_rules"
+  ],
+  "evidence_governance": [
+   "source_registry",
+   "evidence_label_policy"
+  ],
+  "prompt_engineering": [
+   "schema_contract"
+  ],
+  "project_and_product_evaluation": [
+   "priority_order",
+   "priority_rationale"
+  ],
+  "ai_task_orchestration": [
+   "iteration_protocol",
+   "workflow"
+  ],
+  "software_schema_engineering": [
+   "schema_contract"
+  ],
+  "change_control": [
+   "change_control"
+  ],
+  "traceability": [
+   "traceability_matrix"
+  ]
+ },
+ "evidence_label_policy": {
+  "allowed_labels": [
+   "heuristic",
+   "expert_estimate",
+   "observed",
+   "experimentally_validated"
+  ],
+  "default_label": "heuristic",
+  "observed_requires": "OBSERVED_DATA",
+  "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+  "observed_impact_when_no_data": 0.0,
+  "data_quality_when_no_data": 0.0,
+  "observed_co_occurrence_when_no_data": 0.0
+ },
+ "source_registry": [
+  {
+   "source_id": "SRC_HEURISTIC_PRIOR",
+   "source_type": "heuristic_prior",
+   "label_eligibility": [
+    "heuristic"
+   ],
+   "description": "heuristic prior estimates for planner build-orchestration work units in absence of a supplied labeled dataset",
+   "citation_or_locator": "heuristic prior; no external dataset supplied",
+   "supports": [
+    "heuristic scores",
+    "heuristic weights",
+    "heuristic risk and confidence estimates"
+   ],
+   "does_not_support": [
+    "observed metrics",
+    "experimentally validated claims",
+    "benchmark numbers"
+   ],
+   "freshness_status": "not_applicable",
+   "provenance": {
+    "entity": "generated_artifact",
+    "activity": "estimation",
+    "agent": "model",
+    "timestamp_available": false
+   },
+   "grounding_limits": [
+    "not derived from measured data",
+    "relative not absolute",
+    "domain-general heuristic priors"
+   ]
+  },
+  {
+   "source_id": "SRC_PROTOCOL",
+   "source_type": "source_document",
+   "label_eligibility": [
+    "heuristic"
+   ],
+   "description": "PROTOCOL.md — the repo-driven build-mode standing directive (steps 1-7, standing rules, credit/sync/continuous-mode sections)",
+   "citation_or_locator": "FACTORY/study_system/app_plan/base44_plan/handoff/PROTOCOL.md",
+   "supports": [
+    "the seven-step slice procedure",
+    "the eight owner-gate vocabulary",
+    "credit/sync/continuous-mode discipline as documented build history"
+   ],
+   "does_not_support": [
+    "measured operating numbers",
+    "any figure not present in the file"
+   ],
+   "freshness_status": "current_as_of_2026_07_11",
+   "provenance": {
+    "entity": "repo_document",
+    "activity": "owner_and_agent_authoring",
+    "agent": "human_plus_model",
+    "timestamp_available": true
+   },
+   "grounding_limits": [
+    "a build-process directive, not an observed metric dataset",
+    "cited as [FACT-source] where a rule is quoted"
+   ]
+  },
+  {
+   "source_id": "SRC_SLICE_6_5",
+   "source_type": "source_document",
+   "label_eligibility": [
+    "heuristic"
+   ],
+   "description": "SLICE_6_5.md — the G0 audit ledger (D-1 writeEdge bypass, D-2 evidence capture, D-3 TermLink gap) and the three-independent-audits ledger-truth note",
+   "citation_or_locator": "FACTORY/study_system/app_plan/base44_plan/handoff/slices/SLICE_6_5.md",
+   "supports": [
+    "the D-1/D-2/D-3 audit findings",
+    "the 'third time an independent audit caught a gap' note",
+    "the kgraph->viz->uxguide (D1) sequencing case"
+   ],
+   "does_not_support": [
+    "unmeasured performance/node-count claims (the file itself forbids them)",
+    "any invented figure"
+   ],
+   "freshness_status": "current_as_of_2026_07_11",
+   "provenance": {
+    "entity": "repo_document",
+    "activity": "independent_audit_ledger",
+    "agent": "human_plus_model",
+    "timestamp_available": true
+   },
+   "grounding_limits": [
+    "documented incident ledger, not a controlled experiment",
+    "cited as [FACT-source] where an incident is quoted"
+   ]
+  },
+  {
+   "source_id": "SRC_NEW_FEATURES_PLAN",
+   "source_type": "source_document",
+   "label_eligibility": [
+    "heuristic"
+   ],
+   "description": "NEW_FEATURES_PLAN.md — owner dictation routing three features to authorities, the planner<->sysloops distinction (Sec 4), and Slice 7 phantom status (Sec 5)",
+   "citation_or_locator": "FACTORY/study_system/app_plan/base44_plan/handoff/NEW_FEATURES_PLAN.md",
+   "supports": [
+    "the planner vs sysloops boundary as the owner stated it",
+    "the data-before-encoding blocker (Feature B)",
+    "the Slice 7 PARTIAL/phantom media status"
+   ],
+   "does_not_support": [
+    "any exam-blueprint number",
+    "any figure not present in the file"
+   ],
+   "freshness_status": "current_as_of_2026_07_11",
+   "provenance": {
+    "entity": "repo_document",
+    "activity": "owner_dictation_capture",
+    "agent": "human_plus_model",
+    "timestamp_available": true
+   },
+   "grounding_limits": [
+    "a planning capture, not an observed run",
+    "cited as [FACT-source] where the owner's routing is quoted"
+   ]
+  },
+  {
+   "source_id": "SRC_MASTER_PLAN",
+   "source_type": "source_document",
+   "label_eligibility": [
+    "heuristic"
+   ],
+   "description": "BASE44_MASTER_PLAN.md — architecture, the 14-specialist table, the Slice 0-8 dependency map, and the gate vocabulary",
+   "citation_or_locator": "FACTORY/study_system/app_plan/base44_plan/handoff/BASE44_MASTER_PLAN.md",
+   "supports": [
+    "the Slice 0->8 DAG worked example",
+    "the specialist-consultation model",
+    "the gate vocabulary"
+   ],
+   "does_not_support": [
+    "measured operating numbers",
+    "any figure not present in the file"
+   ],
+   "freshness_status": "current_as_of_2026_07_11",
+   "provenance": {
+    "entity": "repo_document",
+    "activity": "owner_and_agent_authoring",
+    "agent": "human_plus_model",
+    "timestamp_available": true
+   },
+   "grounding_limits": [
+    "an architecture/plan document, not an observed metric dataset"
+   ]
+  },
+  {
+   "source_id": "SRC_LOOPS",
+   "source_type": "source_document",
+   "label_eligibility": [
+    "heuristic"
+   ],
+   "description": "BASE44_LOOPS.md — the loops doctrine owned by sysloops (the runtime self-improvement reference used here only as the non-overlap fence)",
+   "citation_or_locator": "FACTORY/study_system/app_plan/base44_plan/handoff/BASE44_LOOPS.md",
+   "supports": [
+    "the sysloops runtime-loop ownership that planner must NOT design",
+    "the build-time vs runtime lifecycle distinction"
+   ],
+   "does_not_support": [
+    "any planner claim over runtime-loop internals"
+   ],
+   "freshness_status": "current_as_of_2026_07_11",
+   "provenance": {
+    "entity": "repo_document",
+    "activity": "owner_and_agent_authoring",
+    "agent": "human_plus_model",
+    "timestamp_available": true
+   },
+   "grounding_limits": [
+    "belongs to sysloops; referenced here only to draw the boundary"
+   ]
+  }
+ ],
+ "math_model": {
+  "normalization_definitions": {
+   "normalize": "normalize(x)=min(1,max(0,x))"
+  },
+  "variable_definitions": {
+   "C": "criticality",
+   "BV": "business_value",
+   "UV": "user_value",
+   "TC": "technical_complexity",
+   "R": "risk_if_wrong",
+   "X": "cross_topic_coupling",
+   "IR": "irreversibility",
+   "CF": "confidence",
+   "NCP": "node_conflict_pressure",
+   "PI": "prior_importance",
+   "EC": "evidence_confidence",
+   "OI": "observed_impact",
+   "DQ": "data_quality",
+   "FR": "failure_rate",
+   "DW": "downside_weight",
+   "UR": "uncertainty_range_width",
+   "RT": "revisit_trigger_count_normalized",
+   "AT": "acceptance_test_pass_rate",
+   "DG": "dependency_gate_pass_rate",
+   "RS": "relation_strength",
+   "ST": "signed_tension",
+   "ES": "edge_score",
+   "EH": "edge_heat",
+   "EP": "edge_priority",
+   "PR": "prior_relation_strength",
+   "OC": "observed_co_occurrence",
+   "CC": "causal_confidence",
+   "CP": "conflict_probability",
+   "ERC": "expected_rework_cost"
+  },
+  "derived_variable_definitions": {
+   "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+   "RT": "min(1,count(revisit_triggers)/5)",
+   "AT": "predicted_acceptance_test_pass_rate",
+   "DG": "predicted_dependency_gate_pass_rate"
+  },
+  "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+  "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+  "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+  "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+  "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+  "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+  "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+  "edge_score_formula": "edge_score=edge_priority",
+  "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+  "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+ },
+ "nodes": [
+  {
+   "id": "PLN2_FRAME",
+   "topic": "reported_complete_is_never_verified_complete",
+   "definition": "Frame the layer: this KB owns planner's VERIFICATION discipline — the rule that 'reported complete' never substitutes for 'verified complete'. It exists because an independent audit has THREE times found a gap that a 'complete/verified' builder report missed (silent BKT revert; bulk-endpoint parity; the D-1/D-3 audit) [FACT-source: SLICE_6_5.md ledger-truth note]. planner runs a three-layer loop (builder ledger -> independent fresh-context audit -> runtime self-check) on every pass; the builder's own claim is never acceptance [ESTIMATE — design synthesis grounded in the documented incidents].",
+   "node_type": "work_unit",
+   "group": "foundations",
+   "scope_boundary": {
+    "included": [
+     "the reported!=verified principle",
+     "the three-independent-audits track record that motivates the loop",
+     "the builder-claim-is-never-acceptance rule"
+    ],
+    "excluded": [
+     "the five-incident taxonomy details (each has its own node)",
+     "gate design and continuous-mode (kb3)",
+     "slice decomposition (kb1)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_01"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_PROTOCOL",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.95,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.4,
+    "risk_if_wrong": 0.9,
+    "cross_topic_coupling": 0.9,
+    "irreversibility": 0.4,
+    "confidence": 0.85,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.63,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.27,
+    "lock_score": 0.7,
+    "final_importance": 0.71
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.4
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.95,
+    "evidence_confidence": 0.85,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.81,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.9,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "Making reported!=verified the frame forces the loop onto every pass, not just suspicious ones",
+     "example": "the same 'complete/verified' phrasing preceded all three caught gaps, so it earns zero trust by itself"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.5,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "A three-layer loop on every pass is real overhead when most passes are honest",
+     "example": "a trivially-correct pass still pays for a fresh-context audit"
+    }
+   ],
+   "failure_modes": [
+    "a builder 'complete/verified' report is accepted as done",
+    "the loop is skipped on a pass that 'looks obviously fine'"
+   ],
+   "acceptance_tests": [
+    "the three-layer loop is asserted as mandatory and unskippable",
+    "the builder's own claim is stated to be non-acceptance"
+   ],
+   "revisit_triggers": [
+    "a fourth independent audit finds a gap a report missed",
+    "a new failure class appears not covered by the taxonomy"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "stable",
+   "human_review_required": true
+  },
+  {
+   "id": "THREE_LAYER_LOOP",
+   "topic": "builder_ledger_audit_runtime_check",
+   "definition": "The mandatory, never-skipped loop of three layers: (1) BUILDER LEDGER — the build agent appends a dated row (slice, one-line result, each acceptance check PASS/FAIL/BLOCKED-BY-GATE, gates awaiting owner); (2) INDEPENDENT AUDIT — a fresh-context pass diffs the ledger's claim against the actual code at a named HEAD SHA; (3) RUNTIME SELF-CHECK — model/logic code carries a version marker + a behavioral check that refuses a reverted model [FACT-source: SLICE_6_5.md 'builder ledger -> independent audit -> runtime check stays mandatory'; PROTOCOL sync-discipline rule 4]. Layers 1-2 reduce but do not close the clobber window, which is why layer 3 exists.",
+   "node_type": "work_unit",
+   "group": "loop",
+   "scope_boundary": {
+    "included": [
+     "the three named layers and their order",
+     "the mandatory/unskippable status",
+     "the reason layer 3 exists (layers 1-2 do not close the window)"
+    ],
+    "excluded": [
+     "each layer's own detailed node (BUILDER_LEDGER / INDEPENDENT_AUDIT / RUNTIME_SELF_CHECK)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "PLN2_FRAME"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_02"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_PROTOCOL",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.95,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.5,
+    "risk_if_wrong": 0.9,
+    "cross_topic_coupling": 0.88,
+    "irreversibility": 0.4,
+    "confidence": 0.84,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.64,
+    "confidence_score": 0.62,
+    "revisit_pressure": 0.27,
+    "lock_score": 0.69,
+    "final_importance": 0.73
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.4
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.95,
+    "evidence_confidence": 0.84,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.8,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.88,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "Three independent layers catch different failure classes; no single layer would catch all five incidents",
+     "example": "the audit catches D-1/D-3/parity; the runtime check catches the silent BKT revert; the ledger anchors both"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.5,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Three layers cost a ledger write, a fresh-context pass and a code marker on every model/logic change",
+     "example": "a pure-cosmetic pass still needs the ledger row even if the audit is light"
+    }
+   ],
+   "failure_modes": [
+    "one or more layers are skipped and the incident they catch slips through",
+    "the layers are not truly independent (the builder audits itself)"
+   ],
+   "acceptance_tests": [
+    "all three layers are specified as mandatory",
+    "each of the five taxonomy incidents maps to the layer that catches it"
+   ],
+   "revisit_triggers": [
+    "a clobber slips through all three layers",
+    "the runtime self-check proves insufficient for a new revert mode"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "BUILDER_LEDGER",
+   "topic": "append_only_dated_ledger_row",
+   "definition": "Layer 1: the build agent APPENDS (never rewrites) a dated PROGRESS ledger row after every slice/pass — date, slice, one-line result, each acceptance check PASS/FAIL/BLOCKED-BY-GATE, and the gates awaiting the owner [FACT-source: PROTOCOL step 7 'append, never rewrite history']. The ledger is the record (not chat); it is the input the independent audit diffs against, but it is NOT itself acceptance.",
+   "node_type": "work_unit",
+   "group": "loop",
+   "scope_boundary": {
+    "included": [
+     "the append-only dated ledger row and its fields",
+     "ledger-is-the-record (not chat)",
+     "ledger as the audit's diff input, not as acceptance"
+    ],
+    "excluded": [
+     "the audit that consumes it (INDEPENDENT_AUDIT)",
+     "the ledger-not-acceptance principle stated as its own rule (LEDGER_NOT_ACCEPTANCE)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "THREE_LAYER_LOOP"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_03"
+   ],
+   "evidence_refs": [
+    "SRC_PROTOCOL",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.85,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.3,
+    "risk_if_wrong": 0.72,
+    "cross_topic_coupling": 0.7,
+    "irreversibility": 0.4,
+    "confidence": 0.85,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.52,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.23,
+    "lock_score": 0.72,
+    "final_importance": 0.63
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.85,
+    "evidence_confidence": 0.85,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.72,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.83,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_PROTOCOL"
+     ],
+     "claim": "An append-only dated ledger gives the audit a fixed claim to diff and preserves history honestly",
+     "example": "a later revert cannot quietly erase the row that says a pass shipped"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.4,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "A ledger row is only as honest as the builder writing it — which is exactly why it is not acceptance",
+     "example": "a builder can write PASS on an item that actually failed"
+    }
+   ],
+   "failure_modes": [
+    "history is rewritten instead of appended",
+    "the ledger row is treated as proof of completion"
+   ],
+   "acceptance_tests": [
+    "the ledger is append-only and dated with the required fields",
+    "the ledger row is explicitly not counted as acceptance"
+   ],
+   "revisit_triggers": [
+    "a ledger row is found to have been rewritten"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": false
+  },
+  {
+   "id": "INDEPENDENT_AUDIT",
+   "topic": "fresh_context_diff_vs_code_at_head_sha",
+   "definition": "Layer 2: a FRESH-CONTEXT pass (a second model / Codex, not the builder) diffs the ledger's claim against the ACTUAL code at a NAMED HEAD SHA. The builder's own 'complete/verified' is never acceptance [FACT-source: SLICE_6_5.md G0 audit executed by Codex on a fresh clone at origin/main = f43cc69; every re-verified [repo] claim cites that SHA]. This layer caught D-1 (writeEdge bypass), D-3 (TermLink gap), and the bulk-endpoint parity gap.",
+   "node_type": "work_unit",
+   "group": "loop",
+   "scope_boundary": {
+    "included": [
+     "fresh-context (not the builder) diff of ledger-claim vs actual code",
+     "citing a named HEAD SHA for every re-verified claim",
+     "the incidents this layer catches (D-1, D-3, parity)"
+    ],
+    "excluded": [
+     "the runtime self-check (RUNTIME_SELF_CHECK)",
+     "the specific incident rules (their own nodes)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "BUILDER_LEDGER"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_04"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.95,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.5,
+    "risk_if_wrong": 0.9,
+    "cross_topic_coupling": 0.85,
+    "irreversibility": 0.4,
+    "confidence": 0.85,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.63,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.27,
+    "lock_score": 0.7,
+    "final_importance": 0.72
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.4
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.95,
+    "evidence_confidence": 0.85,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.81,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.9,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "A fresh-context audit against a named SHA has no stake in the builder's claim and reads the real code",
+     "example": "Codex at f43cc69 found kgImport bypassed writeEdge and TermLink was never built, both reported complete"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.5,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "A fresh-context pass costs a second agent run and a clean checkout each time",
+     "example": "auditing every pass at a pinned SHA is slower than trusting the report"
+    }
+   ],
+   "failure_modes": [
+    "the audit is run by the builder's own context (not independent)",
+    "no HEAD SHA is named, so the audit's claims cannot be reproduced"
+   ],
+   "acceptance_tests": [
+    "the audit is fresh-context and diffs the ledger claim against code at a named HEAD SHA",
+    "a claim-vs-code mismatch downgrades the ledger row to FAIL"
+   ],
+   "revisit_triggers": [
+    "an audit misses a gap later found in production",
+    "the SHA-pinning discipline lapses"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "RUNTIME_SELF_CHECK",
+   "topic": "version_marker_refuses_reverted_model",
+   "definition": "Layer 3: model/logic code carries a VERSION MARKER plus a BEHAVIORAL CHECK that refuses a reverted model, because layers 1-2 reduce but do not close the clobber window [FACT-source: PROTOCOL sync-discipline rule 4 'runtime self-checks stay mandatory ... a behavioral check that refuses a reverted model']. This is the layer that catches the silent BKT revert and the Slice 7 phantom (runtime dependency absent).",
+   "node_type": "work_unit",
+   "group": "loop",
+   "scope_boundary": {
+    "included": [
+     "a version marker + behavioral refuse-revert check on model/logic code",
+     "the reason it is needed (window not closed by layers 1-2)",
+     "the incidents it catches (BKT revert, Slice 7 phantom)"
+    ],
+    "excluded": [
+     "the ledger and audit layers",
+     "the specific revert/phantom incident rules (their own nodes)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "THREE_LAYER_LOOP"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_05"
+   ],
+   "evidence_refs": [
+    "SRC_PROTOCOL",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.9,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.55,
+    "risk_if_wrong": 0.85,
+    "cross_topic_coupling": 0.78,
+    "irreversibility": 0.4,
+    "confidence": 0.8,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.62,
+    "confidence_score": 0.61,
+    "revisit_pressure": 0.29,
+    "lock_score": 0.69,
+    "final_importance": 0.7
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.4
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.9,
+    "evidence_confidence": 0.8,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.72,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.85,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_PROTOCOL"
+     ],
+     "claim": "A runtime self-check catches a revert that both the ledger and a between-passes audit can miss",
+     "example": "a behavioral marker refuses to run a BKT model that was silently rolled back"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.5,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "A runtime check adds a version marker and a behavioral assertion to model/logic code",
+     "example": "every model/logic change must carry and update its marker"
+    }
+   ],
+   "failure_modes": [
+    "model/logic ships without a version marker, so a revert runs silently",
+    "the behavioral check is present but never actually exercised"
+   ],
+   "acceptance_tests": [
+    "model/logic code carries a version marker and a refuse-revert behavioral check",
+    "the check is exercised, not merely present"
+   ],
+   "revisit_triggers": [
+    "a revert runs despite the marker",
+    "a new revert mode evades the behavioral check"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "LEDGER_NOT_ACCEPTANCE",
+   "topic": "builder_claim_is_never_acceptance",
+   "definition": "The binding principle under the loop: the builder's own 'complete/verified' is NEVER acceptance; acceptance is artifact-existence + behavior verified by an independent layer. This is the lesson of the ledger-truth note — three times a 'complete/verified' report missed a gap an independent audit caught (silent BKT revert; bulk-endpoint parity; D-1/D-3) [FACT-source: SLICE_6_5.md ledger-truth note]. A reported-complete claim with no corresponding artifact in code is graded FAIL.",
+   "node_type": "constraint",
+   "group": "principle",
+   "scope_boundary": {
+    "included": [
+     "builder claim is never acceptance",
+     "acceptance = independent verification of artifact-existence + behavior",
+     "reported-complete-without-artifact = FAIL"
+    ],
+    "excluded": [
+     "the artifact-existence rule stated with the D-3 case (ARTIFACT_EXISTENCE)",
+     "the degraded-honest principle (DEGRADED_HONEST)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "INDEPENDENT_AUDIT"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_06"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.95,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.25,
+    "risk_if_wrong": 0.9,
+    "cross_topic_coupling": 0.82,
+    "irreversibility": 0.4,
+    "confidence": 0.86,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.59,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.23,
+    "lock_score": 0.7,
+    "final_importance": 0.68
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.95,
+    "evidence_confidence": 0.86,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.82,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.9,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "Refusing to count the builder's claim as acceptance is what turned three silent gaps into caught ones",
+     "example": "D-3's 'Step 1 recorded complete' was overturned because TermLink did not exist in code"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.4,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Treating every claim as unproven until independently verified slows a fully-honest builder",
+     "example": "an honest, correct pass still must wait for the audit"
+    }
+   ],
+   "failure_modes": [
+    "a 'complete/verified' report is accepted as done",
+    "a reported-complete step with no artifact is left graded PASS"
+   ],
+   "acceptance_tests": [
+    "no builder claim is counted as acceptance without independent verification",
+    "a reported-complete claim lacking a code artifact is graded FAIL"
+   ],
+   "revisit_triggers": [
+    "a report is accepted without verification and a gap results"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "INC1_BKT_REVERT",
+   "topic": "bkt_silent_revert_incident",
+   "definition": "Incident 1 — BKT silent revert: a version-history Revert of a bad VISUAL change silently rolled back the BKT model/logic fix, and nobody noticed [FACT-source: PROTOCOL 'a revert is exactly how the BKT fix was silently lost once']. The rule it forces: after ANY revert, re-run the affected slice's behavioral self-checks; a revert touching model/logic code re-runs its ACCEPTANCE checks. Caught by: layer 3 (runtime self-check).",
+   "node_type": "incident_rule",
+   "group": "taxonomy",
+   "scope_boundary": {
+    "included": [
+     "the BKT-silent-revert incident",
+     "the after-any-revert re-run-behavioral-checks rule",
+     "revert-of-model/logic re-runs acceptance",
+     "caught by layer 3"
+    ],
+    "excluded": [
+     "the sync-revert incident (INC2)",
+     "the runtime-check layer itself (RUNTIME_SELF_CHECK)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "RUNTIME_SELF_CHECK"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_07"
+   ],
+   "evidence_refs": [
+    "SRC_PROTOCOL",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.88,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.45,
+    "risk_if_wrong": 0.82,
+    "cross_topic_coupling": 0.72,
+    "irreversibility": 0.4,
+    "confidence": 0.82,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.58,
+    "confidence_score": 0.61,
+    "revisit_pressure": 0.24,
+    "lock_score": 0.7,
+    "final_importance": 0.67
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.88,
+    "evidence_confidence": 0.82,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.72,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.85,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_PROTOCOL"
+     ],
+     "claim": "Re-running acceptance after any revert closes the exact path that lost the BKT fix",
+     "example": "reverting a bad visual change re-triggers the BKT slice's behavioral self-checks"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.35,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Re-running acceptance after every revert adds work to a routine cosmetic rollback",
+     "example": "a purely visual revert still triggers a model-slice re-check if they share a commit"
+    }
+   ],
+   "failure_modes": [
+    "a revert rolls back model/logic and no self-check catches it",
+    "a revert is assumed cosmetic when it also touched logic"
+   ],
+   "acceptance_tests": [
+    "after any revert the affected slice's behavioral self-checks are re-run",
+    "a model/logic revert re-runs its acceptance checks"
+   ],
+   "revisit_triggers": [
+    "another revert silently loses a fix"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "INC2_SYNC_REVERT",
+   "topic": "github_sync_clobber_incident",
+   "definition": "Incident 2 — GitHub sync revert: workspace<->GitHub two-way sync clobbered built work TWICE — the bkt_evidence fix, and Slice 6.5 Pass 1 (a doc-sync pulled 4 commits, removing the pass's components + ledger entry) [FACT-source: PROTOCOL sync discipline 'Observed twice now']. The rules it forces: a pass is not done until pushed to GitHub (unsynced = unfinished); after every 'Synced N commits' event, diff the last ledgered pass vs actual code and RESTORE before advancing; owner/Codex push docs only BETWEEN passes. Caught by: layer 2 (independent audit).",
+   "node_type": "incident_rule",
+   "group": "taxonomy",
+   "scope_boundary": {
+    "included": [
+     "the two documented sync clobbers",
+     "unsynced=unfinished",
+     "diff-and-restore after every Synced-N-commits event",
+     "docs pushed only between passes",
+     "caught by layer 2"
+    ],
+    "excluded": [
+     "the audit layer itself (INDEPENDENT_AUDIT)",
+     "the escalation for a mid-queue sync event (kb3 continuous-mode halt)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "INDEPENDENT_AUDIT"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_08"
+   ],
+   "evidence_refs": [
+    "SRC_PROTOCOL",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.9,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.5,
+    "risk_if_wrong": 0.85,
+    "cross_topic_coupling": 0.78,
+    "irreversibility": 0.4,
+    "confidence": 0.83,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.61,
+    "confidence_score": 0.62,
+    "revisit_pressure": 0.24,
+    "lock_score": 0.7,
+    "final_importance": 0.7
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.9,
+    "evidence_confidence": 0.83,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.75,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.86,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_PROTOCOL"
+     ],
+     "claim": "Diff-and-restore after every sync event caught the Slice 6.5 Pass 1 revert before the queue advanced over the hole",
+     "example": "'Synced 4 commits' pulled the pass out; the diff check found the missing components and restored them"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.4,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "A diff-and-restore check after every sync event is friction on a busy sync day",
+     "example": "each 'Synced N commits' banner triggers a full last-pass diff"
+    }
+   ],
+   "failure_modes": [
+    "the queue advances over a hole a sync left",
+    "a mid-build doc-sync opens the clobber window"
+   ],
+   "acceptance_tests": [
+    "a pass is pushed to GitHub before being reported done",
+    "every 'Synced N commits' event triggers a last-pass diff and restore-before-advance"
+   ],
+   "revisit_triggers": [
+    "a sync clobbers work a third time"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "INC3_WRITEEDGE_BYPASS",
+   "topic": "d1_sole_write_path_bypass_incident",
+   "definition": "Incident 3 — writeEdge bypass (D-1): kgImport created edges via ConceptEdge.create directly, bypassing the writeEdge sole-write-path invariant — and the build reported complete [FACT-source: SLICE_6_5.md G0 D-1]. The rules it forces: a 'sole write path' invariant is an ACCEPTANCE item the audit verifies against code, not a design intention; import idempotency is proven by RE-RUNNING the same import (duplicates rejected, counts unchanged). Caught by: layer 2 (independent audit).",
+   "node_type": "incident_rule",
+   "group": "taxonomy",
+   "scope_boundary": {
+    "included": [
+     "the writeEdge-bypass incident",
+     "sole-write-path invariant is an acceptance item verified against code",
+     "idempotency proven by re-running the import (counts unchanged)",
+     "caught by layer 2"
+    ],
+    "excluded": [
+     "the general artifact-existence rule (ARTIFACT_EXISTENCE)",
+     "the idempotency-as-acceptance node (IDEMPOTENCY_ACCEPTANCE)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "INDEPENDENT_AUDIT"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_09"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.9,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.55,
+    "risk_if_wrong": 0.85,
+    "cross_topic_coupling": 0.8,
+    "irreversibility": 0.4,
+    "confidence": 0.84,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.62,
+    "confidence_score": 0.62,
+    "revisit_pressure": 0.23,
+    "lock_score": 0.7,
+    "final_importance": 0.71
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.9,
+    "evidence_confidence": 0.84,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.76,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.86,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "Treating a sole-write-path invariant as a code-verified acceptance item catches a bypass a design doc would miss",
+     "example": "the audit found kgImport called ConceptEdge.create directly despite the §1.3 invariant"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.4,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Verifying every invariant against code (not intent) is heavier than trusting the design",
+     "example": "the audit must read the import path, not just the invariant statement"
+    }
+   ],
+   "failure_modes": [
+    "an invariant is treated as satisfied because it was designed, not because code obeys it",
+    "import idempotency is assumed, not proven by re-running"
+   ],
+   "acceptance_tests": [
+    "a sole-write-path invariant is verified against the actual code path",
+    "re-running the same import leaves counts unchanged (idempotency proven)"
+   ],
+   "revisit_triggers": [
+    "another invariant is found bypassed in code"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "INC4_TERMLINK_GAP",
+   "topic": "d3_recorded_complete_but_never_built_incident",
+   "definition": "Incident 4 — TermLink gap (D-3): the TermLink entity + linkTerms function were NEVER built, though Step 1 was RECORDED complete [FACT-source: SLICE_6_5.md G0 D-3 'never built despite Step 1 being recorded complete']. The rule it forces: a recorded-complete step whose artifacts don't exist in code is a FAIL; acceptance is artifact-existence + behavior, NEVER the ledger row. Caught by: layer 2 (independent audit).",
+   "node_type": "incident_rule",
+   "group": "taxonomy",
+   "scope_boundary": {
+    "included": [
+     "the TermLink-never-built incident",
+     "recorded-complete-without-artifact = FAIL",
+     "acceptance is artifact-existence + behavior, not the ledger row",
+     "caught by layer 2"
+    ],
+    "excluded": [
+     "the ledger-not-acceptance principle stated generally (LEDGER_NOT_ACCEPTANCE)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "LEDGER_NOT_ACCEPTANCE"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_09"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.92,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.4,
+    "risk_if_wrong": 0.88,
+    "cross_topic_coupling": 0.78,
+    "irreversibility": 0.4,
+    "confidence": 0.85,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.6,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.23,
+    "lock_score": 0.7,
+    "final_importance": 0.69
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.92,
+    "evidence_confidence": 0.85,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.78,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.88,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "Grading artifact-existence (not the ledger row) turns a recorded-complete phantom into a caught FAIL",
+     "example": "D-3: linkTerms did not exist, so 'Step 1 complete' was overturned to FAIL"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.35,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Checking artifact existence for every recorded-complete step is thorough but slow",
+     "example": "the audit must confirm each named entity/function actually exists in code"
+    }
+   ],
+   "failure_modes": [
+    "a recorded-complete step with no artifact is left graded PASS",
+    "the ledger row is trusted over the code"
+   ],
+   "acceptance_tests": [
+    "a recorded-complete step whose artifact is absent in code is graded FAIL",
+    "acceptance checks artifact existence + behavior, not the ledger row"
+   ],
+   "revisit_triggers": [
+    "another recorded-complete step is found to have no artifact"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "INC5_SLICE7_PHANTOM",
+   "topic": "slice7_off_repo_phantom_build_incident",
+   "definition": "Incident 5 — Slice 7 phantom-build: the media/Slice 7 build was reported but was PHANTOM — delegated to an off-repo 'home-lab Worker' absent from the repo, with w_optimized/VoiceQueue dead ends; graded PARTIAL, rebuild pending [FACT-source: NEW_FEATURES_PLAN §5 'media PARTIAL — Slice 7 phantom; rebuild pending (qS7r)']. The rule it forces: a slice whose runtime dependency is NOT in the repo is not shipped; flag any off-repo/phantom dependency as a build blocker before declaring done. Caught by: layer 3 (runtime self-check) + layer 2 (audit).",
+   "node_type": "incident_rule",
+   "group": "taxonomy",
+   "scope_boundary": {
+    "included": [
+     "the Slice 7 off-repo phantom incident",
+     "a slice whose runtime dependency is not in the repo is not shipped",
+     "flag off-repo/phantom dependency as a blocker before done",
+     "caught by layers 2+3"
+    ],
+    "excluded": [
+     "the general reported!=verified frame (PLN2_FRAME)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "RUNTIME_SELF_CHECK",
+    "INDEPENDENT_AUDIT"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_10"
+   ],
+   "evidence_refs": [
+    "SRC_NEW_FEATURES_PLAN",
+    "SRC_SLICE_6_5",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.9,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.5,
+    "risk_if_wrong": 0.86,
+    "cross_topic_coupling": 0.8,
+    "irreversibility": 0.4,
+    "confidence": 0.83,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.61,
+    "confidence_score": 0.62,
+    "revisit_pressure": 0.24,
+    "lock_score": 0.7,
+    "final_importance": 0.7
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.9,
+    "evidence_confidence": 0.83,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.75,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.85,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_NEW_FEATURES_PLAN"
+     ],
+     "claim": "Requiring the runtime dependency to live in the repo turns a phantom-build into a graded PARTIAL, not a false done",
+     "example": "Slice 7's off-repo Worker made w_optimized/VoiceQueue dead ends the runtime check exposes"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.4,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Some legitimately-external runtime dependencies (a real API) are not in-repo and must be handled separately",
+     "example": "distinguishing a legitimate external service from a phantom off-repo worker needs judgement"
+    }
+   ],
+   "failure_modes": [
+    "a slice depending on an off-repo artifact is declared done",
+    "a phantom dependency is not flagged as a blocker"
+   ],
+   "acceptance_tests": [
+    "a slice whose runtime dependency is absent from the repo is graded not-shipped/PARTIAL",
+    "off-repo/phantom dependencies are flagged as blockers before done"
+   ],
+   "revisit_triggers": [
+    "another phantom off-repo dependency is discovered"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "ARTIFACT_EXISTENCE",
+   "topic": "acceptance_is_artifact_existence_plus_behavior",
+   "definition": "The general acceptance rule distilled from D-3 and D-1: acceptance = the named ARTIFACT EXISTS in code AND BEHAVES as specified (verified at a named HEAD SHA), never the ledger row and never a design intention. A bypassed sole-write-path invariant (D-1) and a never-built entity recorded complete (D-3) are both FAILs under this rule [FACT-source: SLICE_6_5.md G0 D-1/D-3].",
+   "node_type": "constraint",
+   "group": "principle",
+   "scope_boundary": {
+    "included": [
+     "acceptance = artifact-exists-in-code AND behaves-as-specified",
+     "verified at a named HEAD SHA",
+     "neither the ledger row nor design intent counts"
+    ],
+    "excluded": [
+     "the idempotency acceptance case (IDEMPOTENCY_ACCEPTANCE)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "LEDGER_NOT_ACCEPTANCE"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_06"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.92,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.35,
+    "risk_if_wrong": 0.88,
+    "cross_topic_coupling": 0.8,
+    "irreversibility": 0.4,
+    "confidence": 0.85,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.59,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.23,
+    "lock_score": 0.7,
+    "final_importance": 0.69
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.92,
+    "evidence_confidence": 0.85,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.78,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.88,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "A single artifact-exists+behaves rule covers both the bypass (D-1) and the never-built (D-3) failure classes",
+     "example": "the audit checks that writeEdge is actually on the import path AND that TermLink actually exists"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.35,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Verifying existence-and-behavior against a pinned SHA is heavier than reading a checklist",
+     "example": "the audit reads code, not the report"
+    }
+   ],
+   "failure_modes": [
+    "a design intention is accepted as a built artifact",
+    "behavior is assumed from existence without exercising it"
+   ],
+   "acceptance_tests": [
+    "acceptance verifies the artifact exists in code AND behaves as specified at a named SHA",
+    "design intent and the ledger row are excluded from acceptance"
+   ],
+   "revisit_triggers": [
+    "an accepted item is later found absent or misbehaving"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "IDEMPOTENCY_ACCEPTANCE",
+   "topic": "idempotency_proven_by_rerun_counts_unchanged",
+   "definition": "Idempotency (build-time sense) is an acceptance item planner VERIFIES and the owning specialist DESIGNS: a re-run of an import/build must be duplicate-safe, proven by RE-RUNNING the same import and confirming counts are unchanged (duplicates rejected, dangling-drop preserved, semantic edges still never gate) [FACT-source: SLICE_6_5.md D-1 acceptance]. This is distinct from sysloops' runtime idempotency (a nightly re-run reproducing the same DB state), which planner does not design.",
+   "node_type": "constraint",
+   "group": "principle",
+   "scope_boundary": {
+    "included": [
+     "idempotency as a planner-verified, specialist-designed acceptance item",
+     "proof by re-running the import (counts unchanged)",
+     "the build-time-vs-runtime idempotency distinction"
+    ],
+    "excluded": [
+     "the runtime nightly-re-run idempotency owned by sysloops (kb3/sysloops fence)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "INC3_WRITEEDGE_BYPASS"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_09"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.85,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.5,
+    "risk_if_wrong": 0.78,
+    "cross_topic_coupling": 0.75,
+    "irreversibility": 0.4,
+    "confidence": 0.82,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.58,
+    "confidence_score": 0.61,
+    "revisit_pressure": 0.24,
+    "lock_score": 0.71,
+    "final_importance": 0.67
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.85,
+    "evidence_confidence": 0.82,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.7,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.83,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_SLICE_6_5"
+     ],
+     "claim": "Proving idempotency by re-running (not by inspection) is what verifies the D-1 fix actually holds",
+     "example": "re-running the same import and seeing identical counts proves duplicates are rejected"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.4,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "Re-running an import as an acceptance step costs a real execution each pass",
+     "example": "a large import must actually be run twice to prove idempotency"
+    }
+   ],
+   "failure_modes": [
+    "idempotency is asserted from code reading, not proven by re-run",
+    "build-time idempotency is confused with sysloops' runtime idempotency"
+   ],
+   "acceptance_tests": [
+    "idempotency is proven by re-running the import with counts unchanged",
+    "the build-time sense is kept distinct from sysloops' runtime sense"
+   ],
+   "revisit_triggers": [
+    "a re-run produces changed counts"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "DEGRADED_HONEST",
+   "topic": "degraded_honest_beats_phantom_complete",
+   "definition": "Degraded-honest beats phantom-complete: a slice that ships a valid PARTIAL with the gap named in the ledger always beats one reported complete that isn't. This is the build-time analog of sysloops' 'a valid degraded plan beats a rich broken one' — planner applies it to BUILD HONESTY, not the nightly plan [FACT-source: SLICE_6_5.md D-2/D-3 handling; NEW_FEATURES_PLAN §5 Slice 7 graded PARTIAL]. A named partial is auditable and rebuildable; a phantom-complete hides the gap until production.",
+   "node_type": "constraint",
+   "group": "principle",
+   "scope_boundary": {
+    "included": [
+     "degraded-honest > phantom-complete",
+     "a valid partial with the gap named in the ledger",
+     "the build-time analog of the sysloops degraded-plan rule"
+    ],
+    "excluded": [
+     "sysloops' runtime degraded-mode (FSRS-only nightly plan) which planner does not design"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "LEDGER_NOT_ACCEPTANCE"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_11"
+   ],
+   "evidence_refs": [
+    "SRC_SLICE_6_5",
+    "SRC_NEW_FEATURES_PLAN",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.9,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.25,
+    "risk_if_wrong": 0.85,
+    "cross_topic_coupling": 0.72,
+    "irreversibility": 0.4,
+    "confidence": 0.85,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.55,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.23,
+    "lock_score": 0.7,
+    "final_importance": 0.65
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.9,
+    "evidence_confidence": 0.85,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.77,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.87,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_NEW_FEATURES_PLAN"
+     ],
+     "claim": "Grading Slice 7 PARTIAL with the phantom named made it auditable and rebuildable instead of a hidden false-done",
+     "example": "'media PARTIAL; rebuild pending (qS7r)' is honest and actionable; 'Slice 7 complete' would have hidden the dead ends"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.35,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "An honest PARTIAL looks worse on a status board than a (false) complete",
+     "example": "a named partial reads as unfinished even though it is the honest grade"
+    }
+   ],
+   "failure_modes": [
+    "a gap is hidden to report complete",
+    "a partial ships without naming the gap in the ledger"
+   ],
+   "acceptance_tests": [
+    "a valid partial with the gap named is preferred over a phantom-complete",
+    "the build-time sense is kept distinct from sysloops' runtime degraded-mode"
+   ],
+   "revisit_triggers": [
+    "a phantom-complete is chosen over an honest partial"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  },
+  {
+   "id": "SIBLING_FENCE_SYSLOOPS_KB2",
+   "topic": "verification_loop_vs_runtime_loop_fence",
+   "definition": "Fence: planner's 'loop' is the build-time VERIFICATION loop of a pass (ledger -> audit -> runtime self-check); sysloops' 'loop' is the runtime NIGHTLY-ANALYSIS loop over the revlog/graph/plan [FACT-source: NEW_FEATURES_PLAN §4 boundary]. planner's 'idempotent' means a duplicate-safe re-run of an import/build; sysloops' means a nightly re-run reproducing DB state. planner's 'router' sequences which specialist governs a slice; sysloops' routes a runtime anomaly to the owning specialist. Where a verification question turns on runtime-loop internals, planner defers to sysloops.",
+   "node_type": "constraint",
+   "group": "boundary",
+   "scope_boundary": {
+    "included": [
+     "loop/idempotent/router disambiguated in build-time vs runtime senses",
+     "defer runtime-loop-internal verification questions to sysloops"
+    ],
+    "excluded": [
+     "the runtime loop design itself (sysloops)"
+    ]
+   },
+   "academic_fields": [],
+   "subfields": [],
+   "specialists": [],
+   "contradictors": [],
+   "inputs": [],
+   "outputs": [],
+   "dependencies": [
+    "PLN2_FRAME"
+   ],
+   "must_not_finalize_before": [],
+   "competency_question_refs": [
+    "CQ_12"
+   ],
+   "evidence_refs": [
+    "SRC_NEW_FEATURES_PLAN",
+    "SRC_LOOPS",
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "metrics": {
+    "criticality": 0.85,
+    "business_value": 0.6,
+    "user_value": 0.6,
+    "technical_complexity": 0.3,
+    "risk_if_wrong": 0.8,
+    "cross_topic_coupling": 0.75,
+    "irreversibility": 0.4,
+    "confidence": 0.85,
+    "node_conflict_pressure": 0.4,
+    "risk_score": 0.55,
+    "confidence_score": 0.63,
+    "revisit_pressure": 0.23,
+    "lock_score": 0.71,
+    "final_importance": 0.65
+   },
+   "score_derivation_inputs": {
+    "acceptance_test_pass_rate": 0.82,
+    "dependency_gate_pass_rate": 0.82,
+    "uncertainty_range_width": 0.28,
+    "revisit_trigger_count_normalized": 0.2
+   },
+   "score_derivation_input_labels": {
+    "acceptance_test_pass_rate": "heuristic",
+    "dependency_gate_pass_rate": "heuristic",
+    "uncertainty_range_width": "heuristic",
+    "revisit_trigger_count_normalized": "heuristic"
+   },
+   "metric_labels": {
+    "criticality": "heuristic",
+    "business_value": "heuristic",
+    "user_value": "heuristic",
+    "technical_complexity": "heuristic",
+    "risk_if_wrong": "heuristic",
+    "cross_topic_coupling": "heuristic",
+    "irreversibility": "heuristic",
+    "confidence": "heuristic",
+    "node_conflict_pressure": "heuristic",
+    "risk_score": "heuristic",
+    "confidence_score": "heuristic",
+    "revisit_pressure": "heuristic",
+    "lock_score": "heuristic",
+    "final_importance": "heuristic"
+   },
+   "probabilistic_layer": {
+    "prior_importance": 0.85,
+    "evidence_confidence": 0.85,
+    "observed_impact": 0.0,
+    "data_quality": 0.0,
+    "failure_rate": 0.15,
+    "downside_weight": 0.45,
+    "uncertainty_interval": [
+     0.22,
+     0.5
+    ],
+    "posterior_importance": 0.72,
+    "update_signal": "a new incident, an owner ruling, or a repo change revises this unit",
+    "value_labels": {
+     "prior_importance": "heuristic",
+     "evidence_confidence": "heuristic",
+     "observed_impact": "heuristic",
+     "data_quality": "heuristic",
+     "failure_rate": "heuristic",
+     "downside_weight": "heuristic",
+     "uncertainty_interval": "heuristic",
+     "posterior_importance": "heuristic"
+    }
+   },
+   "pros": [
+    {
+     "weight": 0.85,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_NEW_FEATURES_PLAN"
+     ],
+     "claim": "Disambiguating the shared vocabulary keeps a build verification loop from being confused with a nightly runtime loop",
+     "example": "'idempotent import re-run' (planner) vs 'idempotent nightly re-run' (sysloops) are different acceptance objects"
+    }
+   ],
+   "cons": [
+    {
+     "weight": 0.35,
+     "evidence_label": "heuristic",
+     "evidence_refs": [
+      "SRC_HEURISTIC_PRIOR"
+     ],
+     "claim": "The shared words invite collision unless the senses are restated at each use",
+     "example": "a reader may apply the runtime sense of idempotent to a build import"
+    }
+   ],
+   "failure_modes": [
+    "planner designs the nightly loop while claiming to verify a build loop",
+    "loop/idempotent/router used in the wrong sense"
+   ],
+   "acceptance_tests": [
+    "loop/idempotent/router are defined in their build-time senses",
+    "a runtime-loop-internal verification question defers to sysloops"
+   ],
+   "revisit_triggers": [
+    "a Slice 8 verification exposes an unclear sense boundary"
+   ],
+   "handoff_artifact_required": true,
+   "lifecycle_state": "draft",
+   "human_review_required": true
+  }
+ ],
+ "edges": [
+  {
+   "id": "EDGE_001",
+   "from": "PLN2_FRAME",
+   "to": "THREE_LAYER_LOOP",
+   "edge_type": "dependency",
+   "relation_strength": 0.9,
+   "signed_tension": 0.0,
+   "edge_score": 0.16,
+   "edge_heat": 0.32,
+   "prior_relation_strength": 0.9,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.16,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the reported!=verified frame instantiates the three-layer loop",
+   "benefit_of_coupling": "the loop runs on every pass, not just suspicious ones",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_002",
+   "from": "THREE_LAYER_LOOP",
+   "to": "BUILDER_LEDGER",
+   "edge_type": "dependency",
+   "relation_strength": 0.85,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.85,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "layer 1 of the loop",
+   "benefit_of_coupling": "a fixed claim for the audit to diff",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_003",
+   "from": "THREE_LAYER_LOOP",
+   "to": "INDEPENDENT_AUDIT",
+   "edge_type": "dependency",
+   "relation_strength": 0.9,
+   "signed_tension": 0.0,
+   "edge_score": 0.16,
+   "edge_heat": 0.32,
+   "prior_relation_strength": 0.9,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.16,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "layer 2 of the loop",
+   "benefit_of_coupling": "a stake-free check against real code",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_004",
+   "from": "THREE_LAYER_LOOP",
+   "to": "RUNTIME_SELF_CHECK",
+   "edge_type": "dependency",
+   "relation_strength": 0.88,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.31,
+   "prior_relation_strength": 0.88,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "layer 3 of the loop",
+   "benefit_of_coupling": "closes the residual clobber window layers 1-2 leave open",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_005",
+   "from": "BUILDER_LEDGER",
+   "to": "INDEPENDENT_AUDIT",
+   "edge_type": "dependency",
+   "relation_strength": 0.85,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.85,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the audit diffs the ledger's claim against code",
+   "benefit_of_coupling": "ledger + audit together catch claim-vs-code mismatches",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_006",
+   "from": "INDEPENDENT_AUDIT",
+   "to": "LEDGER_NOT_ACCEPTANCE",
+   "edge_type": "supports",
+   "relation_strength": 0.88,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.31,
+   "prior_relation_strength": 0.88,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the audit is what makes the ledger row non-acceptance operational",
+   "benefit_of_coupling": "a claim is unproven until the audit confirms it",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_007",
+   "from": "LEDGER_NOT_ACCEPTANCE",
+   "to": "ARTIFACT_EXISTENCE",
+   "edge_type": "dependency",
+   "relation_strength": 0.85,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.85,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "if the ledger is not acceptance, artifact-existence+behavior is",
+   "benefit_of_coupling": "a single positive definition of acceptance",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_008",
+   "from": "RUNTIME_SELF_CHECK",
+   "to": "INC1_BKT_REVERT",
+   "edge_type": "supports",
+   "relation_strength": 0.85,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.85,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the runtime self-check is the layer that catches the BKT revert",
+   "benefit_of_coupling": "a reverted model is refused at runtime",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_009",
+   "from": "INDEPENDENT_AUDIT",
+   "to": "INC2_SYNC_REVERT",
+   "edge_type": "supports",
+   "relation_strength": 0.86,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.31,
+   "prior_relation_strength": 0.86,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the audit's diff-and-restore catches a sync clobber",
+   "benefit_of_coupling": "the queue never advances over a hole",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_010",
+   "from": "INDEPENDENT_AUDIT",
+   "to": "INC3_WRITEEDGE_BYPASS",
+   "edge_type": "supports",
+   "relation_strength": 0.86,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.31,
+   "prior_relation_strength": 0.86,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the audit against code catches the writeEdge bypass",
+   "benefit_of_coupling": "an invariant is verified in code, not in intent",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_011",
+   "from": "LEDGER_NOT_ACCEPTANCE",
+   "to": "INC4_TERMLINK_GAP",
+   "edge_type": "supports",
+   "relation_strength": 0.88,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.31,
+   "prior_relation_strength": 0.88,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the recorded-complete-without-artifact FAIL is the D-3 case",
+   "benefit_of_coupling": "a phantom step is graded FAIL",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_012",
+   "from": "RUNTIME_SELF_CHECK",
+   "to": "INC5_SLICE7_PHANTOM",
+   "edge_type": "supports",
+   "relation_strength": 0.82,
+   "signed_tension": 0.0,
+   "edge_score": 0.14,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.82,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.14,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the runtime check plus the audit expose an off-repo phantom dependency",
+   "benefit_of_coupling": "a slice with an absent runtime dependency is graded PARTIAL",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_013",
+   "from": "INDEPENDENT_AUDIT",
+   "to": "INC5_SLICE7_PHANTOM",
+   "edge_type": "supports",
+   "relation_strength": 0.8,
+   "signed_tension": 0.0,
+   "edge_score": 0.14,
+   "edge_heat": 0.29,
+   "prior_relation_strength": 0.8,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.14,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the audit confirms the runtime dependency is absent from the repo",
+   "benefit_of_coupling": "the phantom is flagged before done",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_014",
+   "from": "INC3_WRITEEDGE_BYPASS",
+   "to": "IDEMPOTENCY_ACCEPTANCE",
+   "edge_type": "dependency",
+   "relation_strength": 0.83,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.83,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the D-1 fix's acceptance is proven by re-running the import",
+   "benefit_of_coupling": "idempotency is proven, not asserted",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_015",
+   "from": "ARTIFACT_EXISTENCE",
+   "to": "INC4_TERMLINK_GAP",
+   "edge_type": "supports",
+   "relation_strength": 0.84,
+   "signed_tension": 0.0,
+   "edge_score": 0.15,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.84,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.15,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "artifact-existence is the rule the D-3 gap violated",
+   "benefit_of_coupling": "existence checked before behavior credited",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_016",
+   "from": "LEDGER_NOT_ACCEPTANCE",
+   "to": "DEGRADED_HONEST",
+   "edge_type": "supports",
+   "relation_strength": 0.8,
+   "signed_tension": 0.0,
+   "edge_score": 0.14,
+   "edge_heat": 0.29,
+   "prior_relation_strength": 0.8,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.14,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "if a false-complete is not acceptance, an honest partial is the correct grade",
+   "benefit_of_coupling": "honesty is rewarded over a hidden gap",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_017",
+   "from": "PLN2_FRAME",
+   "to": "SIBLING_FENCE_SYSLOOPS_KB2",
+   "edge_type": "dependency",
+   "relation_strength": 0.82,
+   "signed_tension": 0.0,
+   "edge_score": 0.14,
+   "edge_heat": 0.3,
+   "prior_relation_strength": 0.82,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.15,
+   "expected_rework_cost": 0.25,
+   "edge_priority": 0.14,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "the frame's 'loop' must be disambiguated from sysloops' runtime loop",
+   "benefit_of_coupling": "the verification loop is not confused with the nightly loop",
+   "risk_of_conflict": "",
+   "example": ""
+  },
+  {
+   "id": "EDGE_018",
+   "from": "IDEMPOTENCY_ACCEPTANCE",
+   "to": "SIBLING_FENCE_SYSLOOPS_KB2",
+   "edge_type": "constraint",
+   "relation_strength": 0.72,
+   "signed_tension": -0.4,
+   "edge_score": 0.3,
+   "edge_heat": 0.41,
+   "prior_relation_strength": 0.72,
+   "observed_co_occurrence": 0.0,
+   "causal_confidence": 0.7,
+   "conflict_probability": 0.4,
+   "expected_rework_cost": 0.35,
+   "edge_priority": 0.3,
+   "edge_metric_labels": {
+    "relation_strength": "heuristic",
+    "signed_tension": "heuristic",
+    "edge_score": "heuristic",
+    "edge_heat": "heuristic",
+    "edge_priority": "heuristic",
+    "causal_confidence": "heuristic",
+    "conflict_probability": "heuristic",
+    "expected_rework_cost": "heuristic"
+   },
+   "evidence_refs": [
+    "SRC_HEURISTIC_PRIOR"
+   ],
+   "traceability": [],
+   "why_related": "build-time idempotency and sysloops' runtime idempotency share a word but are different acceptance objects",
+   "benefit_of_coupling": "",
+   "risk_of_conflict": "the runtime sense is applied to a build import or vice versa",
+   "example": "",
+   "resolution_rule": "planner verifies build-time import idempotency; runtime nightly-re-run idempotency is sysloops' design"
+  }
+ ],
+ "conflict_axes": [
+  {
+   "name": "trust_the_report_vs_verify_independently",
+   "description": "Accepting a 'complete/verified' report is faster than an independent audit, but three separate audits have each overturned such a report.",
+   "poles": [
+    "accept the builder's complete/verified report",
+    "independently verify artifact-existence + behavior"
+   ],
+   "resolution_hint": "independent verification wins; the builder claim is never acceptance",
+   "affected_nodes": [
+    "PLN2_FRAME",
+    "LEDGER_NOT_ACCEPTANCE",
+    "ARTIFACT_EXISTENCE"
+   ],
+   "id": "CA_01"
+  },
+  {
+   "name": "ledger_row_vs_code_reality",
+   "description": "The ledger row is convenient evidence, but a row can say PASS on an item the code does not contain (D-3).",
+   "poles": [
+    "treat the ledger row as proof",
+    "grade against artifact existence in code"
+   ],
+   "resolution_hint": "code reality wins; a recorded-complete step with no artifact is FAIL",
+   "affected_nodes": [
+    "BUILDER_LEDGER",
+    "INC4_TERMLINK_GAP",
+    "ARTIFACT_EXISTENCE"
+   ],
+   "id": "CA_02"
+  },
+  {
+   "name": "invariant_as_intent_vs_invariant_in_code",
+   "description": "A sole-write-path invariant is easy to record as designed, but D-1 shows the import bypassed it in code.",
+   "poles": [
+    "invariant satisfied because designed",
+    "invariant verified against the actual code path"
+   ],
+   "resolution_hint": "code verification wins; the audit reads the import path, and idempotency is proven by re-run",
+   "affected_nodes": [
+    "INC3_WRITEEDGE_BYPASS",
+    "IDEMPOTENCY_ACCEPTANCE"
+   ],
+   "id": "CA_03"
+  },
+  {
+   "name": "phantom_complete_vs_honest_partial",
+   "description": "A phantom-complete looks better on a status board than an honest PARTIAL, but hides the gap until production.",
+   "poles": [
+    "report complete despite a gap",
+    "ship a partial with the gap named in the ledger"
+   ],
+   "resolution_hint": "degraded-honest wins; a named partial is auditable and rebuildable",
+   "affected_nodes": [
+    "DEGRADED_HONEST",
+    "INC5_SLICE7_PHANTOM"
+   ],
+   "id": "CA_04"
+  },
+  {
+   "name": "skip_a_layer_on_an_obvious_pass_vs_run_all_three",
+   "description": "A pass that looks obviously fine tempts skipping a layer, but every caught gap also 'looked fine' when reported.",
+   "poles": [
+    "skip a layer on an obvious pass",
+    "run all three layers every pass"
+   ],
+   "resolution_hint": "run all three; the loop is mandatory and unskippable",
+   "affected_nodes": [
+    "THREE_LAYER_LOOP",
+    "PLN2_FRAME"
+   ],
+   "id": "CA_05"
+  }
+ ],
+ "edge_cases": [
+  {
+   "description": "A revert is assumed cosmetic but shared a commit with model/logic, silently rolling back a fix (the BKT case).",
+   "trigger": "a version-history revert of a visual change also reverts logic",
+   "affected_nodes": [
+    "INC1_BKT_REVERT",
+    "RUNTIME_SELF_CHECK"
+   ],
+   "mitigation": "after any revert re-run the affected slice's behavioral self-checks; a model/logic revert re-runs acceptance",
+   "severity": "high",
+   "id": "EC_01"
+  },
+  {
+   "description": "A 'Synced N commits' event lands mid-queue and pulls out the last pass's components + ledger row.",
+   "trigger": "a doc-sync pulls commits while a build is effectively in flight",
+   "affected_nodes": [
+    "INC2_SYNC_REVERT",
+    "INDEPENDENT_AUDIT"
+   ],
+   "mitigation": "diff last ledgered pass vs code and restore before advancing; never advance over a hole; docs only between passes",
+   "severity": "high",
+   "id": "EC_02"
+  },
+  {
+   "description": "An invariant is recorded satisfied because it was designed, while the code path bypasses it (D-1).",
+   "trigger": "the audit reads the invariant statement but not the actual import path",
+   "affected_nodes": [
+    "INC3_WRITEEDGE_BYPASS",
+    "ARTIFACT_EXISTENCE"
+   ],
+   "mitigation": "verify the invariant against the code path at a named SHA and prove idempotency by re-run",
+   "severity": "high",
+   "id": "EC_03"
+  },
+  {
+   "description": "A step is recorded complete but its named artifact does not exist in code (D-3).",
+   "trigger": "the ledger row is trusted over an artifact-existence check",
+   "affected_nodes": [
+    "INC4_TERMLINK_GAP",
+    "LEDGER_NOT_ACCEPTANCE"
+   ],
+   "mitigation": "grade artifact-existence + behavior; a missing artifact is FAIL regardless of the row",
+   "severity": "high",
+   "id": "EC_04"
+  },
+  {
+   "description": "A slice's runtime dependency lives off-repo (a home-lab worker) and is reported as shipped.",
+   "trigger": "a build is delegated to an artifact absent from the repo",
+   "affected_nodes": [
+    "INC5_SLICE7_PHANTOM",
+    "RUNTIME_SELF_CHECK"
+   ],
+   "mitigation": "flag the off-repo/phantom dependency as a blocker; grade PARTIAL until it lives in the repo",
+   "severity": "high",
+   "id": "EC_05"
+  },
+  {
+   "description": "A verification question about a Slice 8 pass turns on nightly-loop internals.",
+   "trigger": "an acceptance check depends on a runtime self-metric threshold",
+   "affected_nodes": [
+    "SIBLING_FENCE_SYSLOOPS_KB2"
+   ],
+   "mitigation": "defer the runtime-internal design to sysloops; planner verifies build-vs-spec only",
+   "severity": "medium",
+   "id": "EC_06"
+  }
+ ],
+ "workflow": [
+  {
+   "action": "Assert the reported!=verified frame",
+   "node_ref": "PLN2_FRAME",
+   "description": "State that the builder's claim is never acceptance and the three-layer loop is mandatory",
+   "artifact": "verification frame",
+   "gate": "the loop is declared unskippable before any pass is accepted",
+   "id": "WF_01",
+   "step": 1
+  },
+  {
+   "action": "Append the builder ledger row",
+   "node_ref": "BUILDER_LEDGER",
+   "description": "Record date, slice, one-line result, per-check PASS/FAIL/BLOCKED-BY-GATE, gates awaiting owner",
+   "artifact": "append-only dated ledger row",
+   "gate": "history is appended, never rewritten; the row is not acceptance",
+   "id": "WF_02",
+   "step": 2
+  },
+  {
+   "action": "Run the independent fresh-context audit",
+   "node_ref": "INDEPENDENT_AUDIT",
+   "description": "A second context diffs the ledger claim against code at a named HEAD SHA",
+   "artifact": "audit report citing the SHA",
+   "gate": "a claim-vs-code mismatch downgrades the row to FAIL",
+   "id": "WF_03",
+   "step": 3
+  },
+  {
+   "action": "Verify artifact-existence + behavior",
+   "node_ref": "ARTIFACT_EXISTENCE",
+   "description": "Confirm each named artifact exists in code and behaves as specified; prove import idempotency by re-run",
+   "artifact": "acceptance verdict per item",
+   "gate": "a recorded-complete step with no artifact is FAIL; idempotency proven by re-run",
+   "id": "WF_04",
+   "step": 4
+  },
+  {
+   "action": "Run the runtime self-check on model/logic code",
+   "node_ref": "RUNTIME_SELF_CHECK",
+   "description": "Confirm the version marker + refuse-revert behavioral check is present and exercised",
+   "artifact": "runtime self-check result",
+   "gate": "model/logic ships only with an exercised refuse-revert check",
+   "id": "WF_05",
+   "step": 5
+  },
+  {
+   "action": "Apply the incident rules on any revert / sync / off-repo dependency",
+   "node_ref": "INC2_SYNC_REVERT",
+   "description": "After a revert re-run behavioral checks; after a sync event diff-and-restore; flag any off-repo/phantom dependency",
+   "artifact": "incident-response note in the ledger",
+   "gate": "no advance over a sync hole; no ship of an off-repo-dependent slice",
+   "id": "WF_06",
+   "step": 6
+  },
+  {
+   "action": "Grade honestly: degraded-honest over phantom-complete",
+   "node_ref": "DEGRADED_HONEST",
+   "description": "Ship a valid partial with the gap named rather than a false complete",
+   "artifact": "honest slice grade (PASS/PARTIAL/FAIL) with gaps named",
+   "gate": "a gap is named in the ledger, never hidden to report complete",
+   "id": "WF_07",
+   "step": 7
+  }
+ ],
+ "priority_order": [
+  "PLN2_FRAME",
+  "THREE_LAYER_LOOP",
+  "BUILDER_LEDGER",
+  "INDEPENDENT_AUDIT",
+  "RUNTIME_SELF_CHECK",
+  "LEDGER_NOT_ACCEPTANCE",
+  "INC1_BKT_REVERT",
+  "INC2_SYNC_REVERT",
+  "INC3_WRITEEDGE_BYPASS",
+  "INC4_TERMLINK_GAP",
+  "INC5_SLICE7_PHANTOM",
+  "ARTIFACT_EXISTENCE",
+  "IDEMPOTENCY_ACCEPTANCE",
+  "DEGRADED_HONEST",
+  "SIBLING_FENCE_SYSLOOPS_KB2"
+ ],
+ "priority_rationale": "The reported!=verified frame and the three-layer loop come first because they are the reason the KB exists and everything else is a layer or an incident under them. The three layers (ledger, audit, runtime self-check) precede the taxonomy because each incident is classified by the layer that catches it. The ledger-not-acceptance and artifact-existence principles sit between the layers and the incidents because they are the general rules the incidents instantiate. The five incidents are ordered by the layer that catches them (revert->runtime; sync/D-1/D-3->audit; phantom->audit+runtime). Idempotency-as-acceptance and degraded-honest come near the end as the two positive acceptance/grading principles distilled from the incidents, and the sysloops fence closes the KB by disambiguating the shared loop/idempotent/router vocabulary.",
+ "dominance_rules": [
+  {
+   "rule": "Independent verification dominates the builder's report",
+   "rationale": "three separate audits each overturned a 'complete/verified' report",
+   "trigger": "a pass is reported complete",
+   "action": "verify artifact-existence + behavior independently before accepting",
+   "id": "DR_01",
+   "priority": 1
+  },
+  {
+   "rule": "Code reality dominates the ledger row",
+   "rationale": "a row can claim PASS on an artifact the code lacks (D-3)",
+   "trigger": "a step is recorded complete",
+   "action": "grade artifact-existence in code; a missing artifact is FAIL",
+   "id": "DR_02",
+   "priority": 2
+  },
+  {
+   "rule": "Invariant-in-code dominates invariant-as-intent",
+   "rationale": "D-1 shows a designed invariant can be bypassed by the actual code path",
+   "trigger": "a sole-write-path or similar invariant is claimed",
+   "action": "verify against the code path at a named SHA; prove idempotency by re-run",
+   "id": "DR_03",
+   "priority": 3
+  },
+  {
+   "rule": "The full three-layer loop dominates skipping a layer on an 'obvious' pass",
+   "rationale": "every caught gap looked fine when reported",
+   "trigger": "a pass looks obviously correct",
+   "action": "run all three layers; the loop is mandatory",
+   "id": "DR_04",
+   "priority": 4
+  },
+  {
+   "rule": "An in-repo runtime dependency dominates an off-repo one",
+   "rationale": "the Slice 7 phantom shipped nothing runnable from the repo",
+   "trigger": "a slice depends on an off-repo/phantom artifact",
+   "action": "flag as a blocker; grade PARTIAL until the dependency lives in the repo",
+   "id": "DR_05",
+   "priority": 5
+  },
+  {
+   "rule": "Degraded-honest dominates phantom-complete",
+   "rationale": "a named partial is auditable and rebuildable; a false complete hides the gap until production",
+   "trigger": "a slice has a real gap",
+   "action": "ship a partial with the gap named in the ledger",
+   "id": "DR_06",
+   "priority": 6
+  }
+ ],
+ "anti_rework_rules": [
+  {
+   "rule": "Run the independent audit at a named HEAD SHA every pass",
+   "prevents": "accepting a claim that the code contradicts and reworking it in production",
+   "id": "ARR_01"
+  },
+  {
+   "rule": "Diff-and-restore after every 'Synced N commits' before advancing",
+   "prevents": "advancing the queue over a hole a sync left",
+   "id": "ARR_02"
+  },
+  {
+   "rule": "Verify invariants against the code path, not the design statement",
+   "prevents": "a bypassed invariant (D-1) surviving as apparently-satisfied",
+   "id": "ARR_03"
+  },
+  {
+   "rule": "Check artifact existence before crediting a recorded-complete step",
+   "prevents": "a phantom step (D-3) staying graded PASS",
+   "id": "ARR_04"
+  },
+  {
+   "rule": "Carry a version marker + refuse-revert check on all model/logic code",
+   "prevents": "a silent revert (BKT) running in production undetected",
+   "id": "ARR_05"
+  }
+ ],
+ "iteration_protocol": [
+  {
+   "trigger": "an independent audit finds a gap a 'complete/verified' report missed",
+   "action": "downgrade the row to FAIL, fix on mainline before advancing, and record the incident class",
+   "nodes": [
+    "INDEPENDENT_AUDIT",
+    "LEDGER_NOT_ACCEPTANCE"
+   ],
+   "priority": 1,
+   "id": "IP_01"
+  },
+  {
+   "trigger": "a 'Synced N commits from GitHub' event lands mid-queue",
+   "action": "diff last ledgered pass vs code and restore any clobbered work before advancing",
+   "nodes": [
+    "INC2_SYNC_REVERT",
+    "INDEPENDENT_AUDIT"
+   ],
+   "priority": 1,
+   "id": "IP_02"
+  },
+  {
+   "trigger": "a revert touches model/logic code",
+   "action": "re-run the affected slice's acceptance + behavioral self-checks",
+   "nodes": [
+    "INC1_BKT_REVERT",
+    "RUNTIME_SELF_CHECK"
+   ],
+   "priority": 1,
+   "id": "IP_03"
+  },
+  {
+   "trigger": "a slice's runtime dependency is found absent from the repo",
+   "action": "flag the phantom dependency and grade the slice PARTIAL until it lives in-repo",
+   "nodes": [
+    "INC5_SLICE7_PHANTOM"
+   ],
+   "priority": 1,
+   "id": "IP_04"
+  },
+  {
+   "trigger": "a new failure class appears that no existing incident covers",
+   "action": "add an incident rule and map it to the layer that catches it",
+   "nodes": [
+    "THREE_LAYER_LOOP",
+    "PLN2_FRAME"
+   ],
+   "priority": 2,
+   "id": "IP_05"
+  }
+ ],
+ "validation_protocol": {
+  "required_checks": [
+   "all node ids unique",
+   "all edge ids unique EDGE_XXX format",
+   "all from/to in edges reference valid node ids",
+   "all competency_question_refs resolve to valid CQ ids",
+   "all evidence_refs resolve to valid source_registry ids",
+   "all priority_order entries are valid node ids with no duplicates",
+   "high_risk_nodes (risk_if_wrong>=0.80) have non-empty acceptance_tests and human_review_required=true",
+   "high_coupling_nodes (cross_topic_coupling>=0.75) have non-empty revisit_triggers",
+   "conflict edges have signed_tension<0 and resolution_rule present",
+   "dependency edges form no cycles",
+   "observed_impact=0.0 for all nodes (no observed data)",
+   "SRC_HEURISTIC_PRIOR in source_registry",
+   "15 nodes, 18 edges present as generated",
+   "schema_version=1.3"
+  ],
+  "post_formula_checks": [
+   "all derived fields non-zero after compute run",
+   "final_importance in [0,1] for all nodes",
+   "risk_score, confidence_score, revisit_pressure, lock_score in [0,1]",
+   "posterior_importance in [0,1]",
+   "edge_priority, edge_score, edge_heat in [0,1]"
+  ]
+ },
+ "validation_report": {
+  "status": "pending",
+  "last_validated": null,
+  "validator_version": null,
+  "failed_checks": [],
+  "passed_checks": [],
+  "notes": "built by planner KB generator; run validators/kb_validator.py --mode dense to certify"
+ },
+ "evaluation_suite": {
+  "eval_objective": "verify_core_properties_of_study_system_planner_verification_loops_kb",
+  "test_cases": [
+   {
+    "id": "EVAL_CASE_001",
+    "case_type": "minimal_domain",
+    "input_summary": "smallest meaningful instance in this domain",
+    "expected_properties": [
+     "highest-priority node engaged first",
+     "obligations enforced"
+    ]
+   }
+  ],
+  "metrics": [
+   "coverage",
+   "consistency",
+   "obligation_adherence"
+  ],
+  "regression_policy": "re-run evaluation suite after any node addition or formula change",
+  "minimum_pass_conditions": [
+   "all required checks pass",
+   "no formula mismatches"
+  ]
+ },
+ "traceability_matrix": [
+  {
+   "node_id": "PLN2_FRAME",
+   "workflow_steps": [
+    "WF_01"
+   ],
+   "competency_questions": [
+    "CQ_01"
+   ],
+   "conflict_axes": [
+    "CA_01",
+    "CA_05"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "THREE_LAYER_LOOP",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_02"
+   ],
+   "conflict_axes": [
+    "CA_05"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "BUILDER_LEDGER",
+   "workflow_steps": [
+    "WF_02"
+   ],
+   "competency_questions": [
+    "CQ_03"
+   ],
+   "conflict_axes": [
+    "CA_02"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "INDEPENDENT_AUDIT",
+   "workflow_steps": [
+    "WF_03"
+   ],
+   "competency_questions": [
+    "CQ_04"
+   ],
+   "conflict_axes": [],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "RUNTIME_SELF_CHECK",
+   "workflow_steps": [
+    "WF_05"
+   ],
+   "competency_questions": [
+    "CQ_05"
+   ],
+   "conflict_axes": [],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "LEDGER_NOT_ACCEPTANCE",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_06"
+   ],
+   "conflict_axes": [
+    "CA_01"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "INC1_BKT_REVERT",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_07"
+   ],
+   "conflict_axes": [],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "INC2_SYNC_REVERT",
+   "workflow_steps": [
+    "WF_06"
+   ],
+   "competency_questions": [
+    "CQ_08"
+   ],
+   "conflict_axes": [],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "INC3_WRITEEDGE_BYPASS",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_09"
+   ],
+   "conflict_axes": [
+    "CA_03"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "INC4_TERMLINK_GAP",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_09"
+   ],
+   "conflict_axes": [
+    "CA_02"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "INC5_SLICE7_PHANTOM",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_10"
+   ],
+   "conflict_axes": [
+    "CA_04"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "ARTIFACT_EXISTENCE",
+   "workflow_steps": [
+    "WF_04"
+   ],
+   "competency_questions": [
+    "CQ_06"
+   ],
+   "conflict_axes": [
+    "CA_01",
+    "CA_02"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "IDEMPOTENCY_ACCEPTANCE",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_09"
+   ],
+   "conflict_axes": [
+    "CA_03"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "DEGRADED_HONEST",
+   "workflow_steps": [
+    "WF_07"
+   ],
+   "competency_questions": [
+    "CQ_11"
+   ],
+   "conflict_axes": [
+    "CA_04"
+   ],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  },
+  {
+   "node_id": "SIBLING_FENCE_SYSLOOPS_KB2",
+   "workflow_steps": [],
+   "competency_questions": [
+    "CQ_12"
+   ],
+   "conflict_axes": [],
+   "dominance_rules": [],
+   "anti_rework_rules": []
+  }
+ ],
+ "change_control": {
+  "version": "1.0.0",
+  "created": "2026-07-11",
+  "change_log": [],
+  "review_required_for": [
+   "node addition",
+   "edge type change",
+   "dominance_rule change",
+   "scope boundary change"
+  ]
+ }
+}

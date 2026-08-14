@@ -1,0 +1,473 @@
+# EVALUATION_REGISTRY — machine-readable eval registry (SPEC deliverable 8)
+# Status: PLANNING. Entries with status: active are runnable today against this
+# repo; entries with status: planned document the SPEC Phase-8 pipeline and the
+# Phase-10 system metrics and have no harness yet. Single writer: hub.
+# Threshold values on planned entries are provisional targets, to be ratified
+# with the first baseline capture; they are marked provisional: true.
+
+_schema:
+  eval_id: "unique slug, dot-namespaced (family.name)"
+  status: "active | planned"
+  target: "project | technique | agent | source | system"
+  type: "unit | integration | e2e | security | latency | quality | cost | compatibility"
+  command_or_procedure: >-
+    exact runnable command for deterministic evals; a numbered procedure for
+    judged/measured evals. Commands run only from the hub branch's copies of
+    gate/validator code, never from files fetched off a partner branch
+    (ORCHESTRATION section 7).
+  baseline_ref: >-
+    what the run is compared against: a commit sha, a fingerprint (FPR sha256),
+    a ledger path@sha, or a recorded baseline artifact from
+    eval.phase8.baseline_capture.
+  thresholds:
+    success: "condition for pass"
+    fail: "condition for hard fail (blocks state transition)"
+    regression: "condition that flags a previously-passing target"
+  variance_protocol:
+    n_runs: "1 for deterministic; >=5 for nondeterministic (report median + IQR)"
+    notes: "judge de-bias / repetition rules where applicable (SCORING.md section 3)"
+  artifacts_path: "where run outputs land (reports, transcripts, manifests)"
+
+evals:
+
+  # ── Active today: deterministic gates over existing repo assets ────────────
+
+  - eval_id: gates.kb_validator.dense
+    status: active
+    target: project
+    type: unit
+    command_or_procedure: >-
+      python3 validators/kb_validator.py <kb.json> --mode dense --quiet
+      [--report out.json]; repo-wide sweep of all wired KBs runs inside
+      tools/gate_all.sh --repo (gate 1).
+    baseline_ref: "validators/kb_validator.py FPR e0348b616a5575f42877487e2a7ac8ff644625424ed6e4e462c7c58b575721e5 at HEAD c0a0f1e522547ac3f92cc9dcee3f3ab18252651d"
+    thresholds:
+      success: "exit 0 for every KB under test"
+      fail: "exit 1 for any KB (blocks task acceptance / integration)"
+      regression: "a previously-wired KB fails after a validator or schema change"
+    variance_protocol:
+      n_runs: 1
+      notes: deterministic
+    artifacts_path: "stdout FAIL lines; optional --report JSON in the task staging dir"
+
+  - eval_id: gates.specialist_validator
+    status: active
+    target: project
+    type: unit
+    command_or_procedure: >-
+      python3 validators/specialist_validator.py <SPEC.json> --quiet
+      [--report out.json]; repo-wide sweep inside tools/gate_all.sh --repo
+      (gate 2). Checks structural completeness, grounding in KBs, and
+      placeholder rejection.
+    baseline_ref: "validators/specialist_validator.py FPR 307becbf74d233fc35116c460709f094da6629a5a43de99ff66c9715359a86fb at HEAD c0a0f1e"
+    thresholds:
+      success: "exit 0 for every specialist"
+      fail: "exit 1 (blocks wiring into specialists/ and dist/)"
+      regression: "a wired specialist fails after validator change"
+    variance_protocol:
+      n_runs: 1
+      notes: deterministic
+    artifacts_path: "stdout; optional --report JSON"
+
+  - eval_id: gates.gate_all.task
+    status: active
+    target: project
+    type: integration
+    command_or_procedure: >-
+      tools/gate_all.sh --task <staging-dir> — JSON parse of all files;
+      every .spec.json re-forges BYTE-IDENTICAL to its committed .kb.json
+      (branches/_forge/kb_forge.py, detects hand-edited KBs); dense KB gate;
+      specialist gate. Builders run pre-push; hub re-runs on a clean checkout
+      of the fetched ref before any verdict.
+    baseline_ref: "gate fingerprint set at HEAD c0a0f1e (gates.gate_all.fingerprint_pin)"
+    thresholds:
+      success: "exit 0 and final line 'GATES: PASS gate_all=<fpr>'"
+      fail: "any FAIL line; gate exit 0 is necessary but never sufficient for acceptance"
+      regression: "a previously-accepted staging dir fails under an unchanged fingerprint set"
+    variance_protocol:
+      n_runs: 1
+      notes: deterministic
+    artifacts_path: "gate output quoted in commit trailer 'Gates: PASS gate_all=<12-char fpr>' and in the submit msg"
+
+  - eval_id: gates.gate_all.repo
+    status: active
+    target: project
+    type: integration
+    command_or_procedure: >-
+      tools/gate_all.sh --repo — all wired KBs dense-validated; all wired
+      specialists validated; ROUTER.json and INDEX.json must equal a fresh
+      deterministic rebuild (drift gate); EXCHANGE ledger sanity (protocol
+      versions match, states legal, agents known, ACTIVE task write scopes
+      pairwise disjoint). Hub runs pre-merge and again post-wire.
+    baseline_ref: "same fingerprint set; ledgers at integration-branch HEAD"
+    thresholds:
+      success: "exit 0"
+      fail: "any FAIL (blocks merge/wire; integration branch must never be left red)"
+      regression: "red --repo on a commit whose parent was green"
+    variance_protocol:
+      n_runs: 1
+      notes: deterministic
+    artifacts_path: "hub round logs; STATUS.md regenerated after green"
+
+  - eval_id: gates.gate_all.fingerprint_pin
+    status: active
+    target: project
+    type: security
+    command_or_procedure: >-
+      tools/gate_all.sh --fingerprint — prints sha256 FPR lines for
+      gate_all.sh, check_scope.sh, kb_forge.py, kb_validator.py, metrics.py,
+      specialist_validator.py. Compare against the pinned set; any drift
+      without a hub GATE-RULING + TYPE: broadcast is tampering
+      (ORCHESTRATION section 6). Also enforced by the hub every-round check:
+      git diff --stat <baseline> <partner-tip> -- validators branches/_forge
+      schema tools must be EMPTY before trusting any gate result.
+    baseline_ref: >-
+      pinned set at HEAD c0a0f1e5: gate_all.sh=bd8210c2…, check_scope.sh=566a978a…,
+      kb_forge.py=9c340cd5…, kb_validator.py=e0348b61…, metrics.py=acd6fe74…,
+      specialist_validator.py=307becbf… (full 64-char values in git; 12-char
+      prefixes used in commit trailers)
+    thresholds:
+      success: "FPR set identical to pinned set"
+      fail: "any mismatch without an announced hub gate edit -> freeze acceptance, run incident runbook"
+      regression: not-applicable
+    variance_protocol:
+      n_runs: 1
+      notes: deterministic
+    artifacts_path: "FPR lines echoed in every gate run header"
+
+  - eval_id: gates.check_scope
+    status: active
+    target: agent
+    type: security
+    command_or_procedure: >-
+      tools/check_scope.sh --agent <id> [--task TASK-NNN] [--base <ref>]
+      [--head <ref>] — every changed path on the ref must lie inside the
+      agent's static_write_scope (EXCHANGE/AGENTS.json) plus the named task's
+      write_scope (EXCHANGE/tasks.json, task assigned to that agent in state
+      assigned|in_progress|revise). Builders run pre-push; hub re-runs on the
+      fetched ref as a zero-token pre-gate before spawning any reviewer.
+    baseline_ref: "EXCHANGE/AGENTS.json + EXCHANGE/tasks.json at integration-branch HEAD"
+    thresholds:
+      success: "exit 0"
+      fail: "any out-of-scope path -> mechanical reject, no model tokens spent"
+      regression: "an agent producing out-of-scope writes after previously clean history feeds the trust score as a same-class fail"
+    variance_protocol:
+      n_runs: 1
+      notes: deterministic
+    artifacts_path: "commit trailer 'Scope: PASS'; hub round log"
+
+  # ── Active today: agent-level evals (SCORING.md v2, agenteval-grounded) ────
+
+  - eval_id: agent.trust.per_lane
+    status: active
+    target: agent
+    type: quality
+    command_or_procedure: >-
+      Per SCORING.md v2 (single writer: hub, appended to EXCHANGE/scores.json
+      at each verdict):
+      trust = clamp01(0.50*accept_rate_fp_wilson + 0.25*mean_Q_norm
+      + 0.15*xverify_catch_rate - 0.10*self_report_gap); effective cap 0.90.
+      Small sample n<3: trust = 0.7*benchmark_prior + 0.3*observed.
+      Computed per (agent, lane); OBSERVED trust overrides the benchmark
+      routing prior after >=3 tasks in a lane.
+    baseline_ref: "EXCHANGE/scores.json at integration-branch HEAD (git log -p is the audit trail)"
+    thresholds:
+      success: "HIGH-risk routing eligibility requires trust >= 0.60 AND n >= 5"
+      fail: >-
+        circuit breaker opens at 2 consecutive timeouts, or 3 same-class fails,
+        or trust < 0.35 with n >= 5 -> agent DEGRADED, no new tasks until a
+        canary passes
+      regression: "trust drop > 0.15 in a lane across 5 consecutive tasks -> hub review of the lane"
+    variance_protocol:
+      n_runs: not-applicable
+      notes: >-
+        Wilson 95% interval for rates with n < 30; Beta(1,1) prior; exploration
+        floor >= 1/5 of a lane's tasks to the lower-scored ACTIVE agent;
+        tie-break band 0.03.
+    artifacts_path: "EXCHANGE/scores.json; STATUS.md plain-language rendering"
+
+  - eval_id: agent.artifact_quality.Q
+    status: active
+    target: agent
+    type: quality
+    command_or_procedure: >-
+      Per SCORING.md v2, recorded only after 'VERDICT: ACCEPTED':
+      Q = clamp_0_10(0.55*panel_axis_mean + 0.20*churn_score
+      - 0.25*major_error_count); churn_score by revise rounds 0->10, 1->8,
+      2->6, 3+->4. Deterministic gates (gates.*) are pass/FAIL preconditions —
+      no Q is recorded when gates fail (agenteval hard stop).
+    baseline_ref: "EXCHANGE/scores.json artifact entries (e.g. TASK-007 Q=9.0, TASK-009 Q=9.2, TASK-008 Q=5.0)"
+    thresholds:
+      success: "ACCEPT band Q in [6.0, 7.5] — effective cap 7.5 until weight renormalization (open nit, TASK-010 pending codex verification)"
+      fail: "gate fail (no score) or Q below accept band -> revise/reject"
+      regression: "hub re-judge canary of a random previously-ACCEPTED artifact scores materially lower -> Goodhart investigation"
+    variance_protocol:
+      n_runs: "2 orders per pairwise comparison (position-swap), averaged"
+      notes: >-
+        judge de-bias mandatory: blind (authorship stripped); no self-grading;
+        odd jury >= 3 with >= 2 model families for HIGH-risk; gates rule first.
+    artifacts_path: "EXCHANGE/scores.json; verdict msg in EXCHANGE/claude/"
+
+  - eval_id: agent.judge.calibration
+    status: active
+    target: agent
+    type: quality
+    command_or_procedure: >-
+      Per SCORING.md v2 statistics: Bradley-Terry/Elo for pairwise
+      aggregation; Cohen's kappa (2 raters) or Krippendorff's alpha (ordinal,
+      2+) for inter-judge agreement; ECE for confidence calibration of review
+      objects (the Phase-7 JSON 'confidence' field vs verified outcomes).
+    baseline_ref: "accumulating; first formal baseline after 10 judged panels (UNVERIFIED until then)"
+    thresholds:
+      success: "ECE <= 0.15; inter-judge agreement reported alongside every panel verdict"
+      fail: "ECE > 0.15 -> the judge's confidence values are excluded from routing until recalibrated"
+      regression: "kappa/alpha trending down across 5 panels -> rotate/expand jury"
+    variance_protocol:
+      n_runs: not-applicable
+      notes: "self_report_gap term in agent.trust.per_lane is the paired Goodhart guard"
+    artifacts_path: "EXCHANGE/scores.json (v2 calibration fields); panel verdict msgs"
+
+  # ── Planned: SPEC Phase-8 experiment pipeline (no harness yet) ─────────────
+
+  - eval_id: phase8.baseline_capture
+    status: planned
+    target: project
+    type: integration
+    command_or_procedure: >-
+      Before any technique experiment on a project: run the project's existing
+      test/eval commands (from PROJECT_REGISTRY.yaml — deliverable 2, not yet
+      built) plus quality/latency/cost probes; record commands, environment,
+      outputs, and a versions.yaml@sha registry snapshot (memory L8) as the
+      frozen baseline artifact.
+    baseline_ref: "self — this eval CREATES baselines; per-project baseline metrics are UNVERIFIED until first capture"
+    thresholds:
+      success: "baseline artifact complete: all registry-listed commands ran, outputs + version pins recorded"
+      fail: "any listed command unrunnable -> project not eligible for experiments until registry is corrected"
+      regression: not-applicable
+    variance_protocol:
+      n_runs: ">=5 for nondeterministic project evals; report median + IQR"
+      notes: provisional
+    artifacts_path: "orchestrator/state/experiments.jsonl + baseline artifact dir (planned)"
+
+  - eval_id: phase8.experiment_run.pinned
+    status: planned
+    target: technique
+    type: e2e
+    command_or_procedure: >-
+      1) create disposable worktree/container; 2) pin model, prompt,
+      dependency, and tool versions from memory L8 (pip freeze into the
+      experiment manifest); 3) remove access to unnecessary secrets and
+      networks (SPEC governance #6 — code from papers/posts/repos executes
+      ONLY here); 4) apply candidate change; 5) run the applicable unit,
+      integration, e2e, security, compatibility, latency, quality, and cost
+      evals from this registry; 6) compare against the unchanged baseline from
+      phase8.baseline_capture; 7) record everything to experiments.jsonl.
+      Runs as a Codex EXCHANGE task (EXPERIMENTED state transition).
+    baseline_ref: "the phase8.baseline_capture artifact cited by the candidate record"
+    thresholds:
+      success: "meets the candidate's pre-declared success thresholds on all applicable eval types"
+      fail: "any pre-declared failure threshold hit -> item REJECTED, reason to decisions log (memory L7)"
+      regression: "any baseline metric worse than its pre-declared regression bound -> REJECTED regardless of headline gains"
+    variance_protocol:
+      n_runs: ">=5 for nondeterministic evals (provisional; raise until CI width supports the decision)"
+      notes: "thresholds are declared BEFORE the run, in the experiment manifest — never after"
+    artifacts_path: "experiment manifest + outputs dir per run_id (planned)"
+
+  - eval_id: phase8.threshold_gate
+    status: planned
+    target: technique
+    type: integration
+    command_or_procedure: >-
+      Deterministic comparator: reads the experiment manifest's declared
+      thresholds and the recorded results; emits ACCEPT/REJECT with a
+      machine-checkable delta table. Draft PR creation is permitted ONLY on
+      ACCEPT (PR_READY state); merge remains human-only (governance #7).
+    baseline_ref: "experiment manifest (thresholds) + baseline artifact"
+    thresholds:
+      success: "all declared thresholds met -> PR_READY eligible"
+      fail: "any miss -> REJECTED; no draft PR"
+      regression: not-applicable
+    variance_protocol:
+      n_runs: 1
+      notes: deterministic comparator over recorded results
+    artifacts_path: "delta table appended to the experiment record"
+
+  - eval_id: phase8.canary_monitor
+    status: planned
+    target: project
+    type: quality
+    command_or_procedure: >-
+      For DEPLOYED changes (deployment itself is operator-performed): feature
+      flag or canary slice where the project supports it; scheduled Routine
+      job re-runs the agreed metric probes and compares to post-deploy
+      thresholds recorded in the rollback plan.
+    baseline_ref: "pre-deploy metrics recorded at HUMAN_APPROVED time"
+    thresholds:
+      success: "metrics within agreed bands for the agreed soak period -> RETAINED"
+      fail: "threshold violation -> execute the recorded rollback plan (production rollback is human-gated; experiment/flag rollback is mechanical) -> ROLLED_BACK"
+      regression: "same as fail"
+    variance_protocol:
+      n_runs: "continuous during soak; alert on 2 consecutive violating samples (provisional)"
+      notes: provisional
+    artifacts_path: "orchestrator/observability/ canary logs (planned)"
+
+  - eval_id: phase8.rollback_drill
+    status: planned
+    target: project
+    type: e2e
+    command_or_procedure: >-
+      Periodically execute a recorded rollback plan against a disposable copy
+      to prove the plan still works (a rollback plan that has never run is a
+      hypothesis, not a control).
+    baseline_ref: "the rollback plan document for each deployed change"
+    thresholds:
+      success: "rollback completes and post-rollback probes match pre-change baseline"
+      fail: "rollback plan does not restore baseline -> block further deploys for that project until fixed"
+      regression: not-applicable
+    variance_protocol:
+      n_runs: 1
+      notes: per-quarter per active project (provisional)
+    artifacts_path: "drill record in experiments.jsonl (planned)"
+
+  # ── Planned: SPEC Phase-10 system-level metrics ────────────────────────────
+  # No measurement harness exists yet; alert/label capture is part of the
+  # observability build. All targets provisional: true until 30 days of data.
+
+  - eval_id: system.useful_alert_precision
+    status: planned
+    target: system
+    type: quality
+    command_or_procedure: >-
+      operator labels each surfaced alert/digest item useful|noise (one-tap in
+      the daily digest); precision = useful / total surfaced, weekly rollup.
+    baseline_ref: "UNVERIFIED — first 30 days of labels establish the baseline"
+    thresholds: {success: ">= 0.60 (provisional)", fail: "< 0.40 for 2 consecutive weeks -> source/topic re-weighting review", regression: "drop >= 0.15 week-over-week"}
+    variance_protocol: {n_runs: not-applicable, notes: "Wilson interval at small n"}
+    artifacts_path: "orchestrator/observability/metrics.jsonl (planned)"
+
+  - eval_id: system.missed_important_update_rate
+    status: planned
+    target: system
+    type: quality
+    command_or_procedure: >-
+      operator (or weekly synthesis review) records important updates learned
+      OUTSIDE the system; rate = missed / (missed + caught), monthly.
+    baseline_ref: "UNVERIFIED until first month of operation"
+    thresholds: {success: "<= 0.10 (provisional)", fail: "> 0.25 -> source-discovery expansion task (Phase 3 seed-expansion procedure)", regression: "two consecutive months rising"}
+    variance_protocol: {n_runs: not-applicable, notes: "small-n caution; qualitative review attached"}
+    artifacts_path: "metrics.jsonl + monthly source-pruning review notes"
+
+  - eval_id: system.source_latency
+    status: planned
+    target: source
+    type: latency
+    command_or_procedure: "per source: publication timestamp -> DISCOVERED timestamp delta from evidence.jsonl; median per source per week"
+    baseline_ref: "expected update latency field per source in SOURCE_REGISTRY.yaml (deliverable 4)"
+    thresholds: {success: "median within 2x the source's expected latency", fail: "> 5x expected for 2 weeks -> polling mechanism review for that source", regression: "sustained doubling vs prior month"}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "metrics.jsonl; source-health section of dashboard"
+
+  - eval_id: system.duplicate_rate
+    status: planned
+    target: source
+    type: quality
+    command_or_procedure: "per source: items removed at DEDUPLICATED / items DISCOVERED, weekly, from evidence.jsonl"
+    baseline_ref: "UNVERIFIED until first month"
+    thresholds: {success: "informational; feeds source signal-to-noise score", fail: "> 0.80 for a month -> candidate for monthly source-pruning", regression: not-applicable}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "metrics.jsonl"
+
+  - eval_id: system.evidence_verification_rate
+    status: planned
+    target: system
+    type: quality
+    command_or_procedure: "items reaching VERIFIED / items reaching DEDUPLICATED, monthly; plus contradiction-found rate among VERIFIED"
+    baseline_ref: "UNVERIFIED until pipeline live"
+    thresholds: {success: "informational baseline first; then >= prior 3-month mean (provisional)", fail: "sudden drop -> verification-stage capacity or source-quality investigation", regression: "3-month declining trend"}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "metrics.jsonl"
+
+  - eval_id: system.experiment_success_rate
+    status: planned
+    target: system
+    type: quality
+    command_or_procedure: "EXPERIMENTED items reaching ACCEPTED / total EXPERIMENTED, monthly, from candidates.jsonl"
+    baseline_ref: "UNVERIFIED until >= 10 experiments"
+    thresholds: {success: "0.2-0.6 healthy band (provisional — near 1.0 suggests thresholds too lax, near 0 suggests candidate selection too loose)", fail: "outside band for 2 months -> review candidate-selection and threshold policy", regression: not-applicable}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "metrics.jsonl"
+
+  - eval_id: system.adopted_improvement_rate
+    status: planned
+    target: system
+    type: quality
+    command_or_procedure: "HUMAN_APPROVED+DEPLOYED+RETAINED items / ACCEPTED items, quarterly"
+    baseline_ref: "UNVERIFIED"
+    thresholds: {success: "informational; the human-approval funnel is a feature, not a defect", fail: "0 adoption over a quarter with >0 accepted -> review whether recommendations match operator priorities", regression: not-applicable}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "metrics.jsonl"
+
+  - eval_id: system.regression_rate
+    status: planned
+    target: system
+    type: quality
+    command_or_procedure: "ROLLED_BACK / DEPLOYED, quarterly; every rollback gets a decisions-log entry with root cause"
+    baseline_ref: "UNVERIFIED"
+    thresholds: {success: "<= 0.10 (provisional)", fail: "> 0.25 -> tighten phase8 thresholds and raise n_runs", regression: "any repeat root-cause class"}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "metrics.jsonl + ADR entries (memory L7)"
+
+  - eval_id: system.cost_per_accepted_improvement
+    status: planned
+    target: system
+    type: cost
+    command_or_procedure: "total model+infra spend from the spend ledger (runs.jsonl token/cost fields) / ACCEPTED items, monthly"
+    baseline_ref: "COST_BUDGET.yaml ceilings (deliverable 12, not yet built)"
+    thresholds: {success: "within budget ceiling", fail: "ceiling hit -> pre-model budget gate already blocks further spend; review routing (cost multipliers: agents ~4x chat, multi-agent ~15x — spend pattern (b) only where value justifies)", regression: "cost/accepted doubling month-over-month"}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "spend ledger; metrics.jsonl"
+
+  - eval_id: system.human_review_burden
+    status: planned
+    target: system
+    type: cost
+    command_or_procedure: "count + estimated minutes of operator decisions per week (approvals, labels, escalations) from the audit index"
+    baseline_ref: "UNVERIFIED until 30 days of data"
+    thresholds: {success: "trend flat-or-down at constant throughput (provisional)", fail: "sustained growth without throughput growth -> automation-candidate review (within governance limits — approval REQUIREMENTS themselves may never be auto-relaxed, SPEC governance #9)", regression: not-applicable}
+    variance_protocol: {n_runs: not-applicable, notes: deterministic-from-ledger}
+    artifacts_path: "metrics.jsonl"
+
+# --- appended 2026-07-14 per DECISION.md (ARCH_REVIEW edit 1: result-packet
+# --- metrics, finer-grained per-lane routing evidence; all planned/provisional)
+  - eval_id: routing.accepted_patch_rate
+    status: planned
+    target: agent
+    type: quality
+    command_or_procedure: "per lane: accepted deliveries / total deliveries, from tasks.json states"
+    baseline_ref: "EXCHANGE/tasks.json@decision"
+    thresholds: {success: ">=0.7 per lane at n>=3", fail: "<0.4 at n>=5", regression: "drop >0.2 between windows"}
+    provisional: true
+  - eval_id: routing.regression_rate
+    status: planned
+    target: agent
+    type: quality
+    command_or_procedure: "accepted work later reverted or re-opened / accepted work"
+    baseline_ref: "EXCHANGE/tasks.json@decision"
+    thresholds: {success: "<=0.1", fail: ">0.25", regression: "any increase at n>=5"}
+    provisional: true
+  - eval_id: routing.human_edit_distance
+    status: planned
+    target: agent
+    type: quality
+    command_or_procedure: "diff size of hub/operator corrections applied to a delivery before merge, normalized by delivery size"
+    baseline_ref: "per-task verdict messages"
+    thresholds: {success: "<=0.15 median", fail: ">0.5 median", regression: "median doubles between windows"}
+    provisional: true
+  - eval_id: routing.unsupported_claim_rate
+    status: planned
+    target: agent
+    type: quality
+    command_or_procedure: "claims in a delivery that verification could not trace to evidence / total checked claims (second-pass review findings are the counter)"
+    baseline_ref: "review findings ledger"
+    thresholds: {success: "<=0.05", fail: ">0.2", regression: "any MAJOR unverified-claim finding recurrence"}
+    provisional: true

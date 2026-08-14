@@ -1,0 +1,2517 @@
+{
+  "domain": "ctx_isolation_freshness",
+  "domain_label": "Context Isolation and Freshness",
+  "purpose": "Isolate untrusted content, manage session vs fresh tradeoffs, prevent contamination and negation rebound, and stop lateral injection across multi-agent systems.",
+  "assumptions": [
+    "Context segments can be labeled with trust tiers",
+    "Some roles can be spawned with clean context and a task packet",
+    "Integrator authenticity checks exist for TASK admission"
+  ],
+  "exclusions": [
+    "Hardware side-channel (TEMPEST) engineering",
+    "General corporate HR trust frameworks",
+    "Full browser exploit chain development",
+    "OS kernel sandbox implementation details"
+  ],
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "What trust tier does each context segment have and who can rewrite tier0?",
+      "must_be_answerable_from": [
+        "TRUST_BOUNDARY",
+        "INSTRUCTION_HYGIENE",
+        "FRESH_SUBAGENT"
+      ],
+      "acceptance_condition": "labels segments tier0-3 and states only operator/integrator rewrite tier0",
+      "covered_by": [
+        "TRUST_BOUNDARY",
+        "INSTRUCTION_HYGIENE",
+        "FRESH_SUBAGENT"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "How is untrusted content prevented from becoming instructions?",
+      "must_be_answerable_from": [
+        "QUARANTINE_READER",
+        "CROSS_AGENT_INJECTION",
+        "TRUST_BOUNDARY"
+      ],
+      "acceptance_condition": "describes quarantine or data-vs-instruction rule with example",
+      "covered_by": [
+        "QUARANTINE_READER",
+        "CROSS_AGENT_INJECTION",
+        "TRUST_BOUNDARY",
+        "INSTRUCTION_HYGIENE"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "When should a subagent be fresh vs continue a session?",
+      "must_be_answerable_from": [
+        "FRESH_SUBAGENT",
+        "SESSION_VS_STATELESS",
+        "CONTAMINATION"
+      ],
+      "acceptance_condition": "gives role matrix with at least build vs judge",
+      "covered_by": [
+        "FRESH_SUBAGENT",
+        "SESSION_VS_STATELESS",
+        "CONTAMINATION",
+        "ROLE_SEPARATION"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "How are tool outputs and markup isolated from authority?",
+      "must_be_answerable_from": [
+        "TOOL_OUTPUT_ISOLATION",
+        "UNTRUSTED_MARKUP",
+        "QUARANTINE_READER"
+      ],
+      "acceptance_condition": "states observation labeling, size bounds, strip/quote steps",
+      "covered_by": [
+        "TOOL_OUTPUT_ISOLATION",
+        "UNTRUSTED_MARKUP",
+        "QUARANTINE_READER"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "What is contamination and how do you detect priming before risky actions?",
+      "must_be_answerable_from": [
+        "CONTAMINATION",
+        "PRIME_DETECTION",
+        "NEGATION_REBOUND"
+      ],
+      "acceptance_condition": "defines residual influence and at least one pre-action check",
+      "covered_by": [
+        "CONTAMINATION",
+        "PRIME_DETECTION",
+        "NEGATION_REBOUND",
+        "MEMORY_WRITE_GATE"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "How does negation rebound fail and what positive framing replaces ban walls?",
+      "must_be_answerable_from": [
+        "NEGATION_REBOUND",
+        "POSITIVE_FRAMING",
+        "RESET_PROTOCOL"
+      ],
+      "acceptance_condition": "names rebound risk and required-action-first pattern with ban alternative pairs",
+      "covered_by": [
+        "NEGATION_REBOUND",
+        "POSITIVE_FRAMING",
+        "RESET_PROTOCOL"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How do you keep secrets out of low-trust and sandboxed contexts?",
+      "must_be_answerable_from": [
+        "SIDE_CHANNEL_LEAK",
+        "SANDBOX_PROMPT",
+        "POSITIVE_FRAMING"
+      ],
+      "acceptance_condition": "secret-free worker policy and redaction before EXCHANGE",
+      "covered_by": [
+        "SIDE_CHANNEL_LEAK",
+        "SANDBOX_PROMPT",
+        "MEMORY_WRITE_GATE"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How are author, judge, and planner roles separated in context?",
+      "must_be_answerable_from": [
+        "ROLE_SEPARATION",
+        "SESSION_VS_STATELESS",
+        "READONLY_REVIEWER"
+      ],
+      "acceptance_condition": "maps roles to distinct context/session and reviewer read-only scope",
+      "covered_by": [
+        "ROLE_SEPARATION",
+        "SESSION_VS_STATELESS",
+        "READONLY_REVIEWER",
+        "FRESH_SUBAGENT"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "What makes a TASK instruction authentic versus peer data?",
+      "must_be_answerable_from": [
+        "CROSS_AGENT_INJECTION",
+        "INSTRUCTION_HYGIENE",
+        "BOUNDARY_AUDIT"
+      ],
+      "acceptance_condition": "requires authenticated integrator TASK block; peers are data",
+      "covered_by": [
+        "CROSS_AGENT_INJECTION",
+        "INSTRUCTION_HYGIENE",
+        "BOUNDARY_AUDIT",
+        "TRUST_BOUNDARY"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "What does a sandbox prompt include for a risky untrusted-read subtask?",
+      "must_be_answerable_from": [
+        "SANDBOX_PROMPT",
+        "TOOL_OUTPUT_ISOLATION",
+        "READONLY_REVIEWER"
+      ],
+      "acceptance_condition": "allowlisted tools, closed schema, positive instructions, no secrets",
+      "covered_by": [
+        "SANDBOX_PROMPT",
+        "TOOL_OUTPUT_ISOLATION",
+        "UNTRUSTED_MARKUP",
+        "SIDE_CHANNEL_LEAK"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How are memory writes gated and audited against poisoning?",
+      "must_be_answerable_from": [
+        "MEMORY_WRITE_GATE",
+        "BOUNDARY_AUDIT",
+        "SIDE_CHANNEL_LEAK"
+      ],
+      "acceptance_condition": "tier check on write; global denies tier3; audit on deny",
+      "covered_by": [
+        "MEMORY_WRITE_GATE",
+        "BOUNDARY_AUDIT",
+        "SIDE_CHANNEL_LEAK",
+        "ISOLATION_TEST"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "What is the contamination reset protocol and when does resume re-check?",
+      "must_be_answerable_from": [
+        "RESET_PROTOCOL",
+        "CONTAMINATED_RESUME",
+        "PRIME_DETECTION"
+      ],
+      "acceptance_condition": "stop-snapshot-fresh-clean-packet steps and resume checklist",
+      "covered_by": [
+        "RESET_PROTOCOL",
+        "CONTAMINATED_RESUME",
+        "PRIME_DETECTION",
+        "ROLE_SEPARATION"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "trust_tier",
+      "definition": "Label tier0-3 on context segments controlling who may rewrite whom"
+    },
+    {
+      "term": "fresh_subagent",
+      "definition": "Worker started with clean context plus task packet, not full parent transcript"
+    },
+    {
+      "term": "quarantine_reader",
+      "definition": "Role that extracts structured claims from untrusted content without authority"
+    },
+    {
+      "term": "contamination",
+      "definition": "Residual priming influence after source text is gone or de-emphasized"
+    },
+    {
+      "term": "negation_rebound",
+      "definition": "Ironic activation of forbidden behaviors after heavy DON'T framing"
+    },
+    {
+      "term": "positive_framing",
+      "definition": "State required actions first; pair bans with allowed alternatives"
+    },
+    {
+      "term": "lateral_injection",
+      "definition": "Peer agent content attempting to act as system/task instructions"
+    },
+    {
+      "term": "memory_poison",
+      "definition": "Untrusted content stored durably and reloaded as high-trust later"
+    },
+    {
+      "term": "task_packet",
+      "definition": "Minimal spawn payload: pins, goal, constraints, scoped inputs"
+    },
+    {
+      "term": "isolation_canary",
+      "definition": "Fixture injection used to regression-test isolation controls"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "TRUST_BOUNDARY",
+      "topic": "trust_boundary_definition",
+      "definition": "Declare explicit trust tiers for content: tier0 system/integrator instructions, tier1 operator task text after authenticity checks, tier2 tool outputs from controlled repos, tier3 untrusted web/user paste/third-party. Boundaries dictate isolation: lower tiers must not rewrite higher-tier obligations. Without tiers, every string competes equally and injection wins by volume.",
+      "group": "foundations",
+      "dependencies": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "base": {
+        "criticality": 0.95,
+        "business_value": 0.9,
+        "user_value": 0.88,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.93,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.62,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.94,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.12,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.12,
+          0.35
+        ],
+        "update_signal": "untrusted paste overrides ASSIGNEE or hard denials in the same context"
+      },
+      "scope_boundary": {
+        "included": [
+          "tier labels for all context sources",
+          "no lower-tier rewrite of higher obligations"
+        ],
+        "excluded": [
+          "corporate HR trust models",
+          "physical network DMZ design"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "claim": "Tiers make isolation policies enforceable",
+          "example": "tier3 web text cannot change gate commands"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "claim": "Mis-tiering trusted tool output as tier0 grants excess authority",
+          "example": "compromised tool treated as system"
+        }
+      ],
+      "failure_modes": [
+        "flat context with no source labels",
+        "user paste silently merged into system"
+      ],
+      "acceptance_tests": [
+        "every segment labeled tier0-3; policy forbids tier>=2 from editing tier0 rules"
+      ],
+      "revisit_triggers": [
+        "new tool classes",
+        "integrator protocol changes"
+      ]
+    },
+    {
+      "id": "FRESH_SUBAGENT",
+      "topic": "fresh_context_subagent",
+      "definition": "Spawn workers with a clean context: system pins plus task packet only, not the parent full contaminated or bloated transcript. Freshness resets priming and limits leakage of irrelevant constraints. Packet must still carry goal, paths, constraints, and inputs (typically 2-12k tokens not 80k-plus clones).",
+      "group": "isolation",
+      "dependencies": [
+        "TRUST_BOUNDARY"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_03"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.9,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.55,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.91,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.15,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.15,
+          0.4
+        ],
+        "update_signal": "worker inherits parent chat and repeats parent mistaken assumption"
+      },
+      "scope_boundary": {
+        "included": [
+          "clean spawn context",
+          "task packet contents",
+          "no full parent clone"
+        ],
+        "excluded": [
+          "OS process fork memory sharing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Fresh workers avoid inherited priming and bloat",
+          "example": "reviewer does not see author victory narrative"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Under-specified packets cause redundant discovery",
+          "example": "worker re-explores repo for 10 turns"
+        }
+      ],
+      "failure_modes": [
+        "default spawn equals clone transcript",
+        "packet missing acceptance criteria"
+      ],
+      "acceptance_tests": [
+        "spawn docs require fresh flag; packet schema lists required fields"
+      ],
+      "revisit_triggers": [
+        "workers missing constraints",
+        "packet size creeps toward full clone"
+      ]
+    },
+    {
+      "id": "QUARANTINE_READER",
+      "topic": "quarantine_reader_pattern",
+      "definition": "Read untrusted content in a quarantined role that may only emit structured extractions (summary, claims, links, risk flags) never free-form instructions merged into the main agent. Quarantine outputs are tier2/3 data. Main agent treats them as claims to verify, not orders to obey.",
+      "group": "isolation",
+      "dependencies": [
+        "TRUST_BOUNDARY",
+        "FRESH_SUBAGENT"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_04"
+      ],
+      "base": {
+        "criticality": 0.93,
+        "business_value": 0.86,
+        "user_value": 0.89,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.92,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.6,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.38,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.92,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "update_signal": "main agent executes ignore-previous-instructions found inside a fetched README"
+      },
+      "scope_boundary": {
+        "included": [
+          "untrusted fetch isolation",
+          "structured extraction only",
+          "main treats output as claims"
+        ],
+        "excluded": [
+          "email antivirus product design"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.93,
+          "claim": "Quarantine blocks instruction injection from content",
+          "example": "README jailbreak becomes a claim record"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Over-quarantine slows trusted internal docs",
+          "example": "same-repo markdown always cold-quarantined"
+        }
+      ],
+      "failure_modes": [
+        "paste web HTML into system prompt",
+        "merge quarantine prose into developer instructions"
+      ],
+      "acceptance_tests": [
+        "untrusted reads use quarantine role; output schema has no authority fields"
+      ],
+      "revisit_triggers": [
+        "injection incidents",
+        "quarantine bypass paths"
+      ]
+    },
+    {
+      "id": "CONTAMINATION",
+      "topic": "contamination_and_priming",
+      "definition": "Detect and limit priming: earlier examples, errors, or emotional framing bias later judgments (anchoring, availability). Contamination is residual influence after triggering text is gone. Mitigations: fresh subagents for high-stakes judgments, debias checklists, author/evaluator separation.",
+      "group": "contamination",
+      "dependencies": [
+        "FRESH_SUBAGENT",
+        "TRUST_BOUNDARY"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_05"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.84,
+        "user_value": 0.87,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.76,
+        "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.7,
+        "failure_rate": 0.24,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.24,
+          0.52
+        ],
+        "update_signal": "evaluator scores higher after seeing author confident self-assessment in-context"
+      },
+      "scope_boundary": {
+        "included": [
+          "anchoring from prior answers",
+          "author/evaluator separation",
+          "residual bias after deletion"
+        ],
+        "excluded": [
+          "food HACCP contamination"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Naming contamination enables role separation",
+          "example": "xverify runs without builder cheerleading"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.56,
+          "claim": "Excessive resets lose useful calibrated priors",
+          "example": "fresh every micro-step wastes continuity"
+        }
+      ],
+      "failure_modes": [
+        "evaluator reads full builder victory transcript",
+        "assume deletion removes all influence"
+      ],
+      "acceptance_tests": [
+        "high-stakes judge uses fresh context or redacted packet without self-scores"
+      ],
+      "revisit_triggers": [
+        "score inflation patterns",
+        "role merges in tooling"
+      ]
+    },
+    {
+      "id": "NEGATION_REBOUND",
+      "topic": "negation_ironic_rebound",
+      "definition": "Negative instructions (do NOT force-push, never mention X) can prime the forbidden act via ironic process rebound effects: models and humans over-activate the negated concept. Pure negation lists are high-risk for compliance-sensitive behaviors. Measure near-miss tool args after heavy DON'T framing. This is a first-class failure mode, not a footnote.",
+      "group": "contamination",
+      "dependencies": [
+        "CONTAMINATION"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.82,
+        "user_value": 0.88,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.52,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.22,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.22,
+          0.48
+        ],
+        "update_signal": "agent nearly force-pushes after a prompt wall of DO-NOT force-push examples"
+      },
+      "scope_boundary": {
+        "included": [
+          "ironic rebound from DON'T lists",
+          "near-miss logging on forbidden tools",
+          "ban-text activation risk"
+        ],
+        "excluded": [
+          "clinical thought-suppression therapy protocols"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Recognizing rebound explains ban-only prompt failures",
+          "example": "incident reviews check DON'T-wall framing"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Fear of negation can under-specify hard stops if not replaced",
+          "example": "removing bans without stating required push mode"
+        }
+      ],
+      "failure_modes": [
+        "only listing forbidden acts with no required alternative",
+        "repeating forbidden tokens for emphasis"
+      ],
+      "acceptance_tests": [
+        "policy notes rebound risk; forbids ban-only framing for critical safety tools"
+      ],
+      "revisit_triggers": [
+        "near-miss rate on forbidden tools",
+        "prompts with long DON'T inventories"
+      ]
+    },
+    {
+      "id": "POSITIVE_FRAMING",
+      "topic": "positive_framing_mitigations",
+      "definition": "Prefer constructive instructions that state required behavior: use fast-forward push only to grok/*, edit only paths in SCOPE, answer with allowed tools. Pair each hard stop with the allowed alternative. Keep a short closed ban list for catastrophic acts but lead with positive procedure. Reduces rebound while preserving enforceability.",
+      "group": "contamination",
+      "dependencies": [
+        "NEGATION_REBOUND",
+        "TRUST_BOUNDARY"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "base": {
+        "criticality": 0.91,
+        "business_value": 0.85,
+        "user_value": 0.9,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.86,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.45,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "rewritten standing orders still lead with 40 DON'T lines and weak DO procedure"
+      },
+      "scope_boundary": {
+        "included": [
+          "required-behavior wording",
+          "ban paired with allowed alternative",
+          "short closed ban lists"
+        ],
+        "excluded": [
+          "marketing copy tone guidelines"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.91,
+          "claim": "Positive frames improve compliance without deleting hard stops",
+          "example": "FF push to grok/* only beats long force-push DON'T essay"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Vague positive goals without checks become slogans",
+          "example": "be safe without scope paths"
+        }
+      ],
+      "failure_modes": [
+        "delete all bans and hope",
+        "positive tone that omits gate requirements"
+      ],
+      "acceptance_tests": [
+        "critical ops instructions lead with required action; each ban has allowed alternative"
+      ],
+      "revisit_triggers": [
+        "compliance regressions after rewrites",
+        "ban lists grow without DO pairs"
+      ]
+    },
+    {
+      "id": "SESSION_VS_STATELESS",
+      "topic": "session_vs_stateless_tradeoffs",
+      "definition": "Choose session continuity (memory, cheaper turns, repair context) vs stateless fresh calls (isolation, reproducibility, less priming). Long sessions accumulate contamination and rot; pure stateless loses repair context. Hybrid: session for build loops, fresh for judge, quarantine, and high-risk tool planning.",
+      "group": "isolation",
+      "dependencies": [
+        "FRESH_SUBAGENT",
+        "CONTAMINATION"
+      ],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_08"
+      ],
+      "base": {
+        "criticality": 0.84,
+        "business_value": 0.8,
+        "user_value": 0.83,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.42,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.22,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.22,
+          0.5
+        ],
+        "update_signal": "single endless session used for both authoring and final acceptance judging"
+      },
+      "scope_boundary": {
+        "included": [
+          "when to keep session",
+          "when to force fresh",
+          "hybrid role matrix"
+        ],
+        "excluded": [
+          "HTTP cookie product sessions"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "claim": "Role-based hybrid cuts contamination on judgments",
+          "example": "build stays session; xverify is fresh"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.57,
+          "claim": "Too many fresh starts lose cheap incremental repair",
+          "example": "every file edit in new session"
+        }
+      ],
+      "failure_modes": [
+        "one session forever for all roles",
+        "stateless even for multi-step compile fix loops"
+      ],
+      "acceptance_tests": [
+        "role matrix: build|judge|quarantine|plan maps to session or fresh"
+      ],
+      "revisit_triggers": [
+        "judge contamination incidents",
+        "repair loops too expensive"
+      ]
+    },
+    {
+      "id": "CROSS_AGENT_INJECTION",
+      "topic": "cross_agent_injection_boundaries",
+      "definition": "Control what agents may write into each other contexts: digests with schemas, not free-form now-you-must directives from peer workers. Peer output is data under TRUST_BOUNDARY. Only integrator/tier0 may issue TASK instructions. Prevents lateral prompt injection across the swarm.",
+      "group": "isolation",
+      "dependencies": [
+        "TRUST_BOUNDARY",
+        "FRESH_SUBAGENT",
+        "QUARANTINE_READER"
+      ],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.92,
+        "business_value": 0.86,
+        "user_value": 0.85,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.91,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.58,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.91,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.14,
+        "downside_weight": 0.64,
+        "uncertainty_interval": [
+          0.14,
+          0.38
+        ],
+        "update_signal": "peer EXCHANGE message interpreted as orders without ASSIGNEE filter"
+      },
+      "scope_boundary": {
+        "included": [
+          "peer output as data",
+          "schema-limited digests",
+          "only integrator assigns tasks"
+        ],
+        "excluded": [
+          "web XSS without agent angle"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.92,
+          "claim": "Lateral injection blocked by data-vs-instruction rule",
+          "example": "ASSIGNEE filter plus authenticity check"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "claim": "Over-rigid schemas slow ad-hoc collaboration",
+          "example": "useful warnings dropped for schema mismatch"
+        }
+      ],
+      "failure_modes": [
+        "treat any EXCHANGE file as system orders",
+        "auto-run peer shell recommendations"
+      ],
+      "acceptance_tests": [
+        "protocol: only TASK blocks from authenticated integrator are instructions"
+      ],
+      "revisit_triggers": [
+        "agents acting on peer msgs as tasks",
+        "schema too tight for reviews"
+      ]
+    },
+    {
+      "id": "INSTRUCTION_HYGIENE",
+      "topic": "instruction_hygiene_channel",
+      "definition": "Separate instruction channels from data channels: system/dev for rules, user for task, tool for observations. Do not concatenate untrusted text into system. Authenticity checks (ancestor tip, author login) belong on the instruction admission path.",
+      "group": "isolation",
+      "dependencies": [
+        "TRUST_BOUNDARY",
+        "CROSS_AGENT_INJECTION"
+      ],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_09"
+      ],
+      "base": {
+        "criticality": 0.9,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.89,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.85,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.89,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.15,
+        "downside_weight": 0.62,
+        "uncertainty_interval": [
+          0.15,
+          0.38
+        ],
+        "update_signal": "fetched page body appended into system prompt section"
+      },
+      "scope_boundary": {
+        "included": [
+          "role-separated packaging",
+          "admission checks for instructions",
+          "no untrusted in system"
+        ],
+        "excluded": [
+          "SQL prepared statements as metaphor only"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "claim": "Channel separation is the primary injection control",
+          "example": "system stays operator-controlled"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Some CLIs only have a single prompt string needing manual delimiters",
+          "example": "single-string CLI without role headers"
+        }
+      ],
+      "failure_modes": [
+        "string-concat web into system",
+        "skip authenticity because looks like integrator"
+      ],
+      "acceptance_tests": [
+        "packaging doc states what may enter system vs user vs tool"
+      ],
+      "revisit_triggers": [
+        "single-string runners",
+        "injection via tool result marked as system"
+      ]
+    },
+    {
+      "id": "TOOL_OUTPUT_ISOLATION",
+      "topic": "tool_output_isolation",
+      "definition": "Treat tool results as untrusted data even from internal tools: hostile file content, format attacks, oversized payloads. Bound size, never elevate tool text to authority, never auto-exec embedded commands. Label tool schemas as observations.",
+      "group": "isolation",
+      "dependencies": [
+        "TRUST_BOUNDARY",
+        "QUARANTINE_READER"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.87,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.5,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "file content contains SYSTEM UPDATE push --force and agent complies"
+      },
+      "scope_boundary": {
+        "included": [
+          "bounded tool payloads",
+          "observation labeling",
+          "no authority in tool text"
+        ],
+        "excluded": [
+          "SELinux policy authoring"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "claim": "Tool isolation stops second-order injection from repo files",
+          "example": "hostile markdown cannot escalate"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Strict stripping may remove needed imperative code comments",
+          "example": "imperative must-run note stripped wrongly"
+        }
+      ],
+      "failure_modes": [
+        "auto-execute shell found in tool output",
+        "unlimited tool blob into context"
+      ],
+      "acceptance_tests": [
+        "tool results labeled observation; size caps; no auto-exec of embedded commands"
+      ],
+      "revisit_triggers": [
+        "injection via code comments",
+        "tool blobs exceed budget"
+      ]
+    },
+    {
+      "id": "MEMORY_WRITE_GATE",
+      "topic": "memory_write_gating",
+      "definition": "Gate durable memory writes: only store operator-approved or schema-validated facts; never let untrusted content become long-term memory that reloads as tier0. Memory amplifies contamination across sessions. Prefer task-scoped notes over global memory for unvetted claims.",
+      "group": "contamination",
+      "dependencies": [
+        "TRUST_BOUNDARY",
+        "CONTAMINATION"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.89,
+        "business_value": 0.83,
+        "user_value": 0.85,
+        "technical_complexity": 0.68,
+        "risk_if_wrong": 0.9,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.7,
+        "confidence": 0.78,
+        "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.84,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.78,
+        "failure_rate": 0.16,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "global memory stores a jailbreak snippet that reloads every session"
+      },
+      "scope_boundary": {
+        "included": [
+          "write gates for memory",
+          "tier labels on memories",
+          "task-scoped vs global"
+        ],
+        "excluded": [
+          "CPU cache coherency protocols"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.89,
+          "claim": "Gated memory prevents cross-session infection",
+          "example": "untrusted claims expire with task"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Over-gating reduces helpful personalization",
+          "example": "blocks storing benign user prefs"
+        }
+      ],
+      "failure_modes": [
+        "auto-memory all user text",
+        "memory without provenance"
+      ],
+      "acceptance_tests": [
+        "memory write path checks tier and schema; global store denies tier3"
+      ],
+      "revisit_triggers": [
+        "poisoned memory incidents",
+        "missing provenance on memories"
+      ]
+    },
+    {
+      "id": "READONLY_REVIEWER",
+      "topic": "readonly_reviewer_role",
+      "definition": "High-stakes review roles should be read-only on production refs: they may comment and score but not push feature branches or alter TASK ledger. Read-only reduces blast radius if the reviewer context is contaminated or compromised by adversarial content under review.",
+      "group": "isolation",
+      "dependencies": [
+        "FRESH_SUBAGENT",
+        "CROSS_AGENT_INJECTION"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.85,
+        "business_value": 0.8,
+        "user_value": 0.82,
+        "technical_complexity": 0.5,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.55,
+        "confidence": 0.8,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.86,
+        "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.84,
+        "evidence_confidence": 0.8,
+        "failure_rate": 0.14,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.14,
+          0.36
+        ],
+        "update_signal": "xverify agent pushes fixes into builder scope outside its write_scope"
+      },
+      "scope_boundary": {
+        "included": [
+          "read-only permissions for judges",
+          "score/comment deliverables only"
+        ],
+        "excluded": [
+          "GitHub CODEOWNERS product features"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Read-only reviewers cannot widen blast radius",
+          "example": "findings-only branch or EXCHANGE review msg"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.48,
+          "claim": "Pure read-only cannot apply agreed tiny typo fixes without handoff",
+          "example": "one-char fix needs builder"
+        }
+      ],
+      "failure_modes": [
+        "reviewer shares builder credentials with write",
+        "reviewer edits validators"
+      ],
+      "acceptance_tests": [
+        "review role write_scope limited to EXCHANGE review paths"
+      ],
+      "revisit_triggers": [
+        "reviewer out-of-scope pushes",
+        "need for fix-it reviewer tier"
+      ]
+    },
+    {
+      "id": "PRIME_DETECTION",
+      "topic": "priming_detection_checks",
+      "definition": "Before high-stakes actions, run lightweight priming checks: did untrusted text propose tool names or scope changes? Did examples bias the chosen approach? Log flags; optionally force fresh replan. Checks are heuristic not perfect — combine with isolation architecture.",
+      "group": "contamination",
+      "dependencies": [
+        "CONTAMINATION",
+        "NEGATION_REBOUND",
+        "TOOL_OUTPUT_ISOLATION"
+      ],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.84,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.48,
+        "acceptance_test_pass_rate": 0.74,
+        "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.68,
+        "failure_rate": 0.26,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.26,
+          0.54
+        ],
+        "update_signal": "agent adopts force-push workflow that only appeared in untrusted issue text"
+      },
+      "scope_boundary": {
+        "included": [
+          "pre-action priming scans",
+          "flag untrusted tool proposals",
+          "optional fresh replan"
+        ],
+        "excluded": [
+          "plagiarism detectors for essays"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "claim": "Detection catches late-stage influence before destructive tools",
+          "example": "flag then fresh replan on match"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "False positives slow work when legit docs mention forbidden tools by name",
+          "example": "docs discuss force-push history"
+        }
+      ],
+      "failure_modes": [
+        "no check before push/delete",
+        "blocking on any mention including in hard denials list"
+      ],
+      "acceptance_tests": [
+        "pre-push/pre-destructive checklist includes priming flag review"
+      ],
+      "revisit_triggers": [
+        "false positive rate",
+        "missed injections"
+      ]
+    },
+    {
+      "id": "UNTRUSTED_MARKUP",
+      "topic": "untrusted_markup_handling",
+      "definition": "HTML/Markdown/JSON from outside can hide instructions in comments, white text, or alternate streams. Normalize to plain text or AST; strip scripts; present as quoted data. Prefer content-type aware parsers over raw paste into prompts.",
+      "group": "isolation",
+      "dependencies": [
+        "QUARANTINE_READER",
+        "TOOL_OUTPUT_ISOLATION"
+      ],
+      "competency_question_refs": [
+        "CQ_04",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.79,
+        "user_value": 0.83,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.56,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "HTML comment contains instruction override that model still attends to"
+      },
+      "scope_boundary": {
+        "included": [
+          "normalize markup",
+          "strip hidden streams",
+          "quote as data"
+        ],
+        "excluded": [
+          "full browser rendering engine security"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Normalized plain text reduces hidden-channel injection",
+          "example": "comments and scripts stripped before model"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.54,
+          "claim": "Over-stripping removes meaningful code fences needed for review",
+          "example": "fenced shell samples deleted"
+        }
+      ],
+      "failure_modes": [
+        "raw HTML into system",
+        "rendering untrusted HTML in privileged tools"
+      ],
+      "acceptance_tests": [
+        "untrusted markup pipeline: parse, strip, quote, size-bound"
+      ],
+      "revisit_triggers": [
+        "bypass via new formats",
+        "over-strip breaking code review"
+      ]
+    },
+    {
+      "id": "SIDE_CHANNEL_LEAK",
+      "topic": "side_channel_and_exfil_risk",
+      "definition": "Isolation also protects outbound leakage: workers with untrusted content should not hold secrets, and prompts must not echo credentials into EXCHANGE or logs. Context engineering includes what must never enter a low-trust context (tokens, private keys, absolute secret paths).",
+      "group": "risks",
+      "dependencies": [
+        "TRUST_BOUNDARY",
+        "FRESH_SUBAGENT",
+        "MEMORY_WRITE_GATE"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.94,
+        "business_value": 0.88,
+        "user_value": 0.86,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.95,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.75,
+        "confidence": 0.82,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.88,
+        "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.93,
+        "evidence_confidence": 0.82,
+        "failure_rate": 0.1,
+        "downside_weight": 0.72,
+        "uncertainty_interval": [
+          0.1,
+          0.3
+        ],
+        "update_signal": "standing orders with secret paths get pasted into public EXCHANGE msg"
+      },
+      "scope_boundary": {
+        "included": [
+          "no secrets in low-trust contexts",
+          "redact before EXCHANGE",
+          "worker secret-free policy"
+        ],
+        "excluded": [
+          "hardware TEMPEST side channels"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.94,
+          "claim": "Secret-free worker contexts stop exfil via untrusted content coercion",
+          "example": "packet has no tokens"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "claim": "Over-redaction removes needed path info for debugging",
+          "example": "cannot say which config file"
+        }
+      ],
+      "failure_modes": [
+        "commit dotenv contents into transcripts",
+        "put absolute secret paths in repo msgs"
+      ],
+      "acceptance_tests": [
+        "pre-push secret scan on EXCHANGE paths; workers launched without secret env"
+      ],
+      "revisit_triggers": [
+        "secret findings in msgs",
+        "workers inheriting env credentials"
+      ]
+    },
+    {
+      "id": "ROLE_SEPARATION",
+      "topic": "author_judge_planner_separation",
+      "definition": "Separate authoring, planning, and judging into roles with different contexts and incentives. Planner proposes, author implements, judge evaluates without author self-praise. Separation is the structural fix for contamination that prompts alone cannot solve.",
+      "group": "isolation",
+      "dependencies": [
+        "FRESH_SUBAGENT",
+        "CONTAMINATION",
+        "SESSION_VS_STATELESS"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.87,
+        "business_value": 0.84,
+        "user_value": 0.86,
+        "technical_complexity": 0.58,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.8,
+        "irreversibility": 0.48,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.86,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.44
+        ],
+        "update_signal": "same session author grades its own delivery as ACCEPTED"
+      },
+      "scope_boundary": {
+        "included": [
+          "author vs judge vs planner roles",
+          "distinct contexts per role"
+        ],
+        "excluded": [
+          "corporate RACI only without AI context"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.87,
+          "claim": "Structural separation beats prompt-only fairness claims",
+          "example": "xverify is different agent/session"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "More roles increase coordination latency",
+          "example": "three hops for a one-line fix"
+        }
+      ],
+      "failure_modes": [
+        "self-ACCEPT without integrator",
+        "planner and judge share contaminated thread"
+      ],
+      "acceptance_tests": [
+        "task pattern single+xverify maps to distinct assignee for verify"
+      ],
+      "revisit_triggers": [
+        "self-grading incidents",
+        "latency complaints"
+      ]
+    },
+    {
+      "id": "RESET_PROTOCOL",
+      "topic": "contamination_reset_protocol",
+      "definition": "When contamination is suspected (injection flag, contradicted pins, rebound near-miss): stop destructive tools, snapshot state to durable store, spawn fresh context with cleaned packet (pins+goal+facts, no suspect text), resume. Do not continue carefully in the same soup.",
+      "group": "risks",
+      "dependencies": [
+        "PRIME_DETECTION",
+        "FRESH_SUBAGENT",
+        "POSITIVE_FRAMING"
+      ],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.88,
+        "business_value": 0.81,
+        "user_value": 0.85,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.88,
+        "cross_topic_coupling": 0.76,
+        "irreversibility": 0.58,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.44,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.87,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.18,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "after injection flag agent continues same session and pushes"
+      },
+      "scope_boundary": {
+        "included": [
+          "stop destructive tools",
+          "snapshot",
+          "fresh respawn with clean packet"
+        ],
+        "excluded": [
+          "OS kernel panic recovery"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "claim": "Hard reset contains incidents better than careful continuation",
+          "example": "fresh packet without suspect spans"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.56,
+          "claim": "Reset loses nuanced mid-repair state if snapshot incomplete",
+          "example": "forgot failing test name in packet"
+        }
+      ],
+      "failure_modes": [
+        "continue carefully after jailbreak",
+        "reset without snapshot losing work"
+      ],
+      "acceptance_tests": [
+        "incident runbook: stop, snapshot, fresh, clean packet, resume"
+      ],
+      "revisit_triggers": [
+        "failed containments",
+        "incomplete snapshots"
+      ]
+    },
+    {
+      "id": "BOUNDARY_AUDIT",
+      "topic": "boundary_audit_logging",
+      "definition": "Log boundary events: tier label assignments, quarantine invocations, rejected instruction admissions, memory write denials, reset triggers. Audits enable postmortems and prove isolation was attempted. Exclude secrets from logs.",
+      "group": "measurement",
+      "dependencies": [
+        "TRUST_BOUNDARY",
+        "INSTRUCTION_HYGIENE",
+        "MEMORY_WRITE_GATE"
+      ],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.78,
+        "business_value": 0.8,
+        "user_value": 0.76,
+        "technical_complexity": 0.52,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.32,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.86,
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.16,
+        "downside_weight": 0.48,
+        "uncertainty_interval": [
+          0.16,
+          0.4
+        ],
+        "update_signal": "cannot prove whether untrusted content was quarantined in an incident"
+      },
+      "scope_boundary": {
+        "included": [
+          "tier assignment logs",
+          "quarantine and denial events",
+          "reset triggers"
+        ],
+        "excluded": [
+          "SOC2 product marketing"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "claim": "Audit trails make isolation verifiable",
+          "example": "postmortem shows quarantine skip at t=12"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Verbose audits can leak content snippets if poorly redacted",
+          "example": "log includes raw jailbreak text"
+        }
+      ],
+      "failure_modes": [
+        "no logs of admission decisions",
+        "logging full secret-bearing prompts"
+      ],
+      "acceptance_tests": [
+        "audit schema for admission/quarantine/memory-deny/reset; redaction rules"
+      ],
+      "revisit_triggers": [
+        "missing audit on incident",
+        "secrets in logs"
+      ]
+    },
+    {
+      "id": "SANDBOX_PROMPT",
+      "topic": "sandbox_prompt_construction",
+      "definition": "Build sandboxed prompts for risky subtasks: minimal tools, positive required actions, no secret env, explicit tier labels, closed output schema. Sandbox is defense-in-depth with quarantine and freshness — not a substitute for either.",
+      "group": "isolation",
+      "dependencies": [
+        "POSITIVE_FRAMING",
+        "FRESH_SUBAGENT",
+        "SIDE_CHANNEL_LEAK"
+      ],
+      "competency_question_refs": [
+        "CQ_07",
+        "CQ_10"
+      ],
+      "base": {
+        "criticality": 0.86,
+        "business_value": 0.82,
+        "user_value": 0.84,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.5,
+        "confidence": 0.76,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.82,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.76,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.18,
+          0.42
+        ],
+        "update_signal": "risky web-read subtask launched with full secret env and push tools"
+      },
+      "scope_boundary": {
+        "included": [
+          "minimal tool sets",
+          "positive required actions",
+          "closed output schema",
+          "no secrets"
+        ],
+        "excluded": [
+          "hypervisor design"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.86,
+          "claim": "Sandbox prompts shrink impact of residual injection",
+          "example": "read-only tools plus schema out"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.58,
+          "claim": "Too-tight sandbox fails the subtask and forces unsafe parent fallback",
+          "example": "parent does web read itself"
+        }
+      ],
+      "failure_modes": [
+        "sandbox with push credentials",
+        "open-ended shell in sandbox"
+      ],
+      "acceptance_tests": [
+        "sandbox template: tools allowlist, output schema, secret-free, positive instructions"
+      ],
+      "revisit_triggers": [
+        "sandbox escapes",
+        "parent unsafe fallback rate"
+      ]
+    },
+    {
+      "id": "CONTAMINATED_RESUME",
+      "topic": "contaminated_session_resume",
+      "definition": "Resuming a long session can rehydrate contamination. On resume, re-validate pins, re-run priming checks, and consider partial reset if the session handled untrusted content. Resume is not free safety — it is a risk decision.",
+      "group": "risks",
+      "dependencies": [
+        "SESSION_VS_STATELESS",
+        "PRIME_DETECTION",
+        "RESET_PROTOCOL"
+      ],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_12"
+      ],
+      "base": {
+        "criticality": 0.83,
+        "business_value": 0.78,
+        "user_value": 0.82,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.82,
+        "cross_topic_coupling": 0.74,
+        "irreversibility": 0.48,
+        "confidence": 0.72,
+        "node_conflict_pressure": 0.46,
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.72,
+        "failure_rate": 0.22,
+        "downside_weight": 0.54,
+        "uncertainty_interval": [
+          0.22,
+          0.48
+        ],
+        "update_signal": "resumed session still carries jailbreak from earlier web read"
+      },
+      "scope_boundary": {
+        "included": [
+          "resume re-validation",
+          "pin check on resume",
+          "partial reset criteria"
+        ],
+        "excluded": [
+          "VM snapshot resume performance"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "claim": "Resume checks prevent zombie contamination",
+          "example": "pin probe on resume catches drift"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "claim": "Aggressive resume resets annoy operators mid-repair",
+          "example": "forced fresh every morning"
+        }
+      ],
+      "failure_modes": [
+        "blind resume with no checks",
+        "always wipe without snapshot"
+      ],
+      "acceptance_tests": [
+        "resume checklist: pins, priming flags, untrusted-history bit"
+      ],
+      "revisit_triggers": [
+        "post-resume incidents",
+        "operator override patterns"
+      ]
+    },
+    {
+      "id": "ISOLATION_TEST",
+      "topic": "isolation_test_harness",
+      "definition": "Periodically test isolation with canary injections in fixtures (not prod tasks): does quarantine hold, does ASSIGNEE filter hold, does memory gate hold? Isolation without tests decays. Record pass/fail in audit, never store canary as real memory.",
+      "group": "measurement",
+      "dependencies": [
+        "QUARANTINE_READER",
+        "CROSS_AGENT_INJECTION",
+        "MEMORY_WRITE_GATE",
+        "BOUNDARY_AUDIT"
+      ],
+      "competency_question_refs": [
+        "CQ_09",
+        "CQ_11"
+      ],
+      "base": {
+        "criticality": 0.8,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.74,
+        "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.74,
+        "failure_rate": 0.2,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.46
+        ],
+        "update_signal": "isolation feature flagged done but canary jailbreak still elevates to system"
+      },
+      "scope_boundary": {
+        "included": [
+          "canary injection fixtures",
+          "regression tests for gates",
+          "no canary into real memory"
+        ],
+        "excluded": [
+          "unit test frameworks generally"
+        ]
+      },
+      "pros": [
+        {
+          "weight": 0.84,
+          "claim": "Canaries catch isolation regressions before real attacks",
+          "example": "CI fails if quarantine bypasses"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.52,
+          "claim": "Poorly isolated canaries can poison shared fixtures",
+          "example": "canary committed as real standing order"
+        }
+      ],
+      "failure_modes": [
+        "no tests for ASSIGNEE filter",
+        "canary left in production prompts"
+      ],
+      "acceptance_tests": [
+        "at least three canaries: web inject, peer inject, memory poison; CI or scheduled run"
+      ],
+      "revisit_triggers": [
+        "canary failures ignored",
+        "new entry points untested"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "FRESH_SUBAGENT",
+      "edge_type": "dependency",
+      "why_related": "freshness respects tiers",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "QUARANTINE_READER",
+      "edge_type": "dependency",
+      "why_related": "quarantine is tier enforcement",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "CROSS_AGENT_INJECTION",
+      "edge_type": "dependency",
+      "why_related": "peers cannot raise tier",
+      "relation_strength": 0.89
+    },
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "INSTRUCTION_HYGIENE",
+      "edge_type": "dependency",
+      "why_related": "channels encode tiers",
+      "relation_strength": 0.87
+    },
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "TOOL_OUTPUT_ISOLATION",
+      "edge_type": "dependency",
+      "why_related": "tools are non-tier0",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "MEMORY_WRITE_GATE",
+      "edge_type": "dependency",
+      "why_related": "memory writes check tier",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "SIDE_CHANNEL_LEAK",
+      "edge_type": "dependency",
+      "why_related": "secrets never enter low tiers",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "FRESH_SUBAGENT",
+      "to": "QUARANTINE_READER",
+      "edge_type": "dependency",
+      "why_related": "quarantine often fresh role",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "FRESH_SUBAGENT",
+      "to": "SESSION_VS_STATELESS",
+      "edge_type": "dependency",
+      "why_related": "fresh is stateless extreme",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "FRESH_SUBAGENT",
+      "to": "READONLY_REVIEWER",
+      "edge_type": "dependency",
+      "why_related": "reviewer often fresh plus readonly",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "FRESH_SUBAGENT",
+      "to": "ROLE_SEPARATION",
+      "edge_type": "dependency",
+      "why_related": "roles use fresh where needed",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "FRESH_SUBAGENT",
+      "to": "SANDBOX_PROMPT",
+      "edge_type": "dependency",
+      "why_related": "sandbox starts fresh",
+      "relation_strength": 0.83
+    },
+    {
+      "from": "CONTAMINATION",
+      "to": "NEGATION_REBOUND",
+      "edge_type": "dependency",
+      "why_related": "rebound is contamination class",
+      "relation_strength": 0.85
+    },
+    {
+      "from": "CONTAMINATION",
+      "to": "PRIME_DETECTION",
+      "edge_type": "dependency",
+      "why_related": "detect residual priming",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "CONTAMINATION",
+      "to": "MEMORY_WRITE_GATE",
+      "edge_type": "dependency",
+      "why_related": "memory amplifies contamination",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "NEGATION_REBOUND",
+      "to": "POSITIVE_FRAMING",
+      "edge_type": "dependency",
+      "why_related": "positive framing mitigates rebound",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "QUARANTINE_READER",
+      "to": "UNTRUSTED_MARKUP",
+      "edge_type": "dependency",
+      "why_related": "markup handled in quarantine",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "QUARANTINE_READER",
+      "to": "TOOL_OUTPUT_ISOLATION",
+      "edge_type": "dependency",
+      "why_related": "similar observation posture",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "CROSS_AGENT_INJECTION",
+      "to": "INSTRUCTION_HYGIENE",
+      "edge_type": "dependency",
+      "why_related": "admission path blocks peers",
+      "relation_strength": 0.86
+    },
+    {
+      "from": "PRIME_DETECTION",
+      "to": "RESET_PROTOCOL",
+      "edge_type": "dependency",
+      "why_related": "flags trigger reset",
+      "relation_strength": 0.84
+    },
+    {
+      "from": "SESSION_VS_STATELESS",
+      "to": "CONTAMINATED_RESUME",
+      "edge_type": "dependency",
+      "why_related": "resume is session risk",
+      "relation_strength": 0.82
+    },
+    {
+      "from": "RESET_PROTOCOL",
+      "to": "CONTAMINATED_RESUME",
+      "edge_type": "dependency",
+      "why_related": "resume may call reset",
+      "relation_strength": 0.8
+    },
+    {
+      "from": "MEMORY_WRITE_GATE",
+      "to": "BOUNDARY_AUDIT",
+      "edge_type": "dependency",
+      "why_related": "denials audited",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "INSTRUCTION_HYGIENE",
+      "to": "BOUNDARY_AUDIT",
+      "edge_type": "dependency",
+      "why_related": "admissions audited",
+      "relation_strength": 0.78
+    },
+    {
+      "from": "NEGATION_REBOUND",
+      "to": "PRIME_DETECTION",
+      "edge_type": "causal",
+      "why_related": "rebound shows as near-miss flags",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "POSITIVE_FRAMING",
+      "to": "SANDBOX_PROMPT",
+      "edge_type": "causal",
+      "why_related": "sandbox uses positive frames",
+      "relation_strength": 0.75
+    },
+    {
+      "from": "CONTAMINATION",
+      "to": "ROLE_SEPARATION",
+      "edge_type": "causal",
+      "why_related": "contamination drives separation",
+      "relation_strength": 0.77
+    },
+    {
+      "from": "TRUST_BOUNDARY",
+      "to": "CROSS_AGENT_INJECTION",
+      "edge_type": "constraint",
+      "why_related": "peers cannot become tier0",
+      "relation_strength": 0.92
+    },
+    {
+      "from": "SIDE_CHANNEL_LEAK",
+      "to": "SANDBOX_PROMPT",
+      "edge_type": "constraint",
+      "why_related": "sandbox must be secret-free",
+      "relation_strength": 0.9
+    },
+    {
+      "from": "READONLY_REVIEWER",
+      "to": "CROSS_AGENT_INJECTION",
+      "edge_type": "constraint",
+      "why_related": "reviewer cannot rewrite tasks",
+      "relation_strength": 0.88
+    },
+    {
+      "from": "QUARANTINE_READER",
+      "to": "PRIME_DETECTION",
+      "edge_type": "sequence",
+      "why_related": "extract then scan influence",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "PRIME_DETECTION",
+      "to": "RESET_PROTOCOL",
+      "edge_type": "sequence",
+      "why_related": "detect then reset",
+      "relation_strength": 0.76
+    },
+    {
+      "from": "BOUNDARY_AUDIT",
+      "to": "ISOLATION_TEST",
+      "edge_type": "feedback",
+      "why_related": "audits inform canary design",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "ISOLATION_TEST",
+      "to": "QUARANTINE_READER",
+      "edge_type": "feedback",
+      "why_related": "canary fails fix quarantine",
+      "relation_strength": 0.72
+    },
+    {
+      "from": "QUARANTINE_READER",
+      "to": "TOOL_OUTPUT_ISOLATION",
+      "edge_type": "similarity",
+      "why_related": "both demote content to data",
+      "relation_strength": 0.74
+    },
+    {
+      "from": "FRESH_SUBAGENT",
+      "to": "SESSION_VS_STATELESS",
+      "edge_type": "similarity",
+      "why_related": "both manage continuity risk",
+      "relation_strength": 0.7
+    },
+    {
+      "from": "SESSION_VS_STATELESS",
+      "to": "FRESH_SUBAGENT",
+      "edge_type": "conflict",
+      "why_related": "continuity for repair vs freshness for isolation",
+      "resolution_rule": "session for build repair loops; fresh for judge/quarantine/high-risk plan",
+      "relation_strength": 0.76,
+      "signed_tension": -0.45
+    },
+    {
+      "from": "NEGATION_REBOUND",
+      "to": "POSITIVE_FRAMING",
+      "edge_type": "conflict",
+      "why_related": "need explicit bans vs rebound from ban walls",
+      "resolution_rule": "lead with required action; keep short closed ban list paired with alternatives",
+      "relation_strength": 0.8,
+      "signed_tension": -0.45
+    },
+    {
+      "from": "QUARANTINE_READER",
+      "to": "CONTAMINATION",
+      "edge_type": "conflict",
+      "why_related": "need untrusted info vs any inclusion primes",
+      "resolution_rule": "structured claims only; never authority; optional fresh parent replan after",
+      "relation_strength": 0.74,
+      "signed_tension": -0.45
+    }
+  ],
+  "conflict_axes": [
+    {
+      "name": "continuity_vs_freshness",
+      "description": "Session repair benefits vs isolation resets",
+      "poles": [
+        "long session continuity",
+        "always-fresh calls"
+      ],
+      "resolution_hint": "session for build; fresh for judge/quarantine/high-risk",
+      "affected_nodes": [
+        "SESSION_VS_STATELESS",
+        "FRESH_SUBAGENT",
+        "CONTAMINATION"
+      ]
+    },
+    {
+      "name": "ban_clarity_vs_rebound",
+      "description": "Explicit DON'T lists vs ironic priming",
+      "poles": [
+        "exhaustive ban walls",
+        "positive-only instructions"
+      ],
+      "resolution_hint": "required action first; short closed bans with alternatives",
+      "affected_nodes": [
+        "NEGATION_REBOUND",
+        "POSITIVE_FRAMING",
+        "TRUST_BOUNDARY"
+      ]
+    },
+    {
+      "name": "info_need_vs_quarantine",
+      "description": "Need untrusted data vs minimize contact",
+      "poles": [
+        "inline all content",
+        "refuse all untrusted"
+      ],
+      "resolution_hint": "quarantine structured claims; never authority",
+      "affected_nodes": [
+        "QUARANTINE_READER",
+        "CONTAMINATION",
+        "UNTRUSTED_MARKUP"
+      ]
+    },
+    {
+      "name": "share_vs_lateral_risk",
+      "description": "Multi-agent collaboration vs injection surface",
+      "poles": [
+        "free peer directives",
+        "no peer communication"
+      ],
+      "resolution_hint": "schema digests as data; only integrator TASKs",
+      "affected_nodes": [
+        "CROSS_AGENT_INJECTION",
+        "INSTRUCTION_HYGIENE",
+        "ROLE_SEPARATION"
+      ]
+    },
+    {
+      "name": "memory_utility_vs_poison",
+      "description": "Durable learning vs cross-session infection",
+      "poles": [
+        "auto-store everything",
+        "store nothing"
+      ],
+      "resolution_hint": "gate by tier; task-scoped for unvetted",
+      "affected_nodes": [
+        "MEMORY_WRITE_GATE",
+        "CONTAMINATION",
+        "SIDE_CHANNEL_LEAK"
+      ]
+    },
+    {
+      "name": "reviewer_power_vs_safety",
+      "description": "Reviewer ability to fix vs blast radius",
+      "poles": [
+        "reviewer can push fixes",
+        "reviewer findings only"
+      ],
+      "resolution_hint": "default read-only; builder applies fixes",
+      "affected_nodes": [
+        "READONLY_REVIEWER",
+        "CROSS_AGENT_INJECTION",
+        "ROLE_SEPARATION"
+      ]
+    },
+    {
+      "name": "sandbox_tightness",
+      "description": "Minimal tools vs task completion",
+      "poles": [
+        "ultra-minimal sandbox",
+        "full tool mirror"
+      ],
+      "resolution_hint": "allowlist for task class; avoid parent unsafe fallback",
+      "affected_nodes": [
+        "SANDBOX_PROMPT",
+        "TOOL_OUTPUT_ISOLATION",
+        "SIDE_CHANNEL_LEAK"
+      ]
+    },
+    {
+      "name": "resume_speed_vs_revalidation",
+      "description": "Instant resume vs safety checks",
+      "poles": [
+        "blind resume",
+        "always full reset"
+      ],
+      "resolution_hint": "resume checklist; reset if untrusted-history bit set",
+      "affected_nodes": [
+        "CONTAMINATED_RESUME",
+        "RESET_PROTOCOL",
+        "PRIME_DETECTION"
+      ]
+    },
+    {
+      "name": "audit_detail_vs_leakage",
+      "description": "Rich audit vs secret/content leakage in logs",
+      "poles": [
+        "log full prompts",
+        "log only counters"
+      ],
+      "resolution_hint": "event types plus redacted hashes; no secrets",
+      "affected_nodes": [
+        "BOUNDARY_AUDIT",
+        "SIDE_CHANNEL_LEAK",
+        "ISOLATION_TEST"
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "description": "Jailbreak inside README fetched for docs",
+      "trigger": "web or third-party markdown read",
+      "affected_nodes": [
+        "QUARANTINE_READER",
+        "UNTRUSTED_MARKUP",
+        "INSTRUCTION_HYGIENE"
+      ],
+      "mitigation": "quarantine extract; never system-merge; prime scan",
+      "severity": "high"
+    },
+    {
+      "description": "Peer agent posts TASK-like text without ASSIGNEE",
+      "trigger": "EXCHANGE noise or malicious peer",
+      "affected_nodes": [
+        "CROSS_AGENT_INJECTION",
+        "INSTRUCTION_HYGIENE",
+        "BOUNDARY_AUDIT"
+      ],
+      "mitigation": "ASSIGNEE plus authenticity required; else data only",
+      "severity": "high"
+    },
+    {
+      "description": "DON'T force-push wall then near-miss force push",
+      "trigger": "ban-only safety essay",
+      "affected_nodes": [
+        "NEGATION_REBOUND",
+        "POSITIVE_FRAMING",
+        "PRIME_DETECTION"
+      ],
+      "mitigation": "rewrite to FF-only required action; log near-miss",
+      "severity": "high"
+    },
+    {
+      "description": "Judge reads full builder self-praise transcript",
+      "trigger": "xverify cloned parent session",
+      "affected_nodes": [
+        "CONTAMINATION",
+        "FRESH_SUBAGENT",
+        "ROLE_SEPARATION"
+      ],
+      "mitigation": "fresh judge packet without self-scores",
+      "severity": "medium"
+    },
+    {
+      "description": "Memory stores untrusted claim as global fact",
+      "trigger": "auto-memory on user paste",
+      "affected_nodes": [
+        "MEMORY_WRITE_GATE",
+        "CONTAMINATION",
+        "ISOLATION_TEST"
+      ],
+      "mitigation": "deny tier3 global writes; canary test",
+      "severity": "high"
+    },
+    {
+      "description": "Sandbox still has GITHUB_TOKEN in env",
+      "trigger": "inherited process env",
+      "affected_nodes": [
+        "SIDE_CHANNEL_LEAK",
+        "SANDBOX_PROMPT",
+        "FRESH_SUBAGENT"
+      ],
+      "mitigation": "scrub env; secret-free launch",
+      "severity": "high"
+    },
+    {
+      "description": "Resume after web-heavy session without checks",
+      "trigger": "operator continues next day",
+      "affected_nodes": [
+        "CONTAMINATED_RESUME",
+        "PRIME_DETECTION",
+        "RESET_PROTOCOL"
+      ],
+      "mitigation": "resume checklist; reset if untrusted bit",
+      "severity": "medium"
+    },
+    {
+      "description": "Tool dumps 100k hostile log with embedded orders",
+      "trigger": "unbounded tool read",
+      "affected_nodes": [
+        "TOOL_OUTPUT_ISOLATION",
+        "QUARANTINE_READER",
+        "UNTRUSTED_MARKUP"
+      ],
+      "mitigation": "size cap; observation label; strip",
+      "severity": "medium"
+    },
+    {
+      "description": "Reviewer pushes to builder branch",
+      "trigger": "shared credentials or wide scope",
+      "affected_nodes": [
+        "READONLY_REVIEWER",
+        "CROSS_AGENT_INJECTION",
+        "ROLE_SEPARATION"
+      ],
+      "mitigation": "scope check; separate identity",
+      "severity": "medium"
+    },
+    {
+      "description": "Canary left in production standing orders",
+      "trigger": "fixture mismanagement",
+      "affected_nodes": [
+        "ISOLATION_TEST",
+        "MEMORY_WRITE_GATE",
+        "BOUNDARY_AUDIT"
+      ],
+      "mitigation": "canary namespace; never auto-memory canaries",
+      "severity": "low"
+    },
+    {
+      "description": "Single-string CLI merges data into instruction blob",
+      "trigger": "no role headers in runner",
+      "affected_nodes": [
+        "INSTRUCTION_HYGIENE",
+        "TRUST_BOUNDARY",
+        "SANDBOX_PROMPT"
+      ],
+      "mitigation": "delimiters and labels; prefer role API",
+      "severity": "medium"
+    }
+  ],
+  "workflow": [
+    {
+      "action": "label_tiers",
+      "node_ref": "TRUST_BOUNDARY",
+      "description": "Assign trust tier to each context segment",
+      "artifact": "tier map",
+      "gate": "all segments labeled"
+    },
+    {
+      "action": "admit_instructions",
+      "node_ref": "INSTRUCTION_HYGIENE",
+      "description": "Run authenticity checks before accepting TASKs",
+      "artifact": "admission record",
+      "gate": "only authenticated integrator TASKs admitted"
+    },
+    {
+      "action": "route_untrusted",
+      "node_ref": "QUARANTINE_READER",
+      "description": "Send untrusted reads through quarantine extraction",
+      "artifact": "claims record",
+      "gate": "no free-form authority fields"
+    },
+    {
+      "action": "frame_positively",
+      "node_ref": "POSITIVE_FRAMING",
+      "description": "Rewrite critical ops prompts to required-action-first",
+      "artifact": "instruction rewrite",
+      "gate": "each ban has alternative"
+    },
+    {
+      "action": "choose_session_mode",
+      "node_ref": "SESSION_VS_STATELESS",
+      "description": "Pick session vs fresh per role",
+      "artifact": "role mode matrix",
+      "gate": "judge/quarantine not same soup as author self-score"
+    },
+    {
+      "action": "spawn_fresh_if_needed",
+      "node_ref": "FRESH_SUBAGENT",
+      "description": "Launch clean worker with task packet",
+      "artifact": "packet",
+      "gate": "packet complete; no full clone"
+    },
+    {
+      "action": "isolate_tools",
+      "node_ref": "TOOL_OUTPUT_ISOLATION",
+      "description": "Bound and label tool outputs as observations",
+      "artifact": "tool observation",
+      "gate": "size cap applied"
+    },
+    {
+      "action": "gate_memory",
+      "node_ref": "MEMORY_WRITE_GATE",
+      "description": "Validate tier before durable memory write",
+      "artifact": "memory decision",
+      "gate": "tier3 not global"
+    },
+    {
+      "action": "prime_check",
+      "node_ref": "PRIME_DETECTION",
+      "description": "Scan for untrusted influence before destructive tools",
+      "artifact": "priming flags",
+      "gate": "flags reviewed or reset"
+    },
+    {
+      "action": "reset_if_needed",
+      "node_ref": "RESET_PROTOCOL",
+      "description": "Stop, snapshot, fresh clean packet on contamination",
+      "artifact": "reset report",
+      "gate": "destructive tools stopped"
+    },
+    {
+      "action": "audit_boundaries",
+      "node_ref": "BOUNDARY_AUDIT",
+      "description": "Log admission, quarantine, deny, reset events",
+      "artifact": "audit events",
+      "gate": "events redacted of secrets"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "rule": "tier0_over_volume",
+      "rationale": "untrusted volume must not outvote system rules",
+      "trigger": "conflict between tier3 text and pins",
+      "action": "ignore tier3 as authority; keep pins"
+    },
+    {
+      "rule": "fresh_judge_over_same_session_grade",
+      "rationale": "self-grading is contaminated by design",
+      "trigger": "acceptance evaluation",
+      "action": "fresh or separate reviewer context"
+    },
+    {
+      "rule": "positive_procedure_over_ban_walls",
+      "rationale": "rebound makes ban-only framing risky",
+      "trigger": "writing safety-critical instructions",
+      "action": "required action first plus short bans"
+    },
+    {
+      "rule": "data_not_orders_for_peers",
+      "rationale": "lateral injection is a swarm risk",
+      "trigger": "peer EXCHANGE content",
+      "action": "treat as data unless authenticated TASK"
+    },
+    {
+      "rule": "secret_free_low_trust",
+      "rationale": "exfil via coercion is real",
+      "trigger": "spawn quarantine/sandbox",
+      "action": "scrub secrets before launch"
+    },
+    {
+      "rule": "reset_over_continue_carefully",
+      "rationale": "contaminated continuation is undefined",
+      "trigger": "injection or rebound near-miss",
+      "action": "stop snapshot fresh clean packet"
+    },
+    {
+      "rule": "readonly_reviewer_default",
+      "rationale": "limit blast radius of review context",
+      "trigger": "xverify role",
+      "action": "findings only unless explicitly scoped fixes"
+    },
+    {
+      "rule": "test_isolation_or_it_decays",
+      "rationale": "untested controls regress",
+      "trigger": "shipping isolation features",
+      "action": "require canaries for gates"
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "rule": "no_untrusted_in_system_channel",
+      "prevents": "direct instruction injection"
+    },
+    {
+      "rule": "no_ban_only_critical_tool_framing",
+      "prevents": "negation rebound near-misses"
+    },
+    {
+      "rule": "no_peer_content_as_task_without_assignee",
+      "prevents": "lateral task injection"
+    },
+    {
+      "rule": "no_global_memory_of_tier3",
+      "prevents": "cross-session poison"
+    },
+    {
+      "rule": "no_secrets_in_exchange_or_sandbox",
+      "prevents": "credential exfil"
+    },
+    {
+      "rule": "no_self_accept_without_integrator",
+      "prevents": "contaminated acceptance"
+    },
+    {
+      "rule": "no_blind_session_resume_after_untrusted",
+      "prevents": "zombie contamination"
+    },
+    {
+      "rule": "no_auto_exec_from_tool_text",
+      "prevents": "second-order injection"
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "trigger": "injection or authority claim from untrusted text",
+      "action": "quarantine path; prime flag; consider reset",
+      "nodes": [
+        "QUARANTINE_READER",
+        "PRIME_DETECTION",
+        "RESET_PROTOCOL"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "near-miss on forbidden tool after DON'T framing",
+      "action": "rewrite positive; log rebound; optional fresh replan",
+      "nodes": [
+        "NEGATION_REBOUND",
+        "POSITIVE_FRAMING",
+        "PRIME_DETECTION"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "peer message acted as task",
+      "action": "halt; audit; reinforce ASSIGNEE filter",
+      "nodes": [
+        "CROSS_AGENT_INJECTION",
+        "INSTRUCTION_HYGIENE",
+        "BOUNDARY_AUDIT"
+      ],
+      "priority": 1
+    },
+    {
+      "trigger": "memory poison suspected",
+      "action": "purge bad entries; tighten gate; run canary",
+      "nodes": [
+        "MEMORY_WRITE_GATE",
+        "ISOLATION_TEST",
+        "BOUNDARY_AUDIT"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "judge contamination / score inflation",
+      "action": "force fresh judge packet; remove self-scores",
+      "nodes": [
+        "CONTAMINATION",
+        "FRESH_SUBAGENT",
+        "ROLE_SEPARATION"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "sandbox had secrets or push tools",
+      "action": "scrub template; retest launch",
+      "nodes": [
+        "SANDBOX_PROMPT",
+        "SIDE_CHANNEL_LEAK",
+        "ISOLATION_TEST"
+      ],
+      "priority": 2
+    },
+    {
+      "trigger": "resume without checklist after untrusted work",
+      "action": "run resume checks; reset if needed",
+      "nodes": [
+        "CONTAMINATED_RESUME",
+        "RESET_PROTOCOL",
+        "PRIME_DETECTION"
+      ],
+      "priority": 3
+    }
+  ],
+  "priority_rationale": "Trust boundaries and injection controls dominate convenience; freshness for judges dominates same-session self-grading; positive framing dominates ban walls for critical tools.",
+  "eval_objective": "verify_tiers_quarantine_fresh_judge_positive_framing_and_no_lateral_injection",
+  "created": "2026-07-13",
+  "source_description": "heuristic priors for LLM context isolation, freshness, and contamination control in multi-agent systems",
+  "source_citation": "heuristic prior; operational practice for agent orchestration; no external dataset supplied"
+}

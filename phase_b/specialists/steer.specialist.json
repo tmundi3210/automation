@@ -1,0 +1,735 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "specialist_id": "steer",
+  "domain": "steer",
+  "domain_label": "Controllability, Steering & Representation Engineering",
+  "purpose": "Invoke when a task requires: (a) constraining/shaping LLM output format, verbosity, or persona via inference-time controls or fine-tuning; or (b) extracting, calibrating, and applying representation-space steering directions for style/concept control grounded in published literature (Zou 2023, Turner 2023). NOT for removing provider safety behaviors.",
+  "grounded_in_kbs": [
+    "phase_b/knowledge_base/llm_engineering/steer__format_ctrl.kb.json",
+    "phase_b/knowledge_base/llm_engineering/steer__repeng.kb.json"
+  ],
+  "role": "Expert in output controllability: select and apply grammar-constrained decoding, SFT-based verbosity/persona control, logit bias, PEFT format adapters, calibrated abstention, and representation-engineering activation steering (ActAdd, control vectors, PCA contrastive extraction) for legitimate style/format/verbosity objectives. Scope: permitted = format compliance, verbosity reduction, style transfer, concept monitoring; prohibited = disabling provider safety filters or safety-relevant refusal mechanisms. Synthesize across format_control and representation_engineering subdomains; cite arXiv:2310.01405 and Turner 2023 for repeng claims.",
+  "capabilities": [
+    {
+      "capability": "format_schema_design",
+      "subdomain": "steer__format_ctrl",
+      "method": "Define JSON/YAML output schemas with field semantics, enum tables, null policy, required/optional annotations; assign version field; document migration path",
+      "when_to_use": "Task requires structured machine-parseable output; first step before any format enforcement",
+      "inputs": ["output_requirements", "downstream_consumer_spec"],
+      "outputs": ["json_schema_or_yaml_spec", "field_semantic_table", "null_policy_doc"]
+    },
+    {
+      "capability": "grammar_constrained_decoding",
+      "subdomain": "steer__format_ctrl",
+      "method": "FSM/CFG token masking via Outlines or lm-format-enforcer (Willard & Louf 2023, arXiv:2307.09702); compile schema to token-mask automaton; apply at logit level each decode step; target parse_rate >0.98",
+      "when_to_use": "Hard format guarantee required at inference time without weight update; JSON/regex/grammar compliance critical",
+      "inputs": ["output_schema", "model_tokenizer", "grammar_spec"],
+      "outputs": ["constrained_decode_config", "parse_rate_metric", "latency_overhead_p99"]
+    },
+    {
+      "capability": "stop_sequence_length_control",
+      "subdomain": "steer__format_ctrl",
+      "method": "Configure stop sequences (EOS tokens, sentinel strings), max_new_tokens cap, truncation policy with sentinel fallback; set per-schema length budgets",
+      "when_to_use": "Output length must be bounded or terminated at specific tokens; complements constrained decoding",
+      "inputs": ["schema_terminal_tokens", "max_length_budget"],
+      "outputs": ["stop_sequence_list", "truncation_policy", "length_compliance_rate"]
+    },
+    {
+      "capability": "verbosity_sft",
+      "subdomain": "steer__format_ctrl",
+      "method": "Supervised fine-tuning on dense I/O pairs (input:verbose_output → compact_output) to suppress boilerplate; target >40% length reduction with semantic_retention F1 >0.93; uses DATA_CURATION_DENSE pipeline",
+      "when_to_use": "Model produces excessive boilerplate; inference-time controls insufficient; weight update permissible",
+      "inputs": ["dense_io_pairs_dataset", "base_model", "verbosity_target_ratio"],
+      "outputs": ["sft_checkpoint", "length_reduction_metric", "semantic_f1_metric"]
+    },
+    {
+      "capability": "persona_control_via_sft",
+      "subdomain": "steer__format_ctrl",
+      "method": "Bake machine-facing persona (terse, structured, no hedging) into weights via SFT; multi-tenant risk: persona baked into base conflicts with per-request persona switching — use PEFT adapter per persona instead",
+      "when_to_use": "Consistent machine-to-machine communication style required across all outputs; single-tenant deployment",
+      "inputs": ["persona_spec", "sft_dataset_with_persona", "base_model"],
+      "outputs": ["persona_checkpoint_or_adapter", "persona_compliance_eval"]
+    },
+    {
+      "capability": "calibrated_abstention",
+      "subdomain": "steer__format_ctrl",
+      "method": "Emit structured null/abstention output (e.g., {\"answer\":null,\"reason\":\"low_confidence\"}) when model confidence below threshold; calibrate using temperature scaling; target ECE <0.10",
+      "when_to_use": "Downstream system must distinguish low-confidence from erroneous outputs; parse pipeline requires null-safe handling",
+      "inputs": ["confidence_threshold", "null_schema_template", "calibration_dataset"],
+      "outputs": ["abstention_rate", "ece_metric", "null_output_schema"]
+    },
+    {
+      "capability": "logit_bias_token_forcing",
+      "subdomain": "steer__format_ctrl",
+      "method": "Apply per-token logit additive bias at inference time to suppress unwanted tokens (e.g., verbose connectors) or force structural tokens (e.g., '{', ']'); no weight update; immediate but coarse-grained control",
+      "when_to_use": "Lightweight inference-time nudge for token-level format; supplement to constrained decoding when full grammar compile is costly",
+      "inputs": ["token_bias_map", "model_inference_api"],
+      "outputs": ["biased_output_distribution", "format_compliance_delta"]
+    },
+    {
+      "capability": "prompt_template_design",
+      "subdomain": "steer__format_ctrl",
+      "method": "Author compact system/user prompt templates embedding format instructions; target <10% context token overhead; include schema reference, output sentinel, and example I/O pair inline",
+      "when_to_use": "Zero-shot or few-shot format enforcement; first line of defense before SFT/constrained decode",
+      "inputs": ["format_schema", "example_io_pairs"],
+      "outputs": ["prompt_template", "token_overhead_fraction"]
+    },
+    {
+      "capability": "format_compliance_evaluation",
+      "subdomain": "steer__format_ctrl",
+      "method": "Measure parse_rate (% outputs parseable by schema), boilerplate_rate, semantic_retention_F1; run against held-out eval set; gate: parse_rate >0.98, F1 >0.90; integrate into CI as blocking check",
+      "when_to_use": "After any format control change; as CI gate; before production deployment",
+      "inputs": ["model_outputs", "reference_schema", "semantic_reference_outputs"],
+      "outputs": ["parse_rate", "boilerplate_rate", "semantic_f1", "ci_pass_fail"]
+    },
+    {
+      "capability": "token_efficiency_optimization",
+      "subdomain": "steer__format_ctrl",
+      "method": "Minimize conversion_loss (information lost per token); measure semantic_retention F1 on compressed vs. verbose reference; apply joint parse+semantic gate to prevent Goodhart gaming; target F1 >0.93",
+      "when_to_use": "Context window budget constrained; cost-per-token optimization required",
+      "inputs": ["verbose_reference_outputs", "compressed_model_outputs"],
+      "outputs": ["conversion_loss_metric", "semantic_f1", "compression_ratio"]
+    },
+    {
+      "capability": "representation_steering_for_format",
+      "subdomain": "steer__format_ctrl",
+      "method": "Apply activation addition (repeng technique) for format style steering without weight update; extract format-contrastive direction from residual stream; inject scaled vector at inference; bridges format_ctrl and repeng subdomains",
+      "when_to_use": "Format style change needed without SFT; experiment/prototyping phase; repeng infrastructure already deployed",
+      "inputs": ["format_contrastive_pairs", "target_layer", "steering_coefficient"],
+      "outputs": ["format_steering_vector", "format_compliance_delta", "coherence_score"]
+    },
+    {
+      "capability": "schema_versioning",
+      "subdomain": "steer__format_ctrl",
+      "method": "Embed version field in all output schemas; maintain migration scripts for version transitions; enforce backward compatibility policy; block deployments missing version annotation",
+      "when_to_use": "Schema evolves over time; multiple consumers on different schema versions",
+      "inputs": ["schema_v_current", "schema_v_previous", "consumer_version_map"],
+      "outputs": ["versioned_schema", "migration_script", "compatibility_matrix"]
+    },
+    {
+      "capability": "peft_format_adapters",
+      "subdomain": "steer__format_ctrl",
+      "method": "Train LoRA or IA3 adapters per output schema; enable multi-schema deployment via adapter hot-swap; route by request schema_tag; avoids full fine-tune per schema; target parse_rate >0.98 per adapter",
+      "when_to_use": "Multiple output schemas required from single base model; persona/format diversity at inference",
+      "inputs": ["schema_specific_datasets", "base_model", "lora_rank_config"],
+      "outputs": ["adapter_checkpoints", "per_schema_parse_rate", "adapter_routing_config"]
+    },
+    {
+      "capability": "dense_io_data_curation",
+      "subdomain": "steer__format_ctrl",
+      "method": "Construct SFT dataset of (verbose_input, compact_structured_output) pairs; filter to 100% parse rate; deduplicate; balance schema coverage; minimum 1000 pairs per schema for reliable SFT",
+      "when_to_use": "Preparing training data for verbosity_sft or peft_format_adapters",
+      "inputs": ["raw_io_examples", "target_schema", "quality_filter_threshold"],
+      "outputs": ["curated_sft_dataset", "dataset_stats", "parse_rate_of_dataset"]
+    },
+    {
+      "capability": "output_parse_pipeline",
+      "subdomain": "steer__format_ctrl",
+      "method": "Implement layered parse pipeline: strict parse → partial JSON recovery → regex extraction → retry-with-reprompt → structured error; target >99% yield; log all fallback events for CI feedback",
+      "when_to_use": "Production system consuming model JSON outputs; error recovery required when constrained decode not available",
+      "inputs": ["raw_model_output", "target_schema", "retry_budget"],
+      "outputs": ["parsed_output", "fallback_tier_used", "parse_yield_rate"]
+    },
+    {
+      "capability": "format_regression_ci_gate",
+      "subdomain": "steer__format_ctrl",
+      "method": "Automated CI check: run format eval suite on every model/prompt change; block merge if parse_rate drops >2pp or semantic F1 drops >3pp from baseline; maintain eval set staleness <30 days",
+      "when_to_use": "Continuous deployment pipeline for format-controlled models; prevents regression from prompt or weight changes",
+      "inputs": ["model_checkpoint_or_prompt_diff", "eval_suite", "baseline_metrics"],
+      "outputs": ["ci_pass_fail", "metric_deltas", "regression_alert"]
+    },
+    {
+      "capability": "multi_schema_routing",
+      "subdomain": "steer__format_ctrl",
+      "method": "Select LoRA adapter or constrained decode grammar by request schema_tag at inference time; implement tag validation; fallback to base model with logit bias on unknown schema",
+      "when_to_use": "Single serving endpoint must handle multiple output schemas",
+      "inputs": ["request_schema_tag", "adapter_registry", "grammar_registry"],
+      "outputs": ["selected_adapter_or_grammar", "routing_latency", "fallback_flag"]
+    },
+    {
+      "capability": "context_window_budget_management",
+      "subdomain": "steer__format_ctrl",
+      "method": "Allocate token budget across system_prompt, few_shot_examples, input, and output_reserve; truncate input with priority ranking; monitor utilization; alert when output_reserve <10% of window",
+      "when_to_use": "Long-context tasks with fixed context window; multi-turn conversations",
+      "inputs": ["context_window_size", "component_token_counts", "priority_ranking"],
+      "outputs": ["allocation_plan", "truncation_decisions", "utilization_report"]
+    },
+    {
+      "capability": "semantic_retention_evaluation",
+      "subdomain": "steer__format_ctrl",
+      "method": "Measure information preservation between verbose reference and compressed output using token-overlap F1 or embedding cosine similarity; gate: F1 >0.90; use alongside parse_rate to prevent Goodhart gaming",
+      "when_to_use": "Evaluating verbosity reduction for information loss; joint gate with format compliance",
+      "inputs": ["reference_outputs", "compressed_outputs", "similarity_metric_choice"],
+      "outputs": ["semantic_f1", "embedding_cosine", "information_loss_report"]
+    },
+    {
+      "capability": "goodhart_risk_mitigation",
+      "subdomain": "steer__format_ctrl",
+      "method": "Detect and prevent metric gaming where model optimizes parse_rate at expense of semantic content; implement joint gate (parse AND semantic); monitor for adversarial format compliance; severity 0.80 — require human_review when detected",
+      "when_to_use": "After SFT or PEFT training; when parse_rate improves but semantic F1 degrades",
+      "inputs": ["parse_rate_trend", "semantic_f1_trend", "output_sample"],
+      "outputs": ["goodhart_risk_flag", "joint_gate_result", "human_review_trigger"]
+    },
+    {
+      "capability": "format_inference_latency_management",
+      "subdomain": "steer__format_ctrl",
+      "method": "Profile constrained decode overhead (FSM step cost); benchmark grammar compile time; set SLA: overhead <10% p99 vs. unconstrained; switch to logit_bias or prompt-only if overhead exceeds SLA",
+      "when_to_use": "Latency-sensitive production deployment with constrained decode",
+      "inputs": ["decode_profiling_data", "latency_sla_ms", "throughput_target"],
+      "outputs": ["overhead_fraction_p99", "sla_pass_fail", "fallback_recommendation"]
+    },
+    {
+      "capability": "license_compliance_check",
+      "subdomain": "steer__format_ctrl",
+      "method": "Verify base model license permits SFT/commercial use before compute allocation; check derivative model redistribution terms; document compliance decision; severity 0.85 — block if non-compliant; human_review_required",
+      "when_to_use": "Before initiating any SFT, PEFT, or adapter training on a new base model",
+      "inputs": ["base_model_id", "license_text", "use_case_description"],
+      "outputs": ["compliance_decision", "license_constraints", "human_review_flag"]
+    },
+    {
+      "capability": "repeng_foundations",
+      "subdomain": "steer__repeng",
+      "method": "Apply linear representation hypothesis (Zou et al. 2023, arXiv:2310.01405): extract concept directions from residual stream via PCA on contrastive activation pairs; verify linearity assumption; document scope boundary (style/verbosity only; no safety-filter removal)",
+      "when_to_use": "Starting any representation engineering project; establish theoretical grounding and scope",
+      "inputs": ["concept_definition", "model_architecture", "scope_boundary_doc"],
+      "outputs": ["direction_hypothesis", "linearity_check_result", "scope_approval"]
+    },
+    {
+      "capability": "contrastive_data_design",
+      "subdomain": "steer__repeng",
+      "method": "Design paired activation dataset: (concept_present, concept_absent) sentence pairs; minimize confounds; enforce template diversity; minimum 50 pairs; verify t-SNE cluster separation before proceeding",
+      "when_to_use": "Extracting a new steering direction; dataset quality gates direction extraction quality",
+      "inputs": ["concept_definition", "template_library", "confound_exclusion_list"],
+      "outputs": ["contrastive_pair_dataset", "tsne_separation_plot", "dataset_quality_report"]
+    },
+    {
+      "capability": "direction_extraction",
+      "subdomain": "steer__repeng",
+      "method": "Extract concept direction from contrastive activations using PCA (first PC of difference vectors), difference-in-means, or trained linear probe; perform layer sweep to identify optimal layer; apply Gram-Schmidt orthogonalization for multi-concept; verify probe accuracy >0.80 post-extraction",
+      "when_to_use": "After contrastive dataset collected and approved; core step for all repeng applications",
+      "inputs": ["contrastive_activation_dataset", "model_layer_range", "extraction_method"],
+      "outputs": ["steering_direction_vector", "layer_selection", "probe_accuracy_curve"]
+    },
+    {
+      "capability": "activation_addition_steering",
+      "subdomain": "steer__repeng",
+      "method": "Turner et al. 2023 ActAdd: add scaled steering vector to residual stream at selected layer during forward pass; zero weight update; formula: h_steered = h + alpha * direction; requires coefficient calibration; human_review_required for any concept touching safety-relevant behaviors",
+      "when_to_use": "Apply extracted direction for style/verbosity/concept steering at inference time without model weight modification",
+      "inputs": ["steering_direction_vector", "target_layer", "alpha_coefficient", "inference_input"],
+      "outputs": ["steered_model_output", "behavioral_shift_metric", "coherence_score"]
+    },
+    {
+      "capability": "coefficient_calibration",
+      "subdomain": "steer__repeng",
+      "method": "Sweep alpha coefficient over range [alpha_min, alpha_max]; measure steering_effect vs. coherence tradeoff; select Pareto-optimal alpha; enforce coherence floor (perplexity delta <20%); document safety cap for refusal-adjacent directions",
+      "when_to_use": "After direction extraction; before production deployment of any steering vector",
+      "inputs": ["steering_direction_vector", "alpha_sweep_range", "coherence_metric"],
+      "outputs": ["optimal_alpha", "pareto_curve", "coherence_floor_check"]
+    },
+    {
+      "capability": "layer_position_selection",
+      "subdomain": "steer__repeng",
+      "method": "Select optimal injection layer via probe accuracy curve (peak accuracy layer), causal tracing (maximum behavioral effect layer), and logit lens (semantic formation depth); prefer middle-to-late layers for semantic concepts; validate with ablation",
+      "when_to_use": "Optimizing direction injection point; run before production coefficient calibration",
+      "inputs": ["model_layer_activations", "probe_accuracy_by_layer", "causal_tracing_results"],
+      "outputs": ["selected_layer_index", "layer_selection_rationale", "ablation_results"]
+    },
+    {
+      "capability": "style_verbosity_steering",
+      "subdomain": "steer__repeng",
+      "method": "Extract style-contrastive directions (e.g., verbose vs. terse, formal vs. informal) from residual stream; inject at inference for zero-weight style transfer; complement or replace SFT-based verbosity control; validate with format_compliance_evaluation",
+      "when_to_use": "Style/verbosity modification needed without SFT; A/B testing style variants at inference time",
+      "inputs": ["style_contrastive_pairs", "base_model", "target_style_spec"],
+      "outputs": ["style_direction_vector", "style_transfer_eval", "verbosity_change_metric"]
+    },
+    {
+      "capability": "representation_reading_monitoring",
+      "subdomain": "steer__repeng",
+      "method": "Deploy linear reading head (dot product of activation with concept direction) as real-time behavioral monitor; compute concept score per token or per layer; alert on anomalous concept activation; enable production behavioral observability",
+      "when_to_use": "Production monitoring of model behavioral tendencies; interpretability dashboard; concept drift detection",
+      "inputs": ["concept_direction_vectors", "live_model_activations", "alert_threshold"],
+      "outputs": ["concept_scores_per_request", "anomaly_alerts", "monitoring_dashboard_feed"]
+    },
+    {
+      "capability": "control_vectors",
+      "subdomain": "steer__repeng",
+      "method": "Persistent additive offset vectors applied across all forward passes for a session; support multi-concept superposition (sum of orthogonalized directions); per-request vector selection in production serving hook; rollback by zeroing vectors",
+      "when_to_use": "Persistent style/concept steering across a session or deployment; multi-concept simultaneous control",
+      "inputs": ["orthogonalized_direction_set", "per_concept_coefficients", "serving_hook_config"],
+      "outputs": ["control_vector_config", "multi_concept_interference_metric", "rollback_procedure"]
+    },
+    {
+      "capability": "refusal_direction_documentation",
+      "subdomain": "steer__repeng",
+      "method": "Literature-only: document Arditi et al. 2024 finding that a linear refusal direction exists in residual stream. SCOPE: academic documentation and mechanistic understanding ONLY. No operational steps for extracting, modifying, or ablating refusal direction. Any such request triggers scope_boundary_violation escalation.",
+      "when_to_use": "Answering research questions about mechanistic interpretability of safety behaviors; literature survey tasks",
+      "inputs": ["research_question", "arditi2024_paper_reference"],
+      "outputs": ["literature_summary", "mechanistic_finding_description", "scope_boundary_restatement"]
+    },
+    {
+      "capability": "scope_boundary_governance",
+      "subdomain": "steer__repeng",
+      "method": "Classify any requested repeng operation as permitted (style, verbosity, concept monitoring, format) or prohibited (safety filter removal, refusal direction ablation, provider ToS violation); document decision; human_review_required for all ambiguous cases; block prohibited operations",
+      "when_to_use": "Before executing any repeng operation; mandatory gate at project initiation",
+      "inputs": ["operation_description", "concept_definition", "provider_tos"],
+      "outputs": ["permitted_prohibited_decision", "rationale", "human_review_flag"]
+    },
+    {
+      "capability": "concept_direction_probing",
+      "subdomain": "steer__repeng",
+      "method": "Train linear probes on residual stream activations for concept detection; evaluate accuracy, mass-mean baseline comparison, transfer to held-out prompts, causal patching to confirm causal vs. correlational role; gate: probe accuracy >0.80",
+      "when_to_use": "Validating that extracted direction causally encodes target concept; interpretability research",
+      "inputs": ["labeled_activation_dataset", "probe_architecture", "causal_patching_config"],
+      "outputs": ["probe_accuracy", "causal_validity_score", "transfer_accuracy"]
+    },
+    {
+      "capability": "capability_safety_tradeoff_measurement",
+      "subdomain": "steer__repeng",
+      "method": "Measure paired behavioral-shift metric (desired concept change) vs. capability regression (MMLU/HellaSwag delta); gate: capability delta <3%; human_review_required if safety-adjacent behaviors affected; document tradeoff in deployment record",
+      "when_to_use": "Before deploying any steering vector to production; mandatory for all coefficient values above calibration minimum",
+      "inputs": ["steered_model", "baseline_model", "benchmark_suite", "behavioral_eval_suite"],
+      "outputs": ["behavioral_shift_score", "capability_regression_delta", "safety_tradeoff_report"]
+    },
+    {
+      "capability": "direction_orthogonalization",
+      "subdomain": "steer__repeng",
+      "method": "Apply Gram-Schmidt orthogonalization to multi-concept direction set to minimize inter-concept interference; verify post-orthogonalization probe accuracy within 5% of pre-orthogonalization; required before multi-concept superposition",
+      "when_to_use": "Combining multiple steering directions simultaneously; preventing concept interference",
+      "inputs": ["concept_direction_set", "probe_accuracy_baselines"],
+      "outputs": ["orthogonalized_direction_set", "interference_matrix", "post_orth_probe_accuracies"]
+    },
+    {
+      "capability": "transfer_generalization_testing",
+      "subdomain": "steer__repeng",
+      "method": "Test steering direction stability across prompt domains, model sizes, and instruction formats; measure cosine similarity between directions extracted on different splits; gate: cosine >0.80 for deployment; document failure modes",
+      "when_to_use": "Before deploying direction trained on narrow dataset to broad production use",
+      "inputs": ["direction_vector", "cross_domain_test_prompts", "cosine_threshold"],
+      "outputs": ["cross_domain_cosine_scores", "transfer_pass_fail", "failure_mode_report"]
+    },
+    {
+      "capability": "human_preference_evaluation",
+      "subdomain": "steer__repeng",
+      "method": "Pairwise preference study (steered vs. baseline outputs); Likert scale on target attribute and coherence; inter-annotator agreement IAA >0.60 (Cohen's kappa); minimum 200 pairs; use for final production sign-off",
+      "when_to_use": "Final validation before production deployment of steering vector; when automated metrics insufficient",
+      "inputs": ["steered_outputs", "baseline_outputs", "annotation_guidelines"],
+      "outputs": ["preference_rate", "likert_scores", "iaa_kappa", "production_recommendation"]
+    },
+    {
+      "capability": "production_deployment_with_rollback",
+      "subdomain": "steer__repeng",
+      "method": "Integrate steering vectors into serving hook (pre-forward-pass injection); support per-request vector selection by request_tag; implement rollback by zeroing vector config; monitor concept scores in production; alert on drift",
+      "when_to_use": "Deploying validated steering vector to production inference endpoint",
+      "inputs": ["validated_control_vector_config", "serving_infrastructure", "monitoring_thresholds"],
+      "outputs": ["deployed_serving_config", "rollback_procedure", "monitoring_dashboard"]
+    },
+    {
+      "capability": "zou2023_literature_survey",
+      "subdomain": "steer__repeng",
+      "method": "Structured summary of Zou et al. 2023 (arXiv:2310.01405): linear representation hypothesis, PCA contrastive extraction methodology, reading vectors, representation engineering taxonomy; cite DOI and key findings",
+      "when_to_use": "Answering questions grounded in the foundational repeng paper; literature review tasks",
+      "inputs": ["research_question"],
+      "outputs": ["structured_literature_summary", "key_claims", "methodology_description"]
+    },
+    {
+      "capability": "turner2023_literature_survey",
+      "subdomain": "steer__repeng",
+      "method": "Structured summary of Turner et al. 2023 (ActAdd): activation addition technique, residual stream vector injection, coefficient effects, coherence tradeoffs, demonstrated applications; cite paper and key results",
+      "when_to_use": "Answering questions about ActAdd methodology; explaining activation addition to downstream users",
+      "inputs": ["research_question"],
+      "outputs": ["structured_literature_summary", "actadd_methodology", "demonstrated_results"]
+    },
+    {
+      "capability": "nonlinear_limits_characterization",
+      "subdomain": "steer__repeng",
+      "method": "Identify coefficient regimes where linear approximation breaks down (coherence collapse, repetition loops, semantic incoherence); characterize safety cap; document nonlinear failure modes; restrict alpha to linear regime",
+      "when_to_use": "During coefficient calibration when coherence degrades non-linearly; documenting model-specific limits",
+      "inputs": ["alpha_sweep_results", "coherence_metrics_by_alpha", "perplexity_curve"],
+      "outputs": ["linear_regime_boundary", "safety_cap_alpha", "nonlinear_failure_mode_doc"]
+    },
+    {
+      "capability": "multi_concept_superposition",
+      "subdomain": "steer__repeng",
+      "method": "Simultaneously apply multiple orthogonalized steering directions via vector superposition (sum of alpha_i * direction_i); measure inter-concept interference using concept score cross-talk; gate: cross-talk <10% of primary signal",
+      "when_to_use": "Multiple simultaneous behavioral attributes required (e.g., terse + formal + structured)",
+      "inputs": ["orthogonalized_direction_set", "per_concept_alphas", "interference_threshold"],
+      "outputs": ["superposed_control_vector", "cross_talk_matrix", "multi_concept_eval"]
+    },
+    {
+      "capability": "benchmark_regression_testing",
+      "subdomain": "steer__repeng",
+      "method": "Run MMLU, HellaSwag, TruthfulQA on steered vs. baseline model; gate: capability delta <±3% on all benchmarks; block deployment if gate fails; document results in steering deployment record",
+      "when_to_use": "Before production deployment of any steering vector; mandatory CI gate for repeng",
+      "inputs": ["steered_model_or_config", "baseline_model", "benchmark_suite"],
+      "outputs": ["benchmark_delta_report", "gate_pass_fail", "deployment_record_entry"]
+    },
+    {
+      "capability": "arditi2024_literature_survey",
+      "subdomain": "steer__repeng",
+      "method": "Structured literature-only summary of Arditi et al. 2024: existence and characterization of linear refusal direction in LLM residual stream; mechanistic interpretability finding. SCOPE: documentation only; no operational extraction or modification of refusal direction.",
+      "when_to_use": "Mechanistic interpretability research questions; academic literature review; explaining refusal direction finding to researchers",
+      "inputs": ["research_question"],
+      "outputs": ["literature_summary", "mechanistic_finding", "scope_boundary_notice"]
+    },
+    {
+      "capability": "mechanistic_interpretability_survey",
+      "subdomain": "steer__repeng",
+      "method": "Survey mechanistic interpretability methods (circuits, attention head analysis, feature decomposition, causal patching) as foundation for repeng; identify which mechanisms govern target concept; document findings without operationalizing prohibited applications",
+      "when_to_use": "Research-phase investigation of how model internally represents a concept; grounding repeng in mechanistic understanding",
+      "inputs": ["target_concept", "model_architecture_docs", "interpretability_toolset"],
+      "outputs": ["mechanism_hypothesis", "relevant_components", "causal_evidence"]
+    },
+    {
+      "capability": "iteration_loop_management",
+      "subdomain": "steer__repeng",
+      "method": "Structured iterate-and-refine loop: direction_extraction → coefficient_calibration → behavioral_eval → human_eval → production_deploy; trigger re-extraction if probe accuracy drops; trigger human_review if behavioral shift unexpected; document each iteration",
+      "when_to_use": "Managing multi-iteration repeng project from research to production",
+      "inputs": ["current_iteration_results", "gate_thresholds", "iteration_log"],
+      "outputs": ["next_action_decision", "updated_iteration_log", "escalation_flags"]
+    }
+  ],
+  "decision_procedure": [
+    "1. SCOPE CHECK: classify request as format_control, style_verbosity_steering, concept_monitoring, or prohibited; invoke scope_boundary_governance; halt if prohibited",
+    "2. LICENSE CHECK: invoke license_compliance_check before any SFT/PEFT training; human_review_required if non-compliant",
+    "3. FORMAT NEED ASSESSMENT: if output must be machine-parseable structured data → start with format_schema_design; if hard guarantee required → grammar_constrained_decoding; if lightweight nudge sufficient → logit_bias + prompt_template_design",
+    "4. VERBOSITY/STYLE NEED: if verbosity reduction required with weight update permitted → verbosity_sft; if zero weight update required → style_verbosity_steering (repeng) or logit_bias",
+    "5. REPENG PATH: if activation steering required → scope_boundary_governance → contrastive_data_design (≥50 pairs) → direction_extraction → layer_position_selection → coefficient_calibration → capability_safety_tradeoff_measurement",
+    "6. MULTI-CONCEPT: if >1 steering direction → direction_orthogonalization before multi_concept_superposition",
+    "7. EVALUATION: always run format_compliance_evaluation (parse_rate >0.98, F1 >0.90) AND benchmark_regression_testing (delta <±3%) before production",
+    "8. PRODUCTION GATE: human_preference_evaluation required for final sign-off; production_deployment_with_rollback with monitoring configured",
+    "9. CI: configure format_regression_ci_gate to block regressions on every code/model/prompt change",
+    "10. ESCALATION: invoke human_review for Goodhart risk (severity 0.80), license non-compliance (severity 0.85), safety-adjacent behaviors, or any ambiguous scope"
+  ],
+  "workflow": [
+    {
+      "phase": "WF_01_license_and_scope_gate",
+      "objective": "Verify base model license and establish permitted use scope before any compute allocation",
+      "entry": ["project_initiation", "base_model_identified"],
+      "exit": ["license_compliance_decision=compliant", "scope_boundary_doc=approved"],
+      "gates": ["human_review_required if license ambiguous or non-commercial restriction applies", "block if scope touches prohibited uses (safety filter removal)"]
+    },
+    {
+      "phase": "WF_02_format_schema_definition",
+      "objective": "Define output schema, field semantics, null policy, version, and downstream consumer spec",
+      "entry": ["output_requirements_doc", "consumer_spec"],
+      "exit": ["json_schema_or_yaml_spec_v1.0", "migration_path_documented"],
+      "gates": ["human_review if schema has ambiguous null handling or backward-incompatible changes"]
+    },
+    {
+      "phase": "WF_03_prompt_and_inference_controls",
+      "objective": "Author prompt templates, stop sequences, logit bias; first-line format enforcement without weight updates",
+      "entry": ["format_schema_v1.0"],
+      "exit": ["prompt_template_validated", "token_overhead_fraction<0.10", "stop_sequences_configured"],
+      "gates": ["format_compliance_eval on sample: parse_rate >0.90 to proceed to SFT"]
+    },
+    {
+      "phase": "WF_04_constrained_decode_setup",
+      "objective": "Configure grammar-constrained decoding (Outlines/lm-format-enforcer) for hard format guarantee",
+      "entry": ["grammar_spec", "model_tokenizer"],
+      "exit": ["constrained_decode_config_deployed", "parse_rate>0.98", "latency_overhead_p99<0.10"],
+      "gates": ["latency SLA check: if overhead >10% p99 → fallback to logit_bias or prompt-only"]
+    },
+    {
+      "phase": "WF_05_data_curation_and_sft",
+      "objective": "Curate dense I/O training pairs and run SFT/PEFT for verbosity and persona control",
+      "entry": ["license_compliant_base_model", "dense_io_pairs_dataset_100pct_parseable"],
+      "exit": ["sft_checkpoint_or_adapters", "length_reduction>0.40", "semantic_f1>0.93"],
+      "gates": ["dataset parse_rate must be 100%", "semantic_retention gate F1>0.90 on held-out eval"]
+    },
+    {
+      "phase": "WF_06_repeng_concept_definition_and_data",
+      "objective": "Define repeng concept, establish scope boundary approval, collect contrastive activation dataset",
+      "entry": ["scope_boundary_doc=approved", "concept_definition"],
+      "exit": ["contrastive_pair_dataset_n>=50", "tsne_cluster_separation_confirmed"],
+      "gates": ["scope_boundary_governance gate: prohibited concept → halt", "t-SNE separation must be visually confirmed"]
+    },
+    {
+      "phase": "WF_07_direction_extraction_and_layer_selection",
+      "objective": "Extract steering direction via PCA/difference-in-means, select optimal layer, orthogonalize multi-concept",
+      "entry": ["contrastive_activation_dataset_approved"],
+      "exit": ["steering_direction_vector", "selected_layer_index", "probe_accuracy>0.80"],
+      "gates": ["probe accuracy >0.80 gate", "post-orthogonalization probe accuracy within 5% of pre-orth"]
+    },
+    {
+      "phase": "WF_08_coefficient_calibration",
+      "objective": "Sweep alpha to find Pareto-optimal steering coefficient; enforce coherence floor and safety cap",
+      "entry": ["steering_direction_vector", "selected_layer"],
+      "exit": ["optimal_alpha", "coherence_floor_maintained", "safety_cap_documented"],
+      "gates": ["perplexity delta <20%", "nonlinear regime identified and capped"]
+    },
+    {
+      "phase": "WF_09_evaluation_and_benchmarks",
+      "objective": "Run format compliance eval, semantic retention, benchmark regression, human preference evaluation",
+      "entry": ["steered_model_config", "baseline_model"],
+      "exit": ["parse_rate>0.98", "semantic_f1>0.90", "benchmark_delta<0.03", "iaa_kappa>0.60"],
+      "gates": ["all four metric gates must pass", "goodhart_risk_check: parse rate up + semantic F1 down → human_review"]
+    },
+    {
+      "phase": "WF_10_ci_gate_configuration",
+      "objective": "Configure format regression CI gate and benchmark regression CI gate as blocking checks",
+      "entry": ["baseline_metrics_established"],
+      "exit": ["ci_gates_active", "eval_set_staleness_policy<30_days"],
+      "gates": ["block merge if parse_rate drops >2pp or semantic F1 drops >3pp or benchmark delta >3%"]
+    },
+    {
+      "phase": "WF_11_production_deployment",
+      "objective": "Deploy validated format controls and steering vectors to production with monitoring and rollback",
+      "entry": ["all_evaluation_gates_passed", "human_review_sign_off"],
+      "exit": ["serving_config_deployed", "monitoring_active", "rollback_procedure_tested"],
+      "gates": ["rollback procedure must be tested before go-live", "concept score monitoring active"]
+    },
+    {
+      "phase": "WF_12_monitoring_and_iteration",
+      "objective": "Monitor parse rate, concept scores, benchmark deltas in production; trigger re-evaluation on drift",
+      "entry": ["production_deployment_active"],
+      "exit": ["steady_state_monitoring"],
+      "gates": ["alert if parse_rate drops >2pp", "alert if concept score drifts >threshold", "re-run WF_07 if probe accuracy drops"]
+    }
+  ],
+  "escalation_triggers": [
+    {
+      "condition": "Base model license restricts commercial use or SFT derivative redistribution",
+      "action": "human_review",
+      "reason": "License non-compliance severity 0.85; compute must not be allocated before legal review"
+    },
+    {
+      "condition": "Requested repeng concept touches safety-relevant behaviors (refusal, content filtering, safety guardrails)",
+      "action": "human_review",
+      "reason": "scope_boundary_governance: prohibited use; ACTADD and REPENG_FOUNDATIONS require human_review for safety-adjacent concepts"
+    },
+    {
+      "condition": "Scope of repeng request ambiguous (cannot clearly classify as permitted or prohibited)",
+      "action": "human_review",
+      "reason": "Ambiguous scope defaults to human_review per scope_boundary_governance"
+    },
+    {
+      "condition": "parse_rate improves while semantic_retention F1 degrades (Goodhart gaming detected)",
+      "action": "human_review",
+      "reason": "Goodhart_format risk severity 0.80; joint gate failure indicates metric gaming"
+    },
+    {
+      "condition": "Benchmark regression delta exceeds ±3% on MMLU, HellaSwag, or TruthfulQA",
+      "action": "flag",
+      "reason": "Capability regression gate failure; block production deployment pending investigation"
+    },
+    {
+      "condition": "Coherence collapse detected (perplexity delta >20%) during coefficient sweep",
+      "action": "defer",
+      "reason": "Nonlinear limits reached; reduce alpha to linear regime before proceeding"
+    },
+    {
+      "condition": "Probe accuracy post-orthogonalization drops >5% from pre-orthogonalization baseline",
+      "action": "flag",
+      "reason": "Orthogonalization degraded direction quality; re-examine direction set for excessive overlap"
+    },
+    {
+      "condition": "Contrastive pair dataset has <50 pairs or t-SNE cluster separation not confirmed",
+      "action": "defer",
+      "reason": "Dataset quality gate failure; direction extraction will be unreliable"
+    },
+    {
+      "condition": "Format_inference_latency overhead exceeds 10% p99",
+      "action": "flag",
+      "reason": "Latency SLA breach; switch to logit_bias or prompt-only format enforcement"
+    },
+    {
+      "condition": "Eval set staleness exceeds 30 days without refresh",
+      "action": "flag",
+      "reason": "CI gate reliability degradation; stale eval set may miss new failure modes"
+    },
+    {
+      "condition": "Human preference IAA kappa <0.60",
+      "action": "defer",
+      "reason": "Annotation disagreement too high; revise annotation guidelines and re-run"
+    }
+  ],
+  "validation_checklist": [
+    "Format schema has version field and null policy documented",
+    "License compliance check completed before any SFT/PEFT training compute allocated",
+    "Grammar-constrained decode parse_rate >0.98 on held-out eval set",
+    "Prompt template token overhead <10% of context window",
+    "SFT verbosity reduction achieves >40% length reduction with semantic F1 >0.93",
+    "Calibrated abstention ECE <0.10 on calibration set",
+    "Repeng scope boundary approval documented before any direction extraction",
+    "Contrastive activation dataset has >=50 pairs with t-SNE cluster separation confirmed",
+    "Direction probe accuracy >0.80 on held-out activation set",
+    "Optimal alpha selected from Pareto curve with coherence floor maintained (perplexity delta <20%)",
+    "Post-orthogonalization probe accuracy within 5% of pre-orthogonalization for all directions",
+    "Benchmark regression delta <±3% on MMLU, HellaSwag, TruthfulQA",
+    "Semantic retention F1 >0.90 (joint gate with parse_rate to prevent Goodhart gaming)",
+    "Human preference IAA kappa >0.60 on pairwise eval (>=200 pairs)",
+    "CI format regression gate active and blocking on parse_rate drop >2pp",
+    "Cross-domain direction transfer cosine >0.80 before broad deployment",
+    "Rollback procedure tested before production go-live",
+    "Production concept score monitoring configured with anomaly alerting"
+  ],
+  "conflicts_and_dominance": [
+    {
+      "tradeoff": "format_guarantee_vs_inference_latency",
+      "resolution": "grammar_constrained_decoding preferred when parse_rate SLA >0.98 required; if overhead >10% p99, fall back to logit_bias + prompt_template; hard format guarantee dominates latency optimization"
+    },
+    {
+      "tradeoff": "verbosity_reduction_vs_calibrated_abstention",
+      "resolution": "abstention_calib dominates when confidence is below threshold; never suppress abstention for verbosity metrics; ECE <0.10 gate takes precedence over length reduction target"
+    },
+    {
+      "tradeoff": "token_efficiency_vs_semantic_retention",
+      "resolution": "semantic_retention F1 >0.90 is non-negotiable floor; token efficiency optimization halts if F1 drops below floor; joint gate prevents Goodhart gaming"
+    },
+    {
+      "tradeoff": "schema_rigidity_vs_model_generalization",
+      "resolution": "strict schema with version field preferred; allow nullable fields for optional schema elements; calibrated_abstention handles uncertain fields rather than schema relaxation"
+    },
+    {
+      "tradeoff": "grammar_enforcement_vs_representation_steering",
+      "resolution": "grammar_constrained_decoding and representation_steering are complementary; constrained_decode handles structural format; repeng handles style/tone; prefer constrained_decode for parse correctness"
+    },
+    {
+      "tradeoff": "persona_baking_vs_multi_tenant_flexibility",
+      "resolution": "use PEFT_FORMAT adapters per persona for multi-tenant; full SFT persona baking only for single-tenant deployments; adapter hot-swap preferred over per-tenant base model"
+    },
+    {
+      "tradeoff": "format_optimization_goodhart_risk",
+      "resolution": "joint parse+semantic gate is mandatory; parse_rate-only optimization is rejected; severity 0.80 triggers human_review on detection"
+    },
+    {
+      "tradeoff": "base_model_license_vs_sft_commitment",
+      "resolution": "license compliance check before any compute allocation; non-compliant licenses block SFT; severity 0.85; human_review required; dominates all engineering timelines"
+    },
+    {
+      "tradeoff": "constrained_decode_vs_prompt_format_instructions",
+      "resolution": "constrained_decode dominates for hard guarantee; prompt_template used when constrained_decode infrastructure unavailable or latency SLA violated"
+    },
+    {
+      "tradeoff": "eval_set_staleness_vs_ci_gate_reliability",
+      "resolution": "eval set refresh <30 days mandatory; stale eval degrades CI gate reliability; schedule quarterly refresh minimum"
+    },
+    {
+      "tradeoff": "steering_effect_vs_coherence",
+      "resolution": "coherence floor (perplexity delta <20%) is hard constraint; reduce alpha until coherence restored; Pareto selection never exceeds safety cap"
+    },
+    {
+      "tradeoff": "interpretability_vs_compute",
+      "resolution": "probe accuracy and causal tracing required before production; skip interpretability only in prototyping phase with explicit documentation"
+    },
+    {
+      "tradeoff": "multi_concept_control_vs_interference",
+      "resolution": "Gram-Schmidt orthogonalization required before multi-concept superposition; cross-talk <10% gate enforced; reduce concept set if gate fails"
+    },
+    {
+      "tradeoff": "research_scope_vs_misuse_risk",
+      "resolution": "literature-survey nodes (REFUSAL_DIR, ARDITI2024_SURVEY) are documentation-only; no operational extraction steps for safety-relevant directions; human_review required for all ambiguous cases; misuse_risk dominates research value"
+    },
+    {
+      "tradeoff": "linear_assumption_vs_nonlinear_reality",
+      "resolution": "verify linearity before deployment; characterize nonlinear regime; cap alpha to linear regime; document nonlinear failure modes; linear assumption is working hypothesis not guaranteed fact"
+    },
+    {
+      "tradeoff": "automated_metrics_vs_human_judgment",
+      "resolution": "both required for production sign-off; automated metrics (parse_rate, F1, benchmarks) for CI gates; human_preference_evaluation for final deployment approval"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "constrained_decoding",
+      "definition": "Inference-time technique that restricts token sampling to those consistent with a formal grammar (FSM/CFG), guaranteeing structural format compliance; implemented via Outlines or lm-format-enforcer (Willard & Louf 2023)"
+    },
+    {
+      "term": "conversion_loss",
+      "definition": "Information destroyed when compressing verbose model output to compact structured format; measured as 1 - semantic_retention_F1; minimization target in token_efficiency_optimization"
+    },
+    {
+      "term": "boilerplate",
+      "definition": "Repetitive, non-informative preamble/postamble tokens in model output (e.g., 'Certainly! Here is...'); target for SFT-based verbosity reduction"
+    },
+    {
+      "term": "calibrated_abstention",
+      "definition": "Structured null output emitted when model confidence falls below threshold; prevents false-high-confidence outputs; measured by ECE; target ECE <0.10"
+    },
+    {
+      "term": "parse_rate",
+      "definition": "Fraction of model outputs that are parseable by the target schema parser; primary format compliance metric; production gate >0.98"
+    },
+    {
+      "term": "steering_vector",
+      "definition": "Direction in model residual stream encoding a behavioral or stylistic concept; extracted via PCA/difference-in-means on contrastive activation pairs; applied via activation addition (ActAdd)"
+    },
+    {
+      "term": "dense_io_pair",
+      "definition": "Training example pairing verbose/noisy input with compact structured output; building block for verbosity SFT; must achieve 100% parse rate in curated dataset"
+    },
+    {
+      "term": "ECE",
+      "definition": "Expected Calibration Error: measure of confidence calibration quality; ECE=0 means confidence perfectly predicts accuracy; target <0.10 for calibrated abstention"
+    },
+    {
+      "term": "format_adapter",
+      "definition": "PEFT (LoRA/IA3) adapter trained per output schema; enables multi-schema deployment via hot-swap on single base model without full fine-tune per schema"
+    },
+    {
+      "term": "representation_engineering",
+      "definition": "Technique for extracting and manipulating concept-encoding directions from LLM activation space (residual stream); grounded in linear representation hypothesis (Zou et al. 2023, arXiv:2310.01405)"
+    },
+    {
+      "term": "activation_addition",
+      "definition": "Turner et al. 2023 technique: add alpha-scaled steering vector to residual stream at a target layer during forward pass; zero weight modification; enables inference-time behavioral steering"
+    },
+    {
+      "term": "control_vector",
+      "definition": "Persistent additive offset applied to all forward passes for a session or deployment; may be superposition of multiple orthogonalized steering directions; enables per-request behavioral customization"
+    },
+    {
+      "term": "contrastive_pair",
+      "definition": "Pair of sentences or activations (concept_present, concept_absent) used to extract a concept direction; minimum dataset size 50 pairs; quality gated by t-SNE cluster separation"
+    },
+    {
+      "term": "probe_accuracy",
+      "definition": "Accuracy of linear classifier trained on residual stream activations to predict concept label; gate >0.80 for direction validity; distinguishes causally-relevant from correlational directions via causal patching"
+    },
+    {
+      "term": "steering_coefficient",
+      "definition": "Scalar alpha multiplying a steering vector in activation addition; selected via Pareto sweep balancing steering_effect vs. coherence; bounded by linear regime safety cap"
+    },
+    {
+      "term": "reading_head",
+      "definition": "Linear classifier (dot product of activation with concept direction) deployed for real-time behavioral monitoring; outputs concept score per token/layer without modifying generation"
+    },
+    {
+      "term": "refusal_direction",
+      "definition": "Linear direction in LLM residual stream encoding refusal behavior; documented in Arditi et al. 2024 as mechanistic finding; SCOPE: literature documentation ONLY; no operational extraction or modification permitted"
+    },
+    {
+      "term": "mechanistic_interpretability",
+      "definition": "Research field studying internal computations of neural networks (circuits, attention heads, features) to understand how models implement behaviors; foundational context for repeng but distinct from operational steering"
+    }
+  ],
+  "competency_questions_covered": [
+    "How do I guarantee that a model outputs valid JSON matching a specific schema?",
+    "What is grammar-constrained decoding and which libraries implement it?",
+    "How do I reduce model verbosity without fine-tuning (inference-time only)?",
+    "How do I reduce model verbosity with fine-tuning, and what data format is needed?",
+    "What is the tradeoff between format compliance (parse rate) and semantic retention?",
+    "How do I prevent Goodhart gaming where parse rate improves but information is lost?",
+    "How do I serve multiple output schemas from a single base model efficiently?",
+    "How do I calibrate a model to abstain on low-confidence outputs in a structured way?",
+    "What is representation engineering and what is the linear representation hypothesis?",
+    "How do I extract a steering direction for a behavioral concept from a model's activations?",
+    "What is ActAdd (activation addition) and how is it applied at inference time?",
+    "How do I select the optimal layer for injecting a steering vector?",
+    "How do I calibrate the steering coefficient to balance effect and coherence?",
+    "How do I combine multiple steering directions without inter-concept interference?",
+    "How do I monitor model behavioral tendencies in production using reading heads?",
+    "What benchmarks should I run to detect capability regression from steering?",
+    "What is the scope boundary for representation engineering: what is permitted vs. prohibited?",
+    "What does Arditi et al. 2024 say about refusal directions, and can I operationalize it?",
+    "How do I validate that an extracted direction is causal and not merely correlational?",
+    "How do I set up CI gates for format compliance to prevent regression?",
+    "How do I check base model license compliance before fine-tuning?",
+    "How do I manage context window budget for prompt templates and few-shot examples?",
+    "What is the Willard & Louf 2023 paper about, and what does it enable?",
+    "How do I deploy steering vectors to production with rollback capability?",
+    "What human evaluation methodology should I use to validate steering vector quality?",
+    "How does style/verbosity steering via repeng differ from SFT-based verbosity reduction?",
+    "How do I curate a high-quality dense I/O dataset for verbosity SFT?",
+    "What is transfer generalization for steering directions and how is it tested?"
+  ]
+}

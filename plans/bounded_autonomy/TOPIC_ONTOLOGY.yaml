@@ -1,0 +1,344 @@
+# TOPIC_ONTOLOGY.yaml — SPEC Phase 2 deliverable
+# Bounded-Autonomy AI Intelligence System
+# Generated 2026-07-13. Requirements source: plans/bounded_autonomy/SPEC.md (Phase 2).
+# Discipline applied: infosci (controlled vocabulary: one label per concept,
+# aliases as UF/entry terms, hierarchy kept semantically generic and acyclic,
+# adjacent_topics are associative RT links that never duplicate the hierarchy),
+# kr (competency-first: every field exists to answer a classifier or routing
+# question; least structure that does the job; 2 levels only).
+
+_schema:
+  version: "1.0.0"
+  status: draft_for_review
+  changelog:
+    - date: "2026-07-13"
+      change: "Initial ontology: 6 categories, 21 topics (all SPEC Phase-2 topics covered)."
+  competency_questions:
+    # kr discipline: the structure must answer these; nothing more is modeled.
+    - "Which topic(s) does an ingested item belong to? (classifier matching via label/aliases/keywords)"
+    - "Which projects subscribe to / exclude this topic? (join against PROJECT_REGISTRY)"
+    - "What evidence bar must an item clear before it can advance past VERIFIED for this topic?"
+    - "Which nearby topics should a reviewer also consider? (adjacent_topics)"
+  node_fields:
+    id: "string, snake_case, stable forever once published; never reused or renamed (create a new id and alias the old one instead)"
+    label: "string; the single preferred display label (one prefLabel per concept)"
+    definition: "string; one-line scope note; decides borderline classification"
+    kind: "enum: category | topic. Categories are level-1 grouping nodes; topics are level-2 leaves. Max depth is 2 — do not nest topics under topics."
+    parent: "category id for topics; null for categories"
+    aliases: "list of strings; alternate names (UF / entry terms) that mean the SAME concept; used verbatim by the classifier"
+    keywords: "list of strings; lowercase match strings that INDICATE the topic without being synonyms; classifier treats as weaker signal than aliases"
+    adjacent_topics: "list of topic ids; associative (related-term) links; must not duplicate parent/child relations; keep roughly reciprocal"
+    default_evidence_bar: "enum key from evidence_bars below; topics only; the minimum evidence required before an item labeled with this topic may advance past VERIFIED in the Phase-4 state machine"
+    notes: "optional free text (bias cautions, ToS constraints, etc.)"
+  how_to_add_a_topic:
+    - "1. Check warrant: cite at least 3 evidence records (or a SPEC change) that did not fit an existing topic. No warrant, no topic (literary warrant rule)."
+    - "2. Check it is not an alias: if the concept already exists under another name, add an alias to the existing topic instead."
+    - "3. Choose a parent category (exactly one). If no category fits, propose a category change separately — category changes are a bigger review."
+    - "4. Fill every node field; definition must make at least one borderline case decidable."
+    - "5. Set default_evidence_bar; anything security-relevant or production-touching defaults to tier_a_confirmed."
+    - "6. Add reciprocal adjacent_topics entries on the topics you point to."
+    - "7. Bump _schema.version (minor for add, major for rename/removal), append changelog entry."
+    - "8. Route through change control: topic additions are a bounded self-evolution proposal (SPEC Phase 11) — the system may PROPOSE, a human APPROVES. The system never silently reshapes its own classification space."
+  evidence_bars:
+    # Bar = minimum evidence before an item may advance past VERIFIED
+    # (SPEC Phase 3: "Require primary evidence or reproducible implementation
+    # evidence before proposing code adoption.")
+    tier_a_confirmed: "At least one Tier-A primary source PLUS at least one independent confirmation from a different organization. For security- and production-relevant topics."
+    tier_a_primary: "At least one Tier-A primary source (official docs, paper, release notes, maintainer announcement)."
+    tier_a_or_repro: "A Tier-A primary source OR reproducible implementation evidence (code the system has actually executed in the isolated sandbox). Default bar."
+    repro_required: "Reproducible code or evaluation artifact that the system has executed in the isolated sandbox. Tier-A prose alone is NOT sufficient; claims without runnable evidence stop at VERIFIED."
+  exclusion_policy:
+    # SPEC Phase 2: "Map every project to relevant topics and explicit exclusion topics."
+    where_declared: "PROJECT_REGISTRY.yaml -> projects[].topic_subscriptions.excluded (list of exclusion records)"
+    exclusion_record_fields:
+      topic_id: "topic or category id being excluded"
+      mode: "enum: full (no mapping, no alerts, no experiment candidates) | digest_only (appears in daily digest, never becomes a project_mapping or experiment candidate)"
+      reason: "string, required — undocumented exclusions are invalid"
+      declared_by: "human identity (exclusions are human-declared configuration)"
+      declared_on: "date"
+      review_by: "date; exclusions expire into review, they are not eternal"
+    semantics:
+      - "Exclusion beats inclusion: if a topic is both subscribed and excluded, it is excluded (deny-wins)."
+      - "Excluding a category excludes all its child topics, unless a child is explicitly re-included via include_override: [topic_id, ...] on the same record."
+      - "An excluded topic produces no project_mapping records, no per-project alerts, and no experiment candidates for that project. System-level (non-project) digests are unaffected."
+      - "Exclusions are evaluated at the PROJECT_MAPPED gate of the Phase-4 state machine; the exclusion check result is stored on the project_mapping record (see DATA_SCHEMAS.md)."
+    floors:
+      - "security_prompt_injection may be reduced to digest_only but never fully excluded for any active or maintained project: security posture is not autonomously alterable (SPEC governance rule 9), and silently unsubscribing a live project from injection intelligence would be a de-facto security-policy change. Archived projects may fully exclude it."
+    change_control:
+      - "Adding or removing an exclusion is a human-approved configuration change. The system may propose exclusion changes (Phase 11) with before/after evidence, but may not apply them."
+
+categories:
+  - id: agent_systems
+    label: "Agent Systems"
+    kind: category
+    parent: null
+    definition: "Architectures, loops, and coordination patterns for LLM-driven agents."
+    aliases: ["agent architectures", "agentic systems"]
+    keywords: ["agent", "agentic", "orchestration"]
+
+  - id: context_and_memory
+    label: "Context & Memory"
+    kind: category
+    parent: null
+    definition: "Managing what a model sees now (context window) and what the system knows over time (memory)."
+    aliases: ["context management", "memory systems"]
+    keywords: ["context", "memory", "retrieval"]
+
+  - id: applied_agent_domains
+    label: "Applied Agent Domains"
+    kind: category
+    parent: null
+    definition: "Domain-specific agent applications with their own tooling, evidence, and risk profiles."
+    aliases: ["agent applications"]
+    keywords: ["coding agent", "browser agent", "automation"]
+
+  - id: multimodal
+    label: "Multimodal"
+    kind: category
+    parent: null
+    definition: "Generation and reasoning beyond text: images, video, audio, and mixed-modality pipelines."
+    aliases: ["multimodal AI"]
+    keywords: ["image", "video", "vision", "multimodal"]
+
+  - id: assurance_and_operations
+    label: "Assurance & Operations"
+    kind: category
+    parent: null
+    definition: "Evaluating, observing, securing, and cost-controlling AI systems in operation."
+    aliases: ["AI quality and ops", "AI assurance"]
+    keywords: ["evaluation", "observability", "security", "cost"]
+
+  - id: model_lifecycle
+    label: "Model Lifecycle"
+    kind: category
+    parent: null
+    definition: "Choosing, adapting, routing, and shipping models and the infrastructure they run on."
+    aliases: ["model management"]
+    keywords: ["model selection", "fine-tuning", "deployment"]
+
+topics:
+  # ---------------------------------------------------------------- agent_systems
+  - id: agent_loops
+    label: "Agent Loops"
+    kind: topic
+    parent: agent_systems
+    definition: "Core perceive-reason-act loop designs (ReAct-style and successors) driving a single agent, including harness and scaffold engineering."
+    aliases: ["agentic loop", "ReAct loop", "agent harness", "tool loop", "agent scaffold"]
+    keywords: ["react", "inner loop", "harness", "scaffold", "action loop", "agent runtime"]
+    adjacent_topics: [tool_use_mcp, planner_executor, context_engineering, coding_agents]
+    default_evidence_bar: tier_a_or_repro
+
+  - id: planner_executor
+    label: "Planner/Executor Systems"
+    kind: topic
+    parent: agent_systems
+    definition: "Architectures separating plan generation from step execution, including replanning and plan-verification stages."
+    aliases: ["plan-and-execute", "planner-executor pattern", "plan-then-act"]
+    keywords: ["planner", "executor", "replanning", "task decomposition", "plan verification"]
+    adjacent_topics: [agent_loops, supervisor_worker, multi_agent_coordination]
+    default_evidence_bar: tier_a_or_repro
+
+  - id: supervisor_worker
+    label: "Supervisor-Worker Systems"
+    kind: topic
+    parent: agent_systems
+    definition: "Hierarchies where a supervisor/orchestrator delegates to worker or sub-agents and verifies their output."
+    aliases: ["orchestrator-worker", "manager-worker", "supervisor pattern", "lead agent with subagents"]
+    keywords: ["supervisor", "subagent", "delegation", "worker agent", "hierarchical agents", "fleet"]
+    adjacent_topics: [planner_executor, multi_agent_coordination, model_routing]
+    default_evidence_bar: tier_a_or_repro
+
+  - id: multi_agent_coordination
+    label: "Multi-Agent Coordination"
+    kind: topic
+    parent: agent_systems
+    definition: "Protocols and mechanisms for multiple agents to cooperate, compete, debate, or share state, including A2A-style protocols and failure taxonomies."
+    aliases: ["multi-agent systems", "MAS", "agent debate", "agent-to-agent protocols", "agent swarms"]
+    keywords: ["multi-agent", "a2a", "coordination", "debate", "consensus", "shared state", "MAST"]
+    adjacent_topics: [supervisor_worker, evaluation_frameworks, security_prompt_injection]
+    default_evidence_bar: tier_a_primary
+    notes: "Research digest caution: multi-agent debate often does not beat single-agent + self-consistency; require measured comparisons, not narrative claims."
+
+  - id: tool_use_mcp
+    label: "Tool Use & MCP"
+    kind: topic
+    parent: agent_systems
+    definition: "Tool/function-calling interfaces, tool design (ACI), and the Model Context Protocol for connecting agents to external capabilities."
+    aliases: ["function calling", "tool calling", "MCP", "Model Context Protocol", "agent-computer interface"]
+    keywords: ["mcp server", "tool interface", "tool schema", "function call", "aci", "tool registry"]
+    adjacent_topics: [agent_loops, security_prompt_injection, computer_use_agents, coding_agents]
+    default_evidence_bar: tier_a_or_repro
+
+  # ------------------------------------------------------------ context_and_memory
+  - id: context_engineering
+    label: "Context Engineering"
+    kind: topic
+    parent: context_and_memory
+    definition: "Deciding what enters the model's window and where: prompt/context construction, instruction ordering, retrieval placement, effective-context limits."
+    aliases: ["context construction", "context management", "prompt architecture"]
+    keywords: ["context rot", "context window", "instruction following", "long context", "needle in haystack", "context placement"]
+    adjacent_topics: [context_compaction, memory_retrieval, cost_latency_optimization]
+    default_evidence_bar: tier_a_primary
+    notes: "Claims here are usually quantitative (degradation curves, thresholds); require the measurement, not the blog restatement."
+
+  - id: context_compaction
+    label: "Context Compaction"
+    kind: topic
+    parent: context_and_memory
+    definition: "Compression, summarization, editing, and pruning of live context to stay within effective-window limits during long runs."
+    aliases: ["compaction", "context editing", "context pruning", "summarize-and-continue"]
+    keywords: ["compact", "auto-compact", "context compression", "rolling summary", "token reduction"]
+    adjacent_topics: [context_engineering, memory_retrieval, cost_latency_optimization]
+    default_evidence_bar: tier_a_or_repro
+
+  - id: memory_retrieval
+    label: "Memory & Retrieval"
+    kind: topic
+    parent: context_and_memory
+    definition: "Persistent memory layers (episodic, semantic, procedural) and retrieval strategies across sessions, runs, and agents."
+    aliases: ["persistent memory", "long-term memory", "agent memory", "memory architecture"]
+    keywords: ["episodic memory", "semantic memory", "procedural memory", "memory store", "recall", "cross-session"]
+    adjacent_topics: [rag_knowledge_graphs, context_compaction, context_engineering]
+    default_evidence_bar: tier_a_or_repro
+
+  - id: rag_knowledge_graphs
+    label: "RAG & Knowledge Graphs"
+    kind: topic
+    parent: context_and_memory
+    definition: "Retrieval-augmented generation, vector/hybrid retrieval, and structured knowledge-graph grounding of model output."
+    aliases: ["RAG", "retrieval-augmented generation", "GraphRAG", "knowledge graphs"]
+    keywords: ["vector search", "embedding retrieval", "hybrid search", "knowledge graph", "grounding", "reranking"]
+    adjacent_topics: [memory_retrieval, evaluation_frameworks, context_engineering]
+    default_evidence_bar: tier_a_or_repro
+
+  # --------------------------------------------------------- applied_agent_domains
+  - id: coding_agents
+    label: "Coding Agents"
+    kind: topic
+    parent: applied_agent_domains
+    definition: "Agents that read, write, test, review, and refactor code in repositories, including coding-agent workflows and CLIs."
+    aliases: ["coding agent", "SWE agent", "software engineering agent", "autonomous coding"]
+    keywords: ["swe-bench", "code generation", "repo agent", "pull request agent", "code review agent", "worktree"]
+    adjacent_topics: [agent_loops, tool_use_mcp, evaluation_frameworks, security_prompt_injection]
+    default_evidence_bar: tier_a_or_repro
+    notes: "Research digest caution: benchmark gaming and solution leakage are measured phenomena; never accept self-reported agent success as evidence."
+
+  - id: computer_use_agents
+    label: "Browser/Computer-Use Agents"
+    kind: topic
+    parent: applied_agent_domains
+    definition: "Agents that operate browsers, GUIs, or full desktops via screenshots, DOM, or accessibility trees."
+    aliases: ["browser agent", "computer use", "GUI agent", "web agent", "operator-style agent"]
+    keywords: ["browser automation", "screen understanding", "click", "dom agent", "desktop agent", "web navigation"]
+    adjacent_topics: [tool_use_mcp, security_prompt_injection, multimodal_generation]
+    default_evidence_bar: tier_a_confirmed
+    notes: "Elevated bar: computer-use agents are a top prompt-injection surface (lethal-trifecta class risks); capability claims and defenses both need independent confirmation."
+
+  - id: social_media_automation
+    label: "Social-Media Intelligence & Automation"
+    kind: topic
+    parent: applied_agent_domains
+    definition: "Research, content generation, scheduling, publishing, and analytics automation for social platforms."
+    aliases: ["social media automation", "social media intelligence", "content scheduling", "audience analytics"]
+    keywords: ["x api", "posting schedule", "engagement", "content pipeline", "social listening", "growth automation"]
+    adjacent_topics: [image_video_workflows, multimodal_generation, evaluation_frameworks]
+    default_evidence_bar: repro_required
+    notes: "This space is saturated with unreproducible growth claims. Ideas advance only with runnable code, and every candidate must pass a platform-ToS / license check before EXPERIMENT_CANDIDATE."
+
+  # ------------------------------------------------------------------- multimodal
+  - id: multimodal_generation
+    label: "Multimodal Generation"
+    kind: topic
+    parent: multimodal
+    definition: "Models and workflows that generate or reason over mixed modalities (text, image, audio, video) in one pipeline."
+    aliases: ["multimodal workflows", "vision-language models", "VLM", "any-to-any models"]
+    keywords: ["multimodal", "vision language", "audio generation", "cross-modal", "omni model"]
+    adjacent_topics: [image_video_workflows, computer_use_agents]
+    default_evidence_bar: tier_a_primary
+
+  - id: image_video_workflows
+    label: "Image & Video Workflows"
+    kind: topic
+    parent: multimodal
+    definition: "Production pipelines for image and video generation, editing, upscaling, and post-processing."
+    aliases: ["image generation", "video generation", "diffusion pipelines", "text-to-video"]
+    keywords: ["diffusion", "image editing", "video pipeline", "comfyui", "text-to-image", "upscaling", "inpainting"]
+    adjacent_topics: [multimodal_generation, social_media_automation, cost_latency_optimization]
+    default_evidence_bar: tier_a_or_repro
+
+  # -------------------------------------------------------- assurance_and_operations
+  - id: evaluation_frameworks
+    label: "Evaluation Frameworks"
+    kind: topic
+    parent: assurance_and_operations
+    definition: "Benchmarks, eval harnesses, LLM-as-judge methods, and methodologies for measuring model and agent behavior."
+    aliases: ["evals", "benchmarks", "LLM-as-judge", "eval harness"]
+    keywords: ["benchmark", "eval suite", "judge model", "regression test", "golden set", "variance", "leaderboard"]
+    adjacent_topics: [observability, coding_agents, multi_agent_coordination, model_routing]
+    default_evidence_bar: tier_a_or_repro
+    notes: "Judge bias (position, self-preference, egocentric) is measured and large; judge-based claims need de-biasing methodology stated."
+
+  - id: observability
+    label: "Observability"
+    kind: topic
+    parent: assurance_and_operations
+    definition: "Tracing, logging, run/trace IDs, token accounting, and monitoring of agent runs and outcomes."
+    aliases: ["tracing", "telemetry", "agent monitoring", "LLM observability"]
+    keywords: ["trace", "span", "audit log", "dashboard", "run id", "token accounting", "otel"]
+    adjacent_topics: [evaluation_frameworks, cost_latency_optimization, deployment_infrastructure]
+    default_evidence_bar: tier_a_or_repro
+
+  - id: security_prompt_injection
+    label: "Security & Prompt Injection"
+    kind: topic
+    parent: assurance_and_operations
+    definition: "Attacks and defenses for prompt injection, data exfiltration, tool abuse, supply-chain and agent-mediated threats."
+    aliases: ["prompt injection", "agent security", "jailbreak defense", "injection defense", "lethal trifecta"]
+    keywords: ["exfiltration", "untrusted content", "instruction hierarchy", "sandbox escape", "toxic flow", "supply chain", "owasp llm"]
+    adjacent_topics: [tool_use_mcp, computer_use_agents, coding_agents, deployment_infrastructure]
+    default_evidence_bar: tier_a_confirmed
+    notes: "Exclusion floor applies (see _schema.exclusion_policy.floors): active projects may downgrade to digest_only but never fully unsubscribe."
+
+  - id: cost_latency_optimization
+    label: "Cost & Latency Optimization"
+    kind: topic
+    parent: assurance_and_operations
+    definition: "Reducing token, compute, dollar, and wall-clock cost of AI workloads: caching, batching, budgets, backoff."
+    aliases: ["cost control", "cost optimization", "latency optimization", "token budgeting"]
+    keywords: ["prompt caching", "batch api", "rate limit", "budget", "cost per task", "throughput", "backoff"]
+    adjacent_topics: [model_routing, context_compaction, observability]
+    default_evidence_bar: tier_a_primary
+    notes: "Cost claims require numbers with stated measurement conditions; vendor pricing pages are Tier-A for price, not for comparative efficiency claims."
+
+  # --------------------------------------------------------------- model_lifecycle
+  - id: model_routing
+    label: "Model Routing"
+    kind: topic
+    parent: model_lifecycle
+    definition: "Selecting models per task by capability, cost, and observed track record, including fallbacks and heterogeneous-model rosters."
+    aliases: ["model selection", "router", "capability routing", "fallback chains"]
+    keywords: ["routing", "model mix", "cascade", "fallback", "heterogeneity", "task assignment"]
+    adjacent_topics: [cost_latency_optimization, evaluation_frameworks, fine_tuning_adaptation, supervisor_worker]
+    default_evidence_bar: tier_a_primary
+    notes: "Per research digest: our own observed track record outranks published benchmarks for routing decisions; benchmark standings decay fast."
+
+  - id: fine_tuning_adaptation
+    label: "Fine-Tuning & Adaptation"
+    kind: topic
+    parent: model_lifecycle
+    definition: "Post-training adaptation: fine-tuning, PEFT/LoRA, RL post-training, distillation, and prompt-baked skills."
+    aliases: ["fine-tuning", "PEFT", "LoRA", "post-training", "distillation"]
+    keywords: ["rlhf", "dpo", "adapter", "sft", "domain adaptation", "skill baking"]
+    adjacent_topics: [model_routing, evaluation_frameworks]
+    default_evidence_bar: tier_a_or_repro
+
+  - id: deployment_infrastructure
+    label: "Deployment & Infrastructure"
+    kind: topic
+    parent: model_lifecycle
+    definition: "Serving, scaling, sandboxing, CI/CD, feature flags, canaries, and rollback for AI systems in production."
+    aliases: ["inference infrastructure", "serving", "AI deployment", "agent infrastructure"]
+    keywords: ["canary", "feature flag", "rollback", "sandbox", "container", "inference server", "ci/cd", "worktree isolation"]
+    adjacent_topics: [observability, security_prompt_injection, cost_latency_optimization]
+    default_evidence_bar: tier_a_confirmed
+    notes: "Elevated bar: anything here can touch production; SPEC governance rules 5 and 7 apply regardless of evidence quality."

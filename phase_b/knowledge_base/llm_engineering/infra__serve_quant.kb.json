@@ -1,0 +1,5521 @@
+{
+  "domain": "infra__serve_quant",
+  "domain_label": "Inference Serving & Quantization (Training & Inference Infrastructure subdomain)",
+  "purpose": "session_bounded_stepwise_execution_for_llm_inference_serving_quantization_and_multi_specialist_orchestration",
+  "empirical_status": "heuristic_prior_not_observed_dataset",
+  "assumptions": [
+    "no observed dataset or benchmark evidence supplied; all scores are heuristic priors",
+    "subdomain scope is LLM inference serving, quantization methods, and multi-specialist LoRA serving",
+    "evaluation is throughput/latency/quality-tradeoff centric",
+    "target workload is orchestrated specialist LLMs on GPU infrastructure"
+  ],
+  "exclusions": [
+    "model training and fine-tuning internals (covered by ftune__ KBs)",
+    "orchestration DAG and routing logic above serving layer (covered by orch__ KBs)",
+    "embedding/retrieval serving",
+    "crawler and indexing infrastructure",
+    "security and access control beyond serving isolation"
+  ],
+  "schema_version": "1.3",
+  "generation_metadata": {
+    "mode": "KB_GENERATION",
+    "generator_prompt_version": "1.4.1",
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects",
+    "density_mode_selected": "dense",
+    "source_grounding_status": "not_available",
+    "calculation_mode": "heuristic_estimate"
+  },
+  "schema_contract": {
+    "schema_language": "json_schema_2020_12_compatible",
+    "additional_properties_allowed": false,
+    "external_validation_required": true,
+    "structured_outputs_recommended": true,
+    "duplicate_key_detection_required": true,
+    "strict_json_required": true,
+    "enum_values_closed": true,
+    "kb_schema_version": "1.3",
+    "compatibility_target": "v1.3-style KB objects"
+  },
+  "input_summary": {
+    "domain_supplied": true,
+    "domain_context_supplied": true,
+    "purpose_hint_supplied": true,
+    "observed_data_supplied": false,
+    "expert_judgment_supplied": false,
+    "experimental_or_benchmark_evidence_supplied": false,
+    "source_material_supplied": false,
+    "density_mode": "dense",
+    "human_review_policy_supplied": false,
+    "section_text_supplied": false,
+    "existing_schema_supplied": false,
+    "evaluation_criteria_supplied": false,
+    "risk_tolerance_supplied": false,
+    "stakeholder_context_supplied": false,
+    "version_baseline_supplied": false
+  },
+  "competency_questions": [
+    {
+      "id": "CQ_01",
+      "question": "How is the serving framework selected for specialist LLM deployment?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "SERVE_ARCH covers framework options, criteria, and decision factors",
+      "covered_by": [
+        "SERVE_ARCH",
+        "LOCAL_VS_HOSTED"
+      ]
+    },
+    {
+      "id": "CQ_02",
+      "question": "What latency metrics are measured and what are the SLA validation criteria?",
+      "must_be_answerable_from": [
+        "nodes",
+        "workflow"
+      ],
+      "acceptance_condition": "BENCH_SERVE and LATENCY_PROFILING define TTFT/TPOT and SLA gates",
+      "covered_by": [
+        "LATENCY_PROFILING",
+        "BENCH_SERVE"
+      ]
+    },
+    {
+      "id": "CQ_03",
+      "question": "How does PagedAttention and continuous batching increase serving throughput?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "KV_CACHE and CONT_BATCH explain virtual paging and iteration scheduling",
+      "covered_by": [
+        "KV_CACHE",
+        "CONT_BATCH",
+        "FLASH_ATTN"
+      ]
+    },
+    {
+      "id": "CQ_04",
+      "question": "What is the mechanism and memory benefit of KV cache paging and quantization?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "KV_CACHE covers PagedAttention; KV_QUANT covers FP8 quantization of KV tensors",
+      "covered_by": [
+        "KV_CACHE",
+        "KV_QUANT",
+        "PREFIX_CACHE"
+      ]
+    },
+    {
+      "id": "CQ_05",
+      "question": "How are GPTQ and AWQ post-training quantization applied and how is quality degradation evaluated?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "QUANT_GPTQ, QUANT_AWQ, QUANT_QUALITY cover calibration, bit-width, and evaluation",
+      "covered_by": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_QUALITY"
+      ]
+    },
+    {
+      "id": "CQ_06",
+      "question": "When is GGUF/llama.cpp appropriate vs vLLM, and what quality/throughput tradeoffs apply?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "QUANT_GGUF and LOCAL_VS_HOSTED define GGUF scope and decision criteria",
+      "covered_by": [
+        "QUANT_GGUF",
+        "LOCAL_VS_HOSTED",
+        "QUANT_QUALITY"
+      ]
+    },
+    {
+      "id": "CQ_07",
+      "question": "How does GGUF k-quant tier selection affect local inference quality and throughput?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "QUANT_GGUF covers k-quant tiers and acceptance tests",
+      "covered_by": [
+        "QUANT_GGUF"
+      ]
+    },
+    {
+      "id": "CQ_08",
+      "question": "How are many LoRA specialist adapters served on a single base model without per-specialist GPU?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "LORA_HOTSWAP covers adapter LRU cache, swap latency, and S-LoRA",
+      "covered_by": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ]
+    },
+    {
+      "id": "CQ_09",
+      "question": "How is request routing to the correct specialist adapter implemented and validated?",
+      "must_be_answerable_from": [
+        "nodes"
+      ],
+      "acceptance_condition": "ROUTER_DISPATCH covers classifier, dispatch, fallback, and accuracy gate",
+      "covered_by": [
+        "ROUTER_DISPATCH",
+        "LORA_HOTSWAP"
+      ]
+    },
+    {
+      "id": "CQ_10",
+      "question": "When does self-hosted serving become more cost-effective than hosted API for specialists?",
+      "must_be_answerable_from": [
+        "nodes",
+        "conflict_axes"
+      ],
+      "acceptance_condition": "LOCAL_VS_HOSTED and AUTOSCALE define TCO model and breakeven analysis",
+      "covered_by": [
+        "LOCAL_VS_HOSTED",
+        "AUTOSCALE"
+      ]
+    },
+    {
+      "id": "CQ_11",
+      "question": "How is autoscaling configured to balance cost and cold-start latency for specialist endpoints?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edge_cases"
+      ],
+      "acceptance_condition": "AUTOSCALE covers scale-to-zero, readiness, and latency constraints",
+      "covered_by": [
+        "AUTOSCALE",
+        "BENCH_SERVE"
+      ]
+    },
+    {
+      "id": "CQ_12",
+      "question": "What quantized inference kernels are needed and how is throughput recovery from quantization validated?",
+      "must_be_answerable_from": [
+        "nodes",
+        "edges"
+      ],
+      "acceptance_condition": "QUANT_KERNEL covers kernel selection and MFU acceptance test",
+      "covered_by": [
+        "QUANT_KERNEL",
+        "QUANT_GPTQ",
+        "QUANT_AWQ"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "TTFT",
+      "definition": "time-to-first-token; latency from request arrival to first output token generated",
+      "synonyms": [
+        "time_to_first_token"
+      ],
+      "not_same_as": [
+        "TPOT",
+        "E2E_latency"
+      ],
+      "used_by_nodes": [
+        "BENCH_SERVE",
+        "LATENCY_PROFILING"
+      ]
+    },
+    {
+      "term": "TPOT",
+      "definition": "time-per-output-token; inter-token latency during decode phase",
+      "synonyms": [
+        "inter_token_latency"
+      ],
+      "not_same_as": [
+        "TTFT"
+      ],
+      "used_by_nodes": [
+        "BENCH_SERVE",
+        "LATENCY_PROFILING",
+        "SPECULATIVE"
+      ]
+    },
+    {
+      "term": "PagedAttention",
+      "definition": "virtual memory paging system for KV cache blocks eliminating fragmentation in variable-length sequence serving",
+      "synonyms": [
+        "paged_kv_cache"
+      ],
+      "not_same_as": [
+        "Flash Attention"
+      ],
+      "used_by_nodes": [
+        "KV_CACHE"
+      ]
+    },
+    {
+      "term": "continuous_batching",
+      "definition": "iteration-level scheduling that dynamically fills batch slots as sequences complete, eliminating padding waste of static batching",
+      "synonyms": [
+        "dynamic_batching",
+        "iteration_level_scheduling"
+      ],
+      "not_same_as": [
+        "static_batching"
+      ],
+      "used_by_nodes": [
+        "CONT_BATCH"
+      ]
+    },
+    {
+      "term": "GPTQ",
+      "definition": "post-training quantization using second-order layer-wise weight compression (Frantar et al. 2022)",
+      "synonyms": [
+        "optimal_brain_quantization_for_llms"
+      ],
+      "not_same_as": [
+        "AWQ",
+        "QAT"
+      ],
+      "used_by_nodes": [
+        "QUANT_GPTQ",
+        "QUANT_KERNEL"
+      ]
+    },
+    {
+      "term": "AWQ",
+      "definition": "activation-aware weight quantization protecting salient channels by activation magnitude calibration",
+      "synonyms": [
+        "activation_aware_weight_quant"
+      ],
+      "not_same_as": [
+        "GPTQ",
+        "GGUF"
+      ],
+      "used_by_nodes": [
+        "QUANT_AWQ",
+        "QUANT_KERNEL"
+      ]
+    },
+    {
+      "term": "GGUF",
+      "definition": "llama.cpp binary format for quantized model weights supporting CPU and hybrid CPU+GPU inference",
+      "synonyms": [
+        "GGML_unified_format"
+      ],
+      "not_same_as": [
+        "GPTQ",
+        "safetensors"
+      ],
+      "used_by_nodes": [
+        "QUANT_GGUF",
+        "MODEL_FORMAT"
+      ]
+    },
+    {
+      "term": "LoRA",
+      "definition": "low-rank adaptation; lightweight fine-tune adding rank-decomposed weight matrices to frozen base model",
+      "synonyms": [
+        "low_rank_adaptation"
+      ],
+      "not_same_as": [
+        "full_fine_tune",
+        "IA3"
+      ],
+      "used_by_nodes": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ]
+    },
+    {
+      "term": "tensor_parallelism",
+      "definition": "sharding individual weight matrices across GPUs so each GPU holds a partition; requires all-reduce for each layer",
+      "synonyms": [
+        "TP",
+        "megatron_style_parallelism"
+      ],
+      "not_same_as": [
+        "pipeline_parallelism",
+        "data_parallelism"
+      ],
+      "used_by_nodes": [
+        "TENSOR_PARA"
+      ]
+    },
+    {
+      "term": "speculative_decoding",
+      "definition": "draft model proposes multiple tokens per step; target model verifies in parallel; accepted tokens emitted with identical output distribution",
+      "synonyms": [
+        "assisted_decoding",
+        "draft_and_verify"
+      ],
+      "not_same_as": [
+        "beam_search",
+        "greedy_decoding"
+      ],
+      "used_by_nodes": [
+        "SPECULATIVE"
+      ]
+    }
+  ],
+  "lens_coverage": {
+    "knowledge_representation": [
+      "SERVE_ARCH",
+      "glossary"
+    ],
+    "expert_systems": [
+      "dominance_rules",
+      "iteration_protocol"
+    ],
+    "graph_modeling": [
+      "edges",
+      "conflict_axes"
+    ],
+    "mathematical_scoring": [
+      "QUANT_QUALITY",
+      "BENCH_SERVE"
+    ],
+    "probabilistic_modeling": [
+      "SPECULATIVE",
+      "QUANT_QUALITY"
+    ],
+    "risk_analysis": [
+      "edge_cases",
+      "QUANT_GPTQ",
+      "TENSOR_PARA",
+      "LORA_HOTSWAP"
+    ],
+    "workflow_design": [
+      "workflow"
+    ],
+    "validation_and_qa": [
+      "validation_protocol",
+      "BENCH_SERVE",
+      "QUANT_QUALITY"
+    ],
+    "conflict_management": [
+      "conflict_axes",
+      "dominance_rules"
+    ],
+    "evidence_governance": [
+      "source_registry",
+      "evidence_label_policy"
+    ],
+    "prompt_engineering": [
+      "schema_contract"
+    ],
+    "project_and_product_evaluation": [
+      "priority_order",
+      "priority_rationale"
+    ],
+    "ai_task_orchestration": [
+      "iteration_protocol",
+      "workflow",
+      "LORA_HOTSWAP",
+      "ROUTER_DISPATCH"
+    ],
+    "software_schema_engineering": [
+      "schema_contract",
+      "MODEL_FORMAT"
+    ],
+    "change_control": [
+      "change_control"
+    ],
+    "traceability": [
+      "traceability_matrix"
+    ]
+  },
+  "evidence_label_policy": {
+    "allowed_labels": [
+      "heuristic",
+      "expert_estimate",
+      "observed",
+      "experimentally_validated"
+    ],
+    "default_label": "heuristic",
+    "observed_requires": "OBSERVED_DATA",
+    "experimentally_validated_requires": "EXPERIMENTAL_OR_BENCHMARK_EVIDENCE",
+    "observed_impact_when_no_data": 0.0,
+    "data_quality_when_no_data": 0.0,
+    "observed_co_occurrence_when_no_data": 0.0
+  },
+  "source_registry": [
+    {
+      "source_id": "SRC_HEURISTIC_PRIOR",
+      "source_type": "heuristic_prior",
+      "label_eligibility": [
+        "heuristic"
+      ],
+      "description": "heuristic prior estimates for LLM inference serving and quantization work units in absence of supplied datasets",
+      "citation_or_locator": "",
+      "supports": [
+        "heuristic scores",
+        "heuristic weights",
+        "heuristic risk and confidence estimates"
+      ],
+      "does_not_support": [
+        "observed metrics",
+        "experimentally validated claims",
+        "benchmark numbers"
+      ],
+      "freshness_status": "not_applicable",
+      "provenance": {
+        "entity": "generated_artifact",
+        "activity": "estimation",
+        "agent": "model",
+        "timestamp_available": false
+      },
+      "grounding_limits": [
+        "not derived from measured data",
+        "relative not absolute",
+        "domain-general heuristic priors",
+        "key papers: Kwon et al. 2023 (vLLM/PagedAttention), Frantar et al. 2022 (GPTQ)"
+      ]
+    }
+  ],
+  "math_model": {
+    "normalization_definitions": {
+      "normalize": "normalize(x)=min(1,max(0,x))"
+    },
+    "variable_definitions": {
+      "C": "criticality",
+      "BV": "business_value",
+      "UV": "user_value",
+      "TC": "technical_complexity",
+      "R": "risk_if_wrong",
+      "X": "cross_topic_coupling",
+      "IR": "irreversibility",
+      "CF": "confidence",
+      "NCP": "node_conflict_pressure",
+      "PI": "prior_importance",
+      "EC": "evidence_confidence",
+      "OI": "observed_impact",
+      "DQ": "data_quality",
+      "FR": "failure_rate",
+      "DW": "downside_weight",
+      "UR": "uncertainty_range_width",
+      "RT": "revisit_trigger_count_normalized",
+      "AT": "acceptance_test_pass_rate",
+      "DG": "dependency_gate_pass_rate",
+      "RS": "relation_strength",
+      "ST": "signed_tension",
+      "ES": "edge_score",
+      "EH": "edge_heat",
+      "EP": "edge_priority",
+      "PR": "prior_relation_strength",
+      "OC": "observed_co_occurrence",
+      "CC": "causal_confidence",
+      "CP": "conflict_probability",
+      "ERC": "expected_rework_cost"
+    },
+    "derived_variable_definitions": {
+      "UR": "uncertainty_interval[1]-uncertainty_interval[0]",
+      "RT": "min(1,count(revisit_triggers)/5)",
+      "AT": "predicted_acceptance_test_pass_rate",
+      "DG": "predicted_dependency_gate_pass_rate"
+    },
+    "node_score_formula": "final_importance=normalize(0.18*C+0.12*BV+0.12*UV+0.14*TC+0.16*R+0.12*X+0.10*IR+0.06*CF)",
+    "risk_score_formula": "risk_score=normalize(0.32*R+0.24*IR+0.18*X+0.16*TC+0.10*(1-CF))",
+    "confidence_score_formula": "confidence_score=normalize(0.45*EC+0.25*DQ+0.15*AT+0.15*DG)",
+    "revisit_pressure_formula": "revisit_pressure=normalize(0.30*(1-CF)+0.25*UR+0.20*RT+0.15*NCP+0.10*FR)",
+    "lock_score_formula": "lock_score=normalize(0.30*AT+0.25*DG+0.20*CF+0.15*(1-R)+0.10*(1-IR))",
+    "posterior_importance_formula_when_no_observed_data": "posterior_importance=normalize(PI*EC)",
+    "posterior_importance_formula_when_observed_data_exists": "posterior_importance=normalize(PI*EC+OI*DQ-FR*DW)",
+    "edge_score_formula": "edge_score=edge_priority",
+    "edge_priority_formula": "edge_priority=normalize(RS*(0.40*abs(ST)+0.30*ERC+0.20*CP+0.10*CC))",
+    "edge_heat_formula": "edge_heat=normalize(0.50*EP+0.20*RS+0.15*CP+0.15*ERC)"
+  },
+  "nodes": [
+    {
+      "id": "SERVE_ARCH",
+      "topic": "serving_architecture",
+      "definition": "Select and configure an LLM serving framework (vLLM, TGI, llama.cpp, or custom) matching throughput, latency, and cost requirements for specialist model deployment.",
+      "node_type": "work_unit",
+      "group": "serving_foundations",
+      "scope_boundary": {
+        "included": [
+          "framework selection",
+          "server config",
+          "hardware target",
+          "batch scheduler config"
+        ],
+        "excluded": [
+          "model training",
+          "quantization algorithm internals"
+        ]
+      },
+      "academic_fields": [
+        "systems",
+        "machine_learning"
+      ],
+      "subfields": [
+        "inference_serving",
+        "mlops"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "systems_architect"
+      ],
+      "contradictors": [
+        "naive_single_request_advocate"
+      ],
+      "inputs": [
+        "model checkpoint",
+        "hardware spec",
+        "SLA targets",
+        "expected QPS"
+      ],
+      "outputs": [
+        "serving stack config",
+        "benchmark report",
+        "capacity plan"
+      ],
+      "dependencies": [],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.77,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.47,
+        "lock_score": 0.59,
+        "final_importance": 0.82,
+        "criticality": 0.9,
+        "business_value": 0.88,
+        "user_value": 0.8,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.85,
+        "cross_topic_coupling": 0.88,
+        "irreversibility": 0.72,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.6
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.15,
+          0.5
+        ],
+        "posterior_importance": 0.57,
+        "update_signal": "GPU architecture or serving framework major version change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "vLLM continuous batching multiplies throughput vs naive single-request serving",
+          "example": "vLLM achieves 10-24x throughput vs HuggingFace generate() on A100"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Framework lock-in makes switching costly once models and tooling integrate",
+          "example": "TGI-specific gRPC API requires client rewrite to migrate to vLLM"
+        }
+      ],
+      "failure_modes": [
+        "serving engine incompatible with quantized model format",
+        "memory over-commit OOM at peak batch",
+        "CUDA driver/toolkit version mismatch causing silent correctness failures"
+      ],
+      "acceptance_tests": [
+        "throughput >=target tok/s at p50 latency budget",
+        "OOM-free at 2x expected concurrent requests",
+        "output matches reference fp16 within tolerance"
+      ],
+      "revisit_triggers": [
+        "new GPU generation deployed",
+        "serving framework major version",
+        "SLA breach event",
+        "model size class changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "CONT_BATCH",
+      "topic": "continuous_batching_and_iteration_level_scheduling",
+      "definition": "Implement iteration-level scheduling (continuous batching) to fill GPU compute with in-flight requests dynamically rather than padding static batches.",
+      "node_type": "work_unit",
+      "group": "throughput_optimization",
+      "scope_boundary": {
+        "included": [
+          "iteration-level batching",
+          "scheduler preemption",
+          "request prioritization"
+        ],
+        "excluded": [
+          "KV cache memory management",
+          "tensor parallelism"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "inference_engineer"
+      ],
+      "contradictors": [
+        "static_batch_advocate"
+      ],
+      "inputs": [
+        "request queue",
+        "GPU memory budget",
+        "sequence length distribution"
+      ],
+      "outputs": [
+        "scheduled batch",
+        "throughput/latency telemetry"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.64,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.37,
+        "lock_score": 0.67,
+        "final_importance": 0.76,
+        "criticality": 0.88,
+        "business_value": 0.85,
+        "user_value": 0.78,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.45
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.16,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "scheduler policy changes or new token-streaming latency requirements",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Eliminates GPU idle time between batches; doubles to triples effective throughput",
+          "example": "vLLM scheduler preempts finished sequences and inserts new requests mid-decode"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Head-of-line blocking by long sequences inflates p99 latency for short requests",
+          "example": "32k-token completion delays 64 short queries in same batch"
+        }
+      ],
+      "failure_modes": [
+        "starvation of short requests behind long sequence",
+        "incorrect KV eviction during preemption",
+        "token accounting error corrupting sequence length"
+      ],
+      "acceptance_tests": [
+        "p99 latency < 3x p50 under sustained load",
+        "scheduler throughput >= 95% of theoretical peak"
+      ],
+      "revisit_triggers": [
+        "latency p99/p50 ratio exceeds 3x",
+        "new streaming/token-budget requirements",
+        "batch size autotune policy change"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "KV_CACHE",
+      "topic": "kv_cache_and_paged_attention",
+      "definition": "Manage KV cache memory with PagedAttention virtual paging to eliminate fragmentation and maximize concurrency under variable sequence lengths.",
+      "node_type": "work_unit",
+      "group": "memory_management",
+      "scope_boundary": {
+        "included": [
+          "block allocation",
+          "page table",
+          "prefix caching",
+          "KV eviction policy"
+        ],
+        "excluded": [
+          "quantization of KV cache",
+          "tensor parallelism sharding"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "systems_engineer",
+        "inference_engineer"
+      ],
+      "contradictors": [
+        "contiguous_kv_advocate"
+      ],
+      "inputs": [
+        "attention mechanism spec",
+        "GPU VRAM budget",
+        "max sequence length",
+        "concurrency target"
+      ],
+      "outputs": [
+        "paged block pool",
+        "prefix cache hit rate",
+        "eviction telemetry"
+      ],
+      "dependencies": [
+        "CONT_BATCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.73,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.45,
+        "lock_score": 0.61,
+        "final_importance": 0.81,
+        "criticality": 0.92,
+        "business_value": 0.88,
+        "user_value": 0.75,
+        "technical_complexity": 0.85,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.65,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.55
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.9,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.68,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.61,
+        "update_signal": "context length increases or model architecture changes attention layout",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "PagedAttention reduces KV memory waste from ~70% to <4% enabling 2-4x more concurrent sequences",
+          "example": "Kwon et al. 2023 show near-zero fragmentation on A100"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Block table management adds implementation complexity; bugs cause incorrect attention",
+          "example": "Wrong block pointer silently corrupts generation output"
+        }
+      ],
+      "failure_modes": [
+        "block table corruption causing attention to wrong tokens",
+        "OOM when block pool under-provisioned",
+        "eviction policy thrashing under mixed long/short requests"
+      ],
+      "acceptance_tests": [
+        "KV memory utilization >85% under target concurrency",
+        "no attention corruption vs reference on 500 sequences",
+        "eviction/swap rate <5% under normal load"
+      ],
+      "revisit_triggers": [
+        "context length policy change",
+        "model architecture swap",
+        "GPU memory budget change",
+        "OOM incident"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "QUANT_GPTQ",
+      "topic": "gptq_post_training_quantization",
+      "definition": "Apply GPTQ (Frantar et al. 2022) layer-wise second-order weight quantization to compress LLMs to 4-bit or 8-bit with minimal perplexity loss.",
+      "node_type": "work_unit",
+      "group": "quantization",
+      "scope_boundary": {
+        "included": [
+          "layer-wise optimal brain quantization",
+          "groupsize",
+          "calibration set",
+          "4-bit/8-bit int format"
+        ],
+        "excluded": [
+          "QAT",
+          "AWQ activation-aware grouping",
+          "KV cache quantization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "quantization_engineer"
+      ],
+      "contradictors": [
+        "fp16_only_advocate"
+      ],
+      "inputs": [
+        "fp16 model weights",
+        "calibration dataset",
+        "target bit-width",
+        "hardware kernel support"
+      ],
+      "outputs": [
+        "quantized model checkpoint",
+        "PPL delta report",
+        "accuracy delta report"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.7,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.42,
+        "lock_score": 0.6,
+        "final_importance": 0.79,
+        "criticality": 0.85,
+        "business_value": 0.88,
+        "user_value": 0.8,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.68,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.55
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.15,
+          0.5
+        ],
+        "posterior_importance": 0.58,
+        "update_signal": "new quantization algorithm supersedes GPTQ or calibration data domain shifts",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "4-bit GPTQ reduces VRAM 4x with <1 PPL loss on 7B+ models enabling single-GPU 70B serving",
+          "example": "LLaMA-65B in 4-bit fits A100-80GB vs OOM at fp16"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Calibration dataset quality critically affects task-specific quality; wrong calibration set degrades specialist tasks",
+          "example": "Code-specialized calibration set needed for coding specialists"
+        }
+      ],
+      "failure_modes": [
+        "calibration data distribution mismatch causes task-specific quality collapse",
+        "incorrect groupsize causes asymmetric quantization error",
+        "outlier channels unhandled causing NaN weights"
+      ],
+      "acceptance_tests": [
+        "PPL delta <1.0 vs fp16 on held-out corpus",
+        "task accuracy delta <3% on target benchmark",
+        "4-bit model serves without NaN or inf values"
+      ],
+      "revisit_triggers": [
+        "model architecture adds outlier-heavy layers",
+        "calibration set domain changes",
+        "new quantization scheme (AWQ/GGUF) shows superior quality"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "QUANT_AWQ",
+      "topic": "awq_activation_aware_weight_quantization",
+      "definition": "Apply AWQ activation-aware weight quantization that protects salient channels identified by activation magnitude, achieving better quality than GPTQ at same bit-width.",
+      "node_type": "work_unit",
+      "group": "quantization",
+      "scope_boundary": {
+        "included": [
+          "salient weight identification",
+          "per-channel scaling",
+          "4-bit groupwise quantization"
+        ],
+        "excluded": [
+          "GPTQ second-order hessian",
+          "GGUF format packing"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "quantization_engineer"
+      ],
+      "contradictors": [
+        "gptq_only_advocate"
+      ],
+      "inputs": [
+        "fp16 model",
+        "activation calibration data",
+        "target bit-width"
+      ],
+      "outputs": [
+        "AWQ quantized model",
+        "accuracy delta report"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.66,
+        "confidence_score": 0.51,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.62,
+        "final_importance": 0.74,
+        "criticality": 0.8,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.7,
+        "irreversibility": 0.6,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.5
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.52,
+        "update_signal": "AWQ hardware kernel support expands or better calibration strategy found",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "AWQ outperforms GPTQ on instruction-following tasks by preserving activation-critical weights",
+          "example": "AWQ-4bit shows +2-3% MT-Bench vs GPTQ-4bit same model"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Requires per-model activation calibration pass; slower quantization than GPTQ",
+          "example": "AWQ calibration on 70B model takes 30min vs 15min GPTQ"
+        }
+      ],
+      "failure_modes": [
+        "salient channel identification fails on atypical architectures",
+        "hardware kernel missing for AWQ on target GPU",
+        "groupsize-hardware mismatch causing slow dequantization"
+      ],
+      "acceptance_tests": [
+        "task accuracy delta <2% vs fp16",
+        "AWQ kernel throughput >=GPTQ at same batch size"
+      ],
+      "revisit_triggers": [
+        "new model family with different activation statistics",
+        "target GPU lacks fused AWQ kernel",
+        "better activation-aware method published"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "QUANT_GGUF",
+      "topic": "gguf_format_and_llama_cpp_quantization",
+      "definition": "Convert and quantize models to GGUF format (k-quants) for llama.cpp local deployment on CPU+GPU hybrid or edge devices with minimal infrastructure.",
+      "node_type": "work_unit",
+      "group": "quantization",
+      "scope_boundary": {
+        "included": [
+          "GGUF format conversion",
+          "k-quant tiers (Q4_K_M/Q5_K_M/Q8_0)",
+          "llama.cpp offloading",
+          "CPU+GPU hybrid"
+        ],
+        "excluded": [
+          "GPTQ/AWQ GPU kernels",
+          "vLLM/TGI serving",
+          "fine-tuning"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "local_inference_engineer"
+      ],
+      "contradictors": [
+        "cloud_serving_only_advocate"
+      ],
+      "inputs": [
+        "safetensors or GGML checkpoint",
+        "k-quant tier selection",
+        "hardware target spec"
+      ],
+      "outputs": [
+        "GGUF model file",
+        "PPL comparison report"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.54,
+        "confidence_score": 0.54,
+        "revisit_pressure": 0.35,
+        "lock_score": 0.69,
+        "final_importance": 0.67,
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.85,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.6,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.45,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.35
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.1,
+          0.4
+        ],
+        "posterior_importance": 0.49,
+        "update_signal": "new llama.cpp k-quant tier outperforms current or target hardware changes",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "GGUF Q4_K_M enables 70B model inference on consumer 64GB RAM with no GPU required",
+          "example": "llama.cpp Q4_K_M on M2 Ultra achieves 12 tok/s for 70B"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.6,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "CPU/hybrid inference throughput 5-20x lower than GPU vLLM; unsuitable for high-concurrency serving",
+          "example": "Q4_K_M on CPU: 8 tok/s vs vLLM A100: 120 tok/s at batch=1"
+        }
+      ],
+      "failure_modes": [
+        "quantization tier selection too aggressive causing visible quality degradation",
+        "GGUF format version incompatibility",
+        "CPU BLAS library mismatch causing slow inference"
+      ],
+      "acceptance_tests": [
+        "GGUF loads and generates on target hardware without error",
+        "PPL delta <1.5 vs fp16 for selected k-quant tier"
+      ],
+      "revisit_triggers": [
+        "hardware target changes (CPU->GPU)",
+        "new GGUF k-quant tier released",
+        "latency budget tightens beyond CPU capability"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "TENSOR_PARA",
+      "topic": "tensor_and_pipeline_parallelism_for_multi_gpu",
+      "definition": "Shard model weights across multiple GPUs via tensor parallelism (column/row splitting of weight matrices) or pipeline parallelism to serve models exceeding single-GPU VRAM.",
+      "node_type": "work_unit",
+      "group": "distributed_serving",
+      "scope_boundary": {
+        "included": [
+          "column/row weight splitting",
+          "NCCL all-reduce",
+          "pipeline stages",
+          "sequence parallelism"
+        ],
+        "excluded": [
+          "data parallelism training",
+          "quantization sharding",
+          "CPU offload"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "distributed_systems_engineer"
+      ],
+      "contradictors": [
+        "quantization_instead_of_tp_advocate"
+      ],
+      "inputs": [
+        "model architecture",
+        "GPU count",
+        "NVLink/PCIe topology",
+        "VRAM budget"
+      ],
+      "outputs": [
+        "TP/PP config",
+        "multi-GPU serving deployment",
+        "throughput benchmark"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.74,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.45,
+        "lock_score": 0.57,
+        "final_importance": 0.77,
+        "criticality": 0.82,
+        "business_value": 0.8,
+        "user_value": 0.7,
+        "technical_complexity": 0.88,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.68,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.55
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.37,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.18,
+          0.55
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "GPU interconnect topology changes or model size class crosses single-GPU boundary",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Enables 70B+ model serving without quantization at fp16 quality across 4-8 GPUs",
+          "example": "LLaMA-70B on 4xA100 via TP=4 at fp16 with 80 tok/s"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.7,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "All-reduce communication overhead on NVLink-less multi-node scales poorly beyond TP=8",
+          "example": "TP=16 on 2 nodes with InfiniBand shows 30% throughput degradation vs TP=8 single node"
+        }
+      ],
+      "failure_modes": [
+        "NCCL deadlock from rank synchronization error",
+        "unequal shard size for non-divisible head counts",
+        "pipeline bubble causing throughput collapse"
+      ],
+      "acceptance_tests": [
+        "model loads across all ranks without error",
+        "throughput scales >=70% of linear up to TP=4",
+        "output matches single-GPU reference within fp16 tolerance"
+      ],
+      "revisit_triggers": [
+        "cluster topology change",
+        "model head count not divisible by TP degree",
+        "new Flash Attention kernel changes TP strategy"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "LORA_HOTSWAP",
+      "topic": "lora_adapter_hot_swap_for_multi_specialist_serving",
+      "definition": "Deploy a single base model server and dynamically load/unload LoRA adapters per request to serve many fine-tuned specialists without per-specialist GPU allocation.",
+      "node_type": "work_unit",
+      "group": "multi_specialist_serving",
+      "scope_boundary": {
+        "included": [
+          "LoRA adapter loading",
+          "adapter LRU cache",
+          "request routing to adapters",
+          "vLLM LoRA serving",
+          "S-LoRA"
+        ],
+        "excluded": [
+          "LoRA training",
+          "full fine-tune serving",
+          "base model quantization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "inference_engineer"
+      ],
+      "contradictors": [
+        "per_specialist_dedicated_gpu_advocate"
+      ],
+      "inputs": [
+        "base model server",
+        "LoRA adapter registry",
+        "routing labels per request"
+      ],
+      "outputs": [
+        "multi-adapter serving endpoint",
+        "per-adapter throughput telemetry",
+        "adapter cache hit rate"
+      ],
+      "dependencies": [
+        "SERVE_ARCH",
+        "KV_CACHE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.7,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.48,
+        "lock_score": 0.6,
+        "final_importance": 0.8,
+        "criticality": 0.88,
+        "business_value": 0.9,
+        "user_value": 0.85,
+        "technical_complexity": 0.8,
+        "risk_if_wrong": 0.75,
+        "cross_topic_coupling": 0.85,
+        "irreversibility": 0.58,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.6
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.88,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.55,
+        "update_signal": "vLLM LoRA serving API changes or new multi-adapter kernel released",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.9,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Collapses N specialist GPUs to 1 base model GPU pool; linear cost saving with N specialists",
+          "example": "32 domain specialists via LoRA on 4 GPUs vs 32x4=128 GPUs for separate deployments"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.65,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "LoRA adapter swap adds 5-50ms latency per cold-load; cache eviction under many adapters thrashes",
+          "example": "200 adapters, LRU cache of 20: cold-start 40ms penalty on 80% requests"
+        }
+      ],
+      "failure_modes": [
+        "adapter weight corruption from concurrent loading",
+        "base model version drift invalidating existing adapters",
+        "LoRA rank mismatch causing silent wrong-adapter application"
+      ],
+      "acceptance_tests": [
+        "100 unique adapters cycle on 1 server without OOM",
+        "adapter swap latency <20ms p95 with warm cache",
+        "output matches standalone specialist deployment within 1% on eval set"
+      ],
+      "revisit_triggers": [
+        "number of specialists exceeds adapter cache capacity",
+        "base model updated requiring adapter re-finetune",
+        "latency SLA tightens below adapter-swap overhead",
+        "new S-LoRA or Punica kernel available"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "QUANT_QUALITY",
+      "topic": "quantization_quality_tradeoff_assessment",
+      "definition": "Systematically evaluate quality degradation under each quantization scheme (GPTQ/AWQ/GGUF) and bit-width for each specialist task to select the minimum precision that meets quality SLA.",
+      "node_type": "work_unit",
+      "group": "quantization",
+      "scope_boundary": {
+        "included": [
+          "PPL delta measurement",
+          "task accuracy delta",
+          "bit-width vs quality curve",
+          "per-specialist evaluation"
+        ],
+        "excluded": [
+          "quantization algorithm internals",
+          "serving infrastructure"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "eval_engineer",
+        "quantization_engineer"
+      ],
+      "contradictors": [
+        "uniform_quantization_advocate"
+      ],
+      "inputs": [
+        "quantized model variants",
+        "specialist task benchmarks",
+        "quality SLA targets"
+      ],
+      "outputs": [
+        "quality-vs-precision matrix",
+        "recommended quantization config per specialist"
+      ],
+      "dependencies": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_GGUF"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06",
+        "CQ_07"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.68,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.47,
+        "lock_score": 0.6,
+        "final_importance": 0.76,
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.7,
+        "risk_if_wrong": 0.8,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.34,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.82,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.18,
+          0.52
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "new specialist task domain added or benchmark contamination detected",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Systematic evaluation prevents over-quantizing specialist tasks with high precision sensitivity",
+          "example": "Coding specialist requires 8-bit vs summarization tolerates 4-bit"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Evaluation cost multiplies: N specialists x M quantization configs x K benchmarks",
+          "example": "10 specialists x 4 quant configs x 3 benchmarks = 120 eval runs"
+        }
+      ],
+      "failure_modes": [
+        "benchmark contamination inflating quantized model quality estimates",
+        "Goodhart effect: optimizing PPL but degrading task accuracy",
+        "evaluating only on easy subsets masking tail degradation"
+      ],
+      "acceptance_tests": [
+        "each specialist evaluated on domain-specific task benchmark",
+        "quality delta per scheme documented per specialist",
+        "selected scheme meets latency and memory targets simultaneously"
+      ],
+      "revisit_triggers": [
+        "new specialist domain added",
+        "base model updated",
+        "quantization kernel updated",
+        "benchmark contamination suspected"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "AUTOSCALE",
+      "topic": "autoscaling_and_cost_optimization",
+      "definition": "Implement request-driven autoscaling (replica count, batch size) and cost optimization strategies (spot instances, scale-to-zero, mixed precision) for serving specialist models.",
+      "node_type": "work_unit",
+      "group": "cost_and_scaling",
+      "scope_boundary": {
+        "included": [
+          "HPA/KEDA autoscaling",
+          "batch size optimization",
+          "spot/preemptible instances",
+          "scale-to-zero"
+        ],
+        "excluded": [
+          "model quantization",
+          "training cost",
+          "orchestration routing logic"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "cloud_cost_engineer"
+      ],
+      "contradictors": [
+        "always_on_fleet_advocate"
+      ],
+      "inputs": [
+        "traffic forecasts",
+        "GPU pricing",
+        "SLA targets",
+        "model load time"
+      ],
+      "outputs": [
+        "autoscaling policy",
+        "cost model",
+        "capacity runbook"
+      ],
+      "dependencies": [
+        "SERVE_ARCH",
+        "CONT_BATCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.64,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.61,
+        "final_importance": 0.73,
+        "criticality": 0.8,
+        "business_value": 0.9,
+        "user_value": 0.72,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.48
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.48,
+        "update_signal": "traffic pattern shifts or cloud GPU pricing changes materially",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Autoscaling with scale-to-zero reduces idle GPU cost 60-90% for low-traffic specialists",
+          "example": "Domain expert serving 100 req/day scale-to-zero saves $1500/month vs always-on A100"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Cold-start on scale-from-zero adds 30-120s model loading latency unacceptable for interactive use",
+          "example": "7B model load from NFS: 45s cold-start on first request"
+        }
+      ],
+      "failure_modes": [
+        "autoscaler thrashes between 0 and 1 replica under bursty traffic",
+        "spot instance preemption during long-running request",
+        "cost model miscalculated for multi-GPU TP serving"
+      ],
+      "acceptance_tests": [
+        "scale-up latency <90s from zero replicas to serving",
+        "cost per 1M tokens within budget",
+        "no request dropped during scale-up event"
+      ],
+      "revisit_triggers": [
+        "traffic pattern changes significantly",
+        "new GPU spot pricing tier",
+        "SLA added for p99 cold-start latency"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "PREFIX_CACHE",
+      "topic": "kv_prefix_caching_and_radix_attention",
+      "definition": "Enable KV prefix caching (radix-tree or hash-based) to reuse previously computed KV states for shared prompt prefixes across requests, reducing TTFT for common system prompts.",
+      "node_type": "work_unit",
+      "group": "throughput_optimization",
+      "scope_boundary": {
+        "included": [
+          "radix attention",
+          "prefix hash matching",
+          "KV block sharing",
+          "TTFT optimization"
+        ],
+        "excluded": [
+          "full PagedAttention internals",
+          "model weights caching"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "inference_engineer"
+      ],
+      "contradictors": [
+        "no_cache_simplicity_advocate"
+      ],
+      "inputs": [
+        "request stream with system prompts",
+        "KV block pool",
+        "prefix diversity analysis"
+      ],
+      "outputs": [
+        "prefix cache hit rate",
+        "TTFT telemetry",
+        "memory pressure report"
+      ],
+      "dependencies": [
+        "KV_CACHE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.57,
+        "confidence_score": 0.52,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.67,
+        "final_importance": 0.7,
+        "criticality": 0.78,
+        "business_value": 0.82,
+        "user_value": 0.8,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.4,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.42
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.75,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.51,
+        "update_signal": "system prompt length or diversity changes; new radix attention implementation",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prefix cache hit reduces TTFT from seconds to milliseconds for long shared system prompts",
+          "example": "4096-token system prompt: 98% TTFT reduction on cache hit"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Prefix cache consumes KV block pool; high diversity of prompts yields low hit rate and wasted memory",
+          "example": "Each user has unique prefix: 0% hit rate, 20% KV pool wasted"
+        }
+      ],
+      "failure_modes": [
+        "cache poisoning from prefix hash collision",
+        "stale prefix from system prompt update not invalidated",
+        "memory contention between prefix cache and decode KV blocks"
+      ],
+      "acceptance_tests": [
+        "cache hit rate >60% for repeated system-prompt workloads",
+        "TTFT reduction >80% on cache hit vs miss",
+        "cache invalidation correct after prefix update"
+      ],
+      "revisit_triggers": [
+        "system prompt changes frequently",
+        "prefix hit rate falls below 30%",
+        "KV pool contention observed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "SPECULATIVE",
+      "topic": "speculative_decoding_for_latency_reduction",
+      "definition": "Deploy speculative decoding (draft model or self-speculation) to generate multiple tokens per LLM forward pass, reducing TPOT latency for high-quality specialist models.",
+      "node_type": "work_unit",
+      "group": "latency_optimization",
+      "scope_boundary": {
+        "included": [
+          "draft model selection",
+          "token tree verification",
+          "Medusa heads",
+          "EAGLE self-speculation"
+        ],
+        "excluded": [
+          "KV cache management",
+          "quantization",
+          "batching policy"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "inference_engineer"
+      ],
+      "contradictors": [
+        "single_step_decode_advocate"
+      ],
+      "inputs": [
+        "target model",
+        "draft model or Medusa heads",
+        "acceptance rate budget",
+        "latency target"
+      ],
+      "outputs": [
+        "speculative serving config",
+        "acceptance rate telemetry",
+        "TPOT benchmark"
+      ],
+      "dependencies": [
+        "SERVE_ARCH",
+        "CONT_BATCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.6,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.43,
+        "lock_score": 0.61,
+        "final_importance": 0.69,
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.8,
+        "technical_complexity": 0.82,
+        "risk_if_wrong": 0.62,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.45,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.45
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.68,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.35,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.25,
+        "downside_weight": 0.5,
+        "uncertainty_interval": [
+          0.2,
+          0.55
+        ],
+        "posterior_importance": 0.42,
+        "update_signal": "draft model quality changes or new medusa/eagle head architecture deployed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Speculative decoding achieves 2-3x TPOT reduction for low-entropy specialist outputs",
+          "example": "Code completion with draft model achieves 2.5x speedup at 85% acceptance rate"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Draft model must closely match target distribution; mismatch causes low acceptance rate negating speedup",
+          "example": "General draft model for medical specialist: 30% acceptance rate, 0.8x throughput vs baseline"
+        }
+      ],
+      "failure_modes": [
+        "draft model divergence on specialist domain causing throughput regression",
+        "incorrect token verification causing output drift from target model",
+        "GPU memory overhead for draft model eliminates quantization savings"
+      ],
+      "acceptance_tests": [
+        "acceptance rate >70% on target task distribution",
+        "TPOT latency reduction >=1.5x vs baseline",
+        "output distribution indistinguishable from target model in eval"
+      ],
+      "revisit_triggers": [
+        "acceptance rate drops below 60%",
+        "target model updated",
+        "new Medusa/EAGLE head released for base model family"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "QUANT_KERNEL",
+      "topic": "quantized_inference_kernel_selection_and_validation",
+      "definition": "Select and validate hardware-specific fused dequantization+GEMM kernels (CUTLASS, ExLlamaV2, AutoGPTQ-Triton) for the target GPU to realize quantization throughput gains.",
+      "node_type": "work_unit",
+      "group": "quantization",
+      "scope_boundary": {
+        "included": [
+          "INT4/INT8 GEMM kernels",
+          "fused dequantization",
+          "CUTLASS",
+          "ExLlamaV2",
+          "Triton kernels"
+        ],
+        "excluded": [
+          "quantization algorithm",
+          "weight calibration",
+          "serving scheduler"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "cuda_kernel_engineer",
+        "quantization_engineer"
+      ],
+      "contradictors": [
+        "library_default_kernel_advocate"
+      ],
+      "inputs": [
+        "quantized model format",
+        "GPU architecture",
+        "CUDA version",
+        "groupsize config"
+      ],
+      "outputs": [
+        "kernel benchmark",
+        "MFU report",
+        "kernel selection recommendation"
+      ],
+      "dependencies": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.7,
+        "confidence_score": 0.46,
+        "revisit_pressure": 0.46,
+        "lock_score": 0.56,
+        "final_importance": 0.74,
+        "criticality": 0.8,
+        "business_value": 0.78,
+        "user_value": 0.68,
+        "technical_complexity": 0.88,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.72,
+        "irreversibility": 0.55,
+        "confidence": 0.55,
+        "node_conflict_pressure": 0.52
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.65,
+        "dependency_gate_pass_rate": 0.7,
+        "uncertainty_range_width": 0.38,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.28,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.2,
+          0.58
+        ],
+        "posterior_importance": 0.46,
+        "update_signal": "new GPU architecture (Ada/Hopper/Blackwell) or new quantization kernel release",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Fused dequant+GEMM kernels recover 80-95% of fp16 throughput from 4-bit weights",
+          "example": "ExLlamaV2 Q4 kernel achieves 95% A100 fp16 MFU"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.68,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Kernel availability varies by GPU generation; fallback to slow dequant loop eliminates quantization benefit",
+          "example": "A10G lacks native INT4 GEMM; AutoGPTQ falls back to fp16 dequant loop, 0.5x baseline throughput"
+        }
+      ],
+      "failure_modes": [
+        "kernel numerical mismatch causing silent quality degradation",
+        "CUDA version incompatibility causing kernel fallback",
+        "wrong groupsize in kernel vs quantization config"
+      ],
+      "acceptance_tests": [
+        "kernel throughput >=80% fp16 baseline",
+        "numerical output matches within float32 tolerance of fp16 reference",
+        "no kernel fallback warning in production logs"
+      ],
+      "revisit_triggers": [
+        "GPU fleet upgrade",
+        "new CUTLASS or ExLlamaV2 release",
+        "quantization groupsize changes"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "LATENCY_PROFILING",
+      "topic": "inference_latency_profiling_and_bottleneck_analysis",
+      "definition": "Profile end-to-end inference latency (TTFT, TPOT, E2E) across prefill and decode phases to identify bottlenecks (memory bandwidth, compute, scheduling) and guide optimization.",
+      "node_type": "work_unit",
+      "group": "observability",
+      "scope_boundary": {
+        "included": [
+          "TTFT measurement",
+          "TPOT measurement",
+          "prefill vs decode profiling",
+          "NVTX",
+          "nsight-systems"
+        ],
+        "excluded": [
+          "optimization implementation",
+          "cost tracking"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "inference_engineer",
+        "mlops_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "serving endpoint",
+        "representative request distribution",
+        "profiling tooling"
+      ],
+      "outputs": [
+        "TTFT/TPOT baseline report",
+        "bottleneck analysis",
+        "optimization priority list"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.55,
+        "confidence_score": 0.56,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.71,
+        "final_importance": 0.69,
+        "criticality": 0.82,
+        "business_value": 0.78,
+        "user_value": 0.75,
+        "technical_complexity": 0.65,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.78,
+        "irreversibility": 0.3,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.38
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.8,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.15,
+        "downside_weight": 0.45,
+        "uncertainty_interval": [
+          0.1,
+          0.4
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "new serving version deployed or hardware change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.82,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "TTFT/TPOT decomposition pinpoints whether bottleneck is prefill compute or decode memory bandwidth",
+          "example": "TTFT-dominated latency points to KV cache miss or long prefill; TPOT-dominated points to memory BW"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.45,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Profiling under synthetic load may not represent real traffic mix; profiler overhead distorts measurements",
+          "example": "NVTX profiling adds 5-10% overhead masking true latency breakdown"
+        }
+      ],
+      "failure_modes": [
+        "profiling under unrepresentative batch size obscuring real bottleneck",
+        "conflating network I/O with GPU compute latency",
+        "not instrumenting scheduler wait time as separate component"
+      ],
+      "acceptance_tests": [
+        "TTFT and TPOT measured separately under representative load",
+        "bottleneck component identified and documented",
+        "profiling overhead <5% of measured latency"
+      ],
+      "revisit_triggers": [
+        "SLA breach",
+        "major serving config change",
+        "hardware upgrade",
+        "new model deployed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "LOCAL_VS_HOSTED",
+      "topic": "local_vs_hosted_serving_decision",
+      "definition": "Decide between local self-hosted serving (llama.cpp/vLLM on own hardware) vs hosted API (cloud inference providers) based on volume, latency, data privacy, and cost crossover.",
+      "node_type": "work_unit",
+      "group": "architecture_decisions",
+      "scope_boundary": {
+        "included": [
+          "TCO analysis",
+          "privacy requirements",
+          "latency comparison",
+          "breakeven analysis"
+        ],
+        "excluded": [
+          "serving framework internals",
+          "quantization algorithms"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "cloud_architect"
+      ],
+      "contradictors": [
+        "hosted_api_only_advocate",
+        "self_hosted_only_advocate"
+      ],
+      "inputs": [
+        "expected token volume",
+        "privacy requirements",
+        "GPU pricing",
+        "MLOps FTE cost"
+      ],
+      "outputs": [
+        "serving decision doc",
+        "TCO comparison",
+        "breakeven model"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.66,
+        "confidence_score": 0.49,
+        "revisit_pressure": 0.47,
+        "lock_score": 0.6,
+        "final_importance": 0.73,
+        "criticality": 0.78,
+        "business_value": 0.88,
+        "user_value": 0.78,
+        "technical_complexity": 0.55,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.7,
+        "confidence": 0.6,
+        "node_conflict_pressure": 0.62
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.78,
+        "evidence_confidence": 0.6,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.6,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "cloud GPU spot pricing changes or privacy requirements change",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.8,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Self-hosted breaks even vs hosted API at ~1-2M tokens/day for 7-13B models; data never leaves perimeter",
+          "example": "A10G spot at $0.40/hr serves 7B at 500 tok/s, breakeven vs $0.0002/tok hosted at 1.4M tok/day"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.68,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Self-hosted requires ongoing MLOps maintenance, version management, and failure response unavoidable",
+          "example": "CUDA driver upgrade broke 3 models; 4h incident not reflected in $0/token cost"
+        }
+      ],
+      "failure_modes": [
+        "decision made on token cost alone ignoring MLOps burden",
+        "hosted API rate limits not modeled under burst traffic",
+        "privacy requirements analysis skipped for sensitive domains"
+      ],
+      "acceptance_tests": [
+        "TCO model includes GPU capex/opex and MLOps FTE cost",
+        "privacy requirements explicitly evaluated",
+        "breakeven token volume documented for selected model size"
+      ],
+      "revisit_triggers": [
+        "GPU pricing changes >20%",
+        "volume grows 5x",
+        "privacy/compliance requirements change",
+        "new provider launches competitive model API"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "FLASH_ATTN",
+      "topic": "flash_attention_io_aware_kernel",
+      "definition": "Deploy Flash Attention (Dao et al., IO-aware exact attention) to reduce attention memory complexity from O(N^2) to near-linear in sequence length, enabling long-context serving.",
+      "node_type": "work_unit",
+      "group": "kernel_optimization",
+      "scope_boundary": {
+        "included": [
+          "IO-aware tiling",
+          "fused softmax",
+          "GQA/MQA support",
+          "Flash Attention 2/3"
+        ],
+        "excluded": [
+          "KV paging",
+          "PagedAttention virtual memory",
+          "quantized attention"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "cuda_kernel_engineer",
+        "inference_engineer"
+      ],
+      "contradictors": [
+        "naive_attention_advocate"
+      ],
+      "inputs": [
+        "model attention spec",
+        "GPU SM version",
+        "PyTorch version",
+        "sequence length targets"
+      ],
+      "outputs": [
+        "Flash Attention serving config",
+        "memory/latency benchmark"
+      ],
+      "dependencies": [
+        "KV_CACHE",
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.65,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.66,
+        "final_importance": 0.75,
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.75,
+        "technical_complexity": 0.8,
+        "risk_if_wrong": 0.7,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.55,
+        "confidence": 0.7,
+        "node_conflict_pressure": 0.42
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.7,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.59,
+        "update_signal": "new Flash Attention version or GQA/MLA architecture variant deployed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.88,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Flash Attention 2 provides 2-4x wall-clock speedup for sequences >1k tokens vs naive attention",
+          "example": "FA2 on A100: 4096-token seq 3x faster, 4x less HBM traffic"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.45,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Flash Attention requires specific GPU SM capability (SM80+); older GPUs must use fallback with memory overhead",
+          "example": "V100 (SM70) cannot run FA2; requires xformers or naive attention"
+        }
+      ],
+      "failure_modes": [
+        "attention mask incompatibility with FA2 causing incorrect causal masking",
+        "GQA/MQA head grouping bug causing wrong KV reuse",
+        "FA2 version mismatch with PyTorch version"
+      ],
+      "acceptance_tests": [
+        "attention output matches naive implementation within 1e-3",
+        "memory usage scales sub-quadratically beyond 4k tokens",
+        "no gradient/generation error for target sequence lengths"
+      ],
+      "revisit_triggers": [
+        "context length policy change",
+        "GPU architecture upgrade",
+        "new Flash Attention release",
+        "model adopts new attention variant"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "ROUTER_DISPATCH",
+      "topic": "request_routing_and_specialist_dispatch",
+      "definition": "Implement inference request routing layer that classifies incoming requests and dispatches to appropriate specialist model adapter or endpoint based on domain/task type.",
+      "node_type": "work_unit",
+      "group": "multi_specialist_serving",
+      "scope_boundary": {
+        "included": [
+          "domain classifier",
+          "request dispatch",
+          "fallback logic",
+          "latency budget allocation"
+        ],
+        "excluded": [
+          "specialist model training",
+          "serving framework internals",
+          "orchestration DAG"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "routing_engineer"
+      ],
+      "contradictors": [
+        "always_use_generalist_advocate"
+      ],
+      "inputs": [
+        "request stream",
+        "domain classifier",
+        "specialist adapter registry",
+        "fallback policy"
+      ],
+      "outputs": [
+        "routing decision log",
+        "accuracy metrics",
+        "latency breakdown"
+      ],
+      "dependencies": [
+        "SERVE_ARCH",
+        "LORA_HOTSWAP"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_08",
+        "CQ_09",
+        "CQ_10"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.68,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.47,
+        "lock_score": 0.61,
+        "final_importance": 0.77,
+        "criticality": 0.85,
+        "business_value": 0.88,
+        "user_value": 0.82,
+        "technical_complexity": 0.72,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.82,
+        "irreversibility": 0.55,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.58
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.78,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.8
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.85,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.65,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.53,
+        "update_signal": "new specialist domain added or routing classifier retrained",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Correct routing to specialist vs generalist increases task accuracy 10-30% while keeping cost fixed",
+          "example": "Medical query routed to medical LoRA: +18% USMLE accuracy vs base model"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.62,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Routing latency adds 5-30ms overhead per request; mis-routes reduce quality below generalist baseline",
+          "example": "Ambiguous query mis-routed to wrong specialist: -12% accuracy vs generalist"
+        }
+      ],
+      "failure_modes": [
+        "routing classifier accuracy degrades on out-of-distribution queries",
+        "routing adds unacceptable latency on critical path",
+        "no fallback when specialist unavailable causes hard error"
+      ],
+      "acceptance_tests": [
+        "routing accuracy >90% on held-out domain classification set",
+        "routing latency <20ms p99",
+        "graceful fallback to base model when specialist unavailable"
+      ],
+      "revisit_triggers": [
+        "new specialist domain added",
+        "routing accuracy drops below 85%",
+        "latency SLA tightens",
+        "base model updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "QUANT_INT8",
+      "topic": "int8_weight_and_activation_quantization",
+      "definition": "Apply INT8 weight-and-activation quantization (SmoothQuant, LLM.int8()) to achieve 2x throughput increase over fp16 with memory reduction, suitable for compute-bound scenarios.",
+      "node_type": "work_unit",
+      "group": "quantization",
+      "scope_boundary": {
+        "included": [
+          "SmoothQuant",
+          "LLM.int8()",
+          "outlier decomposition",
+          "INT8 GEMM",
+          "compute-bound serving"
+        ],
+        "excluded": [
+          "4-bit quantization",
+          "weight-only quantization",
+          "KV cache quantization"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "quantization_engineer"
+      ],
+      "contradictors": [
+        "fp8_early_adopter"
+      ],
+      "inputs": [
+        "fp16 model",
+        "outlier channel stats",
+        "hardware INT8 kernel support"
+      ],
+      "outputs": [
+        "INT8 model",
+        "throughput benchmark",
+        "PPL delta report"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.62,
+        "confidence_score": 0.5,
+        "revisit_pressure": 0.4,
+        "lock_score": 0.63,
+        "final_importance": 0.68,
+        "criticality": 0.72,
+        "business_value": 0.75,
+        "user_value": 0.68,
+        "technical_complexity": 0.78,
+        "risk_if_wrong": 0.68,
+        "cross_topic_coupling": 0.65,
+        "irreversibility": 0.5,
+        "confidence": 0.62,
+        "node_conflict_pressure": 0.45
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.72,
+        "dependency_gate_pass_rate": 0.75,
+        "uncertainty_range_width": 0.33,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.62,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.15,
+          0.48
+        ],
+        "posterior_importance": 0.45,
+        "update_signal": "FP8 becomes available on target GPU replacing INT8 need",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.78,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "LLM.int8() enables 8-bit inference with near-fp16 quality via outlier decomposition",
+          "example": "OPT-175B in INT8 on 4 A100-80GB vs 8 needed at fp16"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "INT8 GEMM throughput advantage diminishes on memory-bandwidth-bound decode phase",
+          "example": "INT8 decode on A100: 1.1x vs fp16 (BW-bound), vs 1.9x on prefill (compute-bound)"
+        }
+      ],
+      "failure_modes": [
+        "outlier channel magnitude underestimated causing quantization error",
+        "SmoothQuant migration scale factor not fused into kernel",
+        "INT8 compute unavailable on older Turing GPUs"
+      ],
+      "acceptance_tests": [
+        "PPL delta <0.5 vs fp16",
+        "prefill throughput increase >=1.5x vs fp16",
+        "no overflow/NaN in INT8 GEMM"
+      ],
+      "revisit_triggers": [
+        "FP8 Hopper kernel becomes available",
+        "model outlier statistics change",
+        "new SmoothQuant variant published"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "KV_QUANT",
+      "topic": "kv_cache_quantization_for_memory_reduction",
+      "definition": "Quantize KV cache tensors to FP8 or INT8 to reduce memory footprint of cached attention states, increasing effective concurrency without reducing model weight precision.",
+      "node_type": "work_unit",
+      "group": "memory_management",
+      "scope_boundary": {
+        "included": [
+          "FP8 KV cache",
+          "INT8 KV quantization",
+          "per-head scale factors",
+          "long-context serving"
+        ],
+        "excluded": [
+          "weight quantization",
+          "KV eviction policy",
+          "model architecture"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "inference_engineer",
+        "quantization_engineer"
+      ],
+      "contradictors": [
+        "bf16_kv_only_advocate"
+      ],
+      "inputs": [
+        "BF16 KV blocks",
+        "quantization scale factors",
+        "context length targets",
+        "concurrency targets"
+      ],
+      "outputs": [
+        "FP8 KV config",
+        "concurrency benchmark",
+        "quality delta report"
+      ],
+      "dependencies": [
+        "KV_CACHE"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.6,
+        "confidence_score": 0.47,
+        "revisit_pressure": 0.41,
+        "lock_score": 0.61,
+        "final_importance": 0.66,
+        "criticality": 0.7,
+        "business_value": 0.72,
+        "user_value": 0.68,
+        "technical_complexity": 0.75,
+        "risk_if_wrong": 0.65,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.45,
+        "confidence": 0.58,
+        "node_conflict_pressure": 0.42
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.7,
+        "dependency_gate_pass_rate": 0.72,
+        "uncertainty_range_width": 0.32,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.7,
+        "evidence_confidence": 0.58,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.22,
+        "downside_weight": 0.52,
+        "uncertainty_interval": [
+          0.18,
+          0.5
+        ],
+        "posterior_importance": 0.41,
+        "update_signal": "vLLM adds native FP8 KV cache support or model switches to GQA",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "FP8 KV cache halves KV memory vs BF16 enabling 2x concurrent requests at long context lengths",
+          "example": "4096-context FP8 KV: 2x concurrency vs BF16 on same A100"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.55,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "KV quantization error accumulates across long contexts causing generation drift",
+          "example": "32k context with INT8 KV shows coherence degradation vs BF16 at turn 50+"
+        }
+      ],
+      "failure_modes": [
+        "KV quantization scale factor stale after dynamic range shift",
+        "generation quality degrades at long context due to accumulated quantization error",
+        "KV quant incompatible with prefix caching block sharing"
+      ],
+      "acceptance_tests": [
+        "generation quality delta <2% on long-context benchmarks",
+        "concurrency increase >= 1.8x at target context length",
+        "no compatibility error with prefix cache"
+      ],
+      "revisit_triggers": [
+        "context length policy change",
+        "quality regression on long-context tasks",
+        "new FP8 KV quant kernel available"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    },
+    {
+      "id": "BENCH_SERVE",
+      "topic": "serving_benchmarking_and_sla_validation",
+      "definition": "Establish representative load benchmarks and validate that the serving stack meets TTFT, TPOT, throughput, and availability SLAs before production promotion.",
+      "node_type": "work_unit",
+      "group": "observability",
+      "scope_boundary": {
+        "included": [
+          "load generation",
+          "TTFT/TPOT measurement",
+          "SLA definition",
+          "throughput benchmarking"
+        ],
+        "excluded": [
+          "model quality evaluation",
+          "cost tracking",
+          "training benchmarks"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "mlops_engineer",
+        "sre"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "serving endpoint",
+        "representative request distribution",
+        "SLA targets"
+      ],
+      "outputs": [
+        "benchmark report",
+        "SLA pass/fail",
+        "p50/p95/p99 latency table"
+      ],
+      "dependencies": [
+        "LATENCY_PROFILING",
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01",
+        "CQ_02",
+        "CQ_10",
+        "CQ_11"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.61,
+        "confidence_score": 0.55,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.67,
+        "final_importance": 0.72,
+        "criticality": 0.85,
+        "business_value": 0.82,
+        "user_value": 0.78,
+        "technical_complexity": 0.6,
+        "risk_if_wrong": 0.78,
+        "cross_topic_coupling": 0.75,
+        "irreversibility": 0.4,
+        "confidence": 0.68,
+        "node_conflict_pressure": 0.45
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.8,
+        "dependency_gate_pass_rate": 0.82,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.83,
+        "evidence_confidence": 0.68,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.18,
+        "downside_weight": 0.58,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.56,
+        "update_signal": "serving stack updated or new traffic pattern observed",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.85,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Pre-production benchmarking catches serving regressions before they affect users",
+          "example": "Benchmark revealed 3x p99 latency spike from prefill/decode co-scheduling bug"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.45,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Synthetic benchmark load may not reflect real token length distribution causing false pass",
+          "example": "Benchmark with fixed 512-token outputs passes; production 2048-token outputs OOM"
+        }
+      ],
+      "failure_modes": [
+        "benchmark input length distribution unrepresentative",
+        "SLA thresholds set without business input",
+        "availability benchmark ignores cold-start from autoscaler"
+      ],
+      "acceptance_tests": [
+        "p50/p95/p99 TTFT and TPOT measured under realistic QPS ramp",
+        "throughput measured at target concurrency",
+        "availability SLA validated over 1-hour sustained load"
+      ],
+      "revisit_triggers": [
+        "production SLA breach",
+        "major config change",
+        "new model version deployed"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": true
+    },
+    {
+      "id": "MODEL_FORMAT",
+      "topic": "model_format_conversion_and_compatibility",
+      "definition": "Convert model checkpoints between formats (safetensors, GGUF, GPTQ, AWQ) and validate compatibility with target serving framework versions to avoid silent incompatibilities.",
+      "node_type": "work_unit",
+      "group": "serving_foundations",
+      "scope_boundary": {
+        "included": [
+          "safetensors",
+          "GGUF conversion",
+          "format compatibility matrix",
+          "dtype handling"
+        ],
+        "excluded": [
+          "quantization algorithms",
+          "training checkpointing"
+        ]
+      },
+      "academic_fields": [
+        "machine_learning",
+        "systems"
+      ],
+      "subfields": [
+        "inference_serving",
+        "model_compression"
+      ],
+      "specialists": [
+        "mlops_engineer"
+      ],
+      "contradictors": [],
+      "inputs": [
+        "source checkpoint",
+        "target format spec",
+        "serving framework version"
+      ],
+      "outputs": [
+        "converted model",
+        "format compatibility report",
+        "validation outputs"
+      ],
+      "dependencies": [
+        "SERVE_ARCH"
+      ],
+      "must_not_finalize_before": [],
+      "competency_question_refs": [
+        "CQ_01"
+      ],
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "metrics": {
+        "risk_score": 0.61,
+        "confidence_score": 0.53,
+        "revisit_pressure": 0.38,
+        "lock_score": 0.66,
+        "final_importance": 0.67,
+        "criticality": 0.75,
+        "business_value": 0.72,
+        "user_value": 0.65,
+        "technical_complexity": 0.62,
+        "risk_if_wrong": 0.72,
+        "cross_topic_coupling": 0.68,
+        "irreversibility": 0.5,
+        "confidence": 0.65,
+        "node_conflict_pressure": 0.4
+      },
+      "score_derivation_inputs": {
+        "acceptance_test_pass_rate": 0.78,
+        "dependency_gate_pass_rate": 0.8,
+        "uncertainty_range_width": 0.3,
+        "revisit_trigger_count_normalized": 0.6
+      },
+      "score_derivation_input_labels": {
+        "acceptance_test_pass_rate": "heuristic",
+        "dependency_gate_pass_rate": "heuristic",
+        "uncertainty_range_width": "heuristic",
+        "revisit_trigger_count_normalized": "heuristic"
+      },
+      "metric_labels": {
+        "risk_score": "heuristic",
+        "confidence_score": "heuristic",
+        "revisit_pressure": "heuristic",
+        "lock_score": "heuristic",
+        "final_importance": "heuristic",
+        "criticality": "heuristic",
+        "business_value": "heuristic",
+        "user_value": "heuristic",
+        "technical_complexity": "heuristic",
+        "risk_if_wrong": "heuristic",
+        "cross_topic_coupling": "heuristic",
+        "irreversibility": "heuristic",
+        "confidence": "heuristic",
+        "node_conflict_pressure": "heuristic"
+      },
+      "probabilistic_layer": {
+        "prior_importance": 0.72,
+        "evidence_confidence": 0.65,
+        "observed_impact": 0.0,
+        "data_quality": 0.0,
+        "failure_rate": 0.2,
+        "downside_weight": 0.55,
+        "uncertainty_interval": [
+          0.12,
+          0.42
+        ],
+        "posterior_importance": 0.47,
+        "update_signal": "serving framework major version or new base model family released",
+        "value_labels": {
+          "prior_importance": "heuristic",
+          "evidence_confidence": "heuristic",
+          "observed_impact": "heuristic",
+          "data_quality": "heuristic",
+          "failure_rate": "heuristic",
+          "downside_weight": "heuristic",
+          "uncertainty_interval": "heuristic",
+          "posterior_importance": "heuristic"
+        }
+      },
+      "pros": [
+        {
+          "weight": 0.75,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Standardized safetensors format prevents weight corruption on partial write vs raw pytorch pickle",
+          "example": "safetensors mmap load avoids 45s torch.load pickle deserialization on every start"
+        }
+      ],
+      "cons": [
+        {
+          "weight": 0.5,
+          "evidence_label": "heuristic",
+          "evidence_refs": [
+            "SRC_HEURISTIC_PRIOR"
+          ],
+          "claim": "Format conversion pipelines accumulate technical debt as model families proliferate",
+          "example": "5 model families x 3 formats = 15 conversion paths to maintain"
+        }
+      ],
+      "failure_modes": [
+        "silent weight transposition during format conversion",
+        "dtype promotion changing model behavior",
+        "tokenizer vocab mismatch between checkpoint and serving tokenizer"
+      ],
+      "acceptance_tests": [
+        "converted model output matches source checkpoint within 1e-4",
+        "tokenizer round-trips all special tokens correctly",
+        "model loads in target framework without error or warnings"
+      ],
+      "revisit_triggers": [
+        "new serving framework version",
+        "new model family added",
+        "format standard updated"
+      ],
+      "handoff_artifact_required": true,
+      "lifecycle_state": "draft",
+      "human_review_required": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE_001",
+      "from": "SERVE_ARCH",
+      "to": "CONT_BATCH",
+      "edge_type": "causal",
+      "relation_strength": 0.85,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_002",
+      "from": "SERVE_ARCH",
+      "to": "KV_CACHE",
+      "edge_type": "causal",
+      "relation_strength": 0.9,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.85,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_003",
+      "from": "SERVE_ARCH",
+      "to": "QUANT_GPTQ",
+      "edge_type": "causal",
+      "relation_strength": 0.75,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_004",
+      "from": "SERVE_ARCH",
+      "to": "QUANT_AWQ",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_005",
+      "from": "SERVE_ARCH",
+      "to": "QUANT_GGUF",
+      "edge_type": "causal",
+      "relation_strength": 0.6,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.11,
+      "edge_score": 0.11,
+      "edge_heat": 0.23
+    },
+    {
+      "id": "EDGE_006",
+      "from": "SERVE_ARCH",
+      "to": "TENSOR_PARA",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.35,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.22,
+      "edge_score": 0.22,
+      "edge_heat": 0.36
+    },
+    {
+      "id": "EDGE_007",
+      "from": "SERVE_ARCH",
+      "to": "LATENCY_PROFILING",
+      "edge_type": "causal",
+      "relation_strength": 0.78,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.1,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_008",
+      "from": "SERVE_ARCH",
+      "to": "LOCAL_VS_HOSTED",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.3,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_009",
+      "from": "SERVE_ARCH",
+      "to": "MODEL_FORMAT",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_010",
+      "from": "CONT_BATCH",
+      "to": "KV_CACHE",
+      "edge_type": "dependency",
+      "relation_strength": 0.88,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.36
+    },
+    {
+      "id": "EDGE_011",
+      "from": "KV_CACHE",
+      "to": "PREFIX_CACHE",
+      "edge_type": "causal",
+      "relation_strength": 0.82,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_012",
+      "from": "KV_CACHE",
+      "to": "KV_QUANT",
+      "edge_type": "causal",
+      "relation_strength": 0.75,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.22,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_013",
+      "from": "KV_CACHE",
+      "to": "FLASH_ATTN",
+      "edge_type": "dependency",
+      "relation_strength": 0.8,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_014",
+      "from": "KV_CACHE",
+      "to": "LORA_HOTSWAP",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.22,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.35
+    },
+    {
+      "id": "EDGE_015",
+      "from": "QUANT_GPTQ",
+      "to": "QUANT_KERNEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.22,
+      "edge_score": 0.22,
+      "edge_heat": 0.37
+    },
+    {
+      "id": "EDGE_016",
+      "from": "QUANT_AWQ",
+      "to": "QUANT_KERNEL",
+      "edge_type": "dependency",
+      "relation_strength": 0.82,
+      "signed_tension": 0.1,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.76,
+      "edge_priority": 0.21,
+      "edge_score": 0.21,
+      "edge_heat": 0.36
+    },
+    {
+      "id": "EDGE_017",
+      "from": "QUANT_GPTQ",
+      "to": "QUANT_QUALITY",
+      "edge_type": "feedback",
+      "relation_strength": 0.82,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.75,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_018",
+      "from": "QUANT_AWQ",
+      "to": "QUANT_QUALITY",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_019",
+      "from": "QUANT_GGUF",
+      "to": "QUANT_QUALITY",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_020",
+      "from": "QUANT_QUALITY",
+      "to": "SERVE_ARCH",
+      "edge_type": "feedback",
+      "relation_strength": 0.78,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.22,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_021",
+      "from": "TENSOR_PARA",
+      "to": "KV_CACHE",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.32,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.76,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.35
+    },
+    {
+      "id": "EDGE_022",
+      "from": "LORA_HOTSWAP",
+      "to": "ROUTER_DISPATCH",
+      "edge_type": "dependency",
+      "relation_strength": 0.85,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.8,
+      "edge_priority": 0.2,
+      "edge_score": 0.2,
+      "edge_heat": 0.34
+    },
+    {
+      "id": "EDGE_023",
+      "from": "CONT_BATCH",
+      "to": "SPECULATIVE",
+      "edge_type": "causal",
+      "relation_strength": 0.72,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.3,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_024",
+      "from": "CONT_BATCH",
+      "to": "AUTOSCALE",
+      "edge_type": "feedback",
+      "relation_strength": 0.75,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_025",
+      "from": "SERVE_ARCH",
+      "to": "AUTOSCALE",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.22,
+      "causal_confidence": 0.74,
+      "edge_priority": 0.18,
+      "edge_score": 0.18,
+      "edge_heat": 0.32
+    },
+    {
+      "id": "EDGE_026",
+      "from": "LATENCY_PROFILING",
+      "to": "BENCH_SERVE",
+      "edge_type": "causal",
+      "relation_strength": 0.85,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.2,
+      "conflict_probability": 0.12,
+      "causal_confidence": 0.82,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_027",
+      "from": "BENCH_SERVE",
+      "to": "SERVE_ARCH",
+      "edge_type": "feedback",
+      "relation_strength": 0.8,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.2,
+      "causal_confidence": 0.78,
+      "edge_priority": 0.19,
+      "edge_score": 0.19,
+      "edge_heat": 0.33
+    },
+    {
+      "id": "EDGE_028",
+      "from": "FLASH_ATTN",
+      "to": "SPECULATIVE",
+      "edge_type": "causal",
+      "relation_strength": 0.65,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.65,
+      "edge_priority": 0.12,
+      "edge_score": 0.12,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_029",
+      "from": "QUANT_KERNEL",
+      "to": "BENCH_SERVE",
+      "edge_type": "feedback",
+      "relation_strength": 0.75,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_030",
+      "from": "LOCAL_VS_HOSTED",
+      "to": "AUTOSCALE",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.08,
+      "expected_rework_cost": 0.28,
+      "conflict_probability": 0.25,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.17,
+      "edge_score": 0.17,
+      "edge_heat": 0.31
+    },
+    {
+      "id": "EDGE_031",
+      "from": "QUANT_INT8",
+      "to": "QUANT_QUALITY",
+      "edge_type": "feedback",
+      "relation_strength": 0.72,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_032",
+      "from": "SERVE_ARCH",
+      "to": "QUANT_INT8",
+      "edge_type": "causal",
+      "relation_strength": 0.7,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.14,
+      "edge_score": 0.14,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_033",
+      "from": "KV_QUANT",
+      "to": "BENCH_SERVE",
+      "edge_type": "feedback",
+      "relation_strength": 0.68,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.25
+    },
+    {
+      "id": "EDGE_034",
+      "from": "MODEL_FORMAT",
+      "to": "QUANT_GPTQ",
+      "edge_type": "dependency",
+      "relation_strength": 0.78,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.74,
+      "edge_priority": 0.16,
+      "edge_score": 0.16,
+      "edge_heat": 0.3
+    },
+    {
+      "id": "EDGE_035",
+      "from": "MODEL_FORMAT",
+      "to": "QUANT_AWQ",
+      "edge_type": "dependency",
+      "relation_strength": 0.76,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.25,
+      "conflict_probability": 0.18,
+      "causal_confidence": 0.72,
+      "edge_priority": 0.15,
+      "edge_score": 0.15,
+      "edge_heat": 0.29
+    },
+    {
+      "id": "EDGE_036",
+      "from": "MODEL_FORMAT",
+      "to": "QUANT_GGUF",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.05,
+      "expected_rework_cost": 0.22,
+      "conflict_probability": 0.15,
+      "causal_confidence": 0.7,
+      "edge_priority": 0.13,
+      "edge_score": 0.13,
+      "edge_heat": 0.27
+    },
+    {
+      "id": "EDGE_037",
+      "from": "QUANT_GPTQ",
+      "to": "QUANT_AWQ",
+      "edge_type": "conflict",
+      "relation_strength": 0.65,
+      "signed_tension": -0.55,
+      "expected_rework_cost": 0.45,
+      "conflict_probability": 0.55,
+      "causal_confidence": 0.68,
+      "edge_priority": 0.35,
+      "edge_score": 0.35,
+      "edge_heat": 0.45,
+      "resolution_rule": "evaluate both on specialist task benchmark; select higher accuracy at target bit-width; default AWQ if quality delta <1%"
+    },
+    {
+      "id": "EDGE_038",
+      "from": "TENSOR_PARA",
+      "to": "QUANT_GPTQ",
+      "edge_type": "conflict",
+      "relation_strength": 0.6,
+      "signed_tension": -0.45,
+      "expected_rework_cost": 0.5,
+      "conflict_probability": 0.5,
+      "causal_confidence": 0.62,
+      "edge_priority": 0.3,
+      "edge_score": 0.3,
+      "edge_heat": 0.42,
+      "resolution_rule": "prefer quantization if model fits single GPU with quant; use TP only when quant insufficient for target VRAM"
+    },
+    {
+      "id": "EDGE_039",
+      "from": "LOCAL_VS_HOSTED",
+      "to": "AUTOSCALE",
+      "edge_type": "conflict",
+      "relation_strength": 0.58,
+      "signed_tension": -0.4,
+      "expected_rework_cost": 0.42,
+      "conflict_probability": 0.45,
+      "causal_confidence": 0.6,
+      "edge_priority": 0.25,
+      "edge_score": 0.25,
+      "edge_heat": 0.37,
+      "resolution_rule": "hosted API at low volume; self-hosted with autoscale at >1M daily tokens; document crossover explicitly"
+    }
+  ],
+  "conflict_axes": [
+    {
+      "id": "CA_01",
+      "name": "throughput_vs_latency",
+      "description": "Maximizing batch throughput (continuous batching, large batch) conflicts with minimizing p50/p99 TTFT/TPOT for interactive use",
+      "nodes_involved": [
+        "CONT_BATCH",
+        "SPECULATIVE",
+        "BENCH_SERVE"
+      ],
+      "resolution_hint": "Set explicit TTFT and TPOT SLAs first; tune scheduler to meet latency while maximizing within those bounds",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_02",
+      "name": "quantization_quality_vs_compression",
+      "description": "Aggressive quantization (4-bit) maximizes memory savings but degrades specialist task accuracy, especially for precision-sensitive domains",
+      "nodes_involved": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_QUALITY",
+        "QUANT_INT8"
+      ],
+      "resolution_hint": "Evaluate each specialist task independently; use minimum compression that meets quality SLA per domain",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_03",
+      "name": "kv_memory_vs_context_length",
+      "description": "Long context serving requires large KV allocations competing with high-concurrency short-context serving on same GPU memory budget",
+      "nodes_involved": [
+        "KV_CACHE",
+        "KV_QUANT",
+        "PREFIX_CACHE"
+      ],
+      "resolution_hint": "Separate serving pools for long-context and short-context workloads; use KV quantization for long-context pool",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_04",
+      "name": "lora_adapter_count_vs_cache_efficiency",
+      "description": "More specialist LoRA adapters increases routing flexibility but exceeds adapter cache capacity, increasing cold-load latency",
+      "nodes_involved": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ],
+      "resolution_hint": "Limit hot adapters to cache size; consolidate low-traffic specialists; measure hit rate to justify cache expansion",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_05",
+      "name": "tensor_parallelism_vs_quantization",
+      "description": "Tensor parallelism enables fp16 quality across GPUs but costs proportionally more than quantization to single GPU",
+      "nodes_involved": [
+        "TENSOR_PARA",
+        "QUANT_GPTQ",
+        "QUANT_AWQ"
+      ],
+      "resolution_hint": "Default to 4-bit quantization; only use TP when quantization quality is unacceptable for the specialist task",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_06",
+      "name": "local_serving_cost_vs_hosted_api",
+      "description": "Self-hosted GPU serving breaks even at high volume but requires MLOps investment; hosted API is efficient at low volume but expensive at scale",
+      "nodes_involved": [
+        "LOCAL_VS_HOSTED",
+        "AUTOSCALE",
+        "SERVE_ARCH"
+      ],
+      "resolution_hint": "Compute TCO including MLOps FTE; set volume crossover point; re-evaluate quarterly",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_07",
+      "name": "speculative_decoding_draft_quality_vs_overhead",
+      "description": "Draft model must closely match target distribution or low acceptance rate negates speedup; domain specialist targets often diverge from general draft models",
+      "nodes_involved": [
+        "SPECULATIVE",
+        "QUANT_QUALITY"
+      ],
+      "resolution_hint": "Measure acceptance rate on domain traffic before committing; use Medusa heads on same model family to avoid distribution mismatch",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_08",
+      "name": "prefix_cache_memory_vs_prompt_diversity",
+      "description": "Prefix caching provides TTFT gains only when prompts are repetitive; diverse user prompts yield near-zero hit rate while consuming KV memory",
+      "nodes_involved": [
+        "PREFIX_CACHE",
+        "KV_CACHE"
+      ],
+      "resolution_hint": "Measure prefix hit rate on target traffic; disable prefix cache if hit rate <30%; use separate pool for shared system prompts",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "CA_09",
+      "name": "autoscale_cost_vs_cold_start_latency",
+      "description": "Scale-to-zero minimizes idle GPU cost but creates model loading cold-start latency incompatible with interactive SLAs",
+      "nodes_involved": [
+        "AUTOSCALE",
+        "LOCAL_VS_HOSTED",
+        "BENCH_SERVE"
+      ],
+      "resolution_hint": "Maintain minimum 1 warm replica for interactive traffic; scale-to-zero only for batch/async endpoints",
+      "evidence_label": "heuristic"
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC_01",
+      "description": "Quantized 4-bit specialist model shows near-fp16 PPL but catastrophic degradation on rare domain vocabulary not well represented in calibration set",
+      "affected_nodes": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_QUALITY"
+      ],
+      "mitigation": "Include domain-specific calibration data; run full task-accuracy evaluation not just PPL",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_02",
+      "description": "LoRA adapter rank too low for complex specialist task; base model dominates and adapter has minimal effect—misdiagnosed as routing failure",
+      "affected_nodes": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH",
+        "QUANT_QUALITY"
+      ],
+      "mitigation": "Verify adapter weight magnitude and task delta before routing evaluation; use rank >=64 for complex tasks",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_03",
+      "description": "Flash Attention with GQA model and PagedAttention simultaneously requires correct KV head grouping in block table; mismatch causes silent wrong-token attention",
+      "affected_nodes": [
+        "FLASH_ATTN",
+        "KV_CACHE"
+      ],
+      "mitigation": "Validate GQA head grouping in paged block table with deterministic attention test suite",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_04",
+      "description": "Tensor parallel degree not divisible into model head count causes unequal shards; padding or weight replication required causing silent memory overuse",
+      "affected_nodes": [
+        "TENSOR_PARA",
+        "KV_CACHE"
+      ],
+      "mitigation": "Verify TP degree divides number of attention heads and MLP hidden dim; document per-architecture TP constraints",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_05",
+      "description": "Speculative decoding with continuous batching causes variable-length batch verification; incorrect prefix sharing between different requests corrupts generation",
+      "affected_nodes": [
+        "SPECULATIVE",
+        "CONT_BATCH",
+        "KV_CACHE"
+      ],
+      "mitigation": "Disable speculative decoding if acceptance rate <60% or under heavy concurrent load; validate per-request isolation",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_06",
+      "description": "KV cache quantization accumulates error over long dialogue turns; quality acceptable at turn 5 but incoherent at turn 50 in multi-turn specialist deployment",
+      "affected_nodes": [
+        "KV_QUANT",
+        "PREFIX_CACHE"
+      ],
+      "mitigation": "Evaluate KV quantization quality on long multi-turn dialogues specifically; set turn-count quality checkpoints",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_07",
+      "description": "Autoscaler spins up new replica but cold model load takes 90s; load balancer routes requests to not-ready replica causing 90s timeout cascade",
+      "affected_nodes": [
+        "AUTOSCALE",
+        "SERVE_ARCH"
+      ],
+      "mitigation": "Implement readiness probe gated on first successful inference; configure LB health check before routing to new replica",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_08",
+      "description": "GPTQ calibration on generic data for model serving medical specialist causes vocabulary outlier channels to be unprotected; INT4 inference corrupts medical terminology tokens",
+      "affected_nodes": [
+        "QUANT_GPTQ",
+        "QUANT_QUALITY",
+        "ROUTER_DISPATCH"
+      ],
+      "mitigation": "Always use domain-matched calibration data for specialist models; verify accuracy on held-out domain benchmark post-quantization",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_09",
+      "description": "Prefix cache invalidation not triggered after system prompt update; stale KV blocks serve outdated prompt causing behavioral regression undetected until user reports",
+      "affected_nodes": [
+        "PREFIX_CACHE",
+        "BENCH_SERVE"
+      ],
+      "mitigation": "Tie prefix cache invalidation to prompt version hash; test cache invalidation in deployment pipeline",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_10",
+      "description": "Model format conversion transposes weight matrix silently producing non-NaN valid but wrong outputs; catches only on task-accuracy test not PPL",
+      "affected_nodes": [
+        "MODEL_FORMAT",
+        "QUANT_GPTQ"
+      ],
+      "mitigation": "Validate converted model output against source model on fixed prompt set; compare token logits not just PPL",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_11",
+      "description": "vLLM LoRA serving silently applies wrong adapter when adapter name hash collides; extremely rare but causes user data cross-contamination in multi-tenant deployment",
+      "affected_nodes": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ],
+      "mitigation": "Use full UUID not truncated hash for adapter identity; verify adapter name space collisions at registration time",
+      "evidence_label": "heuristic"
+    },
+    {
+      "id": "EC_12",
+      "description": "GGUF quantization on ARM CPU uses NEON backend that lacks Q4_K_M support; falls back to slow Q8_0 without warning; throughput 2x lower than expected",
+      "affected_nodes": [
+        "QUANT_GGUF",
+        "SERVE_ARCH"
+      ],
+      "mitigation": "Verify SIMD backend capability at startup; document per-architecture quantization tier support matrix",
+      "evidence_label": "heuristic"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "id": "WF_01",
+      "action": "Define serving SLA (TTFT, TPOT, throughput, availability) and hardware budget",
+      "produces": "SLA document, hardware constraint",
+      "node_refs": [
+        "SERVE_ARCH",
+        "BENCH_SERVE"
+      ],
+      "gate": "SLA signed by product owner"
+    },
+    {
+      "step": 2,
+      "id": "WF_02",
+      "action": "Assess model size vs GPU VRAM and decide quantization or tensor-parallelism strategy",
+      "produces": "architecture decision record",
+      "node_refs": [
+        "LOCAL_VS_HOSTED",
+        "TENSOR_PARA",
+        "QUANT_GPTQ",
+        "QUANT_AWQ"
+      ],
+      "gate": "VRAM budget verified per GPU"
+    },
+    {
+      "step": 3,
+      "id": "WF_03",
+      "action": "Convert model checkpoint to target format (safetensors/GGUF/GPTQ/AWQ)",
+      "produces": "converted model file",
+      "node_refs": [
+        "MODEL_FORMAT",
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_GGUF"
+      ],
+      "gate": "conversion validated against source logits"
+    },
+    {
+      "step": 4,
+      "id": "WF_04",
+      "action": "Evaluate quantization quality delta per specialist on task benchmarks",
+      "produces": "quality-vs-precision matrix",
+      "node_refs": [
+        "QUANT_QUALITY",
+        "QUANT_INT8"
+      ],
+      "gate": "all specialist quality deltas within SLA"
+    },
+    {
+      "step": 5,
+      "id": "WF_05",
+      "action": "Configure serving framework (vLLM/TGI/llama.cpp): batching, KV cache, Flash Attention, TP degree",
+      "produces": "serving config YAML",
+      "node_refs": [
+        "SERVE_ARCH",
+        "CONT_BATCH",
+        "KV_CACHE",
+        "FLASH_ATTN",
+        "TENSOR_PARA"
+      ],
+      "gate": "serving starts without error; first inference correct"
+    },
+    {
+      "step": 6,
+      "id": "WF_06",
+      "action": "Validate quantization kernel throughput on target GPU; confirm no fallback to slow dequant path",
+      "produces": "kernel benchmark report",
+      "node_refs": [
+        "QUANT_KERNEL",
+        "QUANT_INT8"
+      ],
+      "gate": "kernel MFU >=80% of fp16 baseline"
+    },
+    {
+      "step": 7,
+      "id": "WF_07",
+      "action": "Enable prefix caching and LoRA hot-swap; configure adapter registry and routing classifier",
+      "produces": "adapter registry, routing config",
+      "node_refs": [
+        "PREFIX_CACHE",
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ],
+      "gate": "routing accuracy >90% on held-out set; adapter swap <20ms p95"
+    },
+    {
+      "step": 8,
+      "id": "WF_08",
+      "action": "Profile TTFT/TPOT under representative load; identify prefill vs decode bottleneck",
+      "produces": "profiling report, bottleneck analysis",
+      "node_refs": [
+        "LATENCY_PROFILING",
+        "BENCH_SERVE"
+      ],
+      "gate": "p99 TTFT and TPOT within SLA"
+    },
+    {
+      "step": 9,
+      "id": "WF_09",
+      "action": "Optionally enable KV cache quantization and/or speculative decoding; re-benchmark",
+      "produces": "optimized config, updated benchmark",
+      "node_refs": [
+        "KV_QUANT",
+        "SPECULATIVE"
+      ],
+      "gate": "quality delta <2%; latency improvement >=1.3x"
+    },
+    {
+      "step": 10,
+      "id": "WF_10",
+      "action": "Configure autoscaling policy and cost model; set scale-to-zero for batch endpoints only",
+      "produces": "autoscaling policy, cost runbook",
+      "node_refs": [
+        "AUTOSCALE",
+        "LOCAL_VS_HOSTED"
+      ],
+      "gate": "scale-up latency <90s; cost within budget"
+    },
+    {
+      "step": 11,
+      "id": "WF_11",
+      "action": "Run full SLA validation benchmark and sign off for production promotion",
+      "produces": "production readiness report",
+      "node_refs": [
+        "BENCH_SERVE",
+        "LATENCY_PROFILING"
+      ],
+      "gate": "all SLA checks pass; human reviewer signs off"
+    }
+  ],
+  "dominance_rules": [
+    {
+      "id": "DR_01",
+      "condition": "model fits on single GPU at 4-bit GPTQ/AWQ AND quality delta <3% on specialist task",
+      "dominant_choice": "quantization",
+      "dominated_choice": "tensor_parallelism",
+      "rationale": "quantization is lower cost and simpler than TP; use TP only when quality unacceptable",
+      "applies_to_nodes": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "TENSOR_PARA"
+      ]
+    },
+    {
+      "id": "DR_02",
+      "condition": "traffic volume <1M tokens/day for specialist endpoint",
+      "dominant_choice": "hosted_api",
+      "dominated_choice": "self_hosted_gpu",
+      "rationale": "MLOps burden exceeds cost saving below breakeven volume",
+      "applies_to_nodes": [
+        "LOCAL_VS_HOSTED",
+        "AUTOSCALE"
+      ]
+    },
+    {
+      "id": "DR_03",
+      "condition": "N specialists > 10 AND specialists share same base model family",
+      "dominant_choice": "lora_hotswap_on_shared_server",
+      "dominated_choice": "per_specialist_dedicated_deployment",
+      "rationale": "LoRA hot-swap saves N-1 GPU servers; cost linear in N",
+      "applies_to_nodes": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ]
+    },
+    {
+      "id": "DR_04",
+      "condition": "system prompt length > 1024 tokens AND prompt reuse rate > 50%",
+      "dominant_choice": "enable_prefix_caching",
+      "dominated_choice": "no_prefix_caching",
+      "rationale": "TTFT reduction >80% on cache hit; cost is KV memory only",
+      "applies_to_nodes": [
+        "PREFIX_CACHE",
+        "KV_CACHE"
+      ]
+    },
+    {
+      "id": "DR_05",
+      "condition": "serving GPU is H100/A100 AND Flash Attention 2 compatible model",
+      "dominant_choice": "flash_attention",
+      "dominated_choice": "naive_attention",
+      "rationale": "FA2 always faster and lower memory; no quality tradeoff",
+      "applies_to_nodes": [
+        "FLASH_ATTN",
+        "KV_CACHE"
+      ]
+    },
+    {
+      "id": "DR_06",
+      "condition": "specialist task acceptance rate on draft model >70%",
+      "dominant_choice": "speculative_decoding",
+      "dominated_choice": "standard_decode",
+      "rationale": "Speculative decoding dominates standard decode in TPOT when acceptance rate >70%",
+      "applies_to_nodes": [
+        "SPECULATIVE",
+        "CONT_BATCH"
+      ]
+    },
+    {
+      "id": "DR_07",
+      "condition": "deployment target is CPU or hybrid CPU+GPU with <16GB GPU VRAM",
+      "dominant_choice": "gguf_llama_cpp",
+      "dominated_choice": "vllm_or_tgi",
+      "rationale": "GGUF llama.cpp is the only viable serving option for CPU/hybrid targets",
+      "applies_to_nodes": [
+        "QUANT_GGUF",
+        "SERVE_ARCH"
+      ]
+    },
+    {
+      "id": "DR_08",
+      "condition": "context length >16k AND GPU is memory-bandwidth bound during decode",
+      "dominant_choice": "kv_cache_quantization",
+      "dominated_choice": "fp16_kv_cache",
+      "rationale": "FP8 KV cache halves KV BW pressure; quality loss acceptable beyond 16k context",
+      "applies_to_nodes": [
+        "KV_QUANT",
+        "KV_CACHE"
+      ]
+    },
+    {
+      "id": "DR_09",
+      "condition": "calibration data does not cover specialist domain vocabulary",
+      "dominant_choice": "domain_specific_calibration",
+      "dominated_choice": "generic_calibration",
+      "rationale": "Specialist domain vocabulary mis-quantization cannot be detected by PPL alone",
+      "applies_to_nodes": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_QUALITY"
+      ]
+    },
+    {
+      "id": "DR_10",
+      "condition": "interactive endpoint with TTFT SLA <2s",
+      "dominant_choice": "warm_replica_minimum_one",
+      "dominated_choice": "scale_to_zero",
+      "rationale": "Scale-to-zero cold-start 30-120s violates interactive TTFT SLA",
+      "applies_to_nodes": [
+        "AUTOSCALE",
+        "BENCH_SERVE"
+      ]
+    }
+  ],
+  "anti_rework_rules": [
+    {
+      "id": "ARR_01",
+      "rule": "Do not finalize quantization scheme before task-accuracy evaluation on all specialist domains",
+      "prevents": "discovering quality regression after deployment causing re-quantization",
+      "applies_to_nodes": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_QUALITY"
+      ]
+    },
+    {
+      "id": "ARR_02",
+      "rule": "Do not configure LoRA serving before validating adapter hot-swap latency on production hardware",
+      "prevents": "SLA violation from cold-load latency discovered in production",
+      "applies_to_nodes": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ]
+    },
+    {
+      "id": "ARR_03",
+      "rule": "Do not promote to production without running benchmark under realistic sequence length distribution",
+      "prevents": "benchmark passing on synthetic short requests while real workload OOMs",
+      "applies_to_nodes": [
+        "BENCH_SERVE",
+        "LATENCY_PROFILING"
+      ]
+    },
+    {
+      "id": "ARR_04",
+      "rule": "Do not apply tensor parallelism before verifying head count divisibility by TP degree for target model",
+      "prevents": "silent silent padding or weight replication causing memory overuse or wrong output",
+      "applies_to_nodes": [
+        "TENSOR_PARA"
+      ]
+    },
+    {
+      "id": "ARR_05",
+      "rule": "Do not enable speculative decoding without measuring acceptance rate on target domain traffic first",
+      "prevents": "throughput regression from low-acceptance draft model on specialist distribution",
+      "applies_to_nodes": [
+        "SPECULATIVE",
+        "QUANT_QUALITY"
+      ]
+    },
+    {
+      "id": "ARR_06",
+      "rule": "Do not merge base model update without re-validating all LoRA adapters against new base version",
+      "prevents": "silent quality degradation from adapter/base version mismatch",
+      "applies_to_nodes": [
+        "LORA_HOTSWAP",
+        "SERVE_ARCH"
+      ]
+    },
+    {
+      "id": "ARR_07",
+      "rule": "Do not skip domain-matched calibration data when quantizing specialist models",
+      "prevents": "outlier-channel miscalibration causing domain-vocabulary corruption at 4-bit",
+      "applies_to_nodes": [
+        "QUANT_GPTQ",
+        "QUANT_AWQ"
+      ]
+    },
+    {
+      "id": "ARR_08",
+      "rule": "Do not change prefix caching configuration without testing invalidation behavior after prompt update",
+      "prevents": "stale KV blocks serving outdated system prompt undetected",
+      "applies_to_nodes": [
+        "PREFIX_CACHE"
+      ]
+    },
+    {
+      "id": "ARR_09",
+      "rule": "Do not make local-vs-hosted decision based on token cost alone; include MLOps FTE in TCO",
+      "prevents": "underestimating self-hosted total cost leading to budget overrun",
+      "applies_to_nodes": [
+        "LOCAL_VS_HOSTED",
+        "AUTOSCALE"
+      ]
+    },
+    {
+      "id": "ARR_10",
+      "rule": "Do not deploy quantized model without validating quantization kernel availability and throughput on target GPU",
+      "prevents": "kernel fallback to slow dequantization path negating quantization benefit",
+      "applies_to_nodes": [
+        "QUANT_KERNEL",
+        "QUANT_GPTQ",
+        "QUANT_AWQ"
+      ]
+    }
+  ],
+  "iteration_protocol": [
+    {
+      "id": "IP_01",
+      "trigger": "TTFT exceeds SLA after initial deployment",
+      "actions": [
+        "enable prefix caching",
+        "profile prefill compute bottleneck",
+        "increase TP degree if prefill-bound"
+      ],
+      "revisit_nodes": [
+        "KV_CACHE",
+        "PREFIX_CACHE",
+        "FLASH_ATTN",
+        "TENSOR_PARA"
+      ],
+      "max_iterations": 3
+    },
+    {
+      "id": "IP_02",
+      "trigger": "TPOT exceeds SLA under target concurrency",
+      "actions": [
+        "profile decode phase memory bandwidth",
+        "increase KV block pool",
+        "enable KV quantization",
+        "tune batch size"
+      ],
+      "revisit_nodes": [
+        "CONT_BATCH",
+        "KV_CACHE",
+        "KV_QUANT",
+        "BENCH_SERVE"
+      ],
+      "max_iterations": 3
+    },
+    {
+      "id": "IP_03",
+      "trigger": "Specialist quality regression detected after quantization",
+      "actions": [
+        "re-run task accuracy eval per specialist",
+        "collect domain calibration data",
+        "increase bit-width or switch scheme"
+      ],
+      "revisit_nodes": [
+        "QUANT_QUALITY",
+        "QUANT_GPTQ",
+        "QUANT_AWQ",
+        "QUANT_INT8"
+      ],
+      "max_iterations": 2
+    },
+    {
+      "id": "IP_04",
+      "trigger": "LoRA adapter cache hit rate falls below 30%",
+      "actions": [
+        "profile adapter request distribution",
+        "merge low-traffic specialists",
+        "increase cache size if GPU memory allows"
+      ],
+      "revisit_nodes": [
+        "LORA_HOTSWAP",
+        "ROUTER_DISPATCH"
+      ],
+      "max_iterations": 2
+    },
+    {
+      "id": "IP_05",
+      "trigger": "Routing accuracy drops below 85%",
+      "actions": [
+        "retrain routing classifier on updated request distribution",
+        "add fallback to base model for low-confidence routes",
+        "increase classifier model size"
+      ],
+      "revisit_nodes": [
+        "ROUTER_DISPATCH",
+        "LORA_HOTSWAP"
+      ],
+      "max_iterations": 3
+    },
+    {
+      "id": "IP_06",
+      "trigger": "GPU OOM event in production",
+      "actions": [
+        "profile KV block pool usage",
+        "reduce max concurrent sequences",
+        "enable KV quantization",
+        "reduce batch size ceiling"
+      ],
+      "revisit_nodes": [
+        "KV_CACHE",
+        "KV_QUANT",
+        "CONT_BATCH",
+        "TENSOR_PARA"
+      ],
+      "max_iterations": 2
+    },
+    {
+      "id": "IP_07",
+      "trigger": "Serving cost exceeds budget",
+      "actions": [
+        "move low-traffic specialists to hosted API",
+        "enable scale-to-zero on batch endpoints",
+        "increase quantization to reduce GPU count"
+      ],
+      "revisit_nodes": [
+        "AUTOSCALE",
+        "LOCAL_VS_HOSTED",
+        "QUANT_GPTQ",
+        "QUANT_AWQ"
+      ],
+      "max_iterations": 2
+    },
+    {
+      "id": "IP_08",
+      "trigger": "New base model version released",
+      "actions": [
+        "validate all LoRA adapters",
+        "re-run quantization quality evaluation",
+        "update model format conversion pipeline",
+        "re-benchmark serving"
+      ],
+      "revisit_nodes": [
+        "LORA_HOTSWAP",
+        "QUANT_QUALITY",
+        "MODEL_FORMAT",
+        "BENCH_SERVE"
+      ],
+      "max_iterations": 1
+    }
+  ],
+  "priority_order": [
+    "SERVE_ARCH",
+    "KV_CACHE",
+    "CONT_BATCH",
+    "BENCH_SERVE",
+    "QUANT_QUALITY",
+    "LORA_HOTSWAP",
+    "ROUTER_DISPATCH",
+    "QUANT_GPTQ",
+    "QUANT_AWQ",
+    "FLASH_ATTN",
+    "QUANT_KERNEL",
+    "TENSOR_PARA",
+    "LATENCY_PROFILING",
+    "LOCAL_VS_HOSTED",
+    "PREFIX_CACHE",
+    "AUTOSCALE",
+    "SPECULATIVE",
+    "QUANT_INT8",
+    "KV_QUANT",
+    "QUANT_GGUF",
+    "MODEL_FORMAT"
+  ],
+  "priority_rationale": "SERVE_ARCH first as all else depends on framework choice. KV_CACHE and CONT_BATCH next as they determine throughput ceiling. BENCH_SERVE early to establish SLA gates. QUANT_QUALITY before specific quant methods to set evaluation criteria. LORA_HOTSWAP and ROUTER_DISPATCH critical for multi-specialist orchestration. Quantization methods (GPTQ/AWQ) follow. FLASH_ATTN and QUANT_KERNEL as enabling optimizations. TENSOR_PARA high complexity, needed only when quantization insufficient. Profiling, hosting decisions, advanced optimizations (PREFIX_CACHE, SPECULATIVE, KV_QUANT) follow. GGUF and MODEL_FORMAT last as narrower scope.",
+  "validation_protocol": {
+    "required_checks": [
+      "structural_completeness",
+      "node_count_range",
+      "edge_count_range",
+      "conflict_axes_count",
+      "edge_cases_count",
+      "workflow_count",
+      "competency_questions_count",
+      "dominance_rules_count",
+      "anti_rework_rules_count",
+      "iteration_protocol_count",
+      "unique_node_ids",
+      "edge_ids_sequential",
+      "priority_order_completeness",
+      "evidence_refs_resolve",
+      "competency_refs_resolve",
+      "conflict_axis_refs_resolve",
+      "high_risk_nodes_have_acceptance_tests",
+      "high_coupling_nodes_have_revisit_triggers",
+      "conflict_edges_have_tension_and_rule",
+      "dependency_edges_acyclic",
+      "all_derived_fields_filled_by_formula_tool"
+    ],
+    "human_review_required_for": [
+      "high_risk_nodes",
+      "conflict_axes_resolution_rules",
+      "production_serving_decisions"
+    ],
+    "formula_tool_authoritative": true
+  },
+  "validation_report": {
+    "last_run": "pending",
+    "overall_status": "pending",
+    "failed_checks": []
+  },
+  "change_control": {
+    "requires_review_on": [
+      "serving_framework_version_change",
+      "base_model_architecture_change",
+      "quantization_kernel_update",
+      "new_specialist_domain_added"
+    ],
+    "versioned_artifacts": [
+      "serving_config",
+      "adapter_registry",
+      "quantization_quality_matrix",
+      "sla_document"
+    ]
+  },
+  "traceability_matrix": {
+    "nodes_to_competency_questions": {
+      "SERVE_ARCH": [
+        "CQ_01",
+        "CQ_02"
+      ],
+      "CONT_BATCH": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "KV_CACHE": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "QUANT_GPTQ": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "QUANT_AWQ": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "QUANT_GGUF": [
+        "CQ_06",
+        "CQ_07"
+      ],
+      "TENSOR_PARA": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "LORA_HOTSWAP": [
+        "CQ_08",
+        "CQ_09"
+      ],
+      "QUANT_QUALITY": [
+        "CQ_05",
+        "CQ_06",
+        "CQ_07"
+      ],
+      "AUTOSCALE": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "PREFIX_CACHE": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "SPECULATIVE": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "QUANT_KERNEL": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "LATENCY_PROFILING": [
+        "CQ_02",
+        "CQ_03"
+      ],
+      "LOCAL_VS_HOSTED": [
+        "CQ_10",
+        "CQ_11"
+      ],
+      "FLASH_ATTN": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "ROUTER_DISPATCH": [
+        "CQ_08",
+        "CQ_09",
+        "CQ_10"
+      ],
+      "QUANT_INT8": [
+        "CQ_05",
+        "CQ_06"
+      ],
+      "KV_QUANT": [
+        "CQ_03",
+        "CQ_04"
+      ],
+      "BENCH_SERVE": [
+        "CQ_01",
+        "CQ_02",
+        "CQ_10",
+        "CQ_11"
+      ],
+      "MODEL_FORMAT": [
+        "CQ_01"
+      ]
+    },
+    "nodes_to_evidence": {
+      "SERVE_ARCH": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "CONT_BATCH": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "KV_CACHE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "QUANT_GPTQ": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "QUANT_AWQ": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "QUANT_GGUF": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "TENSOR_PARA": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "LORA_HOTSWAP": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "QUANT_QUALITY": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "AUTOSCALE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "PREFIX_CACHE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "SPECULATIVE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "QUANT_KERNEL": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "LATENCY_PROFILING": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "LOCAL_VS_HOSTED": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "FLASH_ATTN": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "ROUTER_DISPATCH": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "QUANT_INT8": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "KV_QUANT": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "BENCH_SERVE": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "MODEL_FORMAT": [
+        "SRC_HEURISTIC_PRIOR"
+      ]
+    }
+  },
+  "evaluation_suite": {
+    "eval_objective": "verify_schema_semantics_serving_quantization_workflow_and_grounding_quality",
+    "test_cases": [
+      {
+        "id": "EVAL_CASE_001",
+        "case_type": "minimal_domain",
+        "input_summary": "single 7B model, 4-bit GPTQ, vLLM serving on A100",
+        "expected_properties": [
+          "TTFT measurable",
+          "GPTQ quality delta computable",
+          "serving starts without error"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_002",
+        "case_type": "quantization_quality_probe",
+        "input_summary": "medical specialist model quantized with generic calibration data",
+        "expected_properties": [
+          "quality regression detected on domain benchmark",
+          "calibration mismatch flagged"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_003",
+        "case_type": "lora_adapter_cache_overflow",
+        "input_summary": "200 specialist adapters on server with cache size 20",
+        "expected_properties": [
+          "cold-start latency penalty documented",
+          "hit rate <30% triggers adapter consolidation review"
+        ]
+      },
+      {
+        "id": "EVAL_CASE_004",
+        "case_type": "cost_crossover",
+        "input_summary": "traffic grows from 500k to 5M tokens/day",
+        "expected_properties": [
+          "self-hosted breakeven triggered",
+          "TCO model updated",
+          "autoscale policy revised"
+        ]
+      }
+    ],
+    "metrics": [
+      "json_validity",
+      "schema_conformance",
+      "reference_validity",
+      "formula_consistency",
+      "evidence_label_correctness",
+      "competency_question_coverage",
+      "workflow_gate_integrity",
+      "dependency_cycle_absence",
+      "source_traceability",
+      "anti_rework_rule_coverage"
+    ],
+    "regression_policy": "compare_against_previous_prompt_or_schema_version_before_release",
+    "minimum_pass_conditions": [
+      "json_validity==1.0",
+      "reference_validity==1.0",
+      "formula_consistency==1.0",
+      "dependency_cycle_absence==1.0"
+    ]
+  }
+}

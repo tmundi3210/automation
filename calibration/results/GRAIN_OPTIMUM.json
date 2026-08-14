@@ -1,0 +1,40 @@
+{
+  "_directive": "losslessly compressed, token-efficient, information-dense, fully detailed, machine-facing; optimized for model parsing over human readability",
+  "experiment": "grain_optimum_probe",
+  "date": "2026-06-23",
+  "question": "Is subdomain the optimum unit, or does going finer (topic grain) still add real, non-redundant coverage without over-fragmenting?",
+  "method": "Take richest subdomain (ranking_and_relevance, S1=20 nodes). Decompose into 3 topics (term-weighting, learning-to-rank, relevance-feedback). Run each dense. Gate each. Measure: natural-fill (genuinely distinct nodes vs padding), cross-topic node redundancy, coverage vs subdomain, token size vs ceiling.",
+  "runs": [
+    {"label": "runT1_rank_termweighting", "grain": "topic", "nodes": 21, "edges": 37, "est_tokens": 39422, "validator": "pass 35/0/0", "natural_fill": true, "padded": 0},
+    {"label": "runT2_rank_ltr", "grain": "topic", "nodes": 21, "edges": 40, "est_tokens": 44200, "validator": "pass 35/0/0", "natural_fill": true, "padded": 0},
+    {"label": "runT3_rank_feedback", "grain": "topic", "nodes": 20, "edges": 37, "est_tokens": 43105, "validator": "pass 35/0/0", "natural_fill": true, "padded": 0}
+  ],
+  "baseline_subdomain": {"label": "runS1_ir_ranking", "nodes": 20, "est_tokens": 40648},
+  "redundancy_analysis": {
+    "method": "token-set Jaccard on node topic+definition, best-match >= 0.34 = overlap",
+    "cross_topic_overlap": {"T1_vs_T2": "0%", "T1_vs_T3": "0%", "T2_vs_T3": "0%"},
+    "interpretation": "topic decomposition is fully disjoint -> zero wasted/duplicated nodes",
+    "subdomain_expanded_by_topics": "62 distinct topic-grain nodes vs 20 subdomain nodes = 3.1x; only 20% of subdomain nodes have a topic-grain counterpart -> the rest is new mechanism-level detail, not restatement"
+  },
+  "token_ceiling": {
+    "max_single_kb_seen": 44200,
+    "truncations": 0,
+    "observed_band": "topic+dense runs 39.4k-44.2k tokens, all just under the ~45k single-response ceiling",
+    "implication": "dense + topic grain is the practical FINEST grain under one response; finer units must use standard/compact or they underfill"
+  },
+  "decision": {
+    "controlling_factor_confirmed": "fixed density budget per run (~20 dense nodes), invariant to grain; grain sets resolution",
+    "optimum_grain_rule": "GO AS FINE AS THE UNIT STILL NATURAL-FILLS A DENSE KB WITHOUT PADDING, and STOP before per-KB tokens approach ~45k. This maximizes total non-redundant coverage.",
+    "operational_signal": "helper reports natural_fill + padded_node_count + est_tokens. If padded>0 or natural_fill=false -> grain too fine: coarsen (merge with sibling) or drop to standard. If est_tokens > ~43k AND nodes<19 -> split further. If est_tokens approaches ceiling at full node count -> already optimal grain.",
+    "grain_by_value": {
+      "rich_high_value_areas (e.g. IR/ranking)": "TOPIC grain (3.1x coverage, 0% redundancy, natural-fill holds)",
+      "medium_areas": "subdomain/field grain (dense)",
+      "thin_low_value_areas": "subdomain grain in standard/compact"
+    },
+    "knowledge_searcher_cost_tradeoff": {
+      "subdomain_grain": {"kbs": "~24", "nodes": "~480", "cost": "1x"},
+      "topic_grain": {"kbs": "~70+", "nodes": "~1400", "cost": "~3x, each run near token ceiling"},
+      "adaptive_natural_fill": {"kbs": "~24-70 (per-unit)", "nodes": "max non-redundant", "cost": "variable; finest that natural-fills"}
+    }
+  }
+}
