@@ -107,6 +107,13 @@
       "must_be_answerable_from": ["LIFECYCLE_REVIEW_LOOP"],
       "acceptance_condition": "the answer runs a short post-mortem per event and folds its findings into the mortality map, signature references, inspection cadences and prevention checklists",
       "covered_by": ["LIFECYCLE_REVIEW_LOOP"]
+    },
+    {
+      "id": "CQ_13",
+      "question": "A bath is confirmed sick - what does the bench owe the work it already plated, and how far back does the doubt reach?",
+      "must_be_answerable_from": ["QUARANTINE_HOLD_DISCIPLINE", "BATH_AGE_ACCOUNTING", "LIFECYCLE_REVIEW_LOOP"],
+      "acceptance_condition": "the answer bounds the doubt at the last dated known-good verification coupon in the ledger, names the pieces plated inside that window as a suspect batch handed with the bath evidence to the quality and business sides, and rules out quietly shipping or re-shipping suspect work or letting a finish claim rest on a tank that was sick when it plated",
+      "covered_by": ["QUARANTINE_HOLD_DISCIPLINE", "BATH_AGE_ACCOUNTING", "LIFECYCLE_REVIEW_LOOP"]
     }
   ],
 
@@ -749,15 +756,16 @@
     {
       "id": "QUARANTINE_HOLD_DISCIPLINE",
       "topic": "suspect_bath_quarantine",
-      "definition": "The moment a bath becomes credibly suspect, take it out of the customer path: no customer work enters a quarantined tank, in-flight pieces route around it or hold, the static drag-out return to that bath stops, and the tank runs coupons only until the differential lands. Quarantine is cheap insurance against compounding loss - one more rack through a copper-poisoned gold bath converts a bath problem into a rework batch, a broken customer promise and gold spent twice - and it preserves evidence, because dosing a bath 'to see if it helps' destroys the very signal the diagnosis needs. Release from quarantine is earned by a passing verification coupon, never by impatience or the schedule.",
+      "definition": "The moment a bath becomes credibly suspect, take it out of the customer path: no customer work enters a quarantined tank, in-flight pieces route around it or hold, the static drag-out return to that bath stops, and the tank runs coupons only until the differential lands. Quarantine is cheap insurance against compounding loss - one more rack through a copper-poisoned gold bath converts a bath problem into a rework batch, a broken customer promise and gold spent twice - and it preserves evidence, because dosing a bath 'to see if it helps' destroys the very signal the diagnosis needs. Release from quarantine is earned by a passing verification coupon, never by impatience or the schedule. Quarantine also looks backward: the doubt reaches to the last dated known-good coupon in the bath's ledger, and the pieces plated inside that window are named as a suspect batch and handed on - with the bath evidence attached - to the quality and business sides, because the one thing a bath fault must never become is a quiet reshipment or a finish claim resting on a tank that was already sick.",
       "group": "response",
-      "dependencies": ["CONTAMINATION_DIFFERENTIAL"],
-      "competency_question_refs": ["CQ_07"],
+      "dependencies": ["CONTAMINATION_DIFFERENTIAL", "BATH_AGE_ACCOUNTING"],
+      "competency_question_refs": ["CQ_07", "CQ_13"],
       "scope_boundary": {
         "included": [
           "the customer-work stop, routing hold and drag-out-return stop on suspicion",
           "coupons-only operation during diagnosis",
-          "coupon-earned release criteria"
+          "coupon-earned release criteria",
+          "the backward suspect window bounded by the last dated known-good coupon, named and handed on with its bath evidence"
         ],
         "excluded": [
           "rescheduling and customer communication (business specialist)",
@@ -782,18 +790,21 @@
       "failure_modes": [
         "'one more batch' through a suspect tank because the deadline is real and the contamination is hypothetical",
         "quarantining the bath but leaving the drag-out return running",
-        "releasing on a good feeling instead of a passing coupon"
+        "releasing on a good feeling instead of a passing coupon",
+        "closing the quarantine forward-only, so the pieces plated since the last known-good coupon ship on a promise nobody re-examined"
       ],
       "acceptance_tests": [
-        "each quarantine event logs its trigger, the stop actions taken (work, routing, returns), the coupons run, and the passing verification coupon that authorized release"
+        "each quarantine event logs its trigger, the stop actions taken (work, routing, returns), the coupons run, and the passing verification coupon that authorized release",
+        "each confirmed-sick verdict closes with a named backward window - the work plated since the last dated known-good coupon - recorded and handed to the quality and business sides with the bath evidence, and no suspect piece is shipped or re-shipped without that handoff"
       ],
       "revisit_triggers": [
         "a release decision later contradicted by a returning signature",
-        "quarantine frequency rising on any one tank"
+        "quarantine frequency rising on any one tank",
+        "a customer complaint or a quality-side finding that lands inside a window this node never declared suspect"
       ],
       "base": {
-        "criticality": 0.85, "business_value": 0.68, "user_value": 0.74,
-        "technical_complexity": 0.45, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.7,
+        "criticality": 0.85, "business_value": 0.68, "user_value": 0.76,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.76,
         "irreversibility": 0.6, "confidence": 0.74, "node_conflict_pressure": 0.6,
         "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
         "prior_importance": 0.84, "evidence_confidence": 0.68,
@@ -1032,15 +1043,16 @@
     {
       "id": "BATH_AGE_ACCOUNTING",
       "topic": "lifecycle_ledger",
-      "definition": "Keep each bath's biography separately from the routine control log: date and composition class at make-up, cumulative ampere-hours and metal turnovers, every treatment - carbon, freeze-out, dummy cycles - with its trigger and outcome, every contamination event and its post-mortem, the carbonate trajectory, and the running cost the bath has absorbed. The routine analysis log answers 'is this bath in its window today'; the age ledger answers 'what has this bath lived through and what will it likely do next' - and it is the evidence base without which the regenerate-versus-replace decision degenerates into mood. A ledger entry costs a minute; a replacement decision made blind costs a bath, or worse, keeps a dying one in the customer path.",
+      "definition": "Keep each bath's biography separately from the routine control log: date and composition class at make-up, cumulative ampere-hours and metal turnovers, every treatment - carbon, freeze-out, dummy cycles - with its trigger and outcome, every contamination event and its post-mortem, the carbonate trajectory, and the running cost the bath has absorbed. The routine analysis log answers 'is this bath in its window today'; the age ledger answers 'what has this bath lived through and what will it likely do next' - and it is the evidence base without which the regenerate-versus-replace decision degenerates into mood. A ledger entry costs a minute; a replacement decision made blind costs a bath, or worse, keeps a dying one in the customer path. The ledger also carries the date of every known-good verification coupon, which is what lets a later contamination verdict say how far back the doubt actually reaches instead of shrugging at a whole quarter of shipped work.",
       "group": "lifecycle",
       "dependencies": ["BATH_MORTALITY_FRAME"],
-      "competency_question_refs": ["CQ_10"],
+      "competency_question_refs": ["CQ_10", "CQ_13"],
       "scope_boundary": {
         "included": [
           "make-up record, ampere-hours, metal turnovers and treatment history per bath",
           "contamination events, post-mortems and carbonate trajectory",
-          "accumulated cost as decision evidence"
+          "accumulated cost as decision evidence",
+          "the dated known-good verification coupons that bound how far back a later contamination verdict casts doubt"
         ],
         "excluded": [
           "the daily analysis log and its replenishment entries (sibling analysis KB)",
@@ -1319,7 +1331,7 @@
       "definition": "Make every bath death and every near-miss pay rent: a short post-mortem - what the verified signature was, which route let it in or which milestone ended the bath's economics, what the treatment history cost, what the replacement decision turned on - is folded back into the mortality map, the signature references, the inspection cadences and the prevention checklists, so the successor bath inherits the lesson rather than the fate. Over a year these post-mortems become the shop's own lifecycle dataset: which racks actually fail, which rinse gets skipped under deadline, how many turnovers a build bath really delivers on this bench - knowledge no TDS can supply because it is about this shop, not the product.",
       "group": "lifecycle",
       "dependencies": ["REGENERATE_OR_RETIRE", "EOL_HANDOFF_COMPLIANCE"],
-      "competency_question_refs": ["CQ_12"],
+      "competency_question_refs": ["CQ_12", "CQ_13"],
       "scope_boundary": {
         "included": [
           "the per-event post-mortem and its required fields",
@@ -1406,6 +1418,8 @@
       "why_related": "carbon treatment is the remedy reserved for the organic class the map identifies", "relation_strength": 0.8 },
     { "from": "DRAG_IN_PATHWAYS", "to": "STRIKE_SACRIFICIAL_BUFFER", "edge_type": "dependency",
       "why_related": "the strike's fuse role exists because drag-in cannot be engineered to zero", "relation_strength": 0.78 },
+    { "from": "BATH_AGE_ACCOUNTING", "to": "QUARANTINE_HOLD_DISCIPLINE", "edge_type": "dependency",
+      "why_related": "the ledger's dated known-good coupons are what bound the backward suspect window a quarantine has to declare", "relation_strength": 0.72 },
     { "from": "BATH_AGE_ACCOUNTING", "to": "REGENERATE_OR_RETIRE", "edge_type": "dependency",
       "why_related": "the ledger supplies the treatment history, age and cost curve the decision mechanism consumes", "relation_strength": 0.84 },
     { "from": "REGENERATE_OR_RETIRE", "to": "GOLD_RECOVERY_SPENT", "edge_type": "dependency",
@@ -1752,6 +1766,12 @@
       "rationale": "drain-dwell, rinse refreshes, covers and dedicated tools are priced against a killed build bath, not against the minutes they cost",
       "trigger": "a schedule argument for skipping a prevention step",
       "action": "keep the step; answer the argument with the ledger's record of what the last shortcut cost"
+    },
+    {
+      "rule": "Traceback and honest handoff beat quiet reshipment once a bath is confirmed sick",
+      "rationale": "work plated by a poisoned or aged tank carries a finish promise the shop can no longer evidence, and silence turns a bath fault into a misrepresentation",
+      "trigger": "a confirmed contamination or aging verdict on a bath that has plated customer work since its last dated known-good coupon",
+      "action": "name the suspect window from the ledger and hand it with the bath evidence to the quality and business sides; let no claim about the finish stand on a tank that was sick when it plated"
     }
   ],
 
@@ -1791,6 +1811,10 @@
     {
       "rule": "File the post-mortem before the successor bath goes live",
       "prevents": "rebuilding the same death with fresh chemistry and calling it bad luck"
+    },
+    {
+      "rule": "Run and date a known-good verification coupon at make-up, after every treatment and on the ledger's cadence",
+      "prevents": "an unbounded backward traceback on the day a bath is confirmed sick, when nobody can say which weeks of shipped work are actually in doubt"
     }
   ],
 

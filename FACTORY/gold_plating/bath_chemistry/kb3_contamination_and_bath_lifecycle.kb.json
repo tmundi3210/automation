@@ -213,6 +213,21 @@
       "covered_by": [
         "LIFECYCLE_REVIEW_LOOP"
       ]
+    },
+    {
+      "id": "CQ_13",
+      "question": "A bath is confirmed sick - what does the bench owe the work it already plated, and how far back does the doubt reach?",
+      "must_be_answerable_from": [
+        "QUARANTINE_HOLD_DISCIPLINE",
+        "BATH_AGE_ACCOUNTING",
+        "LIFECYCLE_REVIEW_LOOP"
+      ],
+      "acceptance_condition": "the answer bounds the doubt at the last dated known-good verification coupon in the ledger, names the pieces plated inside that window as a suspect batch handed with the bath evidence to the quality and business sides, and rules out quietly shipping or re-shipping suspect work or letting a finish claim rest on a tank that was sick when it plated",
+      "covered_by": [
+        "QUARANTINE_HOLD_DISCIPLINE",
+        "BATH_AGE_ACCOUNTING",
+        "LIFECYCLE_REVIEW_LOOP"
+      ]
     }
   ],
   "glossary": [
@@ -1964,14 +1979,15 @@
     {
       "id": "QUARANTINE_HOLD_DISCIPLINE",
       "topic": "suspect_bath_quarantine",
-      "definition": "The moment a bath becomes credibly suspect, take it out of the customer path: no customer work enters a quarantined tank, in-flight pieces route around it or hold, the static drag-out return to that bath stops, and the tank runs coupons only until the differential lands. Quarantine is cheap insurance against compounding loss - one more rack through a copper-poisoned gold bath converts a bath problem into a rework batch, a broken customer promise and gold spent twice - and it preserves evidence, because dosing a bath 'to see if it helps' destroys the very signal the diagnosis needs. Release from quarantine is earned by a passing verification coupon, never by impatience or the schedule.",
+      "definition": "The moment a bath becomes credibly suspect, take it out of the customer path: no customer work enters a quarantined tank, in-flight pieces route around it or hold, the static drag-out return to that bath stops, and the tank runs coupons only until the differential lands. Quarantine is cheap insurance against compounding loss - one more rack through a copper-poisoned gold bath converts a bath problem into a rework batch, a broken customer promise and gold spent twice - and it preserves evidence, because dosing a bath 'to see if it helps' destroys the very signal the diagnosis needs. Release from quarantine is earned by a passing verification coupon, never by impatience or the schedule. Quarantine also looks backward: the doubt reaches to the last dated known-good coupon in the bath's ledger, and the pieces plated inside that window are named as a suspect batch and handed on - with the bath evidence attached - to the quality and business sides, because the one thing a bath fault must never become is a quiet reshipment or a finish claim resting on a tank that was already sick.",
       "node_type": "work_unit",
       "group": "response",
       "scope_boundary": {
         "included": [
           "the customer-work stop, routing hold and drag-out-return stop on suspicion",
           "coupons-only operation during diagnosis",
-          "coupon-earned release criteria"
+          "coupon-earned release criteria",
+          "the backward suspect window bounded by the last dated known-good coupon, named and handed on with its bath evidence"
         ],
         "excluded": [
           "rescheduling and customer communication (business specialist)",
@@ -1986,11 +2002,13 @@
       "inputs": [],
       "outputs": [],
       "dependencies": [
-        "CONTAMINATION_DIFFERENTIAL"
+        "CONTAMINATION_DIFFERENTIAL",
+        "BATH_AGE_ACCOUNTING"
       ],
       "must_not_finalize_before": [],
       "competency_question_refs": [
-        "CQ_07"
+        "CQ_07",
+        "CQ_13"
       ],
       "evidence_refs": [
         "SRC_HEURISTIC_PRIOR"
@@ -1998,24 +2016,24 @@
       "metrics": {
         "criticality": 0.85,
         "business_value": 0.68,
-        "user_value": 0.74,
+        "user_value": 0.76,
         "technical_complexity": 0.45,
-        "risk_if_wrong": 0.82,
-        "cross_topic_coupling": 0.7,
+        "risk_if_wrong": 0.84,
+        "cross_topic_coupling": 0.76,
         "irreversibility": 0.6,
         "confidence": 0.74,
         "node_conflict_pressure": 0.6,
-        "risk_score": 0.63,
+        "risk_score": 0.65,
         "confidence_score": 0.55,
-        "revisit_pressure": 0.34,
+        "revisit_pressure": 0.38,
         "lock_score": 0.66,
-        "final_importance": 0.71
+        "final_importance": 0.72
       },
       "score_derivation_inputs": {
         "acceptance_test_pass_rate": 0.8,
         "dependency_gate_pass_rate": 0.82,
         "uncertainty_range_width": 0.28,
-        "revisit_trigger_count_normalized": 0.4
+        "revisit_trigger_count_normalized": 0.6
       },
       "score_derivation_input_labels": {
         "acceptance_test_pass_rate": "heuristic",
@@ -2088,14 +2106,17 @@
       "failure_modes": [
         "'one more batch' through a suspect tank because the deadline is real and the contamination is hypothetical",
         "quarantining the bath but leaving the drag-out return running",
-        "releasing on a good feeling instead of a passing coupon"
+        "releasing on a good feeling instead of a passing coupon",
+        "closing the quarantine forward-only, so the pieces plated since the last known-good coupon ship on a promise nobody re-examined"
       ],
       "acceptance_tests": [
-        "each quarantine event logs its trigger, the stop actions taken (work, routing, returns), the coupons run, and the passing verification coupon that authorized release"
+        "each quarantine event logs its trigger, the stop actions taken (work, routing, returns), the coupons run, and the passing verification coupon that authorized release",
+        "each confirmed-sick verdict closes with a named backward window - the work plated since the last dated known-good coupon - recorded and handed to the quality and business sides with the bath evidence, and no suspect piece is shipped or re-shipped without that handoff"
       ],
       "revisit_triggers": [
         "a release decision later contradicted by a returning signature",
-        "quarantine frequency rising on any one tank"
+        "quarantine frequency rising on any one tank",
+        "a customer complaint or a quality-side finding that lands inside a window this node never declared suspect"
       ],
       "handoff_artifact_required": true,
       "lifecycle_state": "draft",
@@ -2668,14 +2689,15 @@
     {
       "id": "BATH_AGE_ACCOUNTING",
       "topic": "lifecycle_ledger",
-      "definition": "Keep each bath's biography separately from the routine control log: date and composition class at make-up, cumulative ampere-hours and metal turnovers, every treatment - carbon, freeze-out, dummy cycles - with its trigger and outcome, every contamination event and its post-mortem, the carbonate trajectory, and the running cost the bath has absorbed. The routine analysis log answers 'is this bath in its window today'; the age ledger answers 'what has this bath lived through and what will it likely do next' - and it is the evidence base without which the regenerate-versus-replace decision degenerates into mood. A ledger entry costs a minute; a replacement decision made blind costs a bath, or worse, keeps a dying one in the customer path.",
+      "definition": "Keep each bath's biography separately from the routine control log: date and composition class at make-up, cumulative ampere-hours and metal turnovers, every treatment - carbon, freeze-out, dummy cycles - with its trigger and outcome, every contamination event and its post-mortem, the carbonate trajectory, and the running cost the bath has absorbed. The routine analysis log answers 'is this bath in its window today'; the age ledger answers 'what has this bath lived through and what will it likely do next' - and it is the evidence base without which the regenerate-versus-replace decision degenerates into mood. A ledger entry costs a minute; a replacement decision made blind costs a bath, or worse, keeps a dying one in the customer path. The ledger also carries the date of every known-good verification coupon, which is what lets a later contamination verdict say how far back the doubt actually reaches instead of shrugging at a whole quarter of shipped work.",
       "node_type": "work_unit",
       "group": "lifecycle",
       "scope_boundary": {
         "included": [
           "make-up record, ampere-hours, metal turnovers and treatment history per bath",
           "contamination events, post-mortems and carbonate trajectory",
-          "accumulated cost as decision evidence"
+          "accumulated cost as decision evidence",
+          "the dated known-good verification coupons that bound how far back a later contamination verdict casts doubt"
         ],
         "excluded": [
           "the daily analysis log and its replenishment entries (sibling analysis KB)",
@@ -2694,7 +2716,8 @@
       ],
       "must_not_finalize_before": [],
       "competency_question_refs": [
-        "CQ_10"
+        "CQ_10",
+        "CQ_13"
       ],
       "evidence_refs": [
         "SRC_HEURISTIC_PRIOR"
@@ -3404,7 +3427,8 @@
       ],
       "must_not_finalize_before": [],
       "competency_question_refs": [
-        "CQ_12"
+        "CQ_12",
+        "CQ_13"
       ],
       "evidence_refs": [
         "SRC_HEURISTIC_PRIOR"
@@ -4098,6 +4122,40 @@
     {
       "id": "EDGE_018",
       "from": "BATH_AGE_ACCOUNTING",
+      "to": "QUARANTINE_HOLD_DISCIPLINE",
+      "edge_type": "dependency",
+      "relation_strength": 0.72,
+      "signed_tension": 0.0,
+      "edge_score": 0.13,
+      "edge_heat": 0.27,
+      "prior_relation_strength": 0.72,
+      "observed_co_occurrence": 0.0,
+      "causal_confidence": 0.7,
+      "conflict_probability": 0.15,
+      "expected_rework_cost": 0.25,
+      "edge_priority": 0.13,
+      "edge_metric_labels": {
+        "relation_strength": "heuristic",
+        "signed_tension": "heuristic",
+        "edge_score": "heuristic",
+        "edge_heat": "heuristic",
+        "edge_priority": "heuristic",
+        "causal_confidence": "heuristic",
+        "conflict_probability": "heuristic",
+        "expected_rework_cost": "heuristic"
+      },
+      "evidence_refs": [
+        "SRC_HEURISTIC_PRIOR"
+      ],
+      "traceability": [],
+      "why_related": "the ledger's dated known-good coupons are what bound the backward suspect window a quarantine has to declare",
+      "benefit_of_coupling": "",
+      "risk_of_conflict": "",
+      "example": ""
+    },
+    {
+      "id": "EDGE_019",
+      "from": "BATH_AGE_ACCOUNTING",
       "to": "REGENERATE_OR_RETIRE",
       "edge_type": "dependency",
       "relation_strength": 0.84,
@@ -4130,7 +4188,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_019",
+      "id": "EDGE_020",
       "from": "REGENERATE_OR_RETIRE",
       "to": "GOLD_RECOVERY_SPENT",
       "edge_type": "dependency",
@@ -4164,7 +4222,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_020",
+      "id": "EDGE_021",
       "from": "DRAG_OUT_ECONOMICS",
       "to": "RINSE_RECOVERY_STREAMS",
       "edge_type": "dependency",
@@ -4198,7 +4256,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_021",
+      "id": "EDGE_022",
       "from": "LIFECYCLE_TDS_BOUNDARY",
       "to": "FILTRATION_PRACTICE",
       "edge_type": "dependency",
@@ -4232,7 +4290,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_022",
+      "id": "EDGE_023",
       "from": "REGENERATE_OR_RETIRE",
       "to": "LIFECYCLE_REVIEW_LOOP",
       "edge_type": "dependency",
@@ -4266,7 +4324,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_023",
+      "id": "EDGE_024",
       "from": "LIFECYCLE_TDS_BOUNDARY",
       "to": "CARBON_TREATMENT_CLASS",
       "edge_type": "constraint",
@@ -4300,7 +4358,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_024",
+      "id": "EDGE_025",
       "from": "LIFECYCLE_TDS_BOUNDARY",
       "to": "DUMMY_PLATING_REMEDY",
       "edge_type": "constraint",
@@ -4334,7 +4392,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_025",
+      "id": "EDGE_026",
       "from": "SEGREGATION_SAFETY_SPINE",
       "to": "GOLD_RECOVERY_SPENT",
       "edge_type": "constraint",
@@ -4368,7 +4426,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_026",
+      "id": "EDGE_027",
       "from": "SEGREGATION_SAFETY_SPINE",
       "to": "RINSE_RECOVERY_STREAMS",
       "edge_type": "constraint",
@@ -4402,7 +4460,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_027",
+      "id": "EDGE_028",
       "from": "QUARANTINE_HOLD_DISCIPLINE",
       "to": "REGENERATE_OR_RETIRE",
       "edge_type": "conflict",
@@ -4437,7 +4495,7 @@
       "resolution_rule": "quarantine integrity wins: no early release to dodge a replacement decision and no replacement declared just to end a hold; the differential's verdict plus the coupon evidence must close before the economics mechanism runs"
     },
     {
-      "id": "EDGE_028",
+      "id": "EDGE_029",
       "from": "DRAG_OUT_ECONOMICS",
       "to": "RINSE_RECOVERY_STREAMS",
       "edge_type": "conflict",
@@ -4472,7 +4530,7 @@
       "resolution_rule": "returns run only from a dedicated static drag-out rinse of a bath in healthy status; on quarantine or retirement the return stops and the rinse routes to recovery instead"
     },
     {
-      "id": "EDGE_029",
+      "id": "EDGE_030",
       "from": "STRIKE_SACRIFICIAL_BUFFER",
       "to": "REGENERATE_OR_RETIRE",
       "edge_type": "conflict",
@@ -4507,7 +4565,7 @@
       "resolution_rule": "the strike is exempt from the regenerate branch: its small volume makes remake cheap and its fuse role makes 'saving' it self-defeating; dump-and-remake with gold recovery wins every time"
     },
     {
-      "id": "EDGE_030",
+      "id": "EDGE_031",
       "from": "GOLD_RECOVERY_SPENT",
       "to": "EOL_HANDOFF_COMPLIANCE",
       "edge_type": "conflict",
@@ -4542,7 +4600,7 @@
       "resolution_rule": "compliance wins: recovery happens inside the storage, labeling and license obligation classes, and when in-house extraction would extend non-compliant holding the refiner or licensed-handler route takes the solution with the recovery credit realized there"
     },
     {
-      "id": "EDGE_031",
+      "id": "EDGE_032",
       "from": "FIXTURE_ANODE_SOURCES",
       "to": "METALLIC_SIGNATURE_MAP",
       "edge_type": "causal",
@@ -4576,7 +4634,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_032",
+      "id": "EDGE_033",
       "from": "CARBONATE_AGING_MECHANISM",
       "to": "REGENERATE_OR_RETIRE",
       "edge_type": "causal",
@@ -4610,7 +4668,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_033",
+      "id": "EDGE_034",
       "from": "DRAG_OUT_ECONOMICS",
       "to": "DRAG_IN_PATHWAYS",
       "edge_type": "causal",
@@ -4644,7 +4702,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_034",
+      "id": "EDGE_035",
       "from": "QUARANTINE_HOLD_DISCIPLINE",
       "to": "CARBON_TREATMENT_CLASS",
       "edge_type": "sequence",
@@ -4678,7 +4736,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_035",
+      "id": "EDGE_036",
       "from": "GOLD_RECOVERY_SPENT",
       "to": "EOL_HANDOFF_COMPLIANCE",
       "edge_type": "sequence",
@@ -4712,7 +4770,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_036",
+      "id": "EDGE_037",
       "from": "LIFECYCLE_REVIEW_LOOP",
       "to": "DRAG_IN_PATHWAYS",
       "edge_type": "feedback",
@@ -4746,7 +4804,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_037",
+      "id": "EDGE_038",
       "from": "DUMMY_PLATING_REMEDY",
       "to": "CONTAMINATION_DIFFERENTIAL",
       "edge_type": "feedback",
@@ -4780,7 +4838,7 @@
       "example": ""
     },
     {
-      "id": "EDGE_038",
+      "id": "EDGE_039",
       "from": "FILTRATION_PRACTICE",
       "to": "CARBON_TREATMENT_CLASS",
       "edge_type": "similarity",
@@ -5205,10 +5263,10 @@
     "CONTAMINATION_DIFFERENTIAL",
     "EOL_HANDOFF_COMPLIANCE",
     "METALLIC_SIGNATURE_MAP",
+    "QUARANTINE_HOLD_DISCIPLINE",
     "REGENERATE_OR_RETIRE",
     "GOLD_RECOVERY_SPENT",
     "LIFECYCLE_TDS_BOUNDARY",
-    "QUARANTINE_HOLD_DISCIPLINE",
     "BATH_MORTALITY_FRAME",
     "ORGANIC_SIGNATURE_MAP",
     "DRAG_IN_PATHWAYS",
@@ -5297,6 +5355,14 @@
       "action": "keep the step; answer the argument with the ledger's record of what the last shortcut cost",
       "id": "DR_09",
       "priority": 3
+    },
+    {
+      "rule": "Traceback and honest handoff beat quiet reshipment once a bath is confirmed sick",
+      "rationale": "work plated by a poisoned or aged tank carries a finish promise the shop can no longer evidence, and silence turns a bath fault into a misrepresentation",
+      "trigger": "a confirmed contamination or aging verdict on a bath that has plated customer work since its last dated known-good coupon",
+      "action": "name the suspect window from the ledger and hand it with the bath evidence to the quality and business sides; let no claim about the finish stand on a tank that was sick when it plated",
+      "id": "DR_10",
+      "priority": 1
     }
   ],
   "anti_rework_rules": [
@@ -5344,6 +5410,11 @@
       "rule": "File the post-mortem before the successor bath goes live",
       "prevents": "rebuilding the same death with fresh chemistry and calling it bad luck",
       "id": "ARR_09"
+    },
+    {
+      "rule": "Run and date a known-good verification coupon at make-up, after every treatment and on the ledger's cadence",
+      "prevents": "an unbounded backward traceback on the day a bath is confirmed sick, when nobody can say which weeks of shipped work are actually in doubt",
+      "id": "ARR_10"
     }
   ],
   "iteration_protocol": [
@@ -5630,7 +5701,8 @@
       "node_id": "QUARANTINE_HOLD_DISCIPLINE",
       "workflow_steps": [],
       "competency_questions": [
-        "CQ_07"
+        "CQ_07",
+        "CQ_13"
       ],
       "conflict_axes": [
         "CA_02",
@@ -5696,7 +5768,8 @@
         "WF_11"
       ],
       "competency_questions": [
-        "CQ_10"
+        "CQ_10",
+        "CQ_13"
       ],
       "conflict_axes": [
         "CA_03"
@@ -5761,7 +5834,8 @@
       "node_id": "LIFECYCLE_REVIEW_LOOP",
       "workflow_steps": [],
       "competency_questions": [
-        "CQ_12"
+        "CQ_12",
+        "CQ_13"
       ],
       "conflict_axes": [],
       "dominance_rules": [],
