@@ -40,11 +40,13 @@ plating_business (intake, quote, risk sign-off)
 | # | slug | Specialist | KBs (dense gate) | Specialist gate | Verified |
 |---|------|-----------|:---:|:---:|:---:|
 | 1 | `surface_prep` | Surface Preparation & Substrate Readiness | 3/3 | pass | ✅ |
-| 2 | `bath_chemistry` | Gold Bath Chemistry & Solution Management | building | – | – |
-| 3 | `process_execution` | Plating Process Control & Execution | building | – | – |
-| 4 | `quality_finish` | Finish Quality, Color & Defect Diagnosis | building | – | – |
-| 5 | `safety_compliance` | Plating Safety, Waste & Compliance | building | – | – |
-| 6 | `plating_business` | Plating Service Economics & Client Management | building | – | – |
+| 2 | `bath_chemistry` | Gold Bath Chemistry & Solution Management | 3/3 | pass | ✅ |
+| 3 | `process_execution` | Plating Process Control & Execution | 3/3 | pass | ✅ |
+| 4 | `quality_finish` | Finish Quality, Color & Defect Diagnosis | 3/3 | pass | ✅ |
+| 5 | `safety_compliance` | Plating Safety, Waste & Compliance | 3/3 | pass | ✅ |
+| 6 | `plating_business` | Plating Service Economics & Client Management | 3/3 | pass | ✅ |
+
+**COMPLETE — all 6 bench specialists landed and verified (2026-08-14):** 18 dense KBs at 35/35, 6 specialists at 15/15, every vertical ALL GREEN on `FACTORY/build.sh`, every fresh-context verifier pass returning zero blocking issues, 404 knowledge nodes total. Independent sweep: 0 placeholder tokens, 0 fabricated figures, 0 near-duplicate node definitions, every brief boundary carried into its specialist.
 
 Content rules (non-negotiable, in `BRIEFS.json` `_readme`): setpoints/prices as mechanisms
 with TDS-first verification, never invented figures; safety as obligation classes with the
