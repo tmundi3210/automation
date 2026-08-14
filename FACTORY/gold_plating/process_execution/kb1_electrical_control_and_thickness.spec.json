@@ -1,0 +1,1061 @@
+{
+  "domain": "gold_plating_electrical_control",
+  "domain_label": "Electrical Control & Thickness Delivery",
+  "purpose": "How a plating-bench operator turns a specified gold thickness into a delivered one: estimating the true cathode area, choosing current density inside the TDS window, converting amps and minutes into an expected thickness by Faraday arithmetic honestly scaled by cathode efficiency, proving the rectifier before trusting it, steering current distribution on real jewelry shapes with shields, robbers and auxiliary-anode classes, and closing every run with measurement so the estimate is always corrected by the deposit itself.",
+  "assumptions": [
+    "no observed dataset supplied; all scores are heuristic priors",
+    "the piece arrives prepped and the bath arrives healthy: surface preparation, bath selection and bath maintenance are owned by upstream specialists and are trusted inputs here",
+    "all plating chemistry is a purchased commercial product operated per its supplier technical data sheet (TDS); every numeric operating window in this KB is a mechanism or a handbook-class reference, never an asserted setpoint",
+    "the layer stack (strike, underplates, top coat) is specified by the layer-architecture plan before this KB's work begins; this KB delivers the specified microns of the layer being plated",
+    "workplace electrical, chemical and waste rules vary by jurisdiction and must be verified locally; safety statements here are obligation classes plus formal-training pointers, not procedures"
+  ],
+  "exclusions": [
+    "stack design: strike-layer selection, barrier underplates (nickel, palladium, white bronze, copper leveling), diffusion and migration mechanisms, flash-vs-heavy build choices per wear class, duplex systems and post-plate topcoats belong to the layer-architecture KB; this KB consumes the finished stack spec and passes its nickel-release compliance flag through untouched",
+    "physical run handling: rack vs barrel vs brush decisions, wiring and contact-point placement, hiding contact marks, agitation hardware and part positioning, drag-out management, inter-tank rinse sequence, post-plate dry and first-touch handling, and full job logging belong to the fixturing-and-run-handling KB; this KB states the electrical requirements the load plan must satisfy and contributes the ampere-minute column to the run log",
+    "bath chemistry: choosing a gold system, analyzing and replenishing it, and diagnosing contamination belong to the bath-chemistry specialist; this KB treats gold content and additive state as given bath health",
+    "numeric setpoints asserted as fact: current density, temperature, time and efficiency figures are taught as mechanisms and handbook-class ranges; the specific product TDS and the shop's own logged runs govern actual numbers",
+    "mains-side electrical work, rectifier internals, bypassing fuses or interlocks, or any rigging outside the equipment manufacturer's instructions: that work goes to a qualified electrician, never the plating bench",
+    "regulated marking terms (gold plated, vermeil, gold filled, rolled gold) and nickel-release limits as numeric thresholds: they appear only as compliance classes with a verify-your-jurisdiction obligation; claim approval belongs to the marking-compliance specialist",
+    "forcing a piece that cannot be racked or contacted without damage: that piece is escalated to intake and the customer decision path, never improvised onto the line",
+    "personalized legal, medical or financial advice, including nickel-allergy guidance, which routes to regulation classes and professional care"
+  ],
+  "competency_questions": [
+    { "id": "CQ_01", "question": "What exactly is this job's thickness target, where on the piece must it be met, and which wear and marking classes does it invoke?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "THICKNESS_TARGET_SPEC yields a written microns target with named measurement points, a wear-class assignment, and marking-class plus nickel-release flags carried as verify-jurisdiction classes", "covered_by": ["THICKNESS_TARGET_SPEC"] },
+    { "id": "CQ_02", "question": "When the handbook, the supplier TDS and my own habit disagree on a number, which one governs and why?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "TDS_AND_LOG_AUTHORITY ranks the specific product TDS plus the shop's logged runs above handbook-class ranges and above operator habit, with handbook figures allowed only as orientation classes", "covered_by": ["TDS_AND_LOG_AUTHORITY"] },
+    { "id": "CQ_03", "question": "How do I estimate the plated surface area of this load, and what happens downstream when the estimate is wrong?",
+      "must_be_answerable_from": ["nodes", "edge_cases"], "acceptance_condition": "SURFACE_AREA_ESTIMATION names at least geometric decomposition, weight-and-gauge arithmetic, and reference-piece comparison, includes robbers and exposed rack in the count, and states that area error converts one-for-one into current-density error", "covered_by": ["SURFACE_AREA_ESTIMATION"] },
+    { "id": "CQ_04", "question": "What does current density do to the deposit when it is too high and when it is too low, and what moves the usable window?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "CURRENT_DENSITY_MASTER describes burn (dark, rough, stressed deposits at edges) above the limiting current and slow, dull, poorly covering deposits when starved low, and AGITATION_LIMITING_CURRENT explains that agitation, gold content and temperature move the window", "covered_by": ["CURRENT_DENSITY_MASTER", "AGITATION_LIMITING_CURRENT"] },
+    { "id": "CQ_05", "question": "How do I turn amps, minutes and area into an expected thickness, and why is that number an estimate until measured?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "FARADAY_TIME_THICKNESS shows charge-to-mass-to-thickness through area and gold density scaled by efficiency, and CATHODE_EFFICIENCY_REALITY explains why efficiency is a bath-family class band that drifts and must be calibrated by measurement", "covered_by": ["FARADAY_TIME_THICKNESS", "CATHODE_EFFICIENCY_REALITY"] },
+    { "id": "CQ_06", "question": "How do I set up the rectifier for a run and prove it is telling the truth before parts go in?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "RECTIFIER_SETUP_CC specifies constant-current mode with amps sized from current density times area per the manufacturer's manual, and RECTIFIER_VERIFICATION requires polarity, meter and delivered-current checks before the first live entry", "covered_by": ["RECTIFIER_SETUP_CC", "RECTIFIER_VERIFICATION"] },
+    { "id": "CQ_07", "question": "Where on this specific piece will current pile up and where will it starve, and how do I know before plating?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "CURRENT_DISTRIBUTION_MAP predicts hot edges, tips and outer curves versus starved recesses, bores and shadowed zones from geometry and anode placement, and turns the prediction into marked thick/thin zones and measurement points", "covered_by": ["CURRENT_DISTRIBUTION_MAP"] },
+    { "id": "CQ_08", "question": "What do I do when the same piece has edges that want to burn and recesses that want to starve?",
+      "must_be_answerable_from": ["nodes", "conflict_axes"], "acceptance_condition": "HCD_ZONE_CONTROL and LCD_ZONE_CONTROL give the mitigation options for each zone and SHIELDS_AND_ROBBERS supplies the passive tools, with the conflict resolved by plating for the starved zone's floor while protecting hot zones", "covered_by": ["HCD_ZONE_CONTROL", "LCD_ZONE_CONTROL", "SHIELDS_AND_ROBBERS"] },
+    { "id": "CQ_09", "question": "When does a geometry need an auxiliary or conforming anode, and what classes of auxiliary anode and anode material are legitimate in gold work?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "AUX_ANODE_CLASSES distinguishes auxiliary, conforming and internal anodes as classes, names insoluble anode material classes (platinized titanium, mixed-metal-oxide titanium) and forbids improvised bare steel or stainless in acid gold", "covered_by": ["AUX_ANODE_CLASSES"] },
+    { "id": "CQ_10", "question": "What must be true electrically at the instant a piece enters gold, and what do I watch while it plates?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "LIVE_ENTRY_DISCIPLINE requires verified current flowing before immersion to prevent immersion deposits, and CELL_VOLTAGE_SANITY uses the constant-current voltage reading as the in-run diagnostic for contacts, anodes and area errors", "covered_by": ["LIVE_ENTRY_DISCIPLINE", "CELL_VOLTAGE_SANITY"] },
+    { "id": "CQ_11", "question": "How do I prove the thickness I delivered, where do I measure, and how does each measurement improve the next estimate?",
+      "must_be_answerable_from": ["nodes", "workflow"], "acceptance_condition": "XRF_FIRST_ARTICLE requires a first-article reading at the mapped worst point plus high-wear points before the batch continues, WITNESS_COUPON_WEIGHT_GAIN supplies the coupon and weight-gain cross-check that calibrates efficiency, and AMPERE_MINUTE_LEDGER ties the delivered charge to the result", "covered_by": ["XRF_FIRST_ARTICLE", "WITNESS_COUPON_WEIGHT_GAIN", "AMPERE_MINUTE_LEDGER"] },
+    { "id": "CQ_12", "question": "Which electrical work may I do at the bench, and where is the hard line that sends work to a qualified electrician?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "ELECTRICAL_SAFETY_BOUNDARY keeps bench work inside equipment manufacturer instructions, sends mains-side and internal work to a qualified electrician, names the mains-plus-heaters-plus-liquid combination as the hazard class, and points to formal training and jurisdiction rules", "covered_by": ["ELECTRICAL_SAFETY_BOUNDARY"] },
+    { "id": "CQ_13", "question": "What does overshooting or undershooting the thickness target cost, and how do I trim delivery honestly?",
+      "must_be_answerable_from": ["nodes"], "acceptance_condition": "GOLD_ECONOMY_OF_THICKNESS derives gold mass from area times thickness times gold density as the overshoot cost mechanism, names undershoot as spec failure and rework, and permits trimming only above a measured worst-point floor", "covered_by": ["GOLD_ECONOMY_OF_THICKNESS"] },
+    { "id": "CQ_14", "question": "When do I stop trying to control current on a geometry and escalate the piece instead?",
+      "must_be_answerable_from": ["nodes", "edge_cases"], "acceptance_condition": "GEOMETRY_ESCALATION_BOUNDARY triggers escalation to intake and the customer decision path when recesses cannot reach the spec floor within the shop's equipment class or the piece cannot be contacted without damage, with the attempted mitigations documented", "covered_by": ["GEOMETRY_ESCALATION_BOUNDARY"] }
+  ],
+  "glossary": [
+    { "term": "current density", "definition": "Amperes delivered per unit of immersed cathode area (commonly amps per square decimeter at the bench); the master variable of electrodeposition, because deposit structure, brightness, stress and efficiency all respond to it rather than to total amps." },
+    { "term": "limiting current density", "definition": "The current density at which gold ions can no longer diffuse to the cathode surface as fast as charge arrives; above it the deposit burns (dark, rough, stressed) and efficiency collapses. It rises with agitation, gold concentration and temperature, which is why the same amps can burn one day and run clean the next." },
+    { "term": "throwing power", "definition": "A chemistry's ability to deposit comparable thickness in low-current-density zones relative to high ones; good throwing power softens the thick-edge thin-recess pattern, poor throwing power exaggerates it, and no chemistry eliminates it on deep geometry." },
+    { "term": "cathode efficiency", "definition": "The fraction of delivered charge that actually becomes deposited gold rather than side reactions such as hydrogen evolution; alkaline cyanide soft golds run near-quantitative while acid hard golds run far lower and drift with bath age, so the honest value for a given tank is measured, not assumed." },
+    { "term": "ampere-minute", "definition": "One ampere flowing for one minute; the natural bookkeeping unit of electrodeposited thickness, because deposited mass is proportional to charge. Logged ampere-minutes per load are both the thickness ledger and the replenishment driver." },
+    { "term": "live entry", "definition": "Entering the work into the gold bath with current already flowing; prevents the spontaneous displacement (immersion) gold film that forms on a less-noble surface at open circuit, which has near-zero adhesion and peels later from under an otherwise good deposit." },
+    { "term": "current robber", "definition": "A sacrificial cathode (often a wire loop or strip) placed near a high-current-density feature to steal current away from it; it lowers local current density on the work but adds cathode area and consumes gold, so it must be counted in the area estimate." },
+    { "term": "auxiliary anode", "definition": "An extra anode brought close to a starved zone to raise its local current density; the conforming variant is shaped to follow the work's geometry, and the internal variant reaches down a bore or inside a hollow. All are rigged with insulated leads within the equipment's instructions." },
+    { "term": "witness coupon", "definition": "A small piece of known area racked with the load and plated under the same conditions; measured afterward by weight gain or XRF it reveals the tank's real deposition rate and efficiency at those settings, calibrating future Faraday estimates." },
+    { "term": "XRF thickness gauging", "definition": "X-ray fluorescence measurement of coating thickness (ISO 3497 / ASTM B568 method class); fast and non-destructive, but the calibration must match the actual layer stack and base metal, and very thin flash sits near the method's floor, so it is a method class with limits, not an oracle." }
+  ],
+  "nodes": [
+    {
+      "id": "THICKNESS_TARGET_SPEC",
+      "topic": "job_thickness_target_and_wear_class_spec",
+      "definition": "Before any current flows, fix in writing what this job's 'plated' means: the gold thickness in microns, the points on the piece where it must be met, and the wear class it serves. Trade practice spans decorative flash coats, micron-class everyday plating and heavy-wear build, and published class structures (ISO 27874 jewelry gold-coating classes, ASTM B488 engineering types, the trade's flash/micron/heavy bands) are referenced strictly as named classes, never as invented numbers of our own. 'Vermeil' and 'gold plated' are regulated marking classes to be verified in the selling jurisdiction before any label claim. The spec inherits the stack from the layer-architecture plan, and whenever that stack contains nickel for skin-contact goods it carries the nickel-release compliance flag forward. Because delivery is judged at the worst point, the spec names its measurement points explicitly - the high-wear zones and the mapped worst recess - so 'on target' is checkable instead of arguable.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_01"],
+      "scope_boundary": {
+        "included": ["written microns target with named measurement points", "wear-class assignment per job", "marking-class and nickel-release flags carried as verify-jurisdiction classes"],
+        "excluded": ["designing the layer stack (layer-architecture KB)", "approving marking claims (marking-compliance specialist)", "quoting the job (business specialist)"]
+      },
+      "pros": [
+        { "claim": "A written microns-and-points target turns 'make it gold' into a checkable delivery and ends disputes before they start", "example": "a ring job specified as heavy-wear class at the shank with measurement at the shank outer face and prong backs is either met or not - no argument at handover", "weight": 0.85 }
+      ],
+      "cons": [
+        { "claim": "Specifying a floor at every point of an ornate piece can make the job undeliverable at any sane price", "example": "demanding full micron thickness inside a filigree pendant's deepest recesses may require rigging the shop cannot do, forcing escalation rather than a quiet compromise", "weight": 0.55 }
+      ],
+      "failure_modes": [
+        "accepting 'gold plate it' with no microns and no measurement points, so delivery is judged by mood at handover",
+        "using a marking word like vermeil in the spec without the verify-jurisdiction flag",
+        "dropping the nickel-release compliance flag when copying the stack spec into the job sheet"
+      ],
+      "acceptance_tests": [
+        "the job sheet states microns, wear class, named measurement points including the mapped worst point, and any marking-class or nickel-release flags before racking begins"
+      ],
+      "revisit_triggers": [
+        "the customer changes the wear expectation or the selling jurisdiction after quoting",
+        "the distribution map shows the named worst point cannot reach the floor"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.85, "user_value": 0.85,
+        "technical_complexity": 0.35, "risk_if_wrong": 0.82, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.5, "confidence": 0.75, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.85, "dependency_gate_pass_rate": 0.88,
+        "prior_importance": 0.9, "evidence_confidence": 0.7,
+        "failure_rate": 0.12, "downside_weight": 0.65,
+        "uncertainty_interval": [0.2, 0.45],
+        "update_signal": "a delivered job disputed at handover despite meeting the written spec, or a jurisdiction ruling that changes what a named marking class requires"
+      }
+    },
+    {
+      "id": "TDS_AND_LOG_AUTHORITY",
+      "topic": "setpoint_authority_tds_and_shop_log",
+      "definition": "Settle, once and for all jobs, where numbers come from. The supplier technical data sheet of the specific commercial bath defines the legitimate operating window - current density range, temperature, agitation class, replenishment scheme - and the shop's own logged runs refine where inside that window this tank on this bench actually performs. Published handbook figures (soft gold near-quantitative efficiency, acid hard gold's low-efficiency band, minutes-per-micron classes) are orientation references only, and operator habit carried over from a previous bath is not a source at all. When TDS, handbook and habit disagree, the TDS plus the log govern. The practical skill is reading a TDS window and translating it to this tank: identifying which end of the current-density range suits rack work at this agitation, what the replenishment bookkeeping expects, and which of the shop's logged baselines still apply after a bath change.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_02"],
+      "scope_boundary": {
+        "included": ["ranking TDS plus shop log above handbook classes and habit", "reading a TDS operating window into bench settings", "retiring stale log baselines when the product changes"],
+        "excluded": ["bath analysis and replenishment execution (bath-chemistry specialist)", "asserting any numeric window as universal fact"]
+      },
+      "pros": [
+        { "claim": "TDS-first discipline kills folklore numbers that quietly wreck deposits when products change", "example": "the habit of 'run it at three volts like the old bath' dies the day the new product's TDS shows a current-controlled window that three volts would overdrive on small loads", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "A TDS window is wide and a young log is thin, so early runs on a new product carry real uncertainty", "example": "the first week on a new hard gold means conservative mid-window current choices and a first-article measurement on every batch until the log grows teeth", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "porting an efficiency habit or current setting across bath families because the color of the solution looks the same",
+        "treating a handbook-class range as a setpoint instead of an orientation reference",
+        "keeping stale log baselines alive after a TDS revision or product swap"
+      ],
+      "acceptance_tests": [
+        "every numeric setting on the run sheet cites either the product TDS or a dated shop-log baseline, and no setting cites habit or a handbook figure alone"
+      ],
+      "revisit_triggers": [
+        "the supplier issues a TDS revision or the shop switches bath product",
+        "the log shows a systematic offset between TDS-window expectations and measured results on this tank"
+      ],
+      "base": {
+        "criticality": 0.85, "business_value": 0.75, "user_value": 0.7,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.35, "confidence": 0.8, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.85, "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.85, "evidence_confidence": 0.72,
+        "failure_rate": 0.15, "downside_weight": 0.55,
+        "uncertainty_interval": [0.18, 0.4],
+        "update_signal": "a supplier TDS revision, a bath-product change, or a run of first-article measurements that contradicts the current window translation for this tank"
+      }
+    },
+    {
+      "id": "ELECTRICAL_SAFETY_BOUNDARY",
+      "topic": "electrical_work_limits_and_manufacturer_instructions",
+      "definition": "The hard boundary around electrical work at a plating bench. Rectifiers, immersion heaters and any auxiliary rigging are installed and used within their manufacturers' instructions; mains-side work, opening equipment, bypassing fuses or interlocks, paralleling outputs the manual does not sanction, and improvised heater wiring are out of bounds and go to a qualified electrician. The low-voltage DC side at plating currents is the benign part of the room; the dangerous combination is mains power plus immersion heaters plus conductive liquids plus wet hands, which is a shock-and-fire class demanding residual-current protection as an equipment class, dry-hands discipline, intact cords, and no daisy-chained power strips near tanks. This is obligation-class content with a formal-training pointer: verify your jurisdiction's workplace electrical rules, and treat every instruction here as subordinate to the equipment manual and local law, never a substitute for either.",
+      "group": "frame",
+      "dependencies": [],
+      "competency_question_refs": ["CQ_12"],
+      "scope_boundary": {
+        "included": ["bench-side use of rectifiers and rigging within manufacturer instructions", "the mains-plus-heat-plus-liquid hazard class and its discipline", "the hand-off line to a qualified electrician", "formal-training and verify-jurisdiction pointers"],
+        "excluded": ["any mains-side or internal equipment procedure", "chemical safety classes beyond their electrical touchpoints (safety-compliance specialist)"]
+      },
+      "pros": [
+        { "claim": "A bright line between bench work and electrician work removes the deadliest improvisation channel from the room", "example": "when a run needs more amps than the rectifier offers, the answer is split the load or schedule a second run - never a second supply jumpered onto the same bars against the manual", "weight": 0.9 }
+      ],
+      "cons": [
+        { "claim": "Respecting equipment limits sometimes costs real throughput on heavy loads", "example": "a full rack of bangles that exceeds the supply's rated output waits for two runs even with the customer on the phone", "weight": 0.5 }
+      ],
+      "failure_modes": [
+        "treating the low-voltage DC side's harmlessness as permission to improvise on the mains side",
+        "running heaters and rectifiers on unprotected or daisy-chained circuits beside open tanks",
+        "letting deadline pressure reclassify electrician work as bench work"
+      ],
+      "acceptance_tests": [
+        "every electrical task performed at the bench can be pointed to in an equipment manual, and every task that cannot is documented as referred out",
+        "tank-side circuits carry residual-current protection as an equipment class and the emergency cutoff location is known to every operator"
+      ],
+      "revisit_triggers": [
+        "new equipment arrives with different instructions or ratings",
+        "any electrical near-miss, tripped protection event, or scorched connector at the bench"
+      ],
+      "base": {
+        "criticality": 0.92, "business_value": 0.6, "user_value": 0.75,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.88, "cross_topic_coupling": 0.55,
+        "irreversibility": 0.85, "confidence": 0.85, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.9, "dependency_gate_pass_rate": 0.9,
+        "prior_importance": 0.88, "evidence_confidence": 0.8,
+        "failure_rate": 0.08, "downside_weight": 0.95,
+        "uncertainty_interval": [0.1, 0.3],
+        "update_signal": "an incident report, an equipment manual change, or a jurisdiction rule change touching workplace electrical practice near process tanks"
+      }
+    },
+    {
+      "id": "SURFACE_AREA_ESTIMATION",
+      "topic": "plated_surface_area_estimation",
+      "definition": "Estimate the true cathode area of the racked load, because every ampere decision divides by it. The bench methods are: geometric decomposition of pieces into bands, discs, cylinders and cones summed with a both-sides correction; CAD or supplier area data when the piece has a drawing; weight-and-gauge arithmetic for wire and sheet stock (mass and density give length and area); and comparison against a reference piece whose area was established before. The count includes everything that will draw current - every piece, any current robber, and any exposed rack tip or wire above the insulation - and applies the corrections everyone forgets: inner surfaces, holes, the backs of pendants. Area error converts one-for-one into current-density error: a load estimated at half its true area gets set at half the intended amps and starves, and a load estimated at double burns its edges at 'correct' settings. The estimate is written with its method and an honest error band, because the band decides how conservative the current choice must be.",
+      "group": "foundations",
+      "dependencies": ["THICKNESS_TARGET_SPEC"],
+      "competency_question_refs": ["CQ_03"],
+      "scope_boundary": {
+        "included": ["geometric decomposition, CAD/supplier data, weight-and-gauge arithmetic, reference-piece comparison", "counting robbers and exposed rack as cathode", "stating method and error band with the estimate"],
+        "excluded": ["choosing rack vs barrel or physical load layout (fixturing KB)", "pricing gold content from area (business specialist)"]
+      },
+      "pros": [
+        { "claim": "A ten-minute decomposition gets most jewelry within a usable error band and makes the amp setting defensible", "example": "a curb chain estimated by weight-and-gauge lands close enough that the mid-window current choice absorbs the residual error", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Ornate, hollow or repousse work defeats clean geometry and can hide half its true area", "example": "a hollow locket with a pierced front carries far more surface than its silhouette suggests, so it goes by reference-piece comparison or gets a witness coupon to calibrate the run", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "estimating the silhouette instead of the surface and starving the load at half-true-area amps",
+        "forgetting that a fitted current robber is cathode area that shifted the total",
+        "counting pieces instead of area when ring sizes in the batch vary widely"
+      ],
+      "acceptance_tests": [
+        "the run sheet shows the area estimate, the method used, the robber and rack allowance, and an error band before any current is chosen"
+      ],
+      "revisit_triggers": [
+        "any piece is added to or removed from the load after the estimate",
+        "a robber or auxiliary fixture is fitted or removed",
+        "first-article thickness misses in a way area error would explain"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.7, "user_value": 0.72,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.84, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.45, "confidence": 0.7, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.88, "evidence_confidence": 0.68,
+        "failure_rate": 0.25, "downside_weight": 0.6,
+        "uncertainty_interval": [0.25, 0.5],
+        "update_signal": "a first-article measurement pattern that tracks area-estimate error, or a new load type (hollow, pierced, mixed-size) the current methods band poorly"
+      }
+    },
+    {
+      "id": "CURRENT_DENSITY_MASTER",
+      "topic": "current_density_as_master_variable",
+      "definition": "Current density - amps per unit of immersed cathode area - is the one knob that decides deposit quality, and the bench converts it to a rectifier setting by the rule total amps equal chosen current density times estimated area. Too high, above the limiting current the bath's diffusion can feed, the deposit goes dark and burnt at edges and tips, turns rough and stressed, and in acid gold the already-low efficiency collapses further, wasting time and charge. Too low, deposition crawls, job time balloons, coverage on less-noble spots of the surface can suffer, and color can drift off the retained standard. The workable window belongs to the product TDS; what the operator owns is positioning inside it: lower when agitation is weak, the load is uncertain, or the geometry has hot features; higher only when agitation, gold content and temperature genuinely support it. Chasing schedule by exceeding the window is how a batch is burned at 'only ten percent more amps'.",
+      "group": "core",
+      "dependencies": ["TDS_AND_LOG_AUTHORITY", "SURFACE_AREA_ESTIMATION"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["what high and low current density each do to the deposit", "amps equal current density times area as the bench conversion", "positioning inside the TDS window per agitation, load and geometry"],
+        "excluded": ["asserting numeric windows (TDS territory)", "bath-side causes of a shrunken window like depleted gold (bath-chemistry specialist)"]
+      },
+      "pros": [
+        { "claim": "Controlling current density rather than voltage or total amps makes results portable across loads of different size", "example": "the same density that plated yesterday's six rings cleanly plates today's twenty when the amps are recomputed from the new area - copying yesterday's amps instead would starve the bigger load", "weight": 0.88 }
+      ],
+      "cons": [
+        { "claim": "Density is only as good as the area estimate and agitation reality underneath it", "example": "a perfectly chosen density burns prong tips anyway when the stirrer coupling slipped and nobody re-derated the current", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "setting amps by habit from the last job instead of recomputing from this load's area",
+        "answering deadline pressure by pushing above the TDS window instead of raising agitation or accepting the run time",
+        "ignoring that the window moved down when gold content fell or agitation weakened"
+      ],
+      "acceptance_tests": [
+        "the run sheet derives amps from a stated density inside the TDS window times the stated area, with a note on where in the window and why",
+        "burn watch at first inspection shows no dark or matte zones at edges and tips"
+      ],
+      "revisit_triggers": [
+        "agitation, temperature or bath analysis changes since the density was chosen",
+        "burn or starvation symptoms appear at a setting that previously ran clean",
+        "the TDS window changes with a product or revision change"
+      ],
+      "base": {
+        "criticality": 0.95, "business_value": 0.8, "user_value": 0.82,
+        "technical_complexity": 0.65, "risk_if_wrong": 0.86, "cross_topic_coupling": 0.85,
+        "irreversibility": 0.55, "confidence": 0.75, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.92, "evidence_confidence": 0.72,
+        "failure_rate": 0.22, "downside_weight": 0.7,
+        "uncertainty_interval": [0.2, 0.48],
+        "update_signal": "recurring burn or starvation at settings the window sanctions, or shop-log evidence that this tank's usable window sits offset from the TDS orientation"
+      }
+    },
+    {
+      "id": "CATHODE_EFFICIENCY_REALITY",
+      "topic": "cathode_efficiency_bands_and_drift",
+      "definition": "Cathode efficiency is the fraction of delivered charge that becomes gold instead of side reactions, and it is the number that separates bath families: alkaline cyanide soft gold runs near-quantitative as a handbook-class band, while acid hard gold runs in a low band that falls further with bath age and rising current density - which is why the same ampere-minutes deliver a micron in one tank and a fraction of it in another. The efficiency of this tank today is unknown until measured; it drifts with bath age, contamination, current density, temperature and additive state, so any stored factor decays. The bench discipline is threefold: never carry an efficiency habit across bath families; hold a per-tank calibrated factor with a date on it; and let every witness coupon or first-article measurement update that factor. An efficiency assumption is the single most common reason a Faraday time estimate delivers half the specified thickness while looking perfectly rigorous on paper.",
+      "group": "core",
+      "dependencies": ["TDS_AND_LOG_AUTHORITY"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["efficiency as a bath-family class band", "drift with age, density, temperature and contamination as mechanisms", "the per-tank dated calibration factor"],
+        "excluded": ["diagnosing why efficiency fell (bath-chemistry specialist)", "asserting a numeric efficiency for any tank without measurement"]
+      },
+      "pros": [
+        { "claim": "A dated per-tank efficiency factor turns Faraday arithmetic from folklore into a usable estimator", "example": "after three coupon calibrations, the hard gold tank's factor predicts first-article thickness within the check band, so batch time quotes stop being guesses", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "The factor is a snapshot that ages with the bath, and trusting an old one reintroduces the original error", "example": "a factor calibrated at bath make-up quietly overstates deposition three months of ampere-hours later, and the shortfall surfaces as thin prong backs at final inspection", "weight": 0.65 }
+      ],
+      "failure_modes": [
+        "applying a soft-gold near-quantitative habit to an acid hard gold tank and delivering half thickness",
+        "using an undated factor with no note of the density and temperature it was calibrated at",
+        "letting a single flattering coupon overwrite a factor instead of trending it"
+      ],
+      "acceptance_tests": [
+        "the efficiency factor used in any time estimate carries a calibration date, the settings it was measured at, and the bath family it belongs to"
+      ],
+      "revisit_triggers": [
+        "bath analysis or a maintenance event (carbon treatment, replenishment overhaul) changes the tank's state",
+        "measured-versus-estimated thickness gap widens across consecutive first articles",
+        "current density or temperature moves away from where the factor was calibrated"
+      ],
+      "base": {
+        "criticality": 0.85, "business_value": 0.72, "user_value": 0.7,
+        "technical_complexity": 0.7, "risk_if_wrong": 0.78, "cross_topic_coupling": 0.8,
+        "irreversibility": 0.4, "confidence": 0.68, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.85, "evidence_confidence": 0.7,
+        "failure_rate": 0.28, "downside_weight": 0.6,
+        "uncertainty_interval": [0.3, 0.55],
+        "update_signal": "each witness coupon or first-article result, which either confirms the current factor or moves it; a bath family change resets the factor entirely"
+      }
+    },
+    {
+      "id": "FARADAY_TIME_THICKNESS",
+      "topic": "faraday_time_thickness_estimation",
+      "definition": "Turn electricity into an expected thickness, honestly. Deposited mass follows charge by Faraday's law - for monovalent gold a fixed mass per ampere-minute at perfect efficiency - and thickness follows from mass divided by plated area times gold's density of 19.3 g/cm3, scaled down by the tank's calibrated cathode efficiency. The bench form is minutes-per-micron at the chosen current density: near-quantitative soft gold plates a micron several times faster than low-efficiency acid hard gold at comparable density, and both are handbook-class relationships whose actual value for this tank comes from the calibrated factor. The output is an estimate with a band, not a promise: it sets the planned run time and the ampere-minute budget, and it is verified by first-article measurement every batch, because efficiency drift, area error and distribution effects all hide inside it. An estimate that has not been checked against a measured deposit is scheduling information, never a thickness claim.",
+      "group": "core",
+      "dependencies": ["CURRENT_DENSITY_MASTER", "CATHODE_EFFICIENCY_REALITY"],
+      "competency_question_refs": ["CQ_05"],
+      "scope_boundary": {
+        "included": ["charge to mass to thickness through area, density and efficiency", "minutes-per-micron as a mechanism with class-range orientation", "the estimate-with-band output and its verification obligation"],
+        "excluded": ["thickness claims to customers (verification and marking specialists)", "asserting a universal minutes-per-micron number"]
+      },
+      "pros": [
+        { "claim": "Faraday arithmetic gives a principled run time and replenishment budget before any gold is spent", "example": "sizing a heavy-wear ring run from area, chosen density and the dated efficiency factor lands the first article near the floor, and the trim to spec is minutes, not another full run", "weight": 0.85 }
+      ],
+      "cons": [
+        { "claim": "The formula's precision flatters inputs that are themselves estimates, and the neat number invites false confidence", "example": "a beautifully computed 40-minute run still delivers thin recesses because the formula predicts average thickness while the spec is judged at the mapped worst point", "weight": 0.68 }
+      ],
+      "failure_modes": [
+        "treating the computed thickness as delivered thickness and skipping the first article",
+        "quoting the estimate to a customer as a guarantee",
+        "using average-thickness math against a worst-point spec without a distribution allowance"
+      ],
+      "acceptance_tests": [
+        "every time estimate shows its area, density, efficiency factor with date, and an expected band, and is labeled unverified until a first-article measurement closes it"
+      ],
+      "revisit_triggers": [
+        "the efficiency factor, area estimate or chosen density changes after the estimate was made",
+        "first-article results land outside the estimate's band two batches running"
+      ],
+      "base": {
+        "criticality": 0.88, "business_value": 0.78, "user_value": 0.75,
+        "technical_complexity": 0.68, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.82,
+        "irreversibility": 0.45, "confidence": 0.72, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.88, "evidence_confidence": 0.72,
+        "failure_rate": 0.22, "downside_weight": 0.62,
+        "uncertainty_interval": [0.22, 0.5],
+        "update_signal": "the running gap between estimated and measured thickness across the shop log; a persistent bias means the estimator's inputs, not the arithmetic, need repair"
+      }
+    },
+    {
+      "id": "RECTIFIER_SETUP_CC",
+      "topic": "rectifier_constant_current_setup",
+      "definition": "Set the supply up the way electrodeposition wants it, per its own manual: constant-current mode, because thickness is charge-controlled and the cell voltage should fall where the chemistry and geometry put it; amps sized from chosen current density times estimated area; work connected cathodic with polarity double-checked, since reversed polarity strips or dissolves instead of plating; leads and clips sized and clean so contact resistance does not eat the budget; and a low-ripple output class, because heavily rippled current degrades bright deposits. Constant-voltage habit is the classic trap: at fixed voltage the current wanders as the bath warms and the load changes, so the delivered charge - and therefore the thickness - becomes unknown. Where the manual sanctions multiple output circuits or bars, current sharing follows its instructions, never improvised jumpering. Everything here stays on the bench side of the electrical safety boundary: setup uses the controls and terminals the manufacturer provides, and anything beyond them is referred out.",
+      "group": "equipment",
+      "dependencies": ["CURRENT_DENSITY_MASTER", "ELECTRICAL_SAFETY_BOUNDARY"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["constant-current mode rationale and setup", "amps from density times area", "polarity, lead and ripple-class checks per the manual"],
+        "excluded": ["internal repair or mains-side work (qualified electrician)", "physical contact placement on pieces (fixturing KB)"]
+      },
+      "pros": [
+        { "claim": "Constant-current mode makes the thickness math mean something for the whole run", "example": "at set amps the ampere-minute ledger is literally minutes times the dial, while the constant-voltage habit would have let current climb as the tank warmed and quietly overplate the afternoon batches", "weight": 0.85 }
+      ],
+      "cons": [
+        { "claim": "Constant current will force voltage up over a failing contact and hide it from a casual glance at the ammeter", "example": "the panel still reads the set amps while a corroded clip drops volts and one rack arm's pieces run at double density - the voltage reading, not the current reading, tells that story", "weight": 0.58 }
+      ],
+      "failure_modes": [
+        "running constant-voltage out of habit so delivered charge is unknown",
+        "reversed polarity stripping a strike or dissolving work into the bath",
+        "undersized or dirty leads turning the amp budget into heat at the clips"
+      ],
+      "acceptance_tests": [
+        "before entry the setup record shows constant-current mode selected, the amp setting derived on the run sheet, and polarity verified at the work bar"
+      ],
+      "revisit_triggers": [
+        "the load, robber fit or bar arrangement changes after setup",
+        "cell voltage at set current departs from this job class's logged typical band"
+      ],
+      "base": {
+        "criticality": 0.85, "business_value": 0.7, "user_value": 0.72,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.79, "cross_topic_coupling": 0.65,
+        "irreversibility": 0.5, "confidence": 0.8, "node_conflict_pressure": 0.35,
+        "acceptance_test_pass_rate": 0.85, "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.85, "evidence_confidence": 0.75,
+        "failure_rate": 0.15, "downside_weight": 0.6,
+        "uncertainty_interval": [0.15, 0.4],
+        "update_signal": "a run where delivered charge disagreed with the dial-times-time expectation, or new supply hardware whose manual changes the sanctioned setup"
+      }
+    },
+    {
+      "id": "RECTIFIER_VERIFICATION",
+      "topic": "rectifier_and_metering_verification",
+      "definition": "Prove the panel tells the truth before trusting it with gold. A rectifier that reads amps it is not delivering - or delivers amps it does not read - corrupts every Faraday estimate, every ampere-minute ledger line, and every logged baseline the shop will later lean on, all while looking perfectly normal. The verification discipline, performed within the manufacturer's procedures: zero the meters and check them at rest; compare the panel ammeter against an independent clamp meter or external shunt at working current; confirm the set current is actually delivered into a dummy load or scrap cathode before the first real entry of the day; verify polarity at the work bar, not just at the panel lamp; and keep a dated verification cadence in the log so drift is caught on schedule rather than by ruined batches. Metering faults are insidious precisely because constant-current mode keeps the display serene while the calibration underneath it walks away.",
+      "group": "equipment",
+      "dependencies": ["RECTIFIER_SETUP_CC"],
+      "competency_question_refs": ["CQ_06"],
+      "scope_boundary": {
+        "included": ["meter zero and independent cross-check", "delivered-versus-set current confirmation on a dummy load", "polarity verification at the bar", "dated verification cadence"],
+        "excluded": ["opening the unit or adjusting internal calibration (qualified service)", "daily bath verification (bath-chemistry specialist)"]
+      },
+      "pros": [
+        { "claim": "A five-minute morning verification protects every number the rest of the day produces", "example": "catching a panel ammeter reading a fifth high at the clamp meter saves the whole day's batches from silent underplating and the log from poisoned baselines", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "Verification takes discipline precisely because it almost always passes", "example": "after a year of green checks the morning shunt comparison feels like ritual - which is exactly when a drifted meter finally arrives and pays for every skipped day", "weight": 0.55 }
+      ],
+      "failure_modes": [
+        "trusting the panel because the deposit 'looks right' at a glance",
+        "verifying once at installation and never again",
+        "checking polarity at the panel indicator while the bars are swapped downstream"
+      ],
+      "acceptance_tests": [
+        "the log shows a dated verification entry - meter cross-check, delivered-current confirmation, polarity at the bar - before the first live entry after any idle period or hardware change"
+      ],
+      "revisit_triggers": [
+        "measured thickness disagrees with the ampere-minute ledger in a way meter error would explain",
+        "any lead, clip, shunt or supply hardware is replaced"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.68, "user_value": 0.7,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.68,
+        "irreversibility": 0.4, "confidence": 0.8, "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.88, "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.84, "evidence_confidence": 0.75,
+        "failure_rate": 0.12, "downside_weight": 0.62,
+        "uncertainty_interval": [0.12, 0.35],
+        "update_signal": "a verification failure, a ledger-versus-measurement discrepancy, or a manufacturer service bulletin on the metering"
+      }
+    },
+    {
+      "id": "CURRENT_DISTRIBUTION_MAP",
+      "topic": "current_distribution_mapping_on_complex_shapes",
+      "definition": "Predict where current will pile up and where it will starve before the piece ever enters the tank. Electric field concentrates on edges, tips, points and outer curves - the high-current-density zones that plate thick and burn first - and thins into recesses, bores, inner surfaces and anything shadowed from the anode - the low-current-density zones that plate thin and starve. Primary distribution is set by geometry and anode placement; the chemistry's throwing power moderates it but never erases it on deep jewelry geometry. The bench artifact is a marked-up map of the actual piece: expected hot features, expected starved zones, the worst point named, and from it three decisions flow - where shields, robbers or auxiliary anodes are needed, where the spec's measurement points must sit, and whether this geometry can reach its floor at all within the shop's equipment class or must be escalated. A batch is mapped by its worst piece, not its average one.",
+      "group": "geometry",
+      "dependencies": ["SURFACE_AREA_ESTIMATION", "CURRENT_DENSITY_MASTER"],
+      "competency_question_refs": ["CQ_07"],
+      "scope_boundary": {
+        "included": ["hot-zone and starved-zone prediction from geometry and anode placement", "throwing power as moderator", "the marked map naming the worst point"],
+        "excluded": ["physical positioning and racking execution (fixturing KB)", "computational field simulation beyond bench judgment"]
+      },
+      "pros": [
+        { "claim": "Ten minutes of mapping converts burn-and-starve surprises into planned mitigations", "example": "marking a claw-set ring's prong tips as hot and the under-gallery as starved before the run puts a robber loop and the XRF probe exactly where they belong", "weight": 0.84 }
+      ],
+      "cons": [
+        { "claim": "Bench prediction is qualitative and can misrank zones on genuinely novel geometry", "example": "a pierced dome's interior lattice may starve worse than the map guessed, which is why the first article measures the mapped worst point and demotes the map when it is wrong", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "mapping the batch by its easiest piece and letting the ornate ones ride",
+        "placing measurement points on convenient flats instead of mapped worst zones",
+        "treating good throwing power as a license to skip mapping deep recesses"
+      ],
+      "acceptance_tests": [
+        "each job's map names hot features, starved zones and the worst point, and the spec's measurement points cover that worst point"
+      ],
+      "revisit_triggers": [
+        "first-article readings contradict the mapped ranking of zones",
+        "anode arrangement, tank geometry or load layout changes",
+        "a new piece family (hollow, pierced, deep-recess) enters the shop's work mix"
+      ],
+      "base": {
+        "criticality": 0.87, "business_value": 0.72, "user_value": 0.78,
+        "technical_complexity": 0.68, "risk_if_wrong": 0.79, "cross_topic_coupling": 0.78,
+        "irreversibility": 0.4, "confidence": 0.7, "node_conflict_pressure": 0.45,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.86, "evidence_confidence": 0.68,
+        "failure_rate": 0.25, "downside_weight": 0.6,
+        "uncertainty_interval": [0.25, 0.52],
+        "update_signal": "accumulated first-article evidence on which zone predictions hold for the shop's actual piece families and which need re-ranking"
+      }
+    },
+    {
+      "id": "HCD_ZONE_CONTROL",
+      "topic": "high_current_density_zone_burn_control",
+      "definition": "Keep the hot zones below the burn threshold. Prong tips, sharp edges, outer curves and the pieces nearest the anode see current density well above the load average, and they announce trouble early: a matte, then brown, then dark rough deposit at exactly those features while the rest still looks fine. The control options, in the order a bench usually reaches for them: drop total current so the hottest zone falls back inside the window; raise agitation within what the TDS and the mist-safety line allow, which lifts the limiting current everywhere; increase anode-to-work distance or reposition so the field spreads; and fit a shield or robber to take the specific feature out of the firing line. What ignoring it costs: a burned zone is not a cosmetic note - the deposit there is rough, stressed and often poorly adherent, and the honest remedy is strip and replate, which spends gold twice and risks the piece. Early burn recognized at first inspection is a settings correction; burn discovered at final inspection is rework.",
+      "group": "geometry",
+      "dependencies": ["CURRENT_DISTRIBUTION_MAP"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": ["early burn recognition at hot features", "the mitigation ladder: current, agitation, distance, shield or robber", "the strip-and-replate consequence"],
+        "excluded": ["full defect cause trees after release (quality specialist)", "agitation hardware changes (fixturing KB)"]
+      },
+      "pros": [
+        { "claim": "Catching burn at its first matte hint on the hottest feature saves the batch at the cost of a settings tweak", "example": "spotting dulling prong tips two minutes in, dropping current and adding a robber loop finishes the run clean instead of stripping six rings", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "Every hot-zone mitigation trades something: current costs time, distance costs tank space, robbers cost gold and area math", "example": "the robber that saves the prongs adds cathode area that must be recounted, and the lower current adds twenty minutes to the run the schedule did not have", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "reading early matte edges as 'it will bright up' and letting the burn set in",
+        "fixing burn by dropping current so far the recesses starve instead",
+        "fitting a robber and never updating the area and amp arithmetic"
+      ],
+      "acceptance_tests": [
+        "first inspection during the run explicitly checks the mapped hottest features, and any mitigation applied is recorded with its area and current consequences"
+      ],
+      "revisit_triggers": [
+        "burn recurs at settings that previously ran clean, pointing at agitation, analysis or area drift"
+      ],
+      "base": {
+        "criticality": 0.84, "business_value": 0.72, "user_value": 0.75,
+        "technical_complexity": 0.62, "risk_if_wrong": 0.76, "cross_topic_coupling": 0.7,
+        "irreversibility": 0.6, "confidence": 0.74, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.82, "evidence_confidence": 0.7,
+        "failure_rate": 0.24, "downside_weight": 0.65,
+        "uncertainty_interval": [0.22, 0.48],
+        "update_signal": "the shop's burn-incident pattern: which features, which settings, which mitigations held - fed back into the mapping defaults"
+      }
+    },
+    {
+      "id": "LCD_ZONE_CONTROL",
+      "topic": "low_current_density_zone_starvation_control",
+      "definition": "Get the starved zones to the spec floor, because that is where the spec is actually judged. Recesses, bores, under-galleries and shadowed inner surfaces receive a fraction of the average current density, plate proportionally thin, and in extreme starvation plate patchy or off-color - and none of this shows in an average or convenient-flat measurement. The control options: bring an auxiliary or conforming anode class close to the starved zone; reposition the work or the anodes so the shadow opens; accept a longer run at lower current so the recess accumulates thickness while shields protect the hot zones; and in every case put the measurement point in the worst zone so the delivery is proven, not presumed. When the floor genuinely cannot be reached within the shop's equipment class, the honest outputs are disclosure and escalation - a documented thin-zone waiver from the customer or a respec - never a quietly thin recess under a confidently thick shank.",
+      "group": "geometry",
+      "dependencies": ["CURRENT_DISTRIBUTION_MAP"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": ["starvation recognition and its invisibility to average readings", "the mitigation set: auxiliary anode classes, repositioning, longer-slower runs", "worst-point measurement and the disclose-or-escalate rule"],
+        "excluded": ["auxiliary anode construction details beyond classes (equipment manuals)", "customer negotiation itself (intake and business specialists)"]
+      },
+      "pros": [
+        { "claim": "Plating for the worst zone makes the delivered spec true everywhere instead of true on average", "example": "sizing the run so a pendant's bail interior reaches the floor means the flat back is comfortably over it - the reverse plan leaves the bail bare in a year of wear", "weight": 0.84 }
+      ],
+      "cons": [
+        { "claim": "Worst-zone delivery costs gold and time on every easy zone of the same piece", "example": "reaching the floor inside a deep under-gallery may put half a micron of surplus on the shank - cost the quote must carry or the geometry must escalate", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "declaring the piece on-spec from a flat-back reading while the recess sits at a fraction of the floor",
+        "compensating starvation with more total current and burning the edges instead",
+        "shipping a known-thin recess without disclosure because the visible surfaces measured well"
+      ],
+      "acceptance_tests": [
+        "the first article is measured in the mapped worst zone and meets the floor there, or the job shows a documented waiver or escalation before release"
+      ],
+      "revisit_triggers": [
+        "a recess measurement misses while flats pass, meaning the mitigation plan or the map needs rework",
+        "a new deep-geometry piece family arrives that the current auxiliary-anode capability cannot serve"
+      ],
+      "base": {
+        "criticality": 0.86, "business_value": 0.74, "user_value": 0.8,
+        "technical_complexity": 0.66, "risk_if_wrong": 0.81, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.55, "confidence": 0.72, "node_conflict_pressure": 0.5,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.85, "evidence_confidence": 0.7,
+        "failure_rate": 0.26, "downside_weight": 0.68,
+        "uncertainty_interval": [0.25, 0.5],
+        "update_signal": "worst-zone measurement history: how often mapped recesses reach floor under each mitigation class, and which geometries keep failing"
+      }
+    },
+    {
+      "id": "SHIELDS_AND_ROBBERS",
+      "topic": "shields_and_current_robbers_as_classes",
+      "definition": "The passive current-distribution tools, as classes. A shield is a non-conductive baffle - inert plastic sheet or strip sanctioned for the bath - placed between anode and work to shadow a hot feature, lowering its local current density without touching the piece or spending gold; its cost is that it also shadows whatever sits behind it. A robber (current thief) is a sacrificial cathode - typically a wire loop or strip - placed near a hot feature to steal current away; it protects delicate tips and edges well, but it is real cathode area that must enter the area estimate and it plates real gold that leaves as scrap value, not product. Both are placed empirically: map, fit, run, and let the first article judge the placement. The choice between them at the bench: shield when the hot zone is broad and gold cost matters; rob when the feature is small, sharp and precious. Both are re-declared on the run sheet whenever fitted, moved or removed, because a silent robber is a silent area error.",
+      "group": "geometry",
+      "dependencies": ["HCD_ZONE_CONTROL"],
+      "competency_question_refs": ["CQ_08"],
+      "scope_boundary": {
+        "included": ["shield class and robber class, their mechanisms and costs", "when each fits", "the declare-on-run-sheet rule"],
+        "excluded": ["rack construction and mounting hardware (fixturing KB)", "active auxiliary anodes (their own node)"]
+      },
+      "pros": [
+        { "claim": "A well-placed robber lets one current setting serve a piece whose tips would otherwise burn before its body plated", "example": "a wire loop around a marquise setting's point takes the burn while the crown and shank plate clean at the density the recesses needed", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Every robber spends gold on scrap and every shield starves its own shadow", "example": "the loop that saved the point carries gold to the scrap jar each run, and a carelessly wide shield behind it left a pale stripe on the neighboring piece", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "fitting a robber without adding its area to the estimate, so the whole load runs starved",
+        "shielding a hot zone and accidentally shadowing another piece behind it",
+        "leaving last job's robber on the rack into a job whose arithmetic never counted it"
+      ],
+      "acceptance_tests": [
+        "any shield or robber in the tank appears on the run sheet with the robber's area added to the estimate and the shield's shadow checked against neighboring work"
+      ],
+      "revisit_triggers": [
+        "first-article results show the protected feature still hot or the shadowed neighbor thin"
+      ],
+      "base": {
+        "criticality": 0.75, "business_value": 0.65, "user_value": 0.7,
+        "technical_complexity": 0.6, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.68,
+        "irreversibility": 0.4, "confidence": 0.72, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.75, "evidence_confidence": 0.68,
+        "failure_rate": 0.22, "downside_weight": 0.55,
+        "uncertainty_interval": [0.25, 0.5],
+        "update_signal": "placement outcomes from first articles: which shield and robber geometries held for which features, accumulated into the shop's fitting habits"
+      }
+    },
+    {
+      "id": "AUX_ANODE_CLASSES",
+      "topic": "auxiliary_and_conforming_anode_classes",
+      "definition": "The active tools for starved zones, as classes. An auxiliary anode is an extra anode brought close to a low-current-density zone to raise its local density; a conforming anode is shaped to follow the work's geometry at near-constant spacing; an internal anode reaches down a bore or into a hollow that no external field will ever serve. For gold work the anode material classes are the insoluble oxygen-evolving ones - platinized titanium and mixed-metal-oxide coated titanium - because gold is replenished from salt, not from the anode; improvised bare steel or stainless in an acid gold bath is a bath-poisoning event, dissolving iron, chromium and nickel into the chemistry. Auxiliary rigging is electrically real: insulated leads, secure connections above the solution line where the equipment class expects them, current shared per the supply's instructions, and the whole arrangement inside the electrical safety boundary. Anode-to-work spacing and anode area relative to the work are the mechanism levers - closer and larger raises the served zone's density - and the first article in the served zone judges the rig.",
+      "group": "geometry",
+      "dependencies": ["LCD_ZONE_CONTROL", "ELECTRICAL_SAFETY_BOUNDARY"],
+      "competency_question_refs": ["CQ_09"],
+      "scope_boundary": {
+        "included": ["auxiliary, conforming and internal anode classes and when each is warranted", "insoluble anode material classes for gold work", "spacing and relative-area mechanisms", "rigging within equipment instructions"],
+        "excluded": ["anode fabrication beyond commercially available classes", "bath-side anode chemistry management (bath-chemistry specialist)"]
+      },
+      "pros": [
+        { "claim": "An auxiliary anode reaches thickness into zones that no amount of patience at the main anodes will serve", "example": "a short internal anode down a napkin-ring's bore delivers the interior floor in one run, where the external-only arrangement left the bore at a small fraction after double time", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Every auxiliary anode is a new hot zone for whatever sits closest to it and a new failure point in the circuit", "example": "the bore anode that fixed the interior burned the bore's entry lip until its tip was sleeved back from the mouth", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "dropping a stainless rod into acid gold as an improvised auxiliary and contaminating the bath",
+        "rigging an auxiliary with bare leads under the solution line outside the equipment's instructions",
+        "fitting an internal anode without re-planning current sharing, so the main circuit starves"
+      ],
+      "acceptance_tests": [
+        "any auxiliary anode in use is of an insoluble class sanctioned for the bath, appears in the current-sharing plan, and the zone it serves is a named measurement point on the first article"
+      ],
+      "revisit_triggers": [
+        "the served zone still misses floor, or a new adjacent burn appears after the rig is fitted"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.68, "user_value": 0.72,
+        "technical_complexity": 0.72, "risk_if_wrong": 0.77, "cross_topic_coupling": 0.7,
+        "irreversibility": 0.55, "confidence": 0.68, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.75, "dependency_gate_pass_rate": 0.78,
+        "prior_importance": 0.78, "evidence_confidence": 0.66,
+        "failure_rate": 0.25, "downside_weight": 0.62,
+        "uncertainty_interval": [0.28, 0.55],
+        "update_signal": "served-zone first-article outcomes per rig class, and any bath-contamination incident traced to anode material choice"
+      }
+    },
+    {
+      "id": "AGITATION_LIMITING_CURRENT",
+      "topic": "agitation_and_limiting_current_coupling",
+      "definition": "Solution movement sets the ceiling on usable current density, and gold baths make the coupling unusually tight: acid hard gold runs metal-lean and diffusion-limited, so the rate at which agitation refreshes the depleted layer at the work surface directly determines the limiting current - stronger movement, higher ceiling; weaker movement, burn at yesterday's amps. The bench consequences: current density is chosen for the agitation actually running today, not the agitation the run sheet assumes; any agitation change - a slowed stirrer, a repositioned cathode rod, a fuller tank - re-derates the current before the next entry; and burn appearing at previously clean settings is read first as an agitation or gold-content question, not a rectifier one. One hard safety line crosses this node: cyanide-bearing baths are never air-sparged into mist - aerosolized cyanide solution is an exposure route - so agitation on those tanks is mechanical or solution-pumped per the TDS, and any agitation upgrade stays within the safety-compliance specialist's obligation classes. Hardware selection and placement belong to fixturing; what this node owns is the electrical consequence.",
+      "group": "core",
+      "dependencies": ["CURRENT_DENSITY_MASTER"],
+      "competency_question_refs": ["CQ_04"],
+      "scope_boundary": {
+        "included": ["limiting current as a function of solution movement", "re-derating current when agitation changes", "the no-air-sparge line on cyanide baths as a safety class"],
+        "excluded": ["agitation hardware choice and placement (fixturing KB)", "ventilation and exposure-control procedure (safety-compliance specialist)"]
+      },
+      "pros": [
+        { "claim": "Reading agitation and current as one coupled setting explains burn incidents that meter-watching never will", "example": "the batch that burned at the same amps as last week is solved at the stirrer whose coupling slipped, not at the rectifier that was never wrong", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Agitation is the least instrumented variable on a small bench, so the coupling runs on judgment", "example": "without a flow meter, 'moderate movement' is an operator's eye - which is why current choices near the window's top demand a witness of the first minutes", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "raising current to meet schedule without raising solution movement to carry it",
+        "air-sparging a cyanide gold bath for more agitation and creating a mist exposure route",
+        "leaving the current at full window after switching to a gentler agitation for delicate work"
+      ],
+      "acceptance_tests": [
+        "the run sheet's current choice names the agitation state it assumes, and any agitation change triggers a recorded re-derate before the next entry"
+      ],
+      "revisit_triggers": [
+        "burn at previously clean settings",
+        "any agitation hardware or placement change on the tank",
+        "a TDS or safety-class change touching allowable agitation methods"
+      ],
+      "base": {
+        "criticality": 0.82, "business_value": 0.66, "user_value": 0.68,
+        "technical_complexity": 0.64, "risk_if_wrong": 0.75, "cross_topic_coupling": 0.76,
+        "irreversibility": 0.45, "confidence": 0.7, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.78, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.8, "evidence_confidence": 0.68,
+        "failure_rate": 0.24, "downside_weight": 0.6,
+        "uncertainty_interval": [0.25, 0.52],
+        "update_signal": "burn-incident correlation with agitation state in the shop log, or a bath change that shifts how diffusion-limited the chemistry is"
+      }
+    },
+    {
+      "id": "LIVE_ENTRY_DISCIPLINE",
+      "topic": "live_entry_and_immersion_deposit_prevention",
+      "definition": "Current is flowing before the work touches gold, every time. At open circuit a less-noble surface sitting in a gold electrolyte spontaneously trades metal for gold - a displacement (immersion) film with near-zero adhesion - and that film then sits under everything subsequently plated, waiting to peel weeks later under a deposit that looked perfect at release. The discipline is a fixed entry sequence: rectifier verified and set to the entry current, contact continuity to the work confirmed, current confirmed actually flowing (the ammeter moves as the work enters), then immersion - and the same applies at every gold tank in the sequence, strike and build alike. Which strike the stack uses is the layer-architecture plan's decision; that the entry into it is live is this node's. Transfer haste is the enemy: the seconds saved by hanging work first and reaching for the switch second are bought with an invisible interlayer that no inspection at release will catch. A dead entry discovered mid-run is not patched by plating longer; the honest path is back out, strip or re-activate per the stack's rules, and enter live.",
+      "group": "execution",
+      "dependencies": ["RECTIFIER_VERIFICATION"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["the live-entry sequence and its verification", "immersion-film formation as the failure mechanism", "the back-out rule after a dead entry"],
+        "excluded": ["strike selection and stack design (layer-architecture KB)", "inter-tank transfer logistics and rinse sequence (fixturing KB)"]
+      },
+      "pros": [
+        { "claim": "A fixed entry ritual makes the invisible failure impossible rather than merely unlikely", "example": "switch on, watch the ammeter kick as the rack enters, then let go - the habit costs three seconds and removes the peeling-next-month class of complaint entirely", "weight": 0.86 }
+      ],
+      "cons": [
+        { "claim": "Live entry at the set working current can overdrive delicate work in the first seconds on some chemistries", "example": "where the TDS prescribes a gentler entry current before ramping to working density, the discipline follows the TDS - live entry means current flowing, not maximum current", "weight": 0.52 }
+      ],
+      "failure_modes": [
+        "hanging the work first and reaching for the switch second during a rushed transfer",
+        "assuming the strike tank's entry matters but the build tank's does not",
+        "plating over a suspected dead entry instead of backing out"
+      ],
+      "acceptance_tests": [
+        "the entry checklist - current set, continuity confirmed, ammeter response observed at immersion - is ticked for every gold-tank entry on the run sheet"
+      ],
+      "revisit_triggers": [
+        "any adhesion failure at or after release traced to an interlayer",
+        "a chemistry change whose TDS prescribes a different entry profile"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.75, "user_value": 0.82,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.85, "cross_topic_coupling": 0.68,
+        "irreversibility": 0.75, "confidence": 0.82, "node_conflict_pressure": 0.4,
+        "acceptance_test_pass_rate": 0.85, "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.88, "evidence_confidence": 0.78,
+        "failure_rate": 0.15, "downside_weight": 0.75,
+        "uncertainty_interval": [0.12, 0.35],
+        "update_signal": "any delayed peeling complaint on released work, which reopens the entry discipline audit before it reopens anything else"
+      }
+    },
+    {
+      "id": "CELL_VOLTAGE_SANITY",
+      "topic": "cell_voltage_reading_as_run_diagnostic",
+      "definition": "Under constant current, the voltage is the free diagnostic channel. The supply will push whatever volts it takes to hold the set amps, so the voltmeter tells the story the serene ammeter hides: a cell voltage in this tank's logged typical band for this job class means the circuit is as planned; abnormally high voltage means resistance where it should not be - a corroded clip, a failing contact, a passivated or fouled anode, or low bath conductivity; abnormally low voltage means current is finding an easier path - a short, a forgotten robber, or a load area far larger than estimated. Trending matters more than the absolute number: a slow climb during a run flags a contact cooking itself before its pieces come out half-plated on one side. The bench habit is to log the voltage at entry and at checks, hold a typical band per job class in the shop log, and treat any excursion as a stop-and-look, not a shrug. Cell voltage varies legitimately with geometry, spacing and bath state, which is exactly why the reference is this tank's own logged band and never a number from anywhere else.",
+      "group": "execution",
+      "dependencies": ["RECTIFIER_VERIFICATION"],
+      "competency_question_refs": ["CQ_10"],
+      "scope_boundary": {
+        "included": ["voltage-at-constant-current as circuit diagnostic", "high and low excursion readings and their causes", "per-job-class typical bands from the shop log"],
+        "excluded": ["fixing the physical contact (fixturing KB)", "anode chemistry treatment (bath-chemistry specialist)", "quoting voltage setpoints as facts"]
+      },
+      "pros": [
+        { "claim": "Voltage trending catches single-arm contact failures the ammeter cannot see", "example": "total amps held all run, but the climbing volts flagged one rack arm going high-resistance - caught at mid-run check, its pieces were saved by reseating instead of discovered thin at XRF", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Voltage is a many-caused signal and over-reading it invites wrong fixes", "example": "a high reading blamed on the anode was actually the season's colder bath raising resistance - the log's typical band per conditions, not a single number, keeps the diagnostic honest", "weight": 0.58 }
+      ],
+      "failure_modes": [
+        "watching only the ammeter because current is what was set",
+        "having no logged typical band, so no reading is ever abnormal",
+        "continuing a run through a voltage excursion to protect the schedule"
+      ],
+      "acceptance_tests": [
+        "entry and mid-run voltage readings are logged against the job class's typical band, and any excursion shows a stop-and-look note"
+      ],
+      "revisit_triggers": [
+        "the typical band itself drifts across jobs, pointing at slow anode, contact or bath changes"
+      ],
+      "base": {
+        "criticality": 0.78, "business_value": 0.62, "user_value": 0.68,
+        "technical_complexity": 0.58, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.7,
+        "irreversibility": 0.35, "confidence": 0.74, "node_conflict_pressure": 0.32,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.76, "evidence_confidence": 0.7,
+        "failure_rate": 0.2, "downside_weight": 0.52,
+        "uncertainty_interval": [0.22, 0.48],
+        "update_signal": "excursion incidents and their confirmed causes, which sharpen the shop's mapping from voltage signature to fault class"
+      }
+    },
+    {
+      "id": "AMPERE_MINUTE_LEDGER",
+      "topic": "ampere_minute_bookkeeping",
+      "definition": "The ampere-minute ledger is the electrical thickness ledger of the shop. Because deposited mass is proportional to charge, amps times minutes per load is the number that connects the plan to the deposit: it is the target the Faraday estimate sets, the running total the operator watches during the run, the input the gold-salt replenishment bookkeeping consumes per the TDS, and the line that lets a first-article measurement be translated into a corrected efficiency factor rather than a shrug. The bench practice: log set current and start time at entry, log interruptions honestly (a five-minute contact fix at zero current is zero ampere-minutes, not five minutes of plating), close the line at withdrawal, and reconcile against the measured thickness when the first article is read. Written during the run, the ledger is evidence; reconstructed afterward from memory, it is fiction that will poison the efficiency factor and the shop log both. The full job record - operator, bath, piece, prep - belongs to the run-handling KB; this ledger is the electrical column that feeds it.",
+      "group": "verification",
+      "dependencies": ["FARADAY_TIME_THICKNESS", "RECTIFIER_VERIFICATION"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["per-load ampere-minute logging with honest interruptions", "reconciliation against measured thickness", "feeding replenishment bookkeeping per TDS"],
+        "excluded": ["the full run log and job record (fixturing and run-handling KB)", "executing replenishment (bath-chemistry specialist)"]
+      },
+      "pros": [
+        { "claim": "A live ledger turns every batch into a calibration point for the next one", "example": "when the first article reads under estimate, the exact logged ampere-minutes let the shortfall become a corrected efficiency factor instead of a mystery", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "Ledger discipline is clerical work in a wet room and it degrades exactly when things get busy", "example": "the interrupted run that resumed 'about ten minutes later' at an unlogged current is the ledger line that later makes the efficiency trend look insane", "weight": 0.55 }
+      ],
+      "failure_modes": [
+        "reconstructing the ledger after the fact from memory",
+        "logging wall-clock time across interruptions as if current flowed throughout",
+        "keeping the ledger but never reconciling it against measured thickness"
+      ],
+      "acceptance_tests": [
+        "each load's ledger line shows current, start, interruptions and close, written during the run, and carries the reconciliation note once the first article is measured"
+      ],
+      "revisit_triggers": [
+        "ledger-versus-measurement gaps that trend rather than scatter, indicating a metering, efficiency or discipline problem"
+      ],
+      "base": {
+        "criticality": 0.8, "business_value": 0.72, "user_value": 0.65,
+        "technical_complexity": 0.4, "risk_if_wrong": 0.7, "cross_topic_coupling": 0.77,
+        "irreversibility": 0.3, "confidence": 0.8, "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.85, "dependency_gate_pass_rate": 0.85,
+        "prior_importance": 0.78, "evidence_confidence": 0.75,
+        "failure_rate": 0.18, "downside_weight": 0.5,
+        "uncertainty_interval": [0.15, 0.4],
+        "update_signal": "reconciliation gaps between ledger and measurement, and any change in how the run-handling KB's job record consumes the electrical column"
+      }
+    },
+    {
+      "id": "XRF_FIRST_ARTICLE",
+      "topic": "xrf_first_article_verification",
+      "definition": "Measurement closes the loop, and the first article is where it closes cheapest. Before the remainder of a batch plates, the first piece is measured by XRF (ISO 3497 / ASTM B568 method class): at the mapped worst low-current-density point, at the named high-wear points, and at three or more points overall so a single lucky flat cannot pass the piece. Method honesty is part of the node: XRF calibration must match the actual stack and base - gold over nickel over brass is a different measurement problem than gold over silver, and a mismatched calibration reads confidently wrong; very thin flash sits near the method floor; and curved, tiny or recessed surfaces challenge the spot. Where XRF cannot see, the witness coupon carries the verification. A first article on target releases the batch to continue; a miss stops it - the error is corrected once, on one piece, instead of replicated across twenty. Measurement beats estimate every time they disagree; the estimate is then recalibrated, never defended.",
+      "group": "verification",
+      "dependencies": ["FARADAY_TIME_THICKNESS", "LCD_ZONE_CONTROL"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["first-article gating before batch continuation", "worst-point and multi-point measurement", "XRF method-class limits: stack calibration, thin-flash floor, spot geometry"],
+        "excluded": ["full acceptance testing (adhesion, porosity, color - quality specialist)", "customer-facing thickness claims (verification and marking specialists)"]
+      },
+      "pros": [
+        { "claim": "One measured piece before twenty plated ones converts batch-scale rework into a single trim", "example": "the first ring reading under floor at the prong backs costs ten more minutes in the tank for one piece - discovered at final inspection instead, it costs a strip-and-replate day for the batch", "weight": 0.86 }
+      ],
+      "cons": [
+        { "claim": "XRF answers only where its calibration and geometry let it, and false confidence in a bad setup is worse than no reading", "example": "measuring a gold-over-nickel-over-brass bead against a gold-over-copper calibration produces a fluent, wrong number - the stack model, not the instrument, was the error", "weight": 0.62 }
+      ],
+      "failure_modes": [
+        "measuring convenient flats and calling the piece verified",
+        "running a calibration that does not match the stack under the gold",
+        "letting the batch continue while the first article waits for a free moment at the instrument"
+      ],
+      "acceptance_tests": [
+        "the batch record shows a first-article reading at the mapped worst point and high-wear points against a stack-matched calibration before any further piece entered the tank"
+      ],
+      "revisit_triggers": [
+        "the stack changes (calibration must follow)",
+        "first-article results repeatedly contradict coupon or ledger evidence, questioning the instrument setup"
+      ],
+      "base": {
+        "criticality": 0.9, "business_value": 0.8, "user_value": 0.82,
+        "technical_complexity": 0.6, "risk_if_wrong": 0.83, "cross_topic_coupling": 0.75,
+        "irreversibility": 0.5, "confidence": 0.78, "node_conflict_pressure": 0.42,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.8,
+        "prior_importance": 0.9, "evidence_confidence": 0.75,
+        "failure_rate": 0.18, "downside_weight": 0.7,
+        "uncertainty_interval": [0.15, 0.4],
+        "update_signal": "disagreement between XRF, coupon and ledger on the same load, or a stack change that invalidates the current calibration set"
+      }
+    },
+    {
+      "id": "WITNESS_COUPON_WEIGHT_GAIN",
+      "topic": "witness_coupon_and_weight_gain_methods",
+      "definition": "The coupon methods are the cross-check class that keeps XRF honest and calibrates the tank. A witness coupon - a small piece of known area, same base and stack logic as the work - rides the rack through the same run, and afterward yields the tank's real behavior two ways: weight gain divided by area and gold's density gives the average thickness actually deposited, and an XRF reading on the coupon's flat, ideal surface gives the instrument a best-case check. Weight gain integrates over the whole coupon, so it complements point-reading XRF: together they separate 'the tank deposited less than estimated' from 'the deposit went somewhere other than the measurement point'. The coupon's placement rule is the method's honesty clause: it must ride at representative current density - a coupon parked in a hot corner calibrates a fiction. Coupon results are the preferred input for updating the tank's efficiency factor, because area and mass are both known precisely, which is exactly what the production pieces never offer.",
+      "group": "verification",
+      "dependencies": ["CATHODE_EFFICIENCY_REALITY"],
+      "competency_question_refs": ["CQ_11"],
+      "scope_boundary": {
+        "included": ["witness coupon practice and placement honesty", "weight-gain arithmetic to average thickness", "coupon as the efficiency-factor calibration input"],
+        "excluded": ["porosity, adhesion and wear testing on coupons (quality specialist)", "coupon-based bath analysis programs (bath-chemistry specialist)"]
+      },
+      "pros": [
+        { "claim": "A coupon gives the one measurement where area, mass and conditions are all actually known", "example": "a flat coupon of measured area weighed before and after the run pins the tank's deposition rate at these settings - the number every future Faraday estimate quietly depends on", "weight": 0.8 }
+      ],
+      "cons": [
+        { "claim": "The coupon measures the tank, not the piece - a perfect coupon coexists with a starved recess two hooks away", "example": "coupon-average thickness on target while the pendant bail interior sits thin is not a contradiction; it is exactly why worst-point XRF and coupon methods are run together", "weight": 0.6 }
+      ],
+      "failure_modes": [
+        "parking the coupon in a corner of the rack whose density represents nothing",
+        "using a coupon base or stack unlike the work and calibrating the wrong system",
+        "skipping the pre-weigh and losing the weight-gain arithmetic entirely"
+      ],
+      "acceptance_tests": [
+        "coupon records show pre- and post-weights, known area, rack position, and the efficiency-factor update or confirmation they produced"
+      ],
+      "revisit_triggers": [
+        "coupon and first-article XRF disagree beyond their combined honesty bands"
+      ],
+      "base": {
+        "criticality": 0.76, "business_value": 0.66, "user_value": 0.64,
+        "technical_complexity": 0.55, "risk_if_wrong": 0.68, "cross_topic_coupling": 0.72,
+        "irreversibility": 0.3, "confidence": 0.75, "node_conflict_pressure": 0.3,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.74, "evidence_confidence": 0.72,
+        "failure_rate": 0.18, "downside_weight": 0.48,
+        "uncertainty_interval": [0.2, 0.45],
+        "update_signal": "systematic coupon-versus-XRF divergence, or a work-mix change that makes the current coupon base unrepresentative"
+      }
+    },
+    {
+      "id": "GOLD_ECONOMY_OF_THICKNESS",
+      "topic": "thickness_delivery_economics",
+      "definition": "The delivered micron has a price, and the mechanism is plain: deposited gold mass equals area times thickness times gold's density of 19.3 g/cm3 (scaled by deposit purity), so every micron of overshoot across a load is bought metal that the quote may not carry, and every micron of undershoot is a spec failure whose remedy - re-run or strip-and-replate - spends gold, time and risk twice. The honest trim lives between those cliffs: size the run to reach the verified floor at the mapped worst point, let the first article show where above floor the easy zones landed, and tighten the overshoot batch by batch as the efficiency factor and distribution knowledge sharpen in the log. Two hard boundaries frame the node: the spec floor is never traded for gold savings - trimming happens above the measured floor or not at all - and thickness is never converted into a wear-life promise, because wear claims belong to the verification and marking specialists with measurement behind them. Pricing the job, and the drag-out losses that dwarf overshoot in a sloppy shop, belong to the business and run-handling KBs.",
+      "group": "economics",
+      "dependencies": ["FARADAY_TIME_THICKNESS", "XRF_FIRST_ARTICLE"],
+      "competency_question_refs": ["CQ_13"],
+      "scope_boundary": {
+        "included": ["mass equals area times thickness times density as the overshoot cost mechanism", "undershoot as double-spend rework", "trim-above-verified-floor discipline"],
+        "excluded": ["job pricing and quoting (business specialist)", "drag-out and recovery economics (run-handling KB)", "wear-life claims (verification and marking specialists)"]
+      },
+      "pros": [
+        { "claim": "Knowing the mass arithmetic makes overshoot a visible line item instead of invisible generosity", "example": "a batch of bangles run a half micron over floor across their large area is a quantifiable gold spend - seeing it as grams focuses the trim effort where area is biggest", "weight": 0.78 }
+      ],
+      "cons": [
+        { "claim": "Aggressive trimming against an uncertain efficiency factor courts the far more expensive undershoot", "example": "shaving the run time while the factor is one coupon old turns a modest gold saving into a strip-and-replate that costs more than a year of the saving", "weight": 0.65 }
+      ],
+      "failure_modes": [
+        "trimming run time below the verified floor to save gold",
+        "chasing overshoot before the efficiency factor and distribution map have earned trust",
+        "letting thickness slide into a wear-life promise to justify its cost"
+      ],
+      "acceptance_tests": [
+        "any trim decision cites the measured worst-point floor it preserves and the log evidence behind the factor it leans on"
+      ],
+      "revisit_triggers": [
+        "gold price movement or measured overshoot trends that change where the trim effort pays"
+      ],
+      "base": {
+        "criticality": 0.74, "business_value": 0.85, "user_value": 0.6,
+        "technical_complexity": 0.5, "risk_if_wrong": 0.72, "cross_topic_coupling": 0.68,
+        "irreversibility": 0.42, "confidence": 0.74, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.8, "dependency_gate_pass_rate": 0.82,
+        "prior_importance": 0.76, "evidence_confidence": 0.7,
+        "failure_rate": 0.2, "downside_weight": 0.58,
+        "uncertainty_interval": [0.2, 0.46],
+        "update_signal": "measured overshoot trend across the log and any undershoot incident traced to a trim decision"
+      }
+    },
+    {
+      "id": "GEOMETRY_ESCALATION_BOUNDARY",
+      "topic": "unplateable_geometry_escalation",
+      "definition": "The stop rule that keeps electrical ambition from damaging pieces or promises. Some geometries cannot be delivered as specified within this shop's equipment class: recesses the distribution map shows will never reach the floor even with the auxiliary-anode classes on hand, hollows no internal anode can enter, and pieces whose only contact points would leave visible damage that no wiring cleverness hides. For these, the answer is escalation to intake and the customer decision path - a respec to an achievable floor, a documented thin-zone or contact-mark waiver, referral to a shop with the capability, or refusal - never forcing the piece onto the line and never a quiet delivery of less than the words on the job sheet. The escalation is documented: what the map showed, which mitigations were tried or ruled out (repositioning, shields, robbers, each auxiliary class), and where the honest limit sits, so intake negotiates from evidence. Contact-damage judgment shares a border with fixturing - who can physically hold the piece is their question; whether any holdable arrangement can deliver the spec is this one.",
+      "group": "boundary",
+      "dependencies": ["CURRENT_DISTRIBUTION_MAP", "AUX_ANODE_CLASSES"],
+      "competency_question_refs": ["CQ_14"],
+      "scope_boundary": {
+        "included": ["the cannot-deliver triggers: unreachable floors, unenterable hollows, damage-only contacts", "the escalation outputs: respec, waiver, referral, refusal", "documenting the attempted mitigations"],
+        "excluded": ["conducting the customer conversation (intake specialist)", "rack engineering to create new contact options (fixturing KB)"]
+      },
+      "pros": [
+        { "claim": "A formal stop rule converts the worst jobs from future disputes into informed decisions", "example": "the filigree locket whose interior can never see current leaves intake with a signed exterior-only waiver instead of returning in a month as a complaint", "weight": 0.82 }
+      ],
+      "cons": [
+        { "claim": "Escalation has a real cost in delay and occasionally in a lost job, which tempts quiet compromise", "example": "sending the awkward heirloom back to intake feels worse than 'doing one's best' - until the undisclosed thin zone wears through on a piece that cannot be replaced", "weight": 0.58 }
+      ],
+      "failure_modes": [
+        "forcing contact on a piece that cannot take it and shipping the damage as 'character'",
+        "silently delivering less than spec on geometry the shop knew it could not serve",
+        "escalating without the mitigation record, so intake renegotiates blind"
+      ],
+      "acceptance_tests": [
+        "every escalated job carries the map extract, the mitigations tried or ruled out, and the stated honest limit; no job proceeds against a known cannot-deliver finding without a documented customer decision"
+      ],
+      "revisit_triggers": [
+        "new auxiliary-anode capability or equipment changes what counts as deliverable",
+        "an escalation pattern shows a piece family worth building capability for"
+      ],
+      "base": {
+        "criticality": 0.83, "business_value": 0.7, "user_value": 0.85,
+        "technical_complexity": 0.45, "risk_if_wrong": 0.8, "cross_topic_coupling": 0.66,
+        "irreversibility": 0.8, "confidence": 0.76, "node_conflict_pressure": 0.55,
+        "acceptance_test_pass_rate": 0.82, "dependency_gate_pass_rate": 0.84,
+        "prior_importance": 0.82, "evidence_confidence": 0.72,
+        "failure_rate": 0.15, "downside_weight": 0.8,
+        "uncertainty_interval": [0.15, 0.4],
+        "update_signal": "escalation outcomes - which waivers customers accept, which referrals return - and any capability change that moves the deliverable line"
+      }
+    }
+  ],
+  "edges": [
+    { "from": "THICKNESS_TARGET_SPEC", "to": "SURFACE_AREA_ESTIMATION", "edge_type": "dependency", "why_related": "the area estimate is scoped by which surfaces the spec requires plated and measured", "relation_strength": 0.78 },
+    { "from": "TDS_AND_LOG_AUTHORITY", "to": "CURRENT_DENSITY_MASTER", "edge_type": "dependency", "why_related": "the legitimate current-density window that density choice positions inside comes from the TDS and the shop log", "relation_strength": 0.85 },
+    { "from": "SURFACE_AREA_ESTIMATION", "to": "CURRENT_DENSITY_MASTER", "edge_type": "dependency", "why_related": "amps are computed as chosen density times estimated area, so the density decision consumes the area estimate", "relation_strength": 0.88 },
+    { "from": "TDS_AND_LOG_AUTHORITY", "to": "CATHODE_EFFICIENCY_REALITY", "edge_type": "dependency", "why_related": "the bath family's efficiency class band is read from the TDS before the tank's own factor is calibrated", "relation_strength": 0.75 },
+    { "from": "CURRENT_DENSITY_MASTER", "to": "FARADAY_TIME_THICKNESS", "edge_type": "dependency", "why_related": "the time estimate is computed at the chosen current density; change the density and the minutes-per-micron change with it", "relation_strength": 0.85 },
+    { "from": "CATHODE_EFFICIENCY_REALITY", "to": "FARADAY_TIME_THICKNESS", "edge_type": "dependency", "why_related": "the calibrated efficiency factor scales the Faraday arithmetic from ideal charge to real deposit", "relation_strength": 0.85 },
+    { "from": "CURRENT_DENSITY_MASTER", "to": "RECTIFIER_SETUP_CC", "edge_type": "dependency", "why_related": "the rectifier's amp setting is the density decision translated onto the dial", "relation_strength": 0.82 },
+    { "from": "ELECTRICAL_SAFETY_BOUNDARY", "to": "RECTIFIER_SETUP_CC", "edge_type": "constraint", "why_related": "setup uses only the controls and connections the manufacturer sanctions; everything beyond is referred out", "relation_strength": 0.78 },
+    { "from": "RECTIFIER_SETUP_CC", "to": "RECTIFIER_VERIFICATION", "edge_type": "dependency", "why_related": "verification proves the setup's meters and delivered current before the run trusts them", "relation_strength": 0.85 },
+    { "from": "CURRENT_DENSITY_MASTER", "to": "CURRENT_DISTRIBUTION_MAP", "edge_type": "dependency", "why_related": "hot and starved zones are deviations around the chosen nominal density, so the map is anchored to it", "relation_strength": 0.78 },
+    { "from": "CURRENT_DISTRIBUTION_MAP", "to": "HCD_ZONE_CONTROL", "edge_type": "dependency", "why_related": "burn control works the hot features the map identified", "relation_strength": 0.82 },
+    { "from": "CURRENT_DISTRIBUTION_MAP", "to": "LCD_ZONE_CONTROL", "edge_type": "dependency", "why_related": "starvation control works the recesses and shadows the map identified, including the named worst point", "relation_strength": 0.82 },
+    { "from": "HCD_ZONE_CONTROL", "to": "SHIELDS_AND_ROBBERS", "edge_type": "dependency", "why_related": "shields and robbers are the passive tools burn control reaches for when settings alone cannot save a feature", "relation_strength": 0.78 },
+    { "from": "LCD_ZONE_CONTROL", "to": "AUX_ANODE_CLASSES", "edge_type": "dependency", "why_related": "auxiliary anodes are the active remedy starvation control escalates to when repositioning and patience cannot reach the floor", "relation_strength": 0.8 },
+    { "from": "ELECTRICAL_SAFETY_BOUNDARY", "to": "AUX_ANODE_CLASSES", "edge_type": "constraint", "why_related": "auxiliary rigging is electrically live equipment and stays within manufacturer instructions and jurisdiction rules", "relation_strength": 0.75 },
+    { "from": "CURRENT_DENSITY_MASTER", "to": "AGITATION_LIMITING_CURRENT", "edge_type": "dependency", "why_related": "the density choice presumes an agitation state; this node owns keeping that presumption true", "relation_strength": 0.8 },
+    { "from": "AGITATION_LIMITING_CURRENT", "to": "CURRENT_DENSITY_MASTER", "edge_type": "constraint", "why_related": "the chosen density may never exceed the limiting current the agitation actually running can support", "relation_strength": 0.8 },
+    { "from": "RECTIFIER_VERIFICATION", "to": "LIVE_ENTRY_DISCIPLINE", "edge_type": "dependency", "why_related": "live entry trusts that the set current is real, which only verification establishes", "relation_strength": 0.8 },
+    { "from": "RECTIFIER_VERIFICATION", "to": "CELL_VOLTAGE_SANITY", "edge_type": "dependency", "why_related": "the voltage diagnostic presumes truthful meters; unverified meters make excursions unreadable", "relation_strength": 0.75 },
+    { "from": "LIVE_ENTRY_DISCIPLINE", "to": "CELL_VOLTAGE_SANITY", "edge_type": "sequence", "why_related": "the entry check hands off to the in-run watch: ammeter response at immersion first, voltage trending thereafter", "relation_strength": 0.7 },
+    { "from": "FARADAY_TIME_THICKNESS", "to": "AMPERE_MINUTE_LEDGER", "edge_type": "dependency", "why_related": "the estimate sets the ampere-minute target the ledger tracks the run against", "relation_strength": 0.8 },
+    { "from": "RECTIFIER_VERIFICATION", "to": "AMPERE_MINUTE_LEDGER", "edge_type": "dependency", "why_related": "ledger lines are only as true as the metering behind them", "relation_strength": 0.75 },
+    { "from": "FARADAY_TIME_THICKNESS", "to": "XRF_FIRST_ARTICLE", "edge_type": "dependency", "why_related": "the first article exists to verify the estimate; the measurement points and expected band come from the plan", "relation_strength": 0.82 },
+    { "from": "LCD_ZONE_CONTROL", "to": "XRF_FIRST_ARTICLE", "edge_type": "dependency", "why_related": "the mapped worst zone becomes the first article's mandatory measurement point", "relation_strength": 0.8 },
+    { "from": "CATHODE_EFFICIENCY_REALITY", "to": "WITNESS_COUPON_WEIGHT_GAIN", "edge_type": "dependency", "why_related": "the coupon is the instrument that turns the efficiency class band into this tank's dated factor", "relation_strength": 0.8 },
+    { "from": "FARADAY_TIME_THICKNESS", "to": "GOLD_ECONOMY_OF_THICKNESS", "edge_type": "dependency", "why_related": "trim decisions manipulate the same time-and-charge plan the estimate produced", "relation_strength": 0.75 },
+    { "from": "XRF_FIRST_ARTICLE", "to": "GOLD_ECONOMY_OF_THICKNESS", "edge_type": "dependency", "why_related": "trimming is only permitted above a measured floor, so economy consumes the first-article evidence", "relation_strength": 0.75 },
+    { "from": "CURRENT_DISTRIBUTION_MAP", "to": "GEOMETRY_ESCALATION_BOUNDARY", "edge_type": "dependency", "why_related": "the cannot-deliver finding is read off the map: a floor no arrangement reaches is the escalation trigger", "relation_strength": 0.78 },
+    { "from": "AUX_ANODE_CLASSES", "to": "GEOMETRY_ESCALATION_BOUNDARY", "edge_type": "dependency", "why_related": "escalation is honest only after the auxiliary classes on hand were tried or ruled out on the record", "relation_strength": 0.75 },
+    { "from": "THICKNESS_TARGET_SPEC", "to": "GOLD_ECONOMY_OF_THICKNESS", "edge_type": "constraint", "why_related": "the spec floor bounds every trim: economy operates strictly above it", "relation_strength": 0.8 },
+    { "from": "AGITATION_LIMITING_CURRENT", "to": "HCD_ZONE_CONTROL", "edge_type": "causal", "why_related": "stronger solution movement raises the limiting current and pushes the burn threshold away from the hot features", "relation_strength": 0.75, "causal_confidence": 0.78 },
+    { "from": "SHIELDS_AND_ROBBERS", "to": "SURFACE_AREA_ESTIMATION", "edge_type": "causal", "why_related": "fitting or removing a robber changes total cathode area, which forces the area estimate and the amp setting to be redone", "relation_strength": 0.72, "causal_confidence": 0.8 },
+    { "from": "XRF_FIRST_ARTICLE", "to": "CATHODE_EFFICIENCY_REALITY", "edge_type": "feedback", "why_related": "each measured-versus-estimated gap updates the tank's dated efficiency factor", "relation_strength": 0.78 },
+    { "from": "WITNESS_COUPON_WEIGHT_GAIN", "to": "FARADAY_TIME_THICKNESS", "edge_type": "feedback", "why_related": "coupon-calibrated deposition rates re-parameterize the next runs' time estimates", "relation_strength": 0.75 },
+    { "from": "GEOMETRY_ESCALATION_BOUNDARY", "to": "THICKNESS_TARGET_SPEC", "edge_type": "feedback", "why_related": "an escalation returns to intake and rewrites the spec - a new floor, a waiver, or a refusal", "relation_strength": 0.72 },
+    { "from": "GOLD_ECONOMY_OF_THICKNESS", "to": "THICKNESS_TARGET_SPEC", "edge_type": "conflict", "why_related": "gold-cost pressure pushes delivery toward the floor while the spec demands margin at the worst point", "relation_strength": 0.7, "resolution_rule": "the spec floor at the measured worst point always wins; trimming is legitimate only above a first-article-verified floor, and a spec that is uneconomic is renegotiated at intake, never quietly underdelivered" },
+    { "from": "HCD_ZONE_CONTROL", "to": "LCD_ZONE_CONTROL", "edge_type": "conflict", "why_related": "one current setting serves both zones: current low enough to spare the edges starves the recesses, current high enough to feed the recesses burns the edges", "relation_strength": 0.75, "resolution_rule": "set current for the starved zone's floor and protect the hot zones with shields, robbers or repositioning; if no arrangement satisfies both, the geometry escalates rather than either zone being sacrificed silently" },
+    { "from": "RECTIFIER_SETUP_CC", "to": "ELECTRICAL_SAFETY_BOUNDARY", "edge_type": "conflict", "why_related": "throughput pressure invites setups the manual does not sanction - paralleled outputs, oversized loads, improvised wiring", "relation_strength": 0.68, "resolution_rule": "manufacturer instructions and the electrician hand-off line always win; the load is split, rescheduled or refused, and no deadline reclassifies mains-side or off-manual work as bench work" },
+    { "from": "FARADAY_TIME_THICKNESS", "to": "XRF_FIRST_ARTICLE", "edge_type": "conflict", "why_related": "the arithmetic can declare a load done while the measurement says thin, and the schedule sides with the arithmetic", "relation_strength": 0.72, "resolution_rule": "measurement beats estimate every time they disagree: the load returns to the tank or the batch holds, and the estimate's inputs are recalibrated - the estimate is never defended against the deposit" },
+    { "from": "WITNESS_COUPON_WEIGHT_GAIN", "to": "XRF_FIRST_ARTICLE", "edge_type": "similarity", "why_related": "both are measurement method classes closing the same loop: the coupon integrates average deposition over known area while XRF reads points on real work - complementary honesty about the same run", "relation_strength": 0.7 }
+  ],
+  "conflict_axes": [
+    { "name": "throughput_speed_vs_deposit_quality", "description": "Higher current density shortens runs and the schedule always wants it, but the window's top edge is where burn, stress and efficiency collapse live.", "poles": ["push density up to move the queue", "hold mid-window for a clean deposit"], "resolution_hint": "time is bought with agitation, equipment and scheduling, never by exceeding the TDS window; the burn watch on mapped hot features arbitrates in-run", "affected_nodes": ["CURRENT_DENSITY_MASTER", "AGITATION_LIMITING_CURRENT", "HCD_ZONE_CONTROL"] },
+    { "name": "estimate_arithmetic_vs_measured_truth", "description": "Faraday arithmetic produces confident numbers from uncertain inputs; the deposit is the only witness that cannot be wrong.", "poles": ["trust the computed thickness and ship", "hold everything until measurement confirms"], "resolution_hint": "the estimate schedules, the measurement releases: first article gates every batch and every disagreement recalibrates the estimator", "affected_nodes": ["FARADAY_TIME_THICKNESS", "XRF_FIRST_ARTICLE", "WITNESS_COUPON_WEIGHT_GAIN"] },
+    { "name": "edge_burn_vs_recess_starvation", "description": "On one piece at one setting, the hot features and the starved zones make opposite demands on the same dial.", "poles": ["protect the edges with low current", "feed the recesses with high current"], "resolution_hint": "plate for the recess floor, defend the edges with shields, robbers and distance, and escalate the geometry when no arrangement serves both", "affected_nodes": ["HCD_ZONE_CONTROL", "LCD_ZONE_CONTROL", "SHIELDS_AND_ROBBERS", "AUX_ANODE_CLASSES"] },
+    { "name": "gold_cost_vs_spec_floor_margin", "description": "Every micron above floor across a load is bought metal; every micron below it is a rework that spends double.", "poles": ["trim delivery toward the floor to save gold", "carry margin so no point ever misses"], "resolution_hint": "trim only above a first-article-measured worst-point floor, tightening batch by batch as the log earns trust - undershoot is always the dearer error", "affected_nodes": ["GOLD_ECONOMY_OF_THICKNESS", "THICKNESS_TARGET_SPEC", "XRF_FIRST_ARTICLE"] },
+    { "name": "handbook_orientation_vs_tds_authority", "description": "Handbook-class ranges and old habits are fluent and available; the specific product's TDS and this tank's log are the only numbers that govern.", "poles": ["run on remembered handbook figures", "run only on TDS windows refined by the log"], "resolution_hint": "handbook classes orient and teach; the TDS plus dated log baselines decide - any run sheet number must cite one of those two", "affected_nodes": ["TDS_AND_LOG_AUTHORITY", "CURRENT_DENSITY_MASTER", "CATHODE_EFFICIENCY_REALITY"] },
+    { "name": "rigging_ingenuity_vs_equipment_limits", "description": "Auxiliary anodes, robbers and clever wiring solve real distribution problems, and the same ingenuity drifts toward setups no manual sanctions.", "poles": ["build the rig the geometry needs", "stay strictly inside manufacturer instructions"], "resolution_hint": "ingenuity lives inside the equipment class: sanctioned materials, insulated leads, current sharing per the manual - and what cannot be rigged inside those limits escalates", "affected_nodes": ["AUX_ANODE_CLASSES", "ELECTRICAL_SAFETY_BOUNDARY", "SHIELDS_AND_ROBBERS"] },
+    { "name": "batch_average_vs_worst_point", "description": "Averages and convenient flats pass batches quickly; specs are honest only at the mapped worst point of the worst piece.", "poles": ["accept batch-average and flat readings", "judge every job at its mapped worst point"], "resolution_hint": "the spec names its worst point and the first article measures there; averages inform economics, never release", "affected_nodes": ["XRF_FIRST_ARTICLE", "LCD_ZONE_CONTROL", "THICKNESS_TARGET_SPEC"] },
+    { "name": "deadline_pressure_vs_verification_gate", "description": "The first-article hold and the morning meter check are exactly the disciplines a rushed day argues are skippable.", "poles": ["run the batch straight through and check later", "hold at every verification gate regardless of schedule"], "resolution_hint": "the gates exist because their failures replicate across batches; safety and verification beat throughput and deadline wherever they meet", "affected_nodes": ["XRF_FIRST_ARTICLE", "RECTIFIER_VERIFICATION", "AMPERE_MINUTE_LEDGER"] },
+    { "name": "taking_the_job_vs_escalating_the_geometry", "description": "An ornate piece is revenue and a compliment to the shop's skill, and sometimes it is also undeliverable as specified.", "poles": ["accept and do one's best quietly", "escalate to an honest respec, waiver or refusal"], "resolution_hint": "the map and the tried-mitigations record decide, not pride: a documented customer decision beats a quiet shortfall on every axis that matters", "affected_nodes": ["GEOMETRY_ESCALATION_BOUNDARY", "CURRENT_DISTRIBUTION_MAP", "THICKNESS_TARGET_SPEC"] }
+  ],
+  "edge_cases": [
+    { "description": "A filigree pendant reads comfortably on-spec at its flat back while the recessed scrollwork carries a fraction of the floor", "trigger": "measurement points sit on convenient flats instead of mapped worst zones", "affected_nodes": ["LCD_ZONE_CONTROL", "XRF_FIRST_ARTICLE", "THICKNESS_TARGET_SPEC"], "mitigation": "the spec names the worst zone as a measurement point and the first article is read there; a floor the recess cannot reach is disclosed or escalated, not averaged away", "severity": "high" },
+    { "description": "A mixed-size ring batch is estimated as ring count times one nominal area, and the small sizes burn while the large ones run thin", "trigger": "per-piece nominal area applied to a load whose sizes vary widely", "affected_nodes": ["SURFACE_AREA_ESTIMATION", "CURRENT_DENSITY_MASTER"], "mitigation": "estimate area from actual sizes or weight-and-gauge, or split the batch into size groups with their own settings", "severity": "medium" },
+    { "description": "The panel ammeter holds the set current all run, but one rack arm's corroded hook passed almost nothing - its pieces come out flash-thin and the rest overplated", "trigger": "a high-resistance contact inside a constant-current circuit redistributes current invisibly", "affected_nodes": ["CELL_VOLTAGE_SANITY", "RECTIFIER_VERIFICATION"], "mitigation": "log entry and mid-run voltage against the job class's typical band and stop on excursion; contact repair itself belongs to fixturing, detection belongs here", "severity": "high" },
+    { "description": "A soft-gold near-quantitative efficiency habit is applied to an acid hard gold tank and the batch delivers roughly half the specified thickness", "trigger": "an efficiency factor carried across bath families", "affected_nodes": ["CATHODE_EFFICIENCY_REALITY", "FARADAY_TIME_THICKNESS"], "mitigation": "efficiency factors are labeled by bath family and tank, and a bath-family change resets the factor to the TDS class band pending coupon calibration", "severity": "high" },
+    { "description": "A bath several months into service deposits noticeably less per ampere-minute than at make-up, and runs sized by the old factor come out thin", "trigger": "efficiency drift with bath age and accumulated service", "affected_nodes": ["CATHODE_EFFICIENCY_REALITY", "AMPERE_MINUTE_LEDGER", "XRF_FIRST_ARTICLE"], "mitigation": "first-article verification every batch plus reconciliation of ledger versus measurement, so drift shows as a trend and refreshes the factor before it costs a batch", "severity": "medium" },
+    { "description": "Prong tips on claw settings turn matte then brown at a current the shanks tolerate happily", "trigger": "sharp features exceed limiting current density while the load average sits mid-window", "affected_nodes": ["HCD_ZONE_CONTROL", "SHIELDS_AND_ROBBERS", "CURRENT_DISTRIBUTION_MAP"], "mitigation": "map claw tips as hot features in advance, fit a robber loop or shield, and watch the hottest feature at first inspection rather than the average surface", "severity": "medium" },
+    { "description": "A hollow bead the customer expects gilded inside receives nearly nothing internally because no external anode's field enters the cavity", "trigger": "internal surfaces specified on a geometry only an internal anode class could serve", "affected_nodes": ["AUX_ANODE_CLASSES", "GEOMETRY_ESCALATION_BOUNDARY", "CURRENT_DISTRIBUTION_MAP"], "mitigation": "either an internal anode class the shop actually has delivers the cavity, or the job escalates to an exterior-only respec or waiver before plating starts", "severity": "high" },
+    { "description": "The supply was left in constant-voltage mode from a stripping task, and current climbs as the bath warms while the operator watches thickness math built on the starting amps", "trigger": "wrong regulation mode carried over between tasks", "affected_nodes": ["RECTIFIER_SETUP_CC", "AMPERE_MINUTE_LEDGER"], "mitigation": "mode selection is on the pre-entry setup record, and the ledger logs the actual current at checks rather than assuming the dial", "severity": "medium" },
+    { "description": "XRF against the wrong stack model reads a fluent, wrong thickness on gold over nickel over brass and the batch passes on paper", "trigger": "instrument calibration mismatched to the actual layer stack or base metal", "affected_nodes": ["XRF_FIRST_ARTICLE", "WITNESS_COUPON_WEIGHT_GAIN"], "mitigation": "calibration is chosen from the job's stack spec, and a coupon weight-gain cross-check catches a confidently wrong instrument setup", "severity": "high" },
+    { "description": "During a rushed transfer the rack hangs in the gold for several seconds before the current goes on, and the pieces later peel from an invisible immersion film", "trigger": "dead entry at any gold tank under transfer haste", "affected_nodes": ["LIVE_ENTRY_DISCIPLINE"], "mitigation": "the live-entry ritual is fixed and ticked per entry; a suspected dead entry backs out immediately per the stack's strip or re-activate rules instead of plating over it", "severity": "high" },
+    { "description": "A delicate enameled antique cannot be clipped anywhere without marking it, and the bench is tempted to clamp harder and buff later", "trigger": "no contact arrangement exists that both carries current and leaves the piece undamaged", "affected_nodes": ["GEOMETRY_ESCALATION_BOUNDARY"], "mitigation": "the piece escalates to intake for a documented decision - visible-contact waiver, alternative process discussion, or refusal; force is never the answer on a customer piece", "severity": "high" },
+    { "description": "A borrowed high-ripple supply delivers the set average current but the deposit comes out dull and streaky against the same settings' history", "trigger": "output ripple outside the class the chemistry tolerates, at a correct-looking average current", "affected_nodes": ["RECTIFIER_SETUP_CC", "TDS_AND_LOG_AUTHORITY"], "mitigation": "supplies are used within their documented output class per the TDS's expectations, and an unexplained quality shift after a hardware swap points first at the swap", "severity": "medium" }
+  ],
+  "workflow": [
+    { "action": "Fix the job's thickness spec", "node_ref": "THICKNESS_TARGET_SPEC", "description": "Write microns, wear class, measurement points and compliance flags before anything is racked", "artifact": "job spec sheet with named worst-point and marking/nickel-release flags", "gate": "microns, wear class, measurement points and flags all present; no unspecified 'gold plate it' proceeds" },
+    { "action": "Pull the setpoint authority", "node_ref": "TDS_AND_LOG_AUTHORITY", "description": "Read the product TDS window and the shop log baselines that apply to this tank and job class", "artifact": "window sheet citing TDS and dated log baselines", "gate": "every number on the run sheet cites TDS or log; habit and handbook figures appear nowhere as settings" },
+    { "action": "Estimate the load's cathode area", "node_ref": "SURFACE_AREA_ESTIMATION", "description": "Decompose, weigh or compare to reference pieces; count robbers and exposed rack; state the error band", "artifact": "area estimate with method and error band", "gate": "method named, both-sides and robber corrections applied, band stated" },
+    { "action": "Choose current density and compute amps", "node_ref": "CURRENT_DENSITY_MASTER", "description": "Position inside the TDS window for today's agitation, load certainty and geometry, then convert to amps", "artifact": "amp setting derived as density times area with position-in-window rationale", "gate": "density inside the window, positioned with a stated reason, amps recomputed for this load" },
+    { "action": "Map current distribution and plan zone controls", "node_ref": "CURRENT_DISTRIBUTION_MAP", "description": "Mark hot features and starved zones on the actual pieces, name the worst point, plan shields, robbers or auxiliary anodes - or trigger escalation", "artifact": "marked distribution map with mitigation plan or escalation finding", "gate": "worst point named and covered by a measurement point; any cannot-deliver finding escalated before racking" },
+    { "action": "Compute the honest time estimate", "node_ref": "FARADAY_TIME_THICKNESS", "description": "Run the Faraday arithmetic with the dated efficiency factor and state the expected band", "artifact": "time and ampere-minute plan labeled unverified", "gate": "area, density, dated factor and band all shown; the estimate is marked estimate" },
+    { "action": "Set up and verify the rectifier", "node_ref": "RECTIFIER_VERIFICATION", "description": "Constant-current mode, polarity at the bar, meter cross-check and delivered-current confirmation per the manual", "artifact": "dated verification record", "gate": "mode, polarity, meter and delivered-current checks all pass before the first entry" },
+    { "action": "Enter live", "node_ref": "LIVE_ENTRY_DISCIPLINE", "description": "Current set and confirmed flowing, continuity checked, ammeter response observed as the work immerses", "artifact": "ticked entry checklist per gold-tank entry", "gate": "no immersion without confirmed current; a suspected dead entry backs out" },
+    { "action": "Watch the run", "node_ref": "CELL_VOLTAGE_SANITY", "description": "Log voltage at entry and checks against the job class's typical band; inspect mapped hot features early", "artifact": "in-run log lines with voltage and burn-watch notes", "gate": "any voltage excursion or early burn triggers stop-and-look, not schedule defense" },
+    { "action": "Close the ampere-minute ledger", "node_ref": "AMPERE_MINUTE_LEDGER", "description": "Record current, times and interruptions during the run and close the line at withdrawal", "artifact": "completed ledger line for the load", "gate": "ledger written during the run with interruptions logged at zero current" },
+    { "action": "Verify the first article", "node_ref": "XRF_FIRST_ARTICLE", "description": "Measure the mapped worst point and high-wear points against a stack-matched calibration before the batch continues", "artifact": "first-article measurement record", "gate": "floor met at the worst point or the batch holds; no remainder plates against an unverified first article" },
+    { "action": "Reconcile and calibrate forward", "node_ref": "GOLD_ECONOMY_OF_THICKNESS", "description": "Reconcile ledger versus measurement, update the efficiency factor from coupon or first-article evidence, and set the next batch's trim above the verified floor", "artifact": "reconciliation note and updated factor in the shop log", "gate": "factor updates cite their evidence; any trim preserves the measured worst-point floor" }
+  ],
+  "dominance_rules": [
+    { "rule": "Measured thickness beats any Faraday estimate", "rationale": "the deposit is the only witness that cannot be wrong; the arithmetic's inputs are all estimates", "trigger": "estimate and measurement disagree on whether a load is done", "action": "hold or return the load per the measurement and recalibrate the estimator's inputs; never defend the estimate" },
+    { "rule": "The TDS window plus the shop log beat handbook figures and habit", "rationale": "the specific commercial product and this tank's evidence are the only governing sources for numbers", "trigger": "any numeric setting is chosen", "action": "cite TDS or a dated log baseline on the run sheet; a setting citing neither does not run" },
+    { "rule": "Manufacturer-instruction electrical limits beat throughput", "rationale": "mains, heaters and conductive liquids form the room's lethal combination and improvisation is its trigger", "trigger": "a load or schedule tempts off-manual wiring, paralleling or capacity pushes", "action": "split the load, reschedule or refuse; refer mains-side work to a qualified electrician" },
+    { "rule": "The worst-point floor beats the batch average", "rationale": "specs are worn at their thinnest point; averages hide exactly the zones that fail first", "trigger": "release is argued from average or convenient-flat readings", "action": "release only on the mapped worst point meeting floor; averages inform economics, never release" },
+    { "rule": "Escalation beats forcing an undeliverable piece", "rationale": "no job is worth damaging a customer piece or shipping a quiet shortfall on it", "trigger": "the map or the contact situation shows spec cannot be delivered without damage or shortfall", "action": "escalate to intake with the mitigation record for a respec, waiver, referral or refusal" },
+    { "rule": "The quality window beats the deadline at the current dial", "rationale": "burn, stress and efficiency collapse cost more than the minutes the window's top edge saves", "trigger": "schedule pressure argues for density above the window or above today's agitation", "action": "buy time with agitation, scheduling or a second run; the window holds" },
+    { "rule": "The nickel-release compliance flag survives every hand-off", "rationale": "a nickel underplate on skin-contact goods is a regulated compliance class regardless of which KB touches the job", "trigger": "a job whose stack contains nickel passes through electrical planning", "action": "carry the flag on the spec and forward it to verification and marking with the verify-jurisdiction note intact" },
+    { "rule": "The first-article gate beats batch momentum", "rationale": "an unverified error replicates across every piece that plates behind it", "trigger": "the remainder of a batch is queued before the first article is measured", "action": "the batch holds until the worst-point reading passes; momentum is not evidence" },
+    { "rule": "Live-entry discipline beats transfer haste", "rationale": "the immersion film a dead entry creates is invisible at release and fails in the customer's hands", "trigger": "a rushed transfer tempts hanging work before current is on", "action": "current confirmed first, every entry, every tank; a suspected dead entry backs out immediately" },
+    { "rule": "Cyanide-mist safety beats agitation convenience", "rationale": "aerosolized cyanide solution is an exposure route; no distribution problem justifies creating one", "trigger": "someone proposes air-sparging a cyanide-bearing gold bath to raise the limiting current", "action": "use mechanical or pumped agitation per the TDS and route any upgrade through the safety-compliance obligation classes" }
+  ],
+  "anti_rework_rules": [
+    { "rule": "Estimate area - robbers and exposed rack included - before choosing any current", "prevents": "a load starved or burned at amps computed from the wrong area, and the strip-and-replate that follows" },
+    { "rule": "Verify rectifier mode, polarity and metering before the first entry of the day and after any hardware change", "prevents": "a whole day of silently mis-metered runs poisoning batches, ledger and shop log at once" },
+    { "rule": "Map distribution and fit shields, robbers or auxiliary anodes before the run, not after the first burn", "prevents": "burned tips and starved recesses discovered mid-batch, each costing a strip or a re-run" },
+    { "rule": "Use the bath-family-correct, dated efficiency factor before computing any run time", "prevents": "half-thickness batches from a soft-gold habit applied to a low-efficiency tank" },
+    { "rule": "Measure the first article before any further piece of the batch plates", "prevents": "one correctable error replicated across the entire batch" },
+    { "rule": "Confirm current is flowing before every gold-tank immersion", "prevents": "immersion films that pass release and peel in the customer's hands weeks later" },
+    { "rule": "Recompute amps whenever the load, a robber or an auxiliary anode changes", "prevents": "yesterday's amps burning today's smaller load after one piece was pulled" },
+    { "rule": "Re-derate current for the agitation actually running before the next entry", "prevents": "burn at previously clean settings after a stirrer slows or a tank fills" },
+    { "rule": "Write the spec floor and its worst measurement point before quoting or racking", "prevents": "handover disputes and re-plates on jobs judged at points nobody agreed to" }
+  ],
+  "iteration_protocol": [
+    { "trigger": "the first article misses the estimate's band", "action": "hold the batch, reconcile ledger versus measurement, recalibrate the efficiency factor or area estimate, and re-plan before releasing anything", "nodes": ["XRF_FIRST_ARTICLE", "CATHODE_EFFICIENCY_REALITY", "FARADAY_TIME_THICKNESS"], "priority": 1 },
+    { "trigger": "burn recurs at settings that previously ran clean", "action": "audit agitation state, re-check the area estimate and robber count, and re-map hot features before touching the window position", "nodes": ["AGITATION_LIMITING_CURRENT", "SURFACE_AREA_ESTIMATION", "HCD_ZONE_CONTROL"], "priority": 1 },
+    { "trigger": "a TDS revision arrives or the bath product changes", "action": "rebuild the window sheet, reset the efficiency factor to the new class band pending coupon calibration, and retire stale log baselines", "nodes": ["TDS_AND_LOG_AUTHORITY", "CURRENT_DENSITY_MASTER", "CATHODE_EFFICIENCY_REALITY"], "priority": 2 },
+    { "trigger": "cell voltage trends outside the job class's typical band", "action": "stop and look: re-verify metering, inspect anode and contact circuit, and log the confirmed cause against the voltage signature", "nodes": ["CELL_VOLTAGE_SANITY", "RECTIFIER_VERIFICATION"], "priority": 1 },
+    { "trigger": "a recess misses floor while flats pass", "action": "escalate the mitigation ladder: reposition, fit the applicable auxiliary anode class, or trigger the geometry escalation with the record of what was tried", "nodes": ["LCD_ZONE_CONTROL", "AUX_ANODE_CLASSES", "GEOMETRY_ESCALATION_BOUNDARY"], "priority": 1 },
+    { "trigger": "enough reconciled runs accumulate on one tank and job class", "action": "tighten the shop's in-window operating bands and trim margins from evidence, updating the log baselines the next runs cite", "nodes": ["AMPERE_MINUTE_LEDGER", "TDS_AND_LOG_AUTHORITY", "GOLD_ECONOMY_OF_THICKNESS"], "priority": 3 },
+    { "trigger": "a marking or nickel-release rule changes in a selling jurisdiction", "action": "re-flag the affected spec classes and re-verify which jobs' compliance flags need new wording before their next run", "nodes": ["THICKNESS_TARGET_SPEC"], "priority": 2 }
+  ],
+  "priority_rationale": "The frame nodes come first because everything else consumes them: the written spec defines what delivery means, the TDS-and-log authority defines where numbers may come from, and the electrical safety boundary defines what may be touched at all; area then feeds density, density and efficiency feed the Faraday estimate, and the equipment nodes make the delivered current real and provable; the geometry nodes adapt the plan to actual jewelry shapes before execution; live entry and voltage watch govern the run itself; and the verification nodes close every loop last because measurement is the only step that converts all upstream estimates into delivered, logged, trimmable fact.",
+  "eval_objective": "verify_core_properties_of_gold_plating_electrical_control_kb"
+}
