@@ -345,3 +345,19 @@ Track 1 (research) AND Track 2 (scaffold) both COMPLETE.
 - Suggested first real step (from the ADR): a single vertical slice (math or code specialist)
   end-to-end before scaling breadth; gate breadth on the orch SPEC_BEAT ablation.
 Method + harvest loop for any future KB fan-out: see section 7 OPERATIONAL METHOD.
+
+## 9. Phase B (second application) — `cupcake_craft` specialist set
+Same Phase-B machinery applied to a new raw idea: *"make the most delicious cupcake."*
+- Neutralized brief: `phase_b/cupcake_craft.IDEA_NEUTRALIZED.md`.
+- Taxonomy (fixes the count): `phase_b/taxonomy/cupcake_craft.taxonomy.json` —
+  **7 domains -> 7 specialists**, 2 subdomains each -> **14 dense subdomain KBs**.
+- KBs: `phase_b/knowledge_base/cupcake_craft/<domain>__<subdomain>.kb.json` (+ .validation + .metrics).
+  All **14/14 PASS** `kb_validator --mode dense` (35 checks); 283 nodes / 544 edges / 190 CQs / ~554k tok.
+  Derived fields filled by `tools/compute_kb_formulas.py` (formula-consistent, tol 0.02).
+- Specialists: `phase_b/specialists/cupcake_craft/<domain>.specialist.json` (+ .validation).
+  All **7/7 PASS** `specialist_validator`; each grounded in its 2 subdomain KBs. Domains:
+  formula, mixing, bake, flavor, frosting, ingredient, quality.
+- Aggregators: `phase_b/knowledge_base/cupcake_craft/INDEX.json` (kb_count 14, all_pass true)
+  + `phase_b/specialists/cupcake_craft/ROUTER.json` (cupcake_craft_router, 7 specialists).
+- Real-world tradeoffs encoded as conflict_axes/dominance_rules (moistness vs structure,
+  sweetness vs complexity, fresh vs shelf-life); food safety = hard overriding dominance rule.
