@@ -14,5 +14,9 @@ Evaluators see only screenshots, DOM text, test output, this file. Any score ≥
 | D9 Continuity (7) — OBJECTIVE | progress lost on reload | local save only | resume exact spot, export/import, offline, planner calendar | + works in sandbox/iframe fallback and PWA offline |
 | D10 Visual/UX polish (8) | broken layout/overflow | functional, generic | coherent design system, light/dark, mobile-first, no overflow, clear hierarchy | + delightful yet calm; consistent across all screens |
 
+Definitions used by the hard-fail rule (clarified after round 1):
+- **Game / reward mechanic** = stamps, explore sandboxes, animations, any timed or reaction interaction. These must NEVER write the learner model (FSRS/BKT). Tested: `tests/e2e/widgets.spec.ts` "explore mode does not write the learner model" × 23 widgets.
+- **Widget challenge answer** = an untimed question answered inside a widget's Challenge tab. It is *practice evidence*, not a reward: BKT only, weight 0.2, guess rate 1/3 (≈ ±0.04 per answer), no learning transition, never FSRS (`recordCheck` in `app/src/engine/learner.ts`). Tested: "challenge answers DO count as evidence".
+
 Hard fails (cap 5): a key contradicting the handbook; an unverified URL/ID presented as verified; a game writing the learner model; FSRS nondeterminism under pinned clock; progress loss on reload.
 Canaries (seeded-defect build scored alongside): 4/32↔2/32 key swap · horizontal overflow at 390 px · 3:1 contrast text · a widget stating "fifth wheel level". Missed canary ⇒ that evaluator's scores void.

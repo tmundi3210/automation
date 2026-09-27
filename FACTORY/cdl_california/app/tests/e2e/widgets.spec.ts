@@ -31,3 +31,33 @@ test('challenge answers DO count as evidence (class finder sort)', async ({ page
   const n = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('cdlws.state.v1') || '{}'); return Object.keys(s.bkt || {}).length; });
   expect(n).toBeGreaterThan(0);
 });
+
+// Legibility + touch targets, measured the way evaluators did: widget hosted in its lesson, phone width.
+for (const id of IDS) {
+  test(`legible at phone width: ${id}`, async ({ page }, info) => {
+    test.skip(info.project.name !== 'mobile', 'phone-width check');
+    await page.goto(URL + '#widget.' + id);
+    await expect(page.locator('.widget')).toBeVisible();
+    const r = await page.evaluate(() => {
+      const w = document.querySelector('.widget')!;
+      const small: string[] = [];
+      for (const t of w.querySelectorAll('svg text')) {
+        const el = t as SVGTextElement; if (!el.textContent?.trim()) continue;
+        const box = el.getBoundingClientRect(); if (box.width === 0 && box.height === 0) continue;
+        const svg = el.ownerSVGElement!; const vb = svg.viewBox.baseVal; const scale = vb && vb.width ? svg.getBoundingClientRect().width / vb.width : 1;
+        const px = parseFloat(getComputedStyle(el).fontSize) * scale;
+        if (px < 10.95) small.push(`${el.textContent!.trim().slice(0, 20)}@${px.toFixed(1)}`);
+      }
+      const tiny: string[] = [];
+      for (const b of w.querySelectorAll('button, [role="button"], input[type="range"], input[type="checkbox"]')) {
+        const box = (b as HTMLElement).getBoundingClientRect(); if (!box.width) continue;
+        const target = b.closest('label') ? (b.closest('label') as HTMLElement).getBoundingClientRect() : box;
+        if (Math.max(target.height, box.height) < 24 || Math.max(target.width, box.width) < 24) tiny.push(`${(b.textContent || b.getAttribute('aria-label') || '').trim().slice(0, 18)}:${box.width.toFixed(0)}x${box.height.toFixed(0)}`);
+      }
+      return { small: small.slice(0, 6), tiny: tiny.slice(0, 6), overflow: document.documentElement.scrollWidth > innerWidth + 1 };
+    });
+    expect(r.small, 'SVG text under 11px').toEqual([]);
+    expect(r.tiny, 'targets under 24px (WCAG 2.2 AA)').toEqual([]);
+    expect(r.overflow).toBe(false);
+  });
+}

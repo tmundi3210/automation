@@ -106,9 +106,9 @@ export function Scene({ found, sel, plan, planOk, marks }: { found: Set<string>;
         <text x={o.mark[0]} y={o.mark[1] + 4.5} {...lbl} fill={found.has(o.id) ? 'var(--surface)' : 'var(--amber-ink)'}>{found.has(o.id) ? '✓' : i + 1}</text></g>)}
       {plan && planOk === false && <g><path d={`M ${plan.from[0]} ${plan.from[1]} L ${plan.to[0]} ${plan.to[1]}`} stroke="var(--red)" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#g9arrow)" />
         <circle cx={plan.to[0]} cy={plan.to[1]} r="11" fill="var(--red)" /><text x={plan.to[0]} y={plan.to[1] + 5} text-anchor="middle" font-size="15" font-weight="700" fill="var(--surface)">!</text>
-        <rect x="40" y="266" width="240" height="26" rx="4" fill="var(--red)" /><text x="160" y="284" {...lbl} fill="var(--surface)">EMERGENCY — no time left</text></g>}
+        <rect x="70" y="4" width="240" height="26" rx="4" fill="var(--red)" /><text x="190" y="22" {...lbl} fill="var(--surface)">EMERGENCY — no time left</text></g>}
       {plan && planOk === true && <g><path d={`M ${plan.from[0]} ${plan.from[1]} L ${plan.to[0]} ${plan.to[1]}`} stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 4" />
-        <rect x="86" y="163" width="6" height="30" fill="var(--ok)" /><rect x="40" y="266" width="240" height="26" rx="4" fill="var(--ok)" /><text x="160" y="284" {...lbl} fill="var(--surface)">Slowed early — room to act</text></g>}
+        <rect x="86" y="163" width="6" height="30" fill="var(--ok)" /><rect x="70" y="4" width="240" height="26" rx="4" fill="var(--ok)" /><text x="190" y="22" {...lbl} fill="var(--surface)">Slowed early — room to act</text></g>}
       <defs><marker id="g9arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--red)" /></marker></defs>
     </svg>
   );
