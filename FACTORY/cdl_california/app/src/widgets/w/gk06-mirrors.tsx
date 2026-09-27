@@ -33,12 +33,12 @@ function TopView({ pos }: { pos: Pos }) {
       <path d={`M${MX} ${MY} L${MX - 300} ${MY - 300 * Math.tan(CONVEX_FOV)}`} stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5 4" />
       <path d={`M${MX} ${MY} L0 ${MY - 300 * Math.tan(FLAT_FOV)}`} stroke="var(--blue)" stroke-width="1.5" />
       <path d="M216 20 L300 20 L300 70 L230 70 Z" fill="var(--red)" opacity=".18" stroke="var(--red)" stroke-dasharray="3 3" />
-      <text x="262" y="35" text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">Blind</text><text x="262" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">spot</text>
+      <text x="262" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">Blind</text><text x="262" y="48" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">spot</text>
       <rect x="150" y="82" width="140" height="30" rx="2" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" />
       <rect x="292" y="83" width="30" height="28" rx="4" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
-      <rect x="296" y="73" width="8" height="6" fill="var(--ink)" /><text x="176" y="102" font-size="13" fill="var(--ink)">your truck →</text>
+      <rect x="296" y="73" width="8" height="6" fill="var(--ink)" /><text x="176" y="102" font-size="14" fill="var(--ink)">your truck →</text>
       <g transform={`translate(${car} ${CY})`}><rect x="-16" y="-9" width="32" height="18" rx="4" fill="var(--blue)" stroke="var(--ink)" stroke-width="1" /><path d="M20 0 l-5 -5 v10 z" fill="var(--ink)" /></g>
-      <text x="6" y="140" font-size="13" fill="var(--ink)"><tspan fill="var(--blue)" font-weight="700">■</tspan> flat view   <tspan fill="var(--amber)" font-weight="700">■</tspan> convex view (wider)</text>
+      <text x="6" y="140" font-size="14" fill="var(--ink)"><tspan fill="var(--blue)" font-weight="700">■</tspan> flat view   <tspan fill="var(--amber)" font-weight="700">■</tspan> convex view (wider)</text>
     </svg>
   );
 }
@@ -61,10 +61,10 @@ function Face({ x, pos, convex, refOn, angled }: { x: number; pos: Pos; convex: 
         {(convex ? [0.15, 0.45, 0.8] : [0.35, 0.9]).map((f) => <line x1={x + W - 14} y1={hz} x2={x + W - 14 - f * (W + 60)} y2={H + 4} stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="8 6" />)}
         {refOn && <path d={angled ? `M${x + W} ${hz - 14} L${x + W - 46} ${hz + 2} L${x + W - 70} ${H + 4} H${x + W} Z` : `M${x + W} ${hz - 8} L${x + W - 14} ${hz} L${x + W - 26} ${H + 4} H${x + W} Z`} fill="var(--ink-2)" stroke="var(--ink)" />}
         {v.seen && <g><rect x={cx - w / 2} y={by - h} width={w} height={h} rx={w / 6} fill="var(--blue)" stroke="var(--ink)" stroke-width="1" /><rect x={cx - w / 3} y={by - h + h * 0.15} width={w * 0.66} height={h * 0.35} rx={2} fill="var(--surface)" /></g>}
-        {!v.seen && <g><rect x={x + 6} y={hz + 26} width={124} height={20} rx={4} fill="var(--surface)" stroke="var(--red)" /><text x={x + 68} y={hz + 40} text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">✕ car not in view</text></g>}
+        {!v.seen && <g><rect x={x + 4} y={hz + 24} width={W - 8} height={24} rx={4} fill="var(--surface)" stroke="var(--red)" /><text x={x + W / 2} y={hz + 41} text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">✕ car not in view</text></g>}
       </g>
       <rect x={x} y={4} width={W} height={H} rx={convex ? 26 : 6} fill="none" stroke="var(--ink)" stroke-width="3" />
-      <text x={x + W / 2} y={H + 24} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{convex ? 'Convex (spot)' : 'Flat mirror'}</text>
+      <text x={x + W / 2} y={H + 24} text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{convex ? 'Convex (spot)' : 'Flat mirror'}</text>
     </g>
   );
 }
@@ -111,21 +111,21 @@ export default function MirrorsWidget({ onEvidence, onChallenge, concepts }: Wid
       {mode === 'explore' && (
         <div class="stack">
           <div class="row" role="group" aria-label="Where is the other car?">{(Object.keys(POS) as Pos[]).map((p) => <Btn on={pos === p} onClick={() => setPos(p)}>{POS[p].name}</Btn>)}</div>
-          <div style={{ maxWidth: '560px', width: '100%', margin: '0 auto' }} class="stack"><TopView pos={pos} /><Mirrors pos={pos} refOn={refOn} angled={angled} /></div>
+          <div style={{ maxWidth: '430px', width: '100%', margin: '0 auto' }} class="stack"><TopView pos={pos} /><Mirrors pos={pos} refOn={refOn} angled={angled} /></div>
           <div class="card tint small" role="status" aria-live="polite" style={{ padding: '10px 12px' }}>
             {f.seen && c.seen && <><strong>Same car, both mirrors.</strong> In the convex mirror it looks <strong>smaller and farther away</strong> than in the flat one — but it is really just as close. It is closer and bigger than it looks. <span class="plate">p. 2-13</span></>}
             {!f.seen && c.seen && <><strong>Only the convex mirror shows it.</strong> A convex mirror shows a <strong>wider area</strong> than a flat mirror — that is why it helps. It still makes the car look smaller and farther away. <span class="plate">p. 2-13</span></>}
             {!c.seen && <><strong>Neither mirror shows it — blind spot.</strong> Mirrors cannot show everything. Regular checks tell you when a vehicle has moved into a blind spot. <span class="plate">p. 2-13</span></>}
           </div>
           <div class="row">
-            <label class="toggle"><input type="checkbox" checked={refOn} onChange={(e) => setRefOn((e.target as HTMLInputElement).checked)} />Mirror shows part of my truck</label>
-            <label class="toggle"><input type="checkbox" checked={angled} onChange={(e) => setAngled((e.target as HTMLInputElement).checked)} />Trailer at an angle</label>
+            <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={refOn} onChange={(e) => setRefOn((e.target as HTMLInputElement).checked)} />Mirror shows part of my truck</label>
+            <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={angled} onChange={(e) => setAngled((e.target as HTMLInputElement).checked)} />Trailer at an angle</label>
           </div>
           {(!refOn || angled) && <div class="card warn small" style={{ padding: '10px 12px' }}>
             {!refOn && <p style={{ margin: 0 }}><strong>No reference point.</strong> Adjust each mirror to show some part of your own vehicle, so you can judge where everything else is. <span class="plate">p. 2-13</span></p>}
             {angled && <p style={{ margin: 0 }}><strong>Trailer at an angle:</strong> the trailer swings into the view, so you cannot check adjustment accurately. Check it before every trip, with the trailer(s) straight. <span class="plate">p. 2-13</span></p>}
           </div>}
-          <details class="small"><summary><strong>Mirror facts to know</strong></summary>
+          <details class="small"><summary style={{ padding: '8px 0', cursor: 'pointer' }}><strong>Mirror facts to know</strong></summary>
             <ul style={{ margin: '6px 0 0', paddingLeft: '18px' }}>
               <li><span class="ca-tag">CA</span> 2 or more mirrors, one on the left side, showing the road behind for at least 200 ft (CVC §26709). <span class="plate">p. 2-13</span></li>
               <li>Quick glances — don’t stare. Switch between mirrors and the road ahead.</li>
@@ -137,7 +137,7 @@ export default function MirrorsWidget({ onEvidence, onChallenge, concepts }: Wid
       {mode === 'challenge' && (q ? (
         <div class="stack">
           <span class="small muted num">Question {i + 1} of {QS.length}</span>
-          {q.pic && <div style={{ maxWidth: '480px', width: '100%' }}>{q.pic}</div>}
+          {q.pic && <div style={{ maxWidth: '430px', width: '100%' }}>{q.pic}</div>}
           <strong>{q.q}</strong>
           <div class="stack" role="group" aria-label="Answers" style={{ gap: '6px' }}>{q.opts.map((o, j) => (
             <button class={`btn sm ${pick !== null && j === q.a ? 'primary' : ''}`} disabled={pick !== null} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick === j && j !== q.a ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}

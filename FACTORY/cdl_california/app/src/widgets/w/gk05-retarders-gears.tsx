@@ -31,7 +31,7 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
     </g>
   );
   return (
-    <svg viewBox="0 0 360 190" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Side view on a ${surf} road. ${state}.`}>
+    <svg viewBox="0 0 360 190" width="100%" style={{ maxWidth: '430px', marginInline: 'auto', display: 'block' }} role="img" aria-label={`Side view on a ${surf} road. ${state}.`}>
       <rect x="0" y="0" width="360" height="190" fill="var(--surface-2)" />
       <rect x="0" y="143" width="360" height="47" fill={road} stroke="var(--ink)" stroke-width="1" />
       {surf === 'wet' && [30, 110, 190, 270, 330].map((x) => <ellipse cx={x} cy="160" rx="16" ry="3" fill="var(--surface)" opacity=".6" />)}
@@ -42,10 +42,10 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
       <path d="M 232 118 L 232 70 L 272 70 L 296 94 L 296 118 Z" fill="var(--accent)" stroke="var(--ink)" stroke-width="2" />
       <rect x="244" y="76" width="22" height="16" fill="var(--surface)" stroke="var(--ink)" />
       {wheel(90, true)}{wheel(124, true)}{wheel(276, false)}
-      {skid && <g><line x1="40" y1="145" x2="106" y2="145" stroke="var(--red)" stroke-width="4" /><text x="72" y="44" font-size="15" font-weight="700" fill="var(--red)" text-anchor="middle">✕ SKID</text></g>}
-      {active && !skid && <text x="107" y="44" font-size="13" font-weight="700" fill="var(--accent)" text-anchor="middle">drive wheels slowed</text>}
-      <text x="107" y="178" font-size="13" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} text-anchor="middle">drive wheels</text>
-      <text x="276" y="178" font-size="13" text-anchor="middle" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} font-weight="700">{SURF.find((s) => s.id === surf)!.label} road</text>
+      {skid && <g><line x1="40" y1="145" x2="106" y2="145" stroke="var(--red)" stroke-width="4" /><text x="72" y="44" font-size="16" font-weight="700" fill="var(--red)" text-anchor="middle">✕ SKID</text></g>}
+      {active && !skid && <text x="107" y="44" font-size="14" font-weight="700" fill="var(--accent)" text-anchor="middle">drive wheels slowed</text>}
+      <text x="107" y="178" font-size="14" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} text-anchor="middle">drive wheels</text>
+      <text x="276" y="178" font-size="14" text-anchor="middle" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} font-weight="700">{SURF.find((s) => s.id === surf)!.label} road</text>
     </svg>
   );
 }
@@ -56,20 +56,21 @@ function HillView({ gear, when }: { gear: Gear | null; when: 'before' | 'during'
   const good = gear === 'lower' && when === 'before';
   const heat = gear === null ? 0 : good ? 0.25 : gear === 'lower' ? 0.5 : gear === 'same' ? 0.8 : 1;
   return (
-    <svg viewBox="0 0 360 180" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Hill profile. ${gear ? (good ? 'Lower gear chosen before the grade: speed held without hard braking.' : 'Hard braking needed: brakes heat up and can lose braking power.') : 'Choose a gear.'}`}>
-      <rect x="0" y="0" width="360" height="180" fill="var(--surface-2)" />
-      <path d="M 0 150 L 120 60 L 170 60 L 360 150 L 360 180 L 0 180 Z" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
-      <text x="36" y="160" font-size="13" fill="var(--ink)">climb</text>
-      <text x="262" y="100" font-size="13" fill="var(--ink)">downgrade</text>
-      <line x1="170" y1="60" x2="170" y2="28" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" />
-      <text x="160" y="22" font-size="13" text-anchor="end" fill="var(--accent)" font-weight="700">shift here: BEFORE →</text>
-      <g transform={when === 'before' ? 'translate(146 44)' : 'translate(250 88) rotate(25)'}>
+    <svg viewBox="0 0 360 200" width="100%" style={{ maxWidth: '430px', marginInline: 'auto', display: 'block' }} role="img" aria-label={`Hill profile. ${gear ? (good ? 'Lower gear chosen before the grade: speed held without hard braking.' : 'Hard braking needed: brakes heat up and can lose braking power.') : 'Choose a gear.'}`}>
+      <rect x="0" y="0" width="360" height="200" fill="var(--surface-2)" />
+      <path d="M 0 140 L 110 60 L 160 60 L 360 140 L 360 200 L 0 200 Z" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
+      <text x="24" y="136" font-size="14" fill="var(--ink)">climb</text>
+      <text x="226" y="130" font-size="14" fill="var(--ink)">downgrade</text>
+      <line x1="160" y1="60" x2="160" y2="28" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" />
+      <text x="154" y="20" font-size="14" text-anchor="end" fill="var(--accent)" font-weight="700">downshift BEFORE →</text>
+      <g transform={when === 'before' ? 'translate(134 52)' : 'translate(250 87) rotate(22)'}>
         <rect x="-18" y="-8" width="36" height="16" rx="3" fill="var(--accent)" stroke="var(--ink)" />
       </g>
-      {/* brake heat gauge */}
-      <rect x="250" y="14" width="96" height="14" rx="7" fill="var(--surface)" stroke="var(--ink)" />
-      <rect x="250" y="14" width={96 * heat} height="14" rx="7" fill={heat >= 0.8 ? 'var(--red)' : heat >= 0.5 ? 'var(--amber)' : 'var(--ok)'} />
-      <text x="250" y="44" font-size="13" fill="var(--ink)">brake heat{heat >= 0.8 ? ': hot, can fade' : heat >= 0.5 ? ': rising' : heat > 0 ? ': cool' : ''}</text>
+      {/* brake heat gauge, in the ground band */}
+      <text x="10" y="186" font-size="14" font-weight="700" fill="var(--ink)">brake heat</text>
+      <rect x="96" y="174" width="110" height="14" rx="7" fill="var(--surface-2)" stroke="var(--ink)" />
+      <rect x="96" y="174" width={110 * heat} height="14" rx="7" fill={heat >= 0.8 ? 'var(--red)' : heat >= 0.5 ? 'var(--amber)' : 'var(--ok)'} />
+      <text x="214" y="186" font-size="14" fill="var(--ink)">{heat >= 0.8 ? 'hot, can fade' : heat >= 0.5 ? 'rising' : heat > 0 ? 'cool' : 'pick a gear'}</text>
     </svg>
   );
 }
@@ -154,12 +155,12 @@ export default function RetardersGears(props: WidgetProps) {
 
       {mode === 'ret' && (
         <div class="stack">
-          <div class="grid2" role="group" aria-label="Road surface">{SURF.map((x) => (
-            <button class="btn" aria-pressed={x.id === surf} style={seg(x.id === surf)} onClick={() => setSurf(x.id)}><span aria-hidden="true">{x.icon}</span> {x.label}</button>
+          <div role="group" aria-label="Road surface" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', maxWidth: '560px' }}>{SURF.map((x) => (
+            <button class="btn" aria-pressed={x.id === surf} style={{ padding: '6px 8px', ...seg(x.id === surf) }} onClick={() => setSurf(x.id)}><span aria-hidden="true">{x.icon}</span> {x.label}</button>
           ))}</div>
           <div class="row">
-            <label class="toggle"><input type="checkbox" checked={on} onChange={(e) => setOn((e.target as HTMLInputElement).checked)} />Retarder {on ? 'ON' : 'OFF'}</label>
-            <label class="toggle"><input type="checkbox" checked={footOff} onChange={(e) => setFootOff((e.target as HTMLInputElement).checked)} />Foot fully off accelerator</label>
+            <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={on} onChange={(e) => setOn((e.target as HTMLInputElement).checked)} />Retarder {on ? 'ON' : 'OFF'}</label>
+            <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={footOff} onChange={(e) => setFootOff((e.target as HTMLInputElement).checked)} />Foot fully off accelerator</label>
           </div>
           <RoadView surf={surf} on={on} footOff={footOff} />
           <div class={`feedback ${skid ? 'bad' : (s.slick ? !on : on) ? 'good' : ''}`} role="status" style={!skid && !(s.slick ? !on : on) ? { background: 'var(--surface-2)' } : {}}>
