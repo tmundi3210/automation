@@ -256,7 +256,7 @@ export default function WarningTriangles({ onEvidence, onChallenge, concepts, re
       {mode === 'challenge' && step < 3 && (
         <div class="stack">
           <span class="small muted num">Road {step + 1} of 3</span>
-          <p style={{ margin: 0 }}><strong>{sc.name}.</strong> {sc.tag}. Your truck is stopped at the roadside. Warn other drivers.</p>
+          <p style={{ margin: 0 }}><strong>{sc.name}.</strong> {sc.tag}. Your truck is stopped at the roadside. Warn other drivers — lights and triangles.</p>
           <Road sc={sc} placed={placed} setPlaced={setPlaced} sel={sel} setSel={setSel} flash={flash} rm={reducedMotion} locked={!!shown} result={shown ?? undefined} showAnswer={!!shown && !shown.ok} />
           {!shown && <div class="row">{flashBtn}<button class="btn primary sm" disabled={!allPlaced} onClick={() => { const r = judge(sc, placed); setShown(r); const ok = r.ok && flash; if (!ok) setMisses(misses + 1); onEvidence({ concepts, ok }); }}>{allPlaced ? 'Check' : `Place all 3 (${placed.filter(Boolean).length}/3)`}</button></div>}
           {shown && <><Feedback sc={sc} r={shown} flash={flash} />{!shown.ok && <p class="small muted" style={{ margin: 0 }}>Green dashed rings show the handbook spots.</p>}

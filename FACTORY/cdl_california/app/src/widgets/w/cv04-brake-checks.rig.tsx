@@ -44,9 +44,9 @@ export function RigView({ r, motion }: { r: Rig; motion: boolean }) {
       <rect x="6" y="166" width="348" height="26" rx="4" fill="var(--surface)" stroke="var(--line)" />
       <polygon points="22,171 28,171 32,175 32,183 28,187 22,187 18,183 18,175" fill="var(--red)" stroke="var(--ink)" />
       {t(38, 184, `Knob ${r.knob.toUpperCase()}`, { 'font-weight': 700, 'font-size': 12.5 })}
-      {t(100, 184, `${r.psi}`, { 'font-size': 12.5 })}
-      {t(196, 184, `Engine ${r.engine ? 'ON' : 'OFF'}`, { 'font-size': 12.5 })}
-      {t(262, 184, r.pedal === 'pumping' ? 'Pumping pedal' : r.parking ? 'Park brake SET' : 'Park brake off', { 'font-size': 12.5 })}
+      {t(100, 184, /psi/.test(r.psi) ? r.psi : `air ${r.psi}`, { 'font-size': 12.5 })}
+      {t(186, 184, `Engine ${r.engine ? 'ON' : 'OFF'}`, { 'font-size': 12.5 })}
+      {t(256, 184, r.pedal === 'pumping' ? 'Pumping pedal' : r.parking ? 'Park brake SET' : 'Park brake off', { 'font-size': 12.5 })}
       {r.flag && <text x="180" y="20" font-size="13.5" font-weight="700" text-anchor="middle" fill={r.bad ? 'var(--red)' : 'var(--ok)'}>{r.flag}</text>}
     </svg>
   );

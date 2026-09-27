@@ -33,6 +33,7 @@ export function CrashVis({ done, second }: { done: number; second?: boolean }) {
       <line x1="0" y1="65" x2="360" y2="65" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 6" />
       <rect x="0" y="100" width="360" height="12" fill="var(--surface-2)" />
       <g transform="rotate(20 250 76)"><rect x="232" y="68" width="36" height="18" rx="3" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.4" /></g>
+      <text x="228" y="58" text-anchor="end" {...T}>wreck</text><text x="300" y="94" text-anchor="middle" {...T}>your truck</text>
       <path d="M 262 60 l 5 -8 l 3 7 l 6 -4 l -2 8" fill="none" stroke="var(--red)" stroke-width="2" />
       <rect x="276" y="98" width="50" height="16" rx="2" fill="var(--accent)" stroke="var(--ink)" /><rect x="328" y="99" width="14" height="14" rx="2" fill="var(--accent)" stroke="var(--ink)" />
       {done >= 1 && <>{[[274, 100], [274, 112], [344, 100], [344, 112]].map(([x, y]) => <circle cx={x} cy={y} r="3" fill="var(--amber)" stroke="var(--ink)" stroke-width="0.6" />)}

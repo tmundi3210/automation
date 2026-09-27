@@ -141,7 +141,8 @@ export default function Cargo({ onEvidence, onChallenge, concepts }: WidgetProps
   };
   return (
     <div class="stack">
-      <div class="tabs" role="tablist">{([['calc', 'Straps'], ['time', 'Re-check'], ['bridge', 'Bridge'], ['x', 'Challenge']] as const).map(([k, l]) => <button role="tab" aria-selected={tab === k} onClick={() => { setTab(k); if (k === 'x') reset(); }}>{l}</button>)}</div>
+      <div class="tabs" role="tablist"><button role="tab" aria-selected={tab !== 'x'} onClick={() => setTab('calc')}>Explore</button><button role="tab" aria-selected={tab === 'x'} onClick={() => { setTab('x'); reset(); }}>Challenge (6)</button></div>
+      {tab !== 'x' && <div class="row" role="group" aria-label="Explore topic" style={{ gap: '6px' }}>{([['calc', 'Tie-downs'], ['time', 'Re-check schedule'], ['bridge', 'Bridge formula']] as const).map(([k, l]) => <button class="btn sm" aria-pressed={tab === k} style={tab === k ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => setTab(k)}>{l}</button>)}</div>}
       {tab === 'calc' && <Calc />}{tab === 'time' && <Schedule />}{tab === 'bridge' && <Bridge />}
       {tab === 'x' && (q ? (
         <div class="stack">
