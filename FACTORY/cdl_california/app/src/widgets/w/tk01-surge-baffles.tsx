@@ -58,7 +58,7 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
     if (f <= 0) return null;
     const lvl = YB - (H * Math.min(f + g.rise, 100)) / 100;
     const r = g.tilt * 34 * ((b - a) / (X1 - X0)) * (s.tank === 'bulk' ? 1.6 : 1);
-    return <polygon key={i} points={`${a},${YB + 2} ${a},${lvl + r / 2} ${b},${lvl - r / 2} ${b},${YB + 2}`} fill={g.over ? 'var(--red)' : s.liquid === 'milk' ? 'var(--surface)' : 'var(--blue)'} opacity={s.liquid === 'milk' ? 1 : 0.55} stroke={s.liquid === 'milk' ? 'var(--ink-2)' : 'none'} />;
+    return <polygon key={i} points={`${a},${YB + 2} ${a},${lvl + r / 2} ${b},${lvl - r / 2} ${b},${YB + 2}`} fill="var(--blue)" opacity={0.6} />;
   });
   const hitFront = Math.abs(g.push) > 3 && g.push > 0, hitRear = g.push < -3;
   const aria = `Side view: ${TANK_NAME[s.tank]} tanker, ${s.fill}% full${ev ? `, ${EV_NAME[ev]}` : ''}. ${hitFront ? `The surge wave hits the front and pushes the truck forward ${g.push > 20 ? 'past the stop line' : 'a little'}.` : ''}${hitRear ? 'The wave hits the rear and jerks the rig.' : ''}${g.over ? ' Liquid has no room to expand and spills out.' : ''}`;
@@ -67,7 +67,7 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
       <rect x="0" y="0" width="360" height="180" fill="var(--surface-2)" />
       <rect x="0" y="146" width="360" height="34" fill={s.ice ? 'var(--blue-soft)' : 'var(--surface)'} />
       <text x="6" y="172" font-size="12" fill="var(--ink-2)">{s.ice ? 'ice (slippery)' : 'dry road'}</text>
-      {(ev === 'brake' || ev === 'early') && <g><line x1="316" x2="316" y1="120" y2="178" stroke="var(--ink)" stroke-width="3" /><text x="320" y="172" font-size="12" fill="var(--ink)">stop</text><text x="320" y="138" font-size="11" fill="var(--ink-2)">inter-</text><text x="320" y="150" font-size="11" fill="var(--ink-2)">section</text></g>}
+      {(ev === 'brake' || ev === 'early') && <g><rect x="308" y="146" width="52" height="34" fill="var(--amber-soft)" /><line x1="308" x2="308" y1="118" y2="180" stroke="var(--ink)" stroke-width="3" /><text x="304" y="174" font-size="12" text-anchor="end" fill="var(--ink)">stop line</text><text x="334" y="160" font-size="12" text-anchor="middle" fill="var(--amber-ink)">inter-</text><text x="334" y="174" font-size="12" text-anchor="middle" fill="var(--amber-ink)">section</text></g>}
       <g transform={`translate(${g.dx.toFixed(1)} 0)`}>
         <rect x="30" y="126" width="282" height="8" fill="var(--ink-2)" />
         <path d="M244 72 h40 l20 26 v38 h-60 z" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
@@ -75,7 +75,7 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
         <defs><clipPath id="tk-clip"><rect x={X0} y={YT} width={X1 - X0} height={H} rx="26" /></clipPath></defs>
         <rect x={X0} y={YT} width={X1 - X0} height={H} rx="26" fill="var(--surface)" />
         <g clip-path="url(#tk-clip)">{liquid}
-          {s.fill < 100 && <text x={(X0 + X1) / 2} y={YT + 12} font-size="11" text-anchor="middle" fill="var(--ink-2)">outage</text>}
+          {s.fill < 100 && <text x={(X0 + X1) / 2} y={YT + 12} font-size="12" text-anchor="middle" fill="var(--ink-2)">outage</text>}
         </g>
         {walls.map((x, i) => s.tank === 'bulk'
           ? <line key={i} x1={x} x2={x} y1={YT} y2={YB} stroke="var(--ink)" stroke-width="3" />
@@ -97,26 +97,26 @@ function RearView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
   const fast = ev === 'curveFast', curve = fast || ev === 'curveSlow';
   const side = curve ? fillF(s.fill) * 0.9 * sm(t / 0.4) * (fast ? 1 : 0.35) : 0; // baffles do not stop side-to-side surge
   const ang = fast ? 32 * sm((t - 0.35) / 0.5) : curve ? 2 * sm(t / 0.5) : 0;
-  const cx = 100, cy = 82, R = 46, lvl = cy + R - (2 * R * Math.min(s.fill, 100)) / 100, rise = side * 40;
+  const cx = 136, cy = 88, R = 40, lvl = cy + R - (2 * R * Math.min(s.fill, 100)) / 100, rise = side * 40;
   return (
     <svg viewBox="0 0 200 180" width="100%" style={{ display: 'block', maxWidth: '260px', marginInline: 'auto' }} role="img" aria-label={`Rear view: tanker center of gravity about 60 to 78 inches high (a pickup's is 18 to 24 inches).${fast ? ' At the posted curve speed the liquid surges sideways and the tanker rolls over.' : ev === 'curveSlow' ? ' Well below the posted speed the tanker leans only slightly.' : ''}`}>
       <rect x="0" y="0" width="200" height="180" fill="var(--surface-2)" />
       <rect x="0" y="160" width="200" height="20" fill="var(--surface)" />
-      <g transform={`rotate(${ang.toFixed(1)} 150 160)`}>
-        <rect x="58" y="128" width="84" height="10" fill="var(--ink-2)" />
-        <rect x="56" y="136" width="20" height="24" rx="4" fill="var(--ink)" /><rect x="124" y="136" width="20" height="24" rx="4" fill="var(--ink)" />
+      <g transform={`rotate(${ang.toFixed(1)} 180 160)`}>
+        <rect x="94" y="128" width="84" height="10" fill="var(--ink-2)" />
+        <rect x="92" y="136" width="20" height="24" rx="4" fill="var(--ink)" /><rect x="160" y="136" width="20" height="24" rx="4" fill="var(--ink)" />
         <defs><clipPath id="tk-rc"><circle cx={cx} cy={cy} r={R} /></clipPath></defs>
         <circle cx={cx} cy={cy} r={R} fill="var(--surface)" />
-        <polygon clip-path="url(#tk-rc)" points={`${cx - R},${cy + R} ${cx - R},${lvl + rise / 2} ${cx + R},${lvl - rise / 2} ${cx + R},${cy + R}`} fill={s.liquid === 'milk' ? 'var(--surface-2)' : 'var(--blue)'} opacity={s.liquid === 'milk' ? 1 : 0.55} />
+        <polygon clip-path="url(#tk-rc)" points={`${cx - R},${cy + R} ${cx - R},${lvl + rise / 2} ${cx + R},${lvl - rise / 2} ${cx + R},${cy + R}`} fill="var(--blue)" opacity={0.6} />
         <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--ink)" stroke-width="2" />
         <circle cx={cx + side * 10} cy={cy + 6} r="5" fill="var(--amber)" stroke="var(--ink)" />
       </g>
       <line x1="14" x2="14" y1="160" y2={cy + 6} stroke="var(--amber)" stroke-width="3" />
-      <text x="20" y={cy + 2} font-size="11" fill="var(--ink)">CG 60–78 in</text>
+      <line x1="14" x2={cx - R - 2} y1={cy + 6} y2={cy + 6} stroke="var(--amber)" stroke-dasharray="3 3" /><text x="20" y={cy - 2} font-size="12" fill="var(--ink)">CG 60–78 in</text>
       <line x1="8" x2="26" y1="132" y2="132" stroke="var(--ink-2)" stroke-dasharray="3 3" />
-      <text x="20" y="128" font-size="11" fill="var(--ink-2)">pickup 18–24</text>
-      {fast && t > 0.6 && <text x="100" y="20" font-size="13" font-weight="700" text-anchor="middle" fill="var(--red)">ROLLOVER</text>}
-      {curve && <text x="194" y="176" font-size="11" text-anchor="end" fill="var(--ink-2)">outside of curve →</text>}
+      <text x="20" y="128" font-size="12" fill="var(--ink-2)">pickup 18–24 in</text>
+      {fast && t > 0.6 && <text x="110" y="20" font-size="14" font-weight="700" text-anchor="middle" fill="var(--red)">ROLLOVER</text>}
+      {curve && <text x="194" y="176" font-size="12" text-anchor="end" fill="var(--ink-2)">outside of curve →</text>}
     </svg>
   );
 }
@@ -233,7 +233,7 @@ function Challenge({ onEvidence, onChallenge, concepts, motion }: WidgetProps & 
       <div class="stack" role="group" aria-label="Choose an answer" style={{ gap: '6px' }}>{q.opts.map(opt)}</div>
       {pick !== null && <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">
         <div class="verdict">{ok ? 'Right' : `Answer: ${q.opts[q.ans]}`}</div>
-        <p class="small">{!ok && shown ? `What happens: ${RESULT[shown.ev](scene)} ` : ''}{q.why} <span class="plate">p. {q.page}</span></p>
+        <p class="small">{!ok && shown && isBad(shown.ev, scene) ? `What happens: ${RESULT[shown.ev](scene)} ` : ''}{q.why} <span class="plate">p. {q.page}</span></p>
         {motion && shown && <button class="btn sm" onClick={() => run(shown.ev)}>Replay</button>}
         <button class="btn primary sm" onClick={next}>{i + 1 === QS.length ? 'Finish' : 'Next scenario'}</button>
       </div>}

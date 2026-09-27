@@ -23,26 +23,26 @@ function Truck({ x, y, load }: { x: number; y: number; load: Load }) {
 
 function MapSvg({ s, hot }: { s: State; hot: Feat[] }) {
   const sp = spot(s.spot);
-  const t = { 'font-size': 12, fill: 'var(--ink)' } as const;
+  const t = { 'font-size': 13, fill: 'var(--ink)' } as const;
   const hl = (f: Feat) => { const [x, y, w, h] = FEAT_XY[f]; return hot.includes(f) ? <g><rect x={x - 4} y={y - 4} width={w + 8} height={h + 8} rx="4" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-dasharray="5 3" /><text x={x + w / 2} y={y - 7} text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">{sp.d[f]} ft</text></g> : null; };
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" style={{ display: 'block' }}
       aria-label={`Map, not to scale. Highway across the top with a bridge over a river on the left and a tunnel on the right. Below: a diner with people outside, a fuel island, a brush fire, a roadside turnout, a shipper's yard and a safe haven. Your ${LOAD[s.load]} truck is at spot ${sp.n}, ${sp.name}.${hot.length ? ` Within 300 ft: ${hot.map((f) => FEAT_NAME[f]).join(', ')}.` : ''}`}>
       <rect width={W} height={H} fill="var(--accent-soft)" />
-      <rect x="34" y="0" width="30" height={H} fill="var(--blue-soft)" /><text x="49" y="244" text-anchor="middle" {...t}>river</text>
+      <rect x="34" y="0" width="30" height={H} fill="var(--blue-soft)" /><text x="49" y="130" text-anchor="middle" transform="rotate(-90 49 130)" {...t}>river</text>
       <rect y="30" width={W} height="40" fill="var(--surface)" /><rect y="70" width={W} height="12" fill="var(--surface-2)" />
       <line x1="0" x2={W} y1="30" y2="30" stroke="var(--ink-2)" stroke-width="1.5" /><line x1="0" x2={W} y1="70" y2="70" stroke="var(--ink-2)" stroke-width="1.5" />
       <line x1="0" x2={W} y1="50" y2="50" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 7" />
-      <text x="120" y="45" {...t}>traveled part of the road</text><text x="236" y="80" font-size="11" fill="var(--ink-2)">shoulder</text>
+      <text x="120" y="45" {...t}>traveled part of the road</text>
       <rect x="30" y="26" width="38" height="4" fill="var(--ink)" /><rect x="30" y="70" width="38" height="4" fill="var(--ink)" /><text x="72" y="22" {...t}>bridge</text>
-      <path d="M318 0 H360 V100 H318 Z" fill="var(--ok)" opacity=".45" /><path d="M318 70 V38 a10 10 0 0 1 10 -10 H360 V70 Z" fill="var(--ink-2)" /><text x="314" y="96" text-anchor="end" {...t}>tunnel</text>
+      <path d="M318 0 H360 V100 H318 Z" fill="var(--ok)" opacity=".45" /><path d="M318 70 V38 a10 10 0 0 1 10 -10 H360 V70 Z" fill="#2a332d" /><text x="339" y="92" text-anchor="middle" {...t}>tunnel</text>
       <rect x="98" y="150" width="58" height="36" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="127" y="172" text-anchor="middle" {...t}>diner</text>
-      {[166, 176, 186].map((x) => <g><circle cx={x} cy="158" r="3.5" fill="var(--ink)" /><rect x={x - 3} y="163" width="6" height="12" rx="2" fill="var(--ink)" /></g>)}<text x="200" y="198" text-anchor="middle" font-size="11" fill="var(--ink)">people</text>
+      {[166, 176, 186].map((x) => <g><circle cx={x} cy="158" r="3.5" fill="var(--ink)" /><rect x={x - 3} y="163" width="6" height="12" rx="2" fill="var(--ink)" /></g>)}<text x="200" y="198" text-anchor="middle" font-size="13" fill="var(--ink)">people</text>
       <rect x="228" y="118" width="50" height="8" fill="var(--ink-2)" /><rect x="244" y="142" width="8" height="10" fill="var(--blue)" /><text x="253" y="166" text-anchor="middle" {...t}>fuel</text>
-      <rect x="284" y="140" width="36" height="24" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.2" /><text x="302" y="178" text-anchor="middle" font-size="11" fill="var(--ink)">store</text>
-      <path d="M313 122 q-10 -8 -4 -20 q2 8 6 4 q-2 -8 6 -12 q-2 10 6 12 q4 10 -6 16 Z" fill="var(--red)" stroke="var(--ink)" stroke-width="1" /><text x="330" y="136" text-anchor="middle" font-size="11" fill="var(--ink)">fire</text>
-      <rect x="20" y="200" width="56" height="40" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="48" y="224" text-anchor="middle" font-size="11" fill="var(--ink)">shipper</text>
-      <rect x="258" y="202" width="96" height="42" rx="4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4" /><text x="306" y="246" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent)">SAFE HAVEN</text>
+      <rect x="284" y="140" width="36" height="24" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.2" /><text x="302" y="180" text-anchor="middle" font-size="13" fill="var(--ink)">store</text>
+      <path d="M313 122 q-10 -8 -4 -20 q2 8 6 4 q-2 -8 6 -12 q-2 10 6 12 q4 10 -6 16 Z" fill="var(--red)" stroke="var(--ink)" stroke-width="1" /><text x="334" y="138" text-anchor="middle" font-size="13" fill="var(--ink)">fire</text>
+      <rect x="20" y="200" width="56" height="40" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="48" y="225" text-anchor="middle" font-size="13" fill="var(--ink)">shipper</text>
+      <rect x="258" y="202" width="96" height="42" rx="4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4" /><text x="306" y="238" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">SAFE HAVEN</text>
       {(Object.keys(FEAT_XY) as Feat[]).map(hl)}
       <Truck x={sp.x} y={sp.y} load={s.load} />
       {s.dev === 'flare' && <g>{[-50, -40].map((dx) => <circle cx={sp.x + dx} cy={sp.y + 4} r="3" fill="var(--red)" stroke="var(--amber)" stroke-width="2" />)}</g>}
@@ -94,7 +94,7 @@ function Explore() {
   return (
     <div class="stack">
       <Pick<Load> label="Load" value={s.load} opts={LOAD} set={(load) => up({ load })} />
-      <p class="small muted">Tap a numbered spot to move the truck. Features within 300 ft that matter for this load are outlined in red.</p>
+      <p class="small muted">Gray strip under the road = shoulder. Tap a numbered spot to move the truck. Features within 300 ft that matter for this load are outlined in red.</p>
       <Map s={s} onSpot={(spot) => up({ spot })} />
       <div class="grid2">
         <Pick<Stop> label="Why you stopped" value={s.stop} opts={{ park: 'Parked (meal, rest, overnight)', brief: 'Short stop the job needs (e.g. fueling)' }} set={(stop) => up({ stop })} />

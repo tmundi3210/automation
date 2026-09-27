@@ -21,10 +21,10 @@ export function Placard({ label, cls, faded, size = 92 }: { label: string; cls: 
       <rect x="15" y="15" width="70" height="70" transform="rotate(45 50 50)" fill="var(--surface)" stroke="var(--ink)" stroke-width="3" stroke-dasharray={faded ? '6 4' : undefined} />
       <rect x="21" y="21" width="58" height="58" transform="rotate(45 50 50)" fill="none" stroke="var(--ink-2)" stroke-width="1.2" />
       {lines.map((w, i) => {
-        const est = w.length * 7.4;
-        return <text x="50" y={y0 + i * 14} text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)" textLength={est > 74 ? 74 : undefined} lengthAdjust="spacingAndGlyphs">{w}</text>;
+        const est = w.length * 8.4;
+        return <text x="50" y={y0 + i * 14} text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)" textLength={est > 60 ? 60 : undefined} lengthAdjust="spacingAndGlyphs">{w}</text>;
       })}
-      {cls && <text x="50" y="88" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{cls}</text>}
+      {cls && <text x="50" y="83" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{cls}</text>}
     </svg>
   );
 }
@@ -44,10 +44,10 @@ function Rig({ set }: { set: string[] }) {
       <rect x="106" y="46" width="222" height="60" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
       <text x="217" y="81" text-anchor="middle" font-size="13" fill="var(--ink-2)">trailer (top view)</text>
       {spots.map(([x, y]) => d(x, y))}
-      <text x="20" y="112" text-anchor="middle" font-size="11" fill="var(--ink)">front</text>
-      <text x="344" y="112" text-anchor="middle" font-size="11" fill="var(--ink)">rear</text>
-      <text x="236" y="27" font-size="11" fill="var(--ink)">left side</text>
-      <text x="236" y="137" font-size="11" fill="var(--ink)">right side</text>
+      <text x="20" y="114" text-anchor="middle" font-size="13" fill="var(--ink)">front</text>
+      <text x="344" y="114" text-anchor="middle" font-size="13" fill="var(--ink)">rear</text>
+      <text x="234" y="27" font-size="13" fill="var(--ink)">left side</text>
+      <text x="234" y="137" font-size="13" fill="var(--ink)">right side</text>
     </svg>
   );
 }
@@ -80,12 +80,12 @@ function Board({ r, useD, setUseD }: { r: Result; useD: boolean; setUseD?: (b: b
 function Meter({ total }: { total: number }) {
   const max = Math.max(2400, total * 1.1), x = (v: number) => 8 + (v / max) * 344;
   return (
-    <svg viewBox="0 0 360 48" width="100%" role="img" style={{ display: 'block', maxWidth: '520px' }} aria-label={`Table 2 total (non-bulk, packages included): ${fmt(total)} lb. Placards needed at 1,001 lb or more. ${total >= 1001 ? 'Over the line.' : 'Under the line.'}`}>
+    <svg viewBox="0 0 360 54" width="100%" role="img" style={{ display: 'block', maxWidth: '520px' }} aria-label={`Table 2 total (non-bulk, packages included): ${fmt(total)} lb. Placards needed at 1,001 lb or more. ${total >= 1001 ? 'Over the line.' : 'Under the line.'}`}>
       <rect x="8" y="16" width="344" height="14" rx="3" fill="var(--surface-2)" stroke="var(--line)" />
       <rect x="8" y="16" width={Math.max(0, x(total) - 8)} height="14" rx="3" fill={total >= 1001 ? 'var(--amber)' : 'var(--accent)'} />
       <line x1={x(1001)} x2={x(1001)} y1="10" y2="36" stroke="var(--red)" stroke-width="2.5" />
-      <text x={x(1001)} y="9" text-anchor="middle" font-size="11" font-weight="700" fill="var(--red)">1,001 lb</text>
-      <text x="8" y="46" font-size="11" fill="var(--ink)">Table 2 total: {fmt(total)} lb {total >= 1001 ? '(placard)' : '(no Table 2 placard)'}</text>
+      <text x={x(1001)} y="9" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">1,001 lb</text>
+      <text x="8" y="50" font-size="13" fill="var(--ink)">Table 2 total: {fmt(total)} lb {total >= 1001 ? '(placard)' : '(no Table 2 placard)'}</text>
     </svg>
   );
 }
@@ -140,9 +140,9 @@ interface Load { text: string; pkgs: Pkg[]; opts: string[]; ok: number; why: str
 export const LOADS: Load[] = [
   { text: 'Two shipping papers, both loaded at Stop A.', pkgs: [{ mat: '3', lb: 600, stop: 'A' }, { mat: '8', lb: 500, stop: 'A' }], ok: 1, page: '9-10',
     opts: ['None — neither class reaches 1,001 lb alone', 'FLAMMABLE + CORROSIVE (or DANGEROUS instead)', 'DANGEROUS placards are required'],
-    why: 'Add all Table 2 amounts, packages included: 600 + 500 = 1,100 lb, which is 1,001 or more. DANGEROUS is allowed here (2 classes, under 2,205 lb of either at one place) but it is only an option.' },
+    why: 'Add all Table 2 amounts, packages included: 600 + 500 = 1,100 lb, which is 1,001 or more. DANGEROUS is allowed here (2 classes, under 2,205 lb of either at one place) but it is only an option. Too few placards would leave responders guessing.' },
   { text: 'One Class 8 corrosive shipment, package included.', pkgs: [{ mat: '8', lb: 900, stop: 'A' }], ok: 0, page: '9-10',
-    opts: ['No placard required', 'CORROSIVE', 'DANGEROUS'], why: '900 lb is under 1,001, and it is your only HazMat. Class 8 is Table 2, so no placard is required.' },
+    opts: ['No placard required', 'CORROSIVE', 'DANGEROUS'], why: '900 lb is under 1,001, and it is your only HazMat. Class 8 is Table 2, so no placard is required. (You may still show CORROSIVE, since it correctly identifies the hazard — but it is not required.)' },
   { text: 'A small box of Division 1.1 explosives.', pkgs: [{ mat: '1.1', lb: 40, stop: 'A' }], ok: 1, page: '9-10',
     opts: ['None — it is under 1,001 lb', 'EXPLOSIVES 1.1', 'DANGEROUS'], why: '1.1 is Placard Table 1: placard any amount. The 1,001-lb rule is only for Table 2.' },
   { text: 'Dangerous-when-wet material plus drums of flammable liquid.', pkgs: [{ mat: '4.3', lb: 300, stop: 'A' }, { mat: '3', lb: 500, stop: 'A' }], ok: 2, page: '9-10',
@@ -177,13 +177,13 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
       <span class="small muted num">Load {i + 1} of {LOADS.length}</span>
       <strong>{L.text}</strong>
       <ul class="card" style={{ margin: 0, padding: '8px 12px 8px 28px' }}>{L.pkgs.map((p) => <li class="small">{pkgText(p)}</li>)}</ul>
-      <p class="small">Which placards go on all 4 sides?</p>
+      <p class="small">Which placards are <strong>required</strong> on all 4 sides?</p>
       <div class="stack" role="group" aria-label="Pick the placards" style={{ gap: '6px' }}>{L.opts.map((o, k) => (
         <button class={`btn ${pick !== null && k === L.ok ? 'primary' : ''}`} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick === k && k !== L.ok ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }} disabled={pick !== null}
           onClick={() => { setPick(k); const ok = k === L.ok; if (!ok) setMiss(miss + 1); onEvidence({ concepts, ok }); }}>{pick !== null && k === L.ok ? '✓ ' : pick === k ? '✗ ' : ''}{o}</button>))}</div>
       {pick !== null && <>
         <div class={`feedback ${good ? 'good' : 'bad'}`} role="status"><div class="verdict">{good ? 'Right' : `It is: ${L.opts[L.ok]}`}</div>
-          <p class="small">{!good && 'Placarding the wrong way leaves responders guessing, or the truck moving improperly placarded. '}{L.why} <span class="plate">p. {L.page}</span></p>
+          <p class="small">{L.why} <span class="plate">p. {L.page}</span></p>
           <button class="btn primary sm" onClick={() => { if (i + 1 === LOADS.length && miss === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === LOADS.length ? 'Finish' : 'Next load'}</button></div>
         <Board r={placardsFor(L.pkgs)} useD={false} />
       </>}

@@ -15,7 +15,7 @@ const SPEEDS = [15, 25, 35, 45, 55];
 type Key = 'P' | 'R' | 'L' | 'B';
 const PARTS: { key: Key; name: string; color: string; ink: string; what: string }[] = [
   { key: 'P', name: 'Perception', color: 'var(--blue)', ink: 'var(--surface)', what: 'from seeing the hazard until your brain knows it is a hazard' },
-  { key: 'R', name: 'Reaction', color: 'var(--amber)', ink: 'var(--ink)', what: 'from knowing about the hazard until your foot hits the brake' },
+  { key: 'R', name: 'Reaction', color: 'var(--amber-soft)', ink: 'var(--ink)', what: 'from knowing about the hazard until your foot hits the brake' },
   { key: 'L', name: 'Brake lag', color: 'var(--accent)', ink: 'var(--accent-ink)', what: 'pedal is down, but air is still flowing through the lines to the brakes (½ second or more)' },
   { key: 'B', name: 'Braking', color: 'var(--red)', ink: 'var(--on-red)', what: 'from the brakes working until the truck stops' },
 ];
@@ -43,7 +43,7 @@ function Road({ mph, on, label, marks, pick, hide, hydraulic }: { mph: number; o
         const w = s.len * K;
         return w > 0 && (
           <g key={s.p.key}>
-            <rect x={fx(s.from)} y="56" width={w} height="22" fill={s.p.color} stroke="var(--ink)" stroke-width="1" />
+            <rect x={fx(s.from)} y="56" width={w} height="22" fill={s.p.color} stroke={s.p.key === 'R' ? 'var(--amber)' : 'var(--ink)'} stroke-width={s.p.key === 'R' ? 2.5 : 1} />
             {w >= 13 && <text x={fx(s.from) + w / 2} y="72" text-anchor="middle" font-size="13" font-weight="700" fill={s.p.ink}>{s.p.key}</text>}
           </g>
         );
@@ -52,11 +52,11 @@ function Road({ mph, on, label, marks, pick, hide, hydraulic }: { mph: number; o
         <line x1={fx(total - d[2])} y1="84" x2={fx(total - d[2])} y2="92" stroke="var(--ink)" stroke-width="2" />
         <text x={Math.min(fx(total - d[2]), 318)} y="92" text-anchor="end" font-size="11" fill="var(--ink)" dx="-3">{`no lag: ${total - d[2]} ft`}</text>
       </g>}
-      {!hide && <g><line x1={fx(total)} y1="44" x2={fx(total)} y2="90" stroke="var(--ink)" stroke-width="2.5" />
+      {!hide && total > 0 && <g><line x1={fx(total)} y1="44" x2={fx(total)} y2="90" stroke="var(--ink)" stroke-width="2.5" />
         <text x={Math.max(Math.min(fx(total), 300), 90)} y="28" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">{`Stops: ${total} ft`}</text></g>}
       {pick != null && <g>
         <line x1={fx(pick)} y1="38" x2={fx(pick)} y2="96" stroke={pick === total ? 'var(--ok)' : 'var(--red)'} stroke-width="3" stroke-dasharray="5 3" />
-        <text x={Math.max(Math.min(fx(pick), 316), 44)} y="14" text-anchor="middle" font-size="13" font-weight="700" fill={pick === total ? 'var(--ok)' : 'var(--red)'}>{pick === total ? '✓ your line' : '✗ your line'}</text>
+        <text x={Math.max(Math.min(fx(pick), 316), 44)} y="13" text-anchor="middle" font-size="13" font-weight="700" fill={pick === total ? 'var(--ok)' : 'var(--red)'}>{pick === total ? '✓ your line' : '✗ your line'}</text>
       </g>}
       {[0, 100, 200, 300, 400].map((t) => (
         <g key={t} aria-hidden="true"><line x1={fx(t)} y1="96" x2={fx(t)} y2="104" stroke="var(--ink-2)" stroke-width="1" /><text x={fx(t)} y="119" text-anchor="middle" font-size="13" fill="var(--ink-2)">{t}</text></g>
@@ -89,7 +89,7 @@ function Explore() {
         {PARTS.map((p, i) => (
           <label key={p.key} class="toggle" style={{ minHeight: '44px', display: 'grid', gridTemplateColumns: 'auto auto 1fr auto', gap: '8px', alignItems: 'center' }}>
             <input type="checkbox" checked={on[p.key]} onChange={(e) => setOn({ ...on, [p.key]: (e.target as HTMLInputElement).checked })} />
-            <span aria-hidden="true" style={{ display: 'inline-grid', placeItems: 'center', width: '22px', height: '22px', background: p.color, color: p.ink, border: '1px solid var(--ink)', font: '700 .8rem/1 var(--body)' }}>{p.key}</span>
+            <span aria-hidden="true" style={{ display: 'inline-grid', placeItems: 'center', width: '22px', height: '22px', background: p.color, color: p.ink, border: p.key === 'R' ? '2px solid var(--amber)' : '1px solid var(--ink)', font: '700 .8rem/1 var(--body)' }}>{p.key}</span>
             <span class="small"><strong>{p.name}</strong>{p.key === 'L' && <span class="muted"> — air brakes only</span>}<br /><span class="muted">{p.what}</span></span>
             <strong class="num small" style={{ opacity: on[p.key] ? 1 : 0.45 }}>{d[i]} ft</strong>
           </label>
@@ -150,7 +150,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
           const p = PARTS.find((x) => x.key === k)!;
           const used = built.includes(k);
           return <button key={k} class="btn sm" disabled={used || done} aria-label={`${p.name}${used ? ', placed' : ''}`} style={{ justifyContent: 'flex-start', ...(used ? { opacity: 0.5 } : wrongKey === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }} onClick={() => tap(k)}>
-            <span aria-hidden="true" style={{ display: 'inline-grid', placeItems: 'center', width: '20px', height: '20px', marginRight: '6px', background: p.color, color: p.ink, border: '1px solid var(--ink)', font: '700 .75rem/1 var(--body)' }}>{p.key}</span>{p.name}{used ? ' ✓' : ''}</button>;
+            <span aria-hidden="true" style={{ display: 'inline-grid', placeItems: 'center', width: '20px', height: '20px', marginRight: '6px', background: p.color, color: p.ink, border: p.key === 'R' ? '2px solid var(--amber)' : '1px solid var(--ink)', font: '700 .75rem/1 var(--body)' }}>{p.key}</span>{p.name}{used ? ' ✓' : ''}</button>;
         })}</div>
         {wp && !done && <div class="feedback bad" role="status"><div class="verdict">Not yet — {wp.name} comes later</div>
           <p class="small">Next is <strong>{exp.name}</strong>: {exp.what}. {wp.key === 'B' ? 'Braking cannot start until the air has reached the brakes.' : wp.key === 'L' ? 'Lag starts only once your foot is on the pedal.' : 'You cannot react before you perceive.'} <span class="plate">p. 5-12</span></p></div>}

@@ -236,3 +236,35 @@ test('a11y dark mode: main screens with a mistake badge', async ({ page }) => {
   });
   expect(ratio).toBeGreaterThanOrEqual(4.5);
 });
+
+test('endorsements: class B + School bus + HazMat → matching lessons, readiness and a 30-question HazMat mock', async ({ page }) => {
+  await page.goto(URL);
+  await page.getByRole('button', { name: 'Get started' }).click();
+  await page.locator('button.choice').filter({ has: page.locator('.t', { hasText: /^Class B$/ }) }).click();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByLabel(/S · School bus/).check();
+  await expect(page.getByLabel(/P · Passenger/)).toBeChecked(); // S needs P
+  await page.getByLabel(/H · Hazardous materials/).check();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.getByText(/Your \d+ written-test lessons \(General, Air Brakes, Passenger, School Bus, HazMat\)/)).toBeVisible();
+  await page.getByRole('button', { name: 'Build my plan' }).click();
+  for (const t of ['General Knowledge', 'Air Brakes', 'Passenger Transport', 'School Bus', 'Hazardous Materials']) await expect(page.getByLabel(`${t} readiness`)).toBeVisible();
+  await expect(page.getByLabel('Combination Vehicles readiness')).toHaveCount(0);
+  await page.goto(URL + '#path');
+  await expect(page.getByRole('heading', { name: 'Skills Tests' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Other tests you can study' })).toBeVisible();
+  await noOverflow(page);
+  await page.goto(URL + '#practice');
+  await page.getByRole('button', { name: 'Start Hazardous Materials mock' }).click();
+  await page.getByRole('button', { name: 'Begin' }).click();
+  await expect(page.getByText(/of 30/).first()).toBeVisible();
+});
+
+test('every added lesson opens without errors', async ({ page }) => {
+  await onboard(page);
+  for (const id of ['AB-01', 'AB-02', 'AB-03', 'DT-01', 'TK-01', 'PV-01', 'PV-02', 'SB-01', 'SB-02', 'HM-01', 'HM-02', 'HM-03', 'HM-04', 'SK-01', 'SK-02', 'SK-03']) {
+    await page.goto(URL + '#lesson.' + id);
+    await expect(page.locator('h1')).toBeVisible();
+    await noOverflow(page);
+  }
+});

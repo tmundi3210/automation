@@ -568,7 +568,7 @@ function linkGlossary() {
 }
 linkGlossary();
 
-if (ONLY) { if (problems.length) { console.error('PARSE PROBLEMS:\n' + problems.join('\n')); process.exit(1); } console.log('LESSON OK (nothing written)'); process.exit(0); }
+if (ONLY) { if (dropped.length) console.warn(`ENRICHMENT DROPPED (${dropped.length}):\n` + dropped.join('\n')); if (problems.length) { console.error('PARSE PROBLEMS:\n' + problems.join('\n')); process.exit(1); } console.log('LESSON OK (nothing written)'); process.exit(0); }
 const content: Content = { version: fnv(JSON.stringify(counts) + files.join()), handbook: 'DL 650 California Commercial Driver Handbook (R12-2019)', ...all, ...sh, counts };
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(content));

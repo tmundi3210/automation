@@ -96,7 +96,7 @@ function Schematic({ r, hide, mark, order, heavyFirst = true, motion, onValve }:
   }
   const desc = `Schematic: tractor pulling ${r.n} trailers. Emergency line ${fe.reach < 0 ? 'has no air' : `has air to trailer ${fe.reach + 1}${fe.out ? ' and escapes at the rear' : ''}`}. Service line ${fs.reach < 0 ? 'has no air' : `has air to trailer ${fs.reach + 1}${fs.out ? ' and escapes at the rear' : ''}`}.`;
   return (
-    <svg viewBox={`0 0 ${W} 166`} width="100%" style={{ display: 'block', maxWidth: '640px', marginInline: 'auto' }} role="img" aria-label={desc}>
+    <svg viewBox={`0 0 ${W} 166`} width="100%" style={{ display: 'block', maxWidth: '560px', marginInline: 'auto' }} role="img" aria-label={desc}>
       <rect x="0" y="0" width={W} height="166" fill="var(--surface)" />
       <text x="4" y={Y.e + 4} font-size="12" font-weight="700" fill="var(--red)">E</text>
       <text x="4" y={Y.s + 4} font-size="12" font-weight="700" fill="var(--blue)">S</text>

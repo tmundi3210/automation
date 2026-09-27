@@ -75,8 +75,8 @@ function BusPlan({ it, act, reducedMotion }: { it: Item | null; act: Act | null;
   const trans = reducedMotion ? undefined : 'transform .45s ease';
   const aria = `Top view of the bus, front at the right. Driver seat front left, service door front right, a 2-inch standee line just behind the driver's seat, the aisle down the middle, a rear emergency door, and the baggage bay under the floor.${it ? ` Now at the desk: ${it.text}${tag ? ` Result: ${tag}.` : ''}` : ''}`;
   return (
-    <svg viewBox="0 0 360 226" width="100%" role="img" aria-label={aria} style={{ maxWidth: '560px', display: 'block', margin: '0 auto' }}>
-      <rect width="360" height="226" fill="var(--surface-2)" />
+    <svg viewBox="0 0 360 234" width="100%" role="img" aria-label={aria} style={{ maxWidth: '560px', display: 'block', margin: '0 auto' }}>
+      <rect width="360" height="234" fill="var(--surface-2)" />
       <text x="6" y="16" font-size="13" fill="var(--ink-2)">◀ rear</text><text x="354" y="16" text-anchor="end" font-size="13" fill="var(--ink-2)">front ▶</text>
       <rect x="22" y="24" width="316" height="146" rx="12" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
       {[0, 1, 2, 3, 4, 5, 6].map((i) => <rect key={`t${i}`} x={54 + i * 32} y="32" width="24" height="40" rx="3" fill="var(--surface-2)" stroke="var(--ink-2)" />)}
@@ -87,8 +87,8 @@ function BusPlan({ it, act, reducedMotion }: { it: Item | null; act: Act | null;
       <rect x="310" y="160" width="28" height="10" fill="var(--accent)" /><text x="324" y="184" text-anchor="middle" font-size="12.5" fill="var(--ink)">door</text>
       <rect x="22" y="82" width="8" height="28" fill="var(--red)" /><text x="12" y="140" font-size="12.5" fill="var(--red)" transform="rotate(-90 12 140)">EXIT</text>
       {[120, 216].map((x) => <rect key={x} x={x} y="22" width="30" height="5" fill="var(--red)" />)}<text x="135" y="20" text-anchor="middle" font-size="12.5" fill="var(--red)">exit window</text>
-      <rect x="40" y="186" width="220" height="26" rx="4" fill="var(--surface)" stroke="var(--ink-2)" stroke-dasharray="4 3" /><text x="44" y="219" font-size="12.5" fill="var(--ink-2)">baggage bay / stowed</text>
-      <text x="334" y="222" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">off bus</text>
+      <rect x="40" y="186" width="220" height="26" rx="4" fill="var(--surface)" stroke="var(--ink-2)" stroke-dasharray="4 3" /><text x="44" y="228" font-size="12.5" fill="var(--ink-2)">baggage bay / stowed</text>
+      <text x="334" y="228" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">off bus</text>
       {it && pos && <g style={{ transition: trans, transform: `translate(${pos[0]}px, ${pos[1]}px)` }}><Thing it={it} x={0} y={0} /></g>}
       {it && tag && pos && <g transform={`translate(${pos[1] >= 180 ? (pos[0] >= 300 ? pos[0] - 70 : pos[0] + 66) : Math.min(Math.max(pos[0], 52), 308)} ${pos[1] >= 180 ? pos[1] : pos[1] + 30})`}>
         <rect x="-46" y="-11" width="92" height="20" rx="4" fill={ok ? 'var(--ok)' : 'var(--red)'} /><text y="4" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--surface)">{ok ? '✓ ' : '✕ '}{tag}</text></g>}
