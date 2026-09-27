@@ -395,6 +395,16 @@ function mergeEnrichment() {
   }
 }
 
+// ---------- explanations must not name options by position (options are shuffled in the app)
+const ORD: Record<string, number> = { first: 0, second: 1, third: 2 };
+function positionSafe(it: Item) {
+  const txt = (k: number) => `“${it.optionsText[k] ?? ''}”`;
+  it.explanation = it.explanation
+    .replace(/\b[Tt]he (first|second|third) (?:option|choice|answer)\b/g, (_m, w: string) => txt(ORD[w]))
+    .replace(/\b(?:choice|option|answer) \(?([abc])\)?(?![a-z])/gi, (_m, l: string) => txt('abc'.indexOf(l.toLowerCase())))
+    .replace(/\(([abc])\)/g, (_m, l: string) => txt('abc'.indexOf(l)));
+}
+
 // ---------- per-option "why this is wrong" notes (enrich/notes/<LESSON>.json)
 function mergeNotes() {
   let files: string[] = [];
@@ -435,6 +445,7 @@ mapFacts();
 deriveItems();
 mergeEnrichment();
 mergeNotes();
+for (const it of Object.values(all.items)) positionSafe(it);
 mapConcepts(); // re-map every item (incl. derived) by page + keyword overlap
 const derivedNumbers = Object.values(all.items).filter((i) => i.origin === 'derived-number').length;
 const sh = parseStartHere(readFileSync(join(SRC, '00-START-HERE.md'), 'utf8'));
@@ -466,7 +477,7 @@ function linkGlossary() {
     .filter((t) => t.bare.length >= 3 && !SKIP.has(t.bare.toLowerCase()))
     .sort((a, b) => b.bare.length - a.bare.length);
   for (const c of Object.values(all.concepts)) {
-    const used = new Set<number>();
+    let used = new Set<number>();
     const wrap = (html: string) => html.split(/(<[^>]+>)/).map((seg, k, arr) => {
       if (seg.startsWith('<')) return seg;
       const inButton = arr.slice(0, k).reverse().find((x) => /^<\/?button/.test(x));
@@ -483,8 +494,8 @@ function linkGlossary() {
       }
       return seg;
     }).join('');
-    c.html = wrap(c.html);
-    c.core = c.core.map(wrap);
+    used = new Set<number>(); c.core = c.core.map(wrap);   // quick view: first use of each term
+    used = new Set<number>(); c.html = wrap(c.html);       // dive deeper: its own first uses
   }
 }
 linkGlossary();

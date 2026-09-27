@@ -146,7 +146,7 @@ test('unfinished mock resumes after reload', async ({ page }) => {
 test('glossary term in lesson text opens a definition', async ({ page }) => {
   await onboard(page);
   await page.goto(URL + '#lesson.GK-01');
-  await page.locator('button.gl').first().click();
+  await page.locator('button.gl:visible').first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);

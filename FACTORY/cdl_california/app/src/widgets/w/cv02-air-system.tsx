@@ -36,13 +36,16 @@ const SCEN: Scenario[] = [
     why: 'Its emergency brakes work only from air stored in the trailer tank, and it has no parking brake. The air leaks away, then there are no brakes. Always chock the wheels.', p: '6-7' },
 ];
 
+/** Choosing a line fault starts from a charged rig (red line intact, pressure above the pop-out point, knob in, brakes off) so its outcome always shows. */
+const charged = (s: AirState): Partial<AirState> => ({ emBreak: false, knobIn: true, pedal: false, hand: false, psi: s.psi > POP ? s.psi : START.psi });
+
 function Controls({ s, set }: { s: AirState; set: (p: Partial<AirState>) => void }) {
   const on = { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' };
   const tb = (label: string, k: 'pedal' | 'hand', hint: string) => <button class="btn sm" aria-pressed={s[k]} style={s[k] ? on : {}} onClick={() => set({ [k]: !s[k] })} title={hint}>{s[k] ? '✓ ' : ''}{label}</button>;
   return (
     <div class="stack">
       <div class="row" role="group" aria-label="Cab controls">
-        <button class="btn sm" style={{ borderColor: 'var(--red)' }} onClick={() => set({ knobIn: !s.knobIn })}>{s.knobIn ? 'Pull knob out' : 'Push knob in'}</button>
+        <button class={`btn sm${!s.knobIn && !s.emBreak && s.psi > POP ? ' primary' : ''}`} style={{ borderColor: 'var(--red)' }} onClick={() => set({ knobIn: !s.knobIn })}>{s.knobIn ? 'Pull knob out' : 'Push knob in'}</button>
         {tb('Press brake pedal', 'pedal', 'Foot brake: works every brake on the rig')}
         {tb('Trailer hand valve', 'hand', 'Trolley valve / Johnson bar: trailer brakes only')}
       </div>
@@ -54,8 +57,8 @@ function Controls({ s, set }: { s: AirState; set: (p: Partial<AirState>) => void
       <fieldset class="stack" style={{ border: '1px solid var(--line)', borderRadius: '8px', padding: '10px', gap: '6px' }}>
         <legend class="small" style={{ fontWeight: 700 }}>Faults</legend>
         <label class="toggle"><input type="checkbox" checked={s.emBreak} onChange={(e) => set({ emBreak: (e.target as HTMLInputElement).checked })} />Emergency (red) line breaks</label>
-        <label class="toggle"><input type="checkbox" checked={s.svcBreak} onChange={(e) => set({ svcBreak: (e.target as HTMLInputElement).checked })} />Service (blue) line comes apart</label>
-        <label class="toggle"><input type="checkbox" checked={s.crossed} onChange={(e) => set({ crossed: (e.target as HTMLInputElement).checked })} />Glad hands crossed (red ↔ blue)</label>
+        <label class="toggle"><input type="checkbox" checked={s.svcBreak} onChange={(e) => set((e.target as HTMLInputElement).checked ? { svcBreak: true, ...charged(s) } : { svcBreak: false })} />Service (blue) line comes apart</label>
+        <label class="toggle"><input type="checkbox" checked={s.crossed} onChange={(e) => set((e.target as HTMLInputElement).checked ? { crossed: true, ...charged(s) } : { crossed: false })} />Glad hands crossed (red ↔ blue)</label>
       </fieldset>
       <div class="row" role="group" aria-label="Trailer type">
         <button class="btn sm" aria-pressed={s.spring} style={s.spring ? on : {}} onClick={() => set({ spring: true })}>Trailer with spring brakes</button>
@@ -76,8 +79,8 @@ function Controls({ s, set }: { s: AirState; set: (p: Partial<AirState>) => void
   );
 }
 
-function Status({ s }: { s: AirState }) {
-  const o = simulate(s);
+function Status({ s, hints = false }: { s: AirState; hints?: boolean }) {
+  const o = simulate(s, hints);
   return (
     <div class="card flat stack" role="status" aria-live="polite" style={{ gap: '8px' }}>
       <div class="eyebrow">What happens</div>
@@ -103,9 +106,9 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
   }, [leaking, reducedMotion]);
   return (
     <div class="stack">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px', alignItems: 'start' }}>
         <AirDiagram s={s} motion={!reducedMotion} />
-        <div class="stack"><Controls s={s} set={set} /><Status s={s} /></div>
+        <div class="stack"><Controls s={s} set={set} /><Status s={s} hints /></div>
       </div>
       <div class="row"><button class="btn sm" onClick={() => setS({ ...START })}>Reset rig</button><span class="small muted">Solid coloured line = air flowing; dotted grey = no air.</span></div>
     </div>
@@ -143,7 +146,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
         </div>
       )}
       <div class="eyebrow">{pick === null ? 'The rig right now' : 'What the sim shows'}</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px', alignItems: 'start' }}>
         <AirDiagram s={shown} motion={!reducedMotion} />
         {pick !== null && <Status s={shown} />}
       </div>

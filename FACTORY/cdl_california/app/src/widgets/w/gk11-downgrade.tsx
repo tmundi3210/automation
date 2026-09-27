@@ -21,32 +21,67 @@ export function tick(s: Sim): Sim {
 }
 const start = (safe: number, gear: Gear): Sim => ({ t: 0, v: safe - 4, brake: false, heat: 0, gear, hist: [{ t: 0, v: safe - 4, b: false }] });
 
-function Chart({ s, safe }: { s: Sim; safe: number }) {
-  const W = 360, H = 202, L = 34, R = 350, T = 12, B = 150, span = 40;
-  const t0 = Math.max(0, s.t - span);
+/** The handbook pattern for one safe speed (p. 2-38): rise to safe speed, brake ≈3 s to about 5 below, release, repeat. Drawn before any interaction. */
+const pattern = (safe: number) => [[0, safe - 3], [6, safe], [9, safe - 5], [19, safe], [22, safe - 5], [32, safe], [35, safe - 5], [40, safe - 2.5]] as const;
+const W = 360;
+
+/** Side view of the grade with the truck on it: at the top (idle) until you start, then moving down with time. */
+function GradeStrip({ s }: { s: Sim | null }) {
+  const x0 = 44, y0 = 34, x1 = 300, y1 = 80;
+  const f = s ? Math.min(1, s.t / 60) : 0;
+  const tx = x0 + (x1 - x0) * f, ty = y0 + (y1 - y0) * f, ang = (Math.atan2(y1 - y0, x1 - x0) * 180) / Math.PI;
+  const gearTxt = !s ? 'at the top' : s.gear === 'none' ? 'no gear!' : `${s.gear} gear`;
+  return (
+    <svg viewBox={`0 0 ${W} 100`} width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Side view of a long, steep downgrade with an escape ramp at the bottom. Your truck is ${s ? `${Math.round(f * 100)} percent of the way down, ${gearTxt}` : 'waiting at the top of the grade'}.`}>
+      <rect width={W} height="100" fill="var(--surface)" />
+      <path d={`M 0 ${y0} L ${x0} ${y0} L ${x1} ${y1} L ${W} ${y1} L ${W} 100 L 0 100 Z`} fill="var(--surface-2)" stroke="none" />
+      <path d={`M 0 ${y0} L ${x0} ${y0} L ${x1} ${y1} L ${W} ${y1}`} fill="none" stroke="var(--ink-2)" stroke-width="3" />
+      <path d={`M ${x1 + 8} ${y1} L 352 ${y1 - 22}`} fill="none" stroke="var(--amber)" stroke-width="5" stroke-linecap="round" />
+      <text x="354" y="46" text-anchor="end" font-size="14" font-weight="700" fill="var(--ink)">escape ramp</text>
+      <text x={x0 + 70} y={y0 + 40} font-size="14" fill="var(--ink-2)" transform={`rotate(${ang.toFixed(1)} ${x0 + 70} ${y0 + 40})`}>long, steep downgrade</text>
+      <g transform={`translate(${tx.toFixed(1)} ${ty.toFixed(1)}) rotate(${ang.toFixed(1)})`}>
+        <rect x="-44" y="-15" width="32" height="13" rx="1.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.3" />
+        <rect x="-11" y="-15" width="11" height="13" rx="2" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.3" />
+      </g>
+      <text x="6" y="20" font-size="14" font-weight="700" fill={s?.gear === 'none' ? 'var(--red)' : 'var(--ink)'}>{s ? `Truck: ${gearTxt}` : 'Pick your gear here, at the top ↓'}</text>
+    </svg>
+  );
+}
+
+function Chart({ s, safe }: { s: Sim | null; safe: number }) {
+  const H = 202, L = 34, R = 350, T = 12, B = 150, span = 40;
+  const t0 = s ? Math.max(0, s.t - span) : 0;
   const lo = safe - 15, hi = safe + 15;
   const X = (t: number) => L + ((t - t0) / span) * (R - L);
   const Y = (v: number) => B - ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * (B - T);
-  const pts = s.hist.filter((p) => p.t >= t0);
-  const heatW = Math.min(1, s.heat / 120) * 150;
+  const pts = s ? s.hist.filter((p) => p.t >= t0) : [];
+  const heat = s?.heat ?? 0;
+  const heatW = Math.min(1, heat / 120) * 150;
+  const ghost = pattern(safe);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Speed over time. Safe speed ${safe} mph, 5 below is ${safe - 5} mph. Now ${s.v.toFixed(1)} mph at ${s.t} seconds, brakes ${s.brake ? 'on' : 'off'}.`}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={s ? `Speed over time. Safe speed ${safe} mph, 5 below is ${safe - 5} mph. Now ${s.v.toFixed(1)} mph at ${s.t} seconds, brakes ${s.brake ? 'on' : 'off'}.` : `Speed chart before you start. Safe speed line at ${safe} mph, release line at ${safe - 5} mph. A faint example shows the handbook pattern: brake at ${safe}, release near ${safe - 5}, let speed come back up, repeat.`}>
       <rect width={W} height={H} fill="var(--surface)" />
       <rect x={L} y={Y(safe)} width={R - L} height={Y(safe - 5) - Y(safe)} fill="var(--ok)" opacity=".14" />
-      {[lo, lo + 10, lo + 20, hi].map((v) => <g><line x1={L} x2={R} y1={Y(v)} y2={Y(v)} stroke="var(--line)" /><text x={L - 4} y={Y(v) + 4} text-anchor="end" font-size="13" fill="var(--ink-2)">{v}</text></g>)}
+      {[lo, lo + 10, lo + 20, hi].map((v) => <g><line x1={L} x2={R} y1={Y(v)} y2={Y(v)} stroke="var(--line)" /><text x={L - 4} y={Y(v) + 5} text-anchor="end" font-size="14" fill="var(--ink-2)">{v}</text></g>)}
       <line x1={L} x2={R} y1={Y(safe)} y2={Y(safe)} stroke="var(--amber)" stroke-width="2.5" stroke-dasharray="7 4" />
       <line x1={L} x2={R} y1={Y(safe - 5)} y2={Y(safe - 5)} stroke="var(--ok)" stroke-width="2.5" stroke-dasharray="3 3" />
-      <text x={R - 2} y={Y(safe) - 5} text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">safe {safe} mph — brake here</text>
-      <text x={R - 2} y={Y(safe - 5) + 15} text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">{safe - 5} mph — release</text>
+      <text x={R - 2} y={Y(safe) - 6} text-anchor="end" font-size="14" font-weight="700" fill="var(--ink)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">safe {safe} mph — brake here</text>
+      <text x={R - 2} y={Y(safe - 5) + 17} text-anchor="end" font-size="14" font-weight="700" fill="var(--ink)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">{safe - 5} mph — release</text>
+      {!s && <g aria-hidden="true">
+        {ghost.slice(1).map((p, i) => p[1] < ghost[i][1] && <rect x={X(ghost[i][0])} y={B + 2} width={X(p[0]) - X(ghost[i][0])} height={8} fill="var(--red)" opacity=".45" />)}
+        <polyline points={ghost.map((p) => `${X(p[0])},${Y(p[1])}`).join(' ')} fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-dasharray="5 4" opacity=".6" />
+        <text x={L + 6} y={T + 16} font-size="14" font-weight="700" fill="var(--blue)">example: the handbook pattern</text>
+        <text x={X(7.5)} y={Y(safe - 5) + 36} text-anchor="middle" font-size="14" fill="var(--ink)">≈3 s</text>
+      </g>}
       {pts.slice(1).map((p, i) => p.b && <rect x={X(pts[i].t)} y={B + 2} width={X(p.t) - X(pts[i].t)} height={8} fill="var(--red)" />)}
-      <polyline points={pts.map((p) => `${X(p.t)},${Y(p.v)}`).join(' ')} fill="none" stroke="var(--blue)" stroke-width="3" stroke-linejoin="round" />
-      <circle cx={X(s.t)} cy={Y(s.v)} r="5" fill={s.v > safe + 0.01 ? 'var(--red)' : 'var(--blue)'} stroke="var(--ink)" />
-      <text x={L} y={B + 24} font-size="13" fill="var(--ink-2)"><tspan fill="var(--red)" font-weight="700">■</tspan> brakes on · time →</text>
-      <text x={L} y={H - 6} font-size="13" font-weight="700" fill="var(--ink)">Brake heat</text>
-      <rect x={110} y={H - 17} width={150} height={12} rx={3} fill="var(--surface-2)" stroke="var(--ink-2)" />
-      <rect x={110} y={H - 17} width={heatW} height={12} rx={3} fill={s.heat > 60 ? 'var(--red)' : 'var(--amber)'} />
-      <line x1={110 + 75} x2={110 + 75} y1={H - 20} y2={H - 2} stroke="var(--ink)" stroke-width="1.5" />
-      <text x={266} y={H - 6} font-size="13" font-weight="700" fill={s.heat > 60 ? 'var(--red)' : 'var(--ink-2)'}>{s.heat > 60 ? 'FADING' : 'ok'}</text>
+      {s && <polyline points={pts.map((p) => `${X(p.t)},${Y(p.v)}`).join(' ')} fill="none" stroke="var(--blue)" stroke-width="3" stroke-linejoin="round" />}
+      {s && <circle cx={X(s.t)} cy={Y(s.v)} r="5" fill={s.v > safe + 0.01 ? 'var(--red)' : 'var(--blue)'} stroke="var(--ink)" />}
+      <text x={L} y={B + 26} font-size="14" fill="var(--ink-2)"><tspan fill="var(--red)" font-weight="700">■</tspan> brakes on · time →</text>
+      <text x={L} y={H - 5} font-size="14" font-weight="700" fill="var(--ink)">Brake heat</text>
+      <rect x={122} y={H - 17} width={150} height={12} rx={3} fill="var(--surface-2)" stroke="var(--ink-2)" />
+      <rect x={122} y={H - 17} width={heatW} height={12} rx={3} fill={heat > 60 ? 'var(--red)' : 'var(--amber)'} />
+      <line x1={122 + 75} x2={122 + 75} y1={H - 20} y2={H - 2} stroke="var(--ink)" stroke-width="1.5" />
+      <text x={278} y={H - 5} font-size="14" font-weight="700" fill={heat > 60 ? 'var(--red)' : 'var(--ink-2)'}>{heat > 60 ? 'FADING' : 'ok'}</text>
     </svg>
   );
 }
@@ -73,7 +108,9 @@ const QS: Q[] = [
 ];
 
 const Pick = ({ on, onClick, children, dis }: { on: boolean; onClick: () => void; children: ComponentChildren; dis?: boolean }) =>
-  <button class="btn sm" aria-pressed={on} disabled={dis} onClick={onClick} style={on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}}>{children}</button>;
+  <button class="btn sm" aria-pressed={on} disabled={dis} onClick={onClick} style={{ width: '100%', paddingInline: '6px', lineHeight: 1.2, ...(on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}) }}>{children}</button>;
+/** Equal-column control rows, so buttons never wrap raggedly on a phone. */
+const cols = (n: number) => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: '6px' });
 
 export default function Downgrade({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const [mode, setMode] = useState<'explore' | 'challenge'>('explore');
@@ -119,15 +156,18 @@ export default function Downgrade({ onEvidence, onChallenge, concepts }: WidgetP
       <div class="tabs" role="tablist"><button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Explore</button><button role="tab" aria-selected={mode === 'challenge'} onClick={() => { setMode('challenge'); resetC(); }}>Challenge: 4 checks</button></div>
       {mode === 'explore' && (
         <div class="stack">
-          <div class="row" role="group" aria-label="Safe speed for this grade"><span class="small"><strong>Safe speed:</strong></span>{[35, 40, 45].map((v) => <Pick on={safe === v} onClick={() => { setSafe(v); if (gear) begin(gear, v); }}>{v} mph</Pick>)}</div>
-          <div class="row" role="group" aria-label="Gear at the top of the grade"><span class="small"><strong>1. Before the grade, pick a gear:</strong></span>
+          <span class="small" id="dg-safe"><strong>Safe speed for this grade</strong> (set by weight, grade length and steepness, road, weather)</span>
+          <div role="group" aria-labelledby="dg-safe" style={cols(3)}>{[35, 40, 45].map((v) => <Pick on={safe === v} onClick={() => { setSafe(v); if (gear) begin(gear, v); }}>{v} mph</Pick>)}</div>
+          <span class="small" id="dg-gear"><strong>1. Before you start down, pick a gear:</strong></span>
+          <div role="group" aria-labelledby="dg-gear" style={cols(2)}>
             <Pick on={gear === 'low'} onClick={() => begin('low')}>Low gear</Pick><Pick on={gear === 'high'} onClick={() => begin('high')}>Stay in a high gear</Pick></div>
-          {!s && <p class="small muted" style={{ margin: 0 }}>Engine braking is your main speed control on a downgrade; the service brakes only help it. <span class="plate">p. 2-37</span></p>}
+          <GradeStrip s={s} />
+          <Chart s={s} safe={safe} />
+          {!s && <p class="small muted" style={{ margin: 0 }}>The dashed line is the pattern to copy: brake at your safe speed, release about 5 mph below it (about 3 seconds), let speed come back up, repeat. Engine braking is your main speed control; the service brakes only help it. <span class="plate">p. 2-37</span> <span class="plate">p. 2-38</span></p>}
           {s && <>
-            <div style={{ maxWidth: '560px', width: '100%', margin: '0 auto' }}><Chart s={s} safe={safe} /></div>
             <div class="row" style={{ alignItems: 'baseline' }}><span class="num" style={{ font: '700 1.6rem/1 var(--display)' }}>{s.v.toFixed(1)} mph</span><span class="small muted num">t = {s.t} s · {s.gear === 'none' ? 'no gear!' : `${s.gear} gear`}</span></div>
-            <div class="row">
-              <button class="btn sm" aria-pressed={s.brake} disabled={runaway} onClick={() => setS({ ...s, brake: !s.brake })} style={s.brake ? { background: 'var(--red)', borderColor: 'var(--red)', color: 'var(--surface)' } : {}}>{s.brake ? '■ Brakes ON — tap to release' : 'Apply brakes'}</button>
+            <div style={cols(3)}>
+              <button class="btn sm" aria-pressed={s.brake} disabled={runaway} onClick={() => setS({ ...s, brake: !s.brake })} style={{ gridColumn: '1 / -1', ...(s.brake ? { background: 'var(--red)', borderColor: 'var(--red)', color: 'var(--surface)' } : {}) }}>{s.brake ? '■ Brakes ON — tap to release' : 'Apply brakes'}</button>
               <button class="btn primary sm" disabled={runaway} onClick={() => steps(1)}>Step +1 s</button>
               <button class="btn sm" disabled={runaway} onClick={() => steps(3)}>+3 s</button>
               <button class="btn sm" onClick={() => begin(s.gear === 'none' ? 'high' : s.gear)}>Restart</button>
@@ -145,10 +185,11 @@ export default function Downgrade({ onEvidence, onChallenge, concepts }: WidgetP
         <div class="stack">
           <span class="small muted num">Check 1 of 4</span>
           <strong>You are in a low gear. Your safe speed is 40 mph. Step forward and do one brake application the handbook way.</strong>
-          <div style={{ maxWidth: '560px', width: '100%', margin: '0 auto' }}><Chart s={cs} safe={40} /></div>
+          <GradeStrip s={cs} />
+          <Chart s={cs} safe={40} />
           <div class="row" style={{ alignItems: 'baseline' }}><span class="num" style={{ font: '700 1.6rem/1 var(--display)' }}>{cs.v.toFixed(1)} mph</span><span class="small muted num">t = {cs.t} s</span></div>
-          {!cres && <div class="row">
-            <button class="btn sm" aria-pressed={cs.brake} onClick={cBrake} style={cs.brake ? { background: 'var(--red)', borderColor: 'var(--red)', color: 'var(--surface)' } : {}}>{cs.brake ? '■ Brakes ON — tap to release' : 'Apply brakes'}</button>
+          {!cres && <div style={cols(2)}>
+            <button class="btn sm" aria-pressed={cs.brake} onClick={cBrake} style={cs.brake ? { background: 'var(--red)', borderColor: 'var(--red)', color: 'var(--surface)' } : {}}>{cs.brake ? '■ Brakes ON — release' : 'Apply brakes'}</button>
             <button class="btn primary sm" onClick={cStep}>Step +1 s</button>
           </div>}
           {cres && <div class={`feedback ${cres.ok ? 'good' : 'bad'}`} role="status"><div class="verdict">{cres.ok ? 'Textbook application' : 'Not the handbook method'}</div><p class="small" style={{ margin: 0 }}>{cres.text} <span class="plate">p. 2-38</span></p>
@@ -160,7 +201,7 @@ export default function Downgrade({ onEvidence, onChallenge, concepts }: WidgetP
           <span class="small muted num">Check {ci + 1} of 4</span>
           <strong>{q.q}</strong>
           <div class="stack" role="group" aria-label="Answers" style={{ gap: '6px' }}>{q.opts.map((o, j) => (
-            <button class={`btn sm ${pick !== null && j === q.a ? 'primary' : ''}`} disabled={pick !== null} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick === j && j !== q.a ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}
+            <button class={`btn sm ${pick !== null && j === q.a ? 'primary' : ''}`} disabled={pick !== null} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && j === q.a ? { opacity: 1 } : {}), ...(pick === j && j !== q.a ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
               onClick={() => { setPick(j); answer(j === q.a); }}>{pick !== null && j === q.a ? '✓ ' : pick === j ? '✕ ' : ''}{o}</button>
           ))}</div>
           {pick !== null && <div class={`feedback ${pick === q.a ? 'good' : 'bad'}`} role="status"><div class="verdict">{pick === q.a ? 'Right' : `Answer: ${q.opts[q.a]}`}</div><p class="small" style={{ margin: 0 }}>{q.why}</p>

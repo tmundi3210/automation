@@ -31,7 +31,7 @@ function Road({ mph, empty, marks, pick, label, hide }: { mph: number; empty?: b
   const d = FIG_2_11[mph];
   const segs = [0, d[0], d[0] + d[1], d[3]];
   return (
-    <svg viewBox="0 0 360 138" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }}>
+    <svg viewBox="0 0 360 138" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '430px', marginInline: 'auto' }}>
       <rect x="0" y="36" width="360" height="58" fill="var(--surface-2)" stroke="none" />
       <line x1="0" y1="36" x2="360" y2="36" stroke="var(--ink-2)" stroke-width="1.5" />
       <line x1="0" y1="94" x2="360" y2="94" stroke="var(--ink-2)" stroke-width="1.5" />

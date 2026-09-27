@@ -71,8 +71,8 @@ export function Scene({ found, sel, plan, planOk, marks }: { found: Set<string>;
         <g transform="rotate(-12 124 152)"><Car x={102} y={142} w={44} h={20} face="left" /></g>
         {/* ice cream truck + children */}
         <Car x={150} y={80} w={54} h={22} face="left" fill="var(--blue-soft)" />
-        <circle cx="178" cy="91" r="5" fill="var(--surface)" stroke="var(--ink)" />
-        <circle cx="158" cy="64" r="5.5" fill="var(--amber)" stroke="var(--ink)" /><circle cx="176" cy="62" r="5.5" fill="var(--amber)" stroke="var(--ink)" /><circle cx="212" cy="94" r="4.5" fill="var(--red)" stroke="var(--ink)" />
+        <path d="M 174 88 L 182 88 L 178 99 Z" fill="var(--amber)" stroke="var(--ink)" stroke-width="0.8" /><circle cx="178" cy="86" r="4.5" fill="var(--surface)" stroke="var(--ink)" />
+        {[[158, 66, 'var(--amber)'], [174, 64, 'var(--amber)'], [212, 96, 'var(--red)']].map(([x, y, c]) => <g><rect x={+x - 3.5} y={+y - 2} width="7" height="10" rx="2.5" fill={c as string} stroke="var(--ink)" stroke-width="0.8" /><circle cx={x} cy={+y - 6} r="3.8" fill={c as string} stroke="var(--ink)" stroke-width="0.8" /></g>)}
         {/* covered alley with car nose */}
         <Car x={244} y={34} w={24} h={56} face="down" />
         <rect x="232" y="6" width="48" height="52" fill="var(--line)" stroke="var(--ink-2)" stroke-width="1" /><path d="M 232 6 L 280 58 M 280 6 L 232 58" stroke="var(--ink-2)" stroke-width="0.8" />
@@ -181,7 +181,7 @@ export default function HazardClues({ onEvidence, onChallenge, concepts }: Widge
         {pq && <div class="stack">
           <strong>{pq.q}</strong>
           <div class="stack" role="group" aria-label="Pick a plan">{pq.opts.map((o, i) => (
-            <button class={`btn sm ${pick !== null && o.ok ? 'primary' : ''}`} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick === i && !o.ok ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }} disabled={pick !== null} onClick={() => answer(i)}>{pick !== null && (o.ok ? '✓ ' : pick === i ? '✗ ' : '')}{o.t}</button>
+            <button class={`btn sm ${pick !== null && o.ok ? 'primary' : ''}`} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && o.ok ? { opacity: 1 } : {}), ...(pick === i && !o.ok ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }} disabled={pick !== null} onClick={() => answer(i)}>{pick !== null && (o.ok ? '✓ ' : pick === i ? '✗ ' : '')}{o.t}</button>
           ))}</div>
           {pick !== null && <div class={`feedback ${pq.opts[pick].ok ? 'good' : 'bad'}`} role="status"><div class="verdict">{pq.opts[pick].ok ? 'Good plan' : 'That plan fails'}</div><p class="small">{pq.opts[pick].why} <span class="plate">p. 2-22</span> <span class="plate">p. 2-24</span></p>
             <button class="btn primary sm" onClick={next}>{qi + 1 === PLANS.length ? 'Finish' : 'Next plan'}</button></div>}

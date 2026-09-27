@@ -125,7 +125,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const answer = (c: number) => { if (pick !== null) return; setPick(c); const ok = c === truth; if (!ok) setMisses(misses + 1); onEvidence({ concepts, ok }); };
   const ok = pick === truth;
   const next = () => { if (i + 1 === total && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); };
-  const btnStyle = (c: number) => pick !== null && c === truth ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {};
+  const btnStyle = (c: number) => pick !== null && c === truth ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {};
   return (
     <div class="stack">
       <span class="small muted num">Rig {i + 1} of {total}</span>
