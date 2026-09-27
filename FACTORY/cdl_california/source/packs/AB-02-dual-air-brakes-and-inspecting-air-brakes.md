@@ -84,9 +84,9 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 *Worked example:* the friction area of a drum is 4 inches wide. Half of that is 2 inches, so a crack longer than 2 inches is not allowed.
 
 ### 5.3.3.1 Step 7 — Applied leakage test (p. 5-8)
-**Step 7 rules for the skills test:** items marked with an asterisk (\*) must be shown during the **vehicle inspection** part of the CDL skills test. You may do them **in any order**, as long as you do them correctly. If you **don't demonstrate them and say the correct limits out loud**, it is an **automatic failure** of the vehicle inspection. The \* items are: applied leakage, low air warning and spring brake test.
+**Step 7 rules for the skills test:** items marked with an asterisk (★ here) must be shown during the **vehicle inspection** part of the CDL skills test. You may do them **in any order**, as long as you do them correctly. If you **don't demonstrate them and say the correct limits out loud**, it is an **automatic failure** of the vehicle inspection. The ★ items are: applied leakage, low air warning and spring brake test.
 
-**Applied leakage test (1-minute hold)\*:**
+**Applied leakage test (1-minute hold)★:**
 1. Engine running, build air pressure to **governor cut-out** (**120–140 psi**, or the maker's level). Say when cut-out happened.
 2. **Shut off the engine**. Chock the wheels if needed.
 3. **Release the parking brake** (all vehicles) and the **tractor protection valve** (combination vehicles).
@@ -105,7 +105,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 - The governor (from 5.1.2, p. 5-1) stops the compressor at about **125 psi** and restarts it at about **100 psi**; this test starts at cut-out.
 
 ### 5.3.3.2 Step 7 — Low air warning device test (pp. 5-8–5-9)
-**Low air warning device test\*:**
+**Low air warning device test★:**
 1. Start with enough pressure that the warning is **off**.
 2. Engine **on or off**, but the key must be in **"on"** or **"battery charge."**
 3. **Fan off** the air: quickly press and release the foot brake again and again.
@@ -118,7 +118,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 - Note: **farm labor vehicles** and **Type I school buses** must have **both** an **audible** (sound) and a **visible** warning device. (p. 5-8)
 
 ### 5.3.3.3 Step 7 — Spring brake test (p. 5-9)
-**Spring brake test (automatic application)\*:**
+**Spring brake test (automatic application)★:**
 1. **Release** the parking brake (all vehicles) and the **tractor protection valve** (combinations). Engine running or not.
 2. **Fan off** the air pressure.
 3. At normally **20–45 psi** (or the maker's level):
@@ -158,7 +158,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 | Combination of 2 or more where the **towed vehicles have no air brakes** | **2 psi** |
 
 - More loss than this = a problem; **repair it before driving**.
-- *Memory hook:* **applied** limits are **1 psi higher** than static for 1–2 vehicles (static 2/3/5, applied 3/4/6). Brakes held down = more places for air to leak.
+- *Memory hook:* **applied** limits are **1 psi higher** than static in every row (static 2/3/5, applied 3/4/6; towed units without air brakes: static 2, applied 3).
 
 **Parking brake test:** fasten your **seat belt**, **set the parking brake**, and **gently pull against it in a low gear** to make sure it holds.
 
@@ -210,7 +210,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 - **Trap:** Do the triple-reservoir drive-forward test on any vehicle. → **Correct:** **Only** on **single vehicles** with an **isolated parking brake tank** — **never** on combinations. (p. 5-9)
 - **Trap:** Dual systems should build from 50 to 90 psi within 3 minutes. → **Correct:** Dual: **85 → 100 psi in 45 seconds**. 50 → 90 in 3 minutes is for **pre-1975 single** systems. (p. 5-9)
 - **Trap:** Test the parking brake by pulling hard against it in a high gear. → **Correct:** Pull **gently** against it in a **low** gear. (p. 5-10)
-- **Trap:** Skipping or not stating the limits for a \* air brake check just costs points. → **Correct:** It is an **automatic failure** of the vehicle inspection. (p. 5-8)
+- **Trap:** Skipping or not stating the limits for a ★ air brake check just costs points. → **Correct:** It is an **automatic failure** of the vehicle inspection. (p. 5-8)
 
 ## Handbook review questions — answered
 **TYK 5.2–5.3 #1** What is a dual air brake system?
@@ -253,7 +253,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 | 17 | When is hand-adjusting an automatic slack adjuster OK? | Only as a temporary fix in an emergency |
 | 18 | Longest allowed crack in a brake drum? | Less than ½ the width of the friction area |
 | 19 | Minimum brake lining thickness? | ¼ inch |
-| 20 | Result of not demonstrating a \* air brake check or stating its limits? | Automatic failure of the vehicle inspection |
+| 20 | Result of not demonstrating a ★ air brake check or stating its limits? | Automatic failure of the vehicle inspection |
 | 21 | Starting pressure for the applied leakage test? | Governor cut-out (120–140 psi or maker's level) |
 | 22 | How long do you hold the brake in the applied leakage test? | 1 minute after the gauge settles |
 | 23 | Applied leakage limit, single vehicle? | 3 psi |
@@ -368,7 +368,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
     a) brake hard at highway speed and watch the gauge
     b) move forward at about 5 mph and apply the brakes firmly, noting any pulling or delay
     c) apply the parking brake while rolling at 5 mph
-24. For the CDL skills test, what happens if you do not demonstrate a required (\*) air brake check and state its limits?
+24. For the CDL skills test, what happens if you do not demonstrate a required (★) air brake check and state its limits?
     a) You lose a few points but can still pass
     b) The examiner does the check for you
     c) It is an automatic failure of the vehicle inspection
@@ -397,7 +397,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 21. a — Dual systems: about 85 to 100 psi within 45 seconds. 50 to 90 in 3 minutes is for pre-1975 single systems. (p. 5-9)
 22. a — Fasten your seat belt, set the parking brake, and pull gently against it in a low gear. (p. 5-10)
 23. b — Move slowly (about 5 mph), brake firmly, and note pulling, unusual feel or delayed stopping. (p. 5-10)
-24. c — Not demonstrating a \* check and stating its limits is an automatic failure of the vehicle inspection. (p. 5-8)
+24. c — Not demonstrating a ★ check and stating its limits is an automatic failure of the vehicle inspection. (p. 5-8)
 
 ## One-minute recap
 - **Dual system** = 2 separate air systems (own tanks, hoses, lines), **1 set of controls**; primary usually **rear**, secondary usually **front**.
@@ -407,4 +407,4 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 - Drum cracks under **½ the friction area width**; linings at least **¼ inch**, not loose or oily; hoses not cut or rubbed.
 - **Applied leakage** (1 min, pedal down): **3 / 4 / 6 psi**. **Static** (brakes off): **2 / 3 / 5 psi**. Towed units without air brakes: **3** applied, **2** static.
 - **Low-air warning** before **55 psi** (buses often 80–85). **Spring brakes / valves pop out** at **20–45 psi**. **Buildup**: dual **85 → 100 in 45 s**; pre-1975 single **50 → 90 in 3 min**.
-- **Parking brake**: gently pull against it in low gear. **Service brakes**: ~**5 mph**, brake firmly, watch for pulling or delay. Missing a \* check = automatic failure.
+- **Parking brake**: gently pull against it in low gear. **Service brakes**: ~**5 mph**, brake firmly, watch for pulling or delay. Missing a ★ check = automatic failure.

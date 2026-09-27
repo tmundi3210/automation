@@ -73,7 +73,7 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
   - where a **peace officer or flagman** is directing traffic;
   - when a **traffic signal is green**;
   - crossings marked **"exempt"** or **"abandoned"**.
-- The handbook's Figure 4-A compares crossings. Where the tracks pass **through an intersection run by an official traffic control signal**, the crossing is **exempt**. Where the tracks are **outside that intersection** and have their **own railroad crossing warning device**, it is **not exempt** — you must stop.
+- The handbook's Figure 4-A is a drawing that compares crossings. It shows tracks running **through an intersection controlled by an official traffic control signal** as **exempt crossings**, and tracks that cross the road **outside** such an intersection, with their **own railroad crossing warning device**, as **not exempt**.
 
 ### 4.3.6 Drawbridges (p. 4-5)
 - **Stop at a drawbridge that has no signal light and no traffic control attendant.**
@@ -259,7 +259,7 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 15. You do not have to stop at the tracks in all of these cases EXCEPT:
     a) at a streetcar crossing
     b) at a crossing marked "exempt"
-    c) at a crossing with its own railroad warning device, outside a signal-controlled intersection
+    c) at a crossing on an open country road with no traffic signal, officer, or flagman
 16. You come to a drawbridge with no signal light and no traffic control attendant. What should you do?
     a) Stop between 15 and 50 feet before the draw
     b) Stop at least 50 feet before the draw and make sure it is completely closed
@@ -304,7 +304,7 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 12. b — Open the forward door if it improves your ability to see or hear a train. (p. 4-5)
 13. c — With a manual transmission, never change gears while crossing the tracks. (p. 4-5)
 14. a — At a green traffic signal you slow down and check instead of stopping; after a train passes you must still check the other tracks. (p. 4-5)
-15. c — A crossing with its own railroad warning device outside a signal-controlled intersection is not exempt (Figure 4-A); streetcar and "exempt" crossings need no stop. (p. 4-5)
+15. c — None of the no-stop cases (business/residence street tracks, streetcar, officer or flagman, green signal, "exempt"/"abandoned") applies to an ordinary country crossing, so you must stop. (p. 4-5)
 16. b — With no signal light or attendant, stop at least 50 feet before the draw and check that it is completely closed; 15–50 feet is the railroad rule. (p. 4-5)
 17. c — You need not stop when a green light shows or an attendant/traffic officer controls traffic when the bridge opens. (p. 4-5)
 18. a — The interstate report covers each bus and must say so if there are no defects. (p. 4-5)
