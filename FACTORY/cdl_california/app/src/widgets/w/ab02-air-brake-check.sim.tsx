@@ -100,27 +100,28 @@ export function Gauge({ psi, ghost, cx = 92, cy = 100, r = 80 }: { psi: number; 
 /** Dash: gauge + low-air lamp/buzzer + yellow parking knob (+ red trailer supply knob on combinations) + compressor state. */
 export function Dash({ s, rig, label }: { s: Sim; rig: Rig; label: string }) {
   const warn = warnOn(s, rig), cmb = combo(rig.kind);
-  const knob = (x: number, out: boolean, color: string, ink: string, diamond: boolean, name: string) => (
-    <g>
-      <rect x={x - 4} y="112" width="8" height={out ? 26 : 12} fill="var(--ink-2)" stroke="none" />
-      {diamond ? <rect x={x - 13} y={out ? 128 : 114} width="26" height="26" transform={`rotate(45 ${x} ${out ? 141 : 127})`} fill={color} stroke="var(--ink)" stroke-width="1.5" />
-        : <polygon points={[0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const a = (i * 45 + 22.5) * Math.PI / 180; return `${(x + 16 * Math.cos(a)).toFixed(1)},${((out ? 141 : 127) + 16 * Math.sin(a)).toFixed(1)}`; }).join(' ')} fill={color} stroke="var(--ink)" stroke-width="1.5" />}
-      <text x={x} y={out ? 145 : 131} text-anchor="middle" font-size="11" font-weight="700" fill={ink}>{out ? 'OUT' : 'IN'}</text>
-      <text x={x} y="178" text-anchor="middle" font-size="11" fill="var(--ink)">{name}</text>
-      <text x={x} y="192" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">{out ? 'applied' : 'released'}</text>
-    </g>
-  );
+  const knob = (x: number, out: boolean, color: string, diamond: boolean, name: string) => {
+    const y = out ? 142 : 128;
+    return (
+      <g>
+        <rect x={x - 4} y="112" width="8" height={y - 112} fill="var(--ink-2)" stroke="none" />
+        {diamond ? <rect x={x - 12} y={y - 12} width="24" height="24" transform={`rotate(45 ${x} ${y})`} fill={color} stroke="var(--ink)" stroke-width="1.5" />
+          : <polygon points={[0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const a = (i * 45 + 22.5) * Math.PI / 180; return `${(x + 16 * Math.cos(a)).toFixed(1)},${(y + 16 * Math.sin(a)).toFixed(1)}`; }).join(' ')} fill={color} stroke="var(--ink)" stroke-width="1.5" />}
+        <text x={x} y="178" text-anchor="middle" font-size="13" fill="var(--ink)">{name}</text>
+        <text x={x} y="194" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{out ? 'OUT · on' : 'IN · off'}</text>
+      </g>
+    );
+  };
   return (
-    <svg viewBox="0 0 360 200" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '540px', marginInline: 'auto' }}>
-      <rect x="0" y="0" width="360" height="200" rx="10" fill="var(--surface-2)" stroke="none" />
+    <svg viewBox="0 0 360 202" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '540px', marginInline: 'auto' }}>
+      <rect x="0" y="0" width="360" height="202" rx="10" fill="var(--surface-2)" stroke="none" />
       <Gauge psi={s.psi} />
-      <rect x="196" y="12" width="152" height="30" rx="6" fill={warn ? 'var(--red)' : 'var(--surface)'} stroke="var(--ink)" stroke-width="1.5" />
-      <text x="272" y="32" text-anchor="middle" font-size="13" font-weight="700" fill={warn ? 'var(--on-red)' : 'var(--ink-2)'}>{warn ? '⚠ LOW AIR · BZZZ' : 'low air: off'}</text>
-      <rect x="196" y="50" width="152" height="26" rx="6" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1" />
-      <text x="272" y="67" text-anchor="middle" font-size="12" fill="var(--ink)">{!s.engine ? 'Engine off · compressor off' : s.pumping ? 'Compressor pumping ▲' : 'Governor cut-out: stopped'}</text>
-      <text x="272" y="94" text-anchor="middle" font-size="12" fill="var(--ink)">{s.pedal ? 'Foot brake: HELD DOWN' : 'Foot brake: up'}</text>
-      {knob(cmb ? 238 : 272, s.park, 'var(--amber)', 'var(--ink)', true, 'Parking')}
-      {cmb && knob(310, s.supply, 'var(--red)', 'var(--on-red)', false, 'Trailer air')}
+      <rect x="190" y="8" width="164" height="36" rx="6" fill={warn ? 'var(--red)' : 'var(--surface)'} stroke="var(--ink)" stroke-width="1.5" />
+      <text x="272" y="31" text-anchor="middle" font-size="14" font-weight="700" fill={warn ? 'var(--on-red)' : 'var(--ink-2)'}>{warn ? '⚠ LOW AIR · BZZZ' : 'Low air: off'}</text>
+      <text x="272" y="66" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{!s.engine ? 'Engine off' : s.pumping ? 'Compressor pumping ▲' : 'Governor cut-out'}</text>
+      <text x="272" y="88" text-anchor="middle" font-size="13" fill="var(--ink)">{s.pedal ? 'Foot brake: HELD DOWN' : 'Foot brake: up'}</text>
+      {knob(cmb ? 232 : 272, s.park, 'var(--amber)', true, 'Parking')}
+      {cmb && knob(314, s.supply, 'var(--red)', false, 'Trailer air')}
     </svg>
   );
 }

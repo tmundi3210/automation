@@ -17,7 +17,7 @@ function Explore() {
   const cmb = combo(rig.kind), n = rigNums(rig);
   useEffect(() => {
     if (!s.engine) return;
-    const id = setInterval(() => setS((o) => tick(o, rig, 2)), 200); // 10× speed: each tick = 2 s
+    const id = setInterval(() => setS((o) => tick(o, rig, 4)), 200); // 20× speed: each tick = 4 s
     return () => clearInterval(id);
   }, [s.engine, rig]);
   const newRig = (r: Rig) => { setRig(r); setS(START); };
@@ -82,15 +82,13 @@ function Explore() {
           <select id="ab02-f" value={rig.fault} onChange={(e) => newRig({ ...rig, fault: (e.target as HTMLSelectElement).value as Fault })}>{FAULTS.map((f) => <option value={f.f}>{f.label}</option>)}</select></div>
       </div>
       <Dash s={s} rig={rig} label={`Tank pressure ${Math.round(s.psi)} psi. Low air warning ${s.psi < n.warn ? 'on' : 'off'}. Engine ${s.engine ? 'running' : 'off'}. Parking knob ${s.park ? 'out, applied' : 'in, released'}${cmb ? `. Trailer air supply knob ${s.supply ? 'out' : 'in'}` : ''}. Foot brake ${s.pedal ? 'held' : 'up'}.`} />
-      <div class="row" role="group" aria-label="Cab controls">
+      <div role="group" aria-label="Cab controls" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '6px' }}>
         {b(s.engine ? 'Stop engine' : 'Start engine (idle)', s.engine, () => say(s.engine ? 'Engine off: the compressor stops.' : 'Engine at normal idle: the compressor pumps until governor cut-out.', { engine: !s.engine }))}
-        {b(s.park ? 'Push in parking knob' : 'Pull out parking knob', false, knobPark, { borderColor: 'var(--amber)' })}
-        {cmb && b(s.supply ? 'Push in trailer air knob' : 'Pull out trailer air knob', false, knobSupply, { borderColor: 'var(--red)' })}
-        {b(s.pedal ? 'Let pedal up' : 'Hold foot brake down', s.pedal, pedal)}
+        {b(s.pedal ? 'Let foot brake up' : 'Hold foot brake down', s.pedal, pedal)}
+        {b(s.park ? 'Push in parking knob' : 'Pull out parking knob', false, knobPark, { borderColor: 'var(--amber)', borderWidth: '2px' })}
+        {cmb && b(s.supply ? 'Push in trailer air knob' : 'Pull out trailer air knob', false, knobSupply, { borderColor: 'var(--red)', borderWidth: '2px' })}
         {b('Fan the brakes ×1', false, fan)}
         <button class="btn primary sm" onClick={watch}>Time 1 minute ⏩</button>
-      </div>
-      <div class="row" role="group" aria-label="Brake tests before driving">
         {b('Parking brake test', false, parkTest)}{b('Service brake test', false, svcTest)}
         <button class="btn sm" onClick={() => setS(START)}>Reset rig</button>
       </div>
@@ -105,7 +103,7 @@ function Explore() {
           <tr><td style={{ padding: '4px 4px 4px 0' }}>Service brake test</td><td style={{ padding: '4px' }}>~5 mph, firm</td><td style={{ padding: '4px 0', textAlign: 'right' }}>{s.svcTest ?? <span class="muted">—</span>}</td></tr>
         </tbody>
       </table>
-      <p class="small muted">Try it: start the engine and watch 85 → 100 psi get timed, then the governor cut out. Stop the engine, release the brakes, hold the pedal and time a minute. Then fan the brakes down and watch the warning (must be on before 55 psi) and the knobs pop (20–45 psi). The sim runs 10× fast. <span class="plate">pp. 5-8 – 5-10</span></p>
+      <p class="small muted">Try it: start the engine and watch 85 → 100 psi get timed, then the governor cut out. Stop the engine, release the brakes, hold the pedal and time a minute. Then fan the brakes down and watch the warning (must be on before 55 psi) and the knobs pop (20–45 psi). The sim runs 20× fast. <span class="plate">pp. 5-8 – 5-10</span></p>
     </div>
   );
 }
