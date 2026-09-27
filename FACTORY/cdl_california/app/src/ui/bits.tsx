@@ -69,7 +69,7 @@ export function YouTube({ q }: { q: string }) {
   return (
     <a class="yt" href={url} target="_blank" rel="noopener noreferrer" title="Opens a YouTube search in a new tab. Videos are extra: the handbook wins if they differ.">
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" opacity=".18" /><path d="M10 9l5 3-5 3z" fill="currentColor" /></svg>
-      Watch videos on this
+      Search YouTube for videos <span class="muted">(not checked)</span>
     </a>
   );
 }

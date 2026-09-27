@@ -43,7 +43,7 @@ test('lesson → practice with wrong answers → mistake list with cause → sur
   await page.goto(URL + '#lesson.GK-07');
   await page.getByText('Dive deeper').first().click();
   await page.getByRole('tab', { name: 'Practice test' }).click();
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   // answer every question with the first option; some will be wrong
   for (let i = 0; i < 22; i++) {
     await page.locator('.opt').first().click();
@@ -95,7 +95,7 @@ test('resume code: erase then restore gives the same progress', async ({ page })
   await onboard(page);
   await page.goto(URL + '#lesson.GK-02');
   await page.getByRole('tab', { name: 'Practice test' }).click();
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   for (let i = 0; i < 3; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: 'Continue' }).click(); }
   await page.goto(URL + '#settings');
   await page.getByRole('button', { name: 'Make a resume code' }).click();
@@ -124,7 +124,7 @@ test('unfinished practice test resumes after reload', async ({ page }) => {
   await onboard(page);
   await page.goto(URL + '#lesson.GK-02');
   await page.getByRole('tab', { name: 'Practice test' }).click();
-  await page.getByRole('button', { name: 'Start' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
   for (let i = 0; i < 3; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: 'Continue' }).click(); }
   await expect(page.getByText('4 of 15')).toBeVisible();
   await page.reload();
@@ -141,6 +141,24 @@ test('unfinished mock resumes after reload', async ({ page }) => {
   await page.goto(URL + '#practice');
   await page.getByRole('button', { name: /Resume GK mock \(3\/50\)/ }).click();
   await expect(page.getByText(/^4$/).first()).toBeVisible();
+});
+
+test('reopening the app (no URL hash) returns to an unfinished practice test and mock', async ({ page }) => {
+  await onboard(page);
+  await page.goto(URL + '#lesson.GK-02');
+  await page.getByRole('tab', { name: 'Practice test' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  for (let i = 0; i < 2; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: 'Continue' }).click(); }
+  await page.goto('about:blank'); await page.goto(URL);
+  await expect(page.getByText('3 of 15')).toBeVisible();
+  await page.goto(URL + '#practice');
+  await page.getByRole('button', { name: 'Start GK mock' }).click();
+  await page.getByRole('button', { name: 'Begin' }).click();
+  for (let i = 0; i < 2; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: /Next question/ }).click(); }
+  await page.reload();
+  await expect(page.getByRole('button', { name: /Next question|Skip/ }).first()).toBeVisible();
+  await page.goto('about:blank'); await page.goto(URL);
+  await expect(page.getByRole('button', { name: /Skip/ }).first()).toBeVisible();
 });
 
 test('glossary term in lesson text opens a definition', async ({ page }) => {

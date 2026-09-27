@@ -42,7 +42,10 @@ export function buildPlan(state: AppState, c: Content, now: number): Plan {
   const lessonMin = remaining.reduce((s, l) => s + l.minutes, 0);
   const reviewPerDay = Math.max(5, Math.round(budget * 0.3));
   const avail = Math.max(1, studyDays.length) * Math.max(1, budget - reviewPerDay);
-  const needMinPerDay = studyDays.length ? Math.ceil(lessonMin / studyDays.length + reviewPerDay) : lessonMin + reviewPerDay;
+  // minutes/day that make the plan 'go' under the same rule used below (review share = 30 % of the budget),
+  // so accepting the suggestion can never produce "not enough time"
+  const nd = Math.max(1, studyDays.length);
+  const needMinPerDay = Math.ceil(Math.max(lessonMin / (nd * 0.7 * 0.85), lessonMin / nd + 5)) + 1;
   const feasibility = lessonMin <= avail * 0.85 ? 'go' : lessonMin <= avail ? 'tight' : 'no-go';
   const days: PlanDay[] = [];
   let i = 0;

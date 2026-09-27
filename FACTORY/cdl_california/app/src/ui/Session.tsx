@@ -64,7 +64,9 @@ function ItemQ({ id, spec, onNext }: { id: string; spec: SessionSpec; onNext: (r
     const base = it.options.map((_, k) => k);
     if (!spec.shuffleOptions || it.polarity === 'tf') return base;
     const r = mulberry32(id.split('').reduce((a, ch) => a + ch.charCodeAt(0), 0) + S().attempts.length);
-    return base.sort(() => r() - 0.5);
+    // Fisher–Yates; never the original order, so a review never repeats the layout of the question first missed
+    for (let k = base.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [base[k], base[j]] = [base[j], base[k]]; }
+    return base.every((v, k) => v === k) ? [...base.slice(1), base[0]] : base;
   }, [id]);
   const [chosen, setChosen] = useState<number | null>(null);
   const [guessed, setGuessed] = useState(false);

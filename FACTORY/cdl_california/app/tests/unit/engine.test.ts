@@ -145,6 +145,16 @@ describe('calendar + planner + readiness', () => {
     const s = emptyState(T0); s.profile.examDates = { GK: dayKey(T0 + 3 * DAY) }; s.profile.minutesPerDay = 20;
     expect(buildPlan(s, C, T0).feasibility).toBe('no-go');
   });
+  it('accepting the suggested minutes always makes the plan feasible', () => {
+    for (const days of [5, 9, 14, 21, 30, 45, 60]) for (const off of [[], [0], [0, 6]]) {
+      const s = emptyState(T0); s.profile.examDates = { GK: dayKey(T0 + days * DAY), CV: dayKey(T0 + days * DAY) }; s.profile.offDays = off; s.profile.minutesPerDay = 15;
+      const need = buildPlan(s, C, T0).needMinPerDay;
+      s.profile.minutesPerDay = Math.ceil(need / 5) * 5 + 5;   // what onboarding offers
+      const p = buildPlan(s, C, T0);
+      expect(p.feasibility, `${days}d off=${off}`).toBe('go');
+      expect(p.needMinPerDay).toBeLessThanOrEqual(s.profile.minutesPerDay);
+    }
+  });
   it('binomial reference: Bin(50,.9) ≥ 40 = 0.9906', () => {
     expect(binomTail(50, 0.9, 40)).toBeCloseTo(0.9906, 3);
   });

@@ -39,7 +39,7 @@ export function MockScreen({ test }: { test: TestId }) {
           <li>No time limit. On the real test, phones, notes or help from anyone mean an automatic fail.</li>
         </ul>
         {(() => { const ls = C.lessons.filter((l) => l.test === test); const studied = ls.filter((l) => S().lessons[l.id]?.opened).length; return studied < ls.length / 2 ? <p class="card warn small">You have opened {studied} of the {ls.length} {test === 'GK' ? 'General Knowledge' : 'Combination'} lessons, so expect a low score. That's fine — a mock now shows where to start, and every miss goes to your mistake list.</p> : null; })()}
-        <p class="small muted">{ids.length - seenBefore} of {ids.length} questions are ones you have not answered yet. Questions come from every lesson in proportion to the handbook.</p>
+        <p class="small muted">{ids.length - seenBefore} of {ids.length} questions are ones you have not answered yet (a few may test a fact you practiced in other words). Questions come from every lesson in proportion to the handbook.</p>
         <button class="btn primary" onClick={() => { setStarted(true); t0.current = now(); persist(queue, answers); }}>Begin</button>
       </div>
     </div>

@@ -213,5 +213,5 @@ export function WidgetPreview({ id }: { id: string }) {
   if (!m) return <div class="card"><p>Unknown widget “{id}”. Known: {WIDGETS.map((w) => w.meta.id).join(', ')}</p></div>;
   const L = lessonById(m.meta.lesson);
   const host = L.conceptIds.find((c) => m.meta.anchor.test(C.concepts[c].title));
-  return <div class="stack"><div class="row"><Shield id={L.id} /><span class="small muted">{host ? `Hosted in: ${C.concepts[host].title}` : 'Hosted at lesson top (anchor matched no concept)'}</span></div><WidgetFrame mod={m} concepts={host ? [host] : L.conceptIds} /></div>;
+  return <div class="stack"><div class="row"><Shield id={L.id} /><span class="small muted">{host ? `From the section: ${C.concepts[host].title}` : 'Hosted at lesson top (anchor matched no concept)'}</span></div><WidgetFrame mod={m} concepts={host ? [host] : L.conceptIds} /></div>;
 }

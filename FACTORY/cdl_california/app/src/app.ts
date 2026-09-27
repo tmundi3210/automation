@@ -34,7 +34,8 @@ export function go(name: RouteName, param?: string, sub?: string) {
   route.value = { name, param, sub };
   const tok = [name, param, sub].filter(Boolean).join('.').replace(/[^A-Za-z0-9._~-]/g, '');
   try { if (location.hash.slice(1) !== tok) history.pushState(null, '', '#' + tok); } catch { /* sandboxed */ }
-  if (name !== 'session' && name !== 'mock') mutateQuiet((s) => { s.cursor = { route: name, param, scroll: 0 }; });
+  // the cursor includes session/mock so a reload or reopen returns to an unfinished test (boot checks the run still exists)
+  if (name !== 'onboarding') mutateQuiet((s) => { s.cursor = { route: name, param, scroll: 0 }; });
   try { window.scrollTo(0, 0); } catch { /* */ }
 }
 export function routeFromHash(): Route | null {

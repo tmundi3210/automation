@@ -53,7 +53,7 @@ export function TodayScreen() {
         <button class="btn primary" onClick={step.run}>{step.cta}</button>
       </section>
       <section class="card stack" aria-label="This week">
-        <div class="spread"><h3>This week</h3><span class="small muted num">Today: {q.pct}% of today's {q.plannedMin}-min plan</span></div>
+        <div class="spread"><h3>This week</h3><span class="small muted num">Today: {q.pct}% of {q.plannedMin} min planned (budget {S().profile.minutesPerDay} min)</span></div>
         <Calendar start={weekStart} days={7} examDay={exam} nowT={t} />
         <p class="small muted">Each box fills as you study (5% steps). A tick means that day's plan is done. Rest days never break anything.</p>
       </section>
@@ -84,10 +84,12 @@ export function TodayScreen() {
 }
 
 export function fixDrill(concept: string, lesson: string) {
+  // least recently seen first, so the drill asks the fact in wordings the learner has not just answered
+  const last = new Map<string, number>(); for (const a of S().attempts) last.set(a.id, a.t);
   const ids = [
     ...Object.values(C.items).filter((i) => !i.heldOut && i.concepts.includes(concept)).map((i) => i.id),
     ...Object.values(C.numbers).filter((n) => n.concepts.includes(concept)).map((n) => n.id),
-  ].slice(0, 8);
+  ].map((id, k) => ({ id, k, t: last.get(id) ?? 0 })).sort((a, b) => a.t - b.t || a.k - b.k).slice(0, 8).map((x) => x.id);
   startSession({ title: `Fix drill: ${C.concepts[concept].title}`, ids, mode: 'fix', lesson, back: { name: 'notebook' }, shuffleOptions: true });
 }
 
@@ -99,7 +101,7 @@ export function ReadinessCard({ test }: { test: TestId }) {
   return (
     <section class="card stack" aria-label={`${f.name} readiness`}>
       <span class="eyebrow">{f.name} · {f.n} questions, pass {f.pass}</span>
-      <div class="spread"><span class={`band ${r.band}`} style={{ fontSize: '1.3rem', fontFamily: 'var(--display)' }}>{r.studiedShare < 0.1 ? 'Not started' : label}</span>{r.studiedShare >= 0.1 && <span class="num small muted">est. {pctRange(r.low, r.high)} chance to pass</span>}</div>
+      <div class="spread"><span class={`band ${r.band}`} style={{ fontSize: '1.3rem', fontFamily: 'var(--display)' }}>{r.studiedShare < 0.1 && !S().mocks.some((m) => m.test === test) ? 'Not started' : label}</span>{(r.studiedShare >= 0.1 || S().mocks.some((m) => m.test === test)) && <span class="num small muted">est. {pctRange(r.low, r.high)} chance to pass</span>}</div>
       <Bar p={r.studiedShare} label="Share of test topics studied" />
       <p class="small muted">{r.studiedShare < 0.1 ? 'Study a few lessons and the app will estimate your chance of passing. ' : ''}Based on {Math.round(r.studiedShare * 100)}% of the {test === 'GK' ? 270 : 68} practice questions studied and {S().mocks.filter((m) => m.test === test).length} mock test{S().mocks.filter((m) => m.test === test).length === 1 ? '' : 's'}.{r.strongReady ? ' Strong ready: last two mock tests at 90%+.' : ' This is an estimate; mock tests make it more accurate.'}</p>
     </section>

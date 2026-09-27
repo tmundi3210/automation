@@ -43,7 +43,7 @@ export function App() {
   const chip = !onboarding ? (() => {
     const t = s.profile.tests[0] as TestId;
     const rd = readiness(s, C, t, Date.now(), 400);
-    return `${t}: ${rd.band === 'likely' ? 'likely pass' : rd.band === 'borderline' ? 'borderline' : 'not ready yet'}`;
+    return `${t}: ${rd.studiedShare < 0.1 && !s.mocks.some((m) => m.test === t) ? 'not started' : rd.band === 'likely' ? 'likely pass' : rd.band === 'borderline' ? 'borderline' : 'not ready yet'}`;
   })() : null;
   let screen;
   if (onboarding) screen = <OnboardingScreen />;

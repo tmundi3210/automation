@@ -4,7 +4,8 @@ import { addDays, dayKey, testsForClass } from '../engine/model';
 import type { Cls } from '../engine/model';
 import { ClassFinderForm } from '../widgets/w/gk01-class-finder';
 import { buildPlan } from '../engine/plan';
-import { peek } from '../app';
+import { peek, adoptState } from '../app';
+import { readResumeCode, importFile } from '../store/resume';
 
 export function OnboardingScreen() {
   const s = S();
@@ -12,8 +13,11 @@ export function OnboardingScreen() {
   const [cls, setCls] = useState<Cls | null>(s.profile.cls);
   const [finder, setFinder] = useState(false);
   const [ab, setAb] = useState(s.profile.airBrakesPassed);
-  const [date, setDate] = useState(s.profile.examDates.GK ?? addDays(dayKey(now()), 14));
+  const [date, setDate] = useState(s.profile.examDates.GK ?? addDays(dayKey(now()), 35));
   const [minutes, setMinutes] = useState(s.profile.minutesPerDay);
+  const [paste, setPaste] = useState('');
+  const [rmsg, setRmsg] = useState('');
+  const restored = (st: ReturnType<typeof readResumeCode>) => { adoptState(st); go(st.profile.onboarded ? 'today' : 'onboarding'); };
   const finish = () => {
     mutate((st) => {
       st.profile.cls = cls ?? 'A';
@@ -47,6 +51,17 @@ export function OnboardingScreen() {
             <p class="small muted">Free, no account, no ads. Your progress stays on your device.</p>
           </div>
           <button class="btn primary block" onClick={() => setStep(1)}>Get started</button>
+          <details class="card">
+            <summary>Coming back? Restore your progress</summary>
+            <div class="stack" style={{ marginTop: '10px' }}>
+              <label for="ob-code" class="small">Paste your resume code</label>
+              <textarea id="ob-code" rows={3} value={paste} onInput={(e) => setPaste((e.target as HTMLTextAreaElement).value)} />
+              <button class="btn sm" style={{ alignSelf: 'flex-start' }} disabled={!paste.trim()} onClick={() => { try { restored(readResumeCode(paste, now())); } catch (e) { setRmsg((e as Error).message); } }}>Restore</button>
+              <label for="ob-file" class="small">…or open a progress file</label>
+              <input id="ob-file" type="file" accept=".json,application/json" onChange={async (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return; try { restored(importFile(await f.text(), now())); } catch (er) { setRmsg((er as Error).message); } }} />
+              {rmsg && <p class="small" role="alert">{rmsg}</p>}
+            </div>
+          </details>
           <button class="linkbtn small" style={{ alignSelf: 'center' }} onClick={() => { mutate((st) => { st.profile.onboarded = true; st.profile.cls = st.profile.cls ?? 'A'; st.profile.tests = testsForClass(st.profile.cls); }); go('path'); }}>Skip setup and look around</button>
         </section>
       )}
@@ -76,7 +91,7 @@ export function OnboardingScreen() {
             <div class="field"><label for="ob-date">Knowledge test date</label><input id="ob-date" type="date" min={dayKey(now())} value={date} onInput={(e) => setDate((e.target as HTMLInputElement).value)} /></div>
             <div class="field"><label for="ob-min">Minutes you can study a day: <strong class="num">{minutes}</strong></label><input id="ob-min" type="range" min={15} max={180} step={5} value={minutes} onInput={(e) => setMinutes(+(e.target as HTMLInputElement).value)} /></div>
             {(() => { const tmp = JSON.parse(JSON.stringify(peek())); tmp.profile.tests = testsForClass(cls ?? 'A'); tmp.profile.examDates = {}; for (const t of tmp.profile.tests) tmp.profile.examDates[t] = date; tmp.profile.minutesPerDay = minutes; const pl = buildPlan(tmp, C, now());
-              return <div class={`card ${pl.feasibility === 'go' ? 'tint' : 'warn'}`} role="status"><strong>{pl.feasibility === 'go' ? 'That works.' : pl.feasibility === 'tight' ? 'Tight but possible.' : 'Not enough time yet.'}</strong> <span class="small">{pl.feasibility === 'go' ? `About ${pl.needMinPerDay} minutes a day gets you there.` : `You need about ${pl.needMinPerDay} minutes a day for this date. Raise the minutes or pick a later date.`}</span>{pl.feasibility !== 'go' && <button class="btn sm" style={{ marginTop: '8px' }} onClick={() => setMinutes(Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5))}>Use {Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5)} minutes a day</button>}</div>; })()}
+              return <div class={`card ${pl.feasibility === 'go' ? 'tint' : 'warn'}`} role="status"><strong>{pl.feasibility === 'go' ? 'That works.' : pl.feasibility === 'tight' ? 'Tight but possible.' : 'Not enough time yet.'}</strong> <span class="small">{pl.feasibility === 'go' ? `About ${pl.needMinPerDay} minutes a day gets you there.` : `You need about ${pl.needMinPerDay} minutes a day for this date. Raise the minutes or pick a later date.`}</span>{pl.feasibility !== 'go' && pl.needMinPerDay <= 175 && <button class="btn sm" style={{ marginTop: '8px' }} onClick={() => setMinutes(Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5))}>Use {Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5)} minutes a day</button>}</div>; })()}
             <p class="small muted">The {cls === 'A' ? 18 : 14} lessons take about {Math.round(C.lessons.filter((l) => cls === 'A' || l.test === 'GK').reduce((a, l) => a + l.minutes, 0) / 60)} hours in total, plus review. Lessons stop a few days before the test so the last days are for review and mock tests.</p>
           </div>
           <div class="row"><button class="btn" onClick={() => setStep(2)}>Back</button><button class="btn primary" style={{ flex: 1 }} onClick={finish}>Build my plan</button></div>
