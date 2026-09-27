@@ -1,6 +1,6 @@
 # CDL Workshop CA
 
-An offline study app for the California CDL **General Knowledge** (50 questions, pass 40) and **Combination Vehicles** (20 questions, pass 16) written tests. It is built from the 18 lessons in `../source/lessons/`, which follow the California Commercial Driver Handbook (DL 650, 2019 edition) with page numbers for every fact.
+An offline study app for every California CDL test: the written tests **General Knowledge** (50 questions, pass 40), **Combination Vehicles** (20/16), **Air Brakes** (25/20), **Doubles/Triples** (20/16), **Tank** (20/16), **Passenger** (20/16), **School Bus** (20/16) and **HazMat** (30/24), plus preparation for the three **skills tests**. It is built from 34 lessons: the user's 18 GK/CV lessons in `../source/lessons/` (kept verbatim) and 16 added lessons in `../source/packs/` (written from the handbook, each independently fact-checked; briefs in `../PACK_*.md`). All lessons follow which follow the California Commercial Driver Handbook (DL 650, 2019 edition) with page numbers for every fact.
 
 Not affiliated with the California DMV, CHP or FMCSA. When anything here differs from the current handbook, the handbook wins.
 
@@ -29,8 +29,8 @@ Not affiliated with the California DMV, CHP or FMCSA. When anything here differs
 npm ci
 npm run parse          # lessons + enrich/ → src/content/content.json (fails on any golden-count drift)
 npm run dev            # local dev server
-npm test               # unit tests (engine, content, number-drift guard): 29
-npx playwright test    # E2E: flows, a11y (axe light + dark), widgets (isolation, legibility), both viewports: 115 + 23 phone-only skips
+npm test               # unit tests (engine, content, number-drift guard, test choice): 31
+npx playwright test    # E2E: flows, a11y (axe light + dark), widgets (isolation, legibility), both viewports: 149 + 33 phone-only skips
 node scripts/pwa-offline.mjs   # after build:pwa — service worker + offline reload
 ```
 
@@ -39,7 +39,8 @@ Content enrichment lives in `../enrich/` (number questions, distractor tags, per
 
 ## Known limits
 
-- Air Brakes, endorsements (H/N/P/S/T) and the skills tests are not taught yet.
+- Skills-test lessons teach what the examiner checks; they cannot replace behind-the-wheel training (ELDT).
+- Firefighter (F) and other California certificates are not covered.
 - YouTube videos could not be checked from the build environment, so each topic links to a YouTube search rather than a fixed video.
 - Tested in Chromium only; iPhone/iPad Safari is untested.
 - Question counts and pass marks are the DMV test format; the handbook itself does not print them.
