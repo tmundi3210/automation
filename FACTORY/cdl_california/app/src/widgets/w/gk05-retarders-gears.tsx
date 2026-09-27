@@ -42,7 +42,7 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
       <path d="M 232 118 L 232 70 L 272 70 L 296 94 L 296 118 Z" fill="var(--accent)" stroke="var(--ink)" stroke-width="2" />
       <rect x="244" y="76" width="22" height="16" fill="var(--surface)" stroke="var(--ink)" />
       {wheel(90, true)}{wheel(124, true)}{wheel(276, false)}
-      {skid && <g><line x1="40" y1="145" x2="106" y2="145" stroke="var(--red)" stroke-width="4" /><text x="72" y="44" font-size="16" font-weight="700" fill="var(--red)" text-anchor="middle">✕ SKID</text></g>}
+      {skid && <g><line x1="40" y1="145" x2="106" y2="145" stroke="var(--red)" stroke-width="4" /><text x="72" y="44" font-size="15" font-weight="700" fill="var(--red)" text-anchor="middle">✕ SKID</text></g>}
       {active && !skid && <text x="107" y="44" font-size="14" font-weight="700" fill="var(--accent)" text-anchor="middle">drive wheels slowed</text>}
       <text x="107" y="178" font-size="14" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} text-anchor="middle">drive wheels</text>
       <text x="276" y="178" font-size="14" text-anchor="middle" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} font-weight="700">{SURF.find((s) => s.id === surf)!.label} road</text>

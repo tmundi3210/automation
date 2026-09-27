@@ -43,7 +43,7 @@ function Scene({ d, double, crossed, flash }: { d: number; double: boolean; cros
       {double && [...Array(13)].map((_, i) => <rect x={RAIL + 25} y={i * 15 - 2} width={22} height={5} fill="var(--ink-2)" opacity=".6" />)}
       {rails.map((x) => <line x1={x} x2={x} y1="0" y2="184" stroke="var(--ink)" stroke-width="2.5" />)}
       <text x={RAIL - 5} y="178" text-anchor="end" font-size="14" fill="var(--ink)">nearest rail →</text>
-      <g transform="translate(222 22)" aria-hidden="true">
+      <g transform="translate(222 17)" aria-hidden="true">
         <line x1="0" y1="0" x2="0" y2="44" stroke="var(--ink)" stroke-width="2" />
         <line x1="-13" y1="-8" x2="13" y2="8" stroke="var(--ink)" stroke-width="7" /><line x1="-13" y1="-8" x2="13" y2="8" stroke="var(--surface)" stroke-width="4.5" />
         <line x1="-13" y1="8" x2="13" y2="-8" stroke="var(--ink)" stroke-width="7" /><line x1="-13" y1="8" x2="13" y2="-8" stroke="var(--surface)" stroke-width="4.5" />

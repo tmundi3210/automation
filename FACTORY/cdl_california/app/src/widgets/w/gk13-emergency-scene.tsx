@@ -3,62 +3,154 @@ import type { WidgetMeta, WidgetProps } from '../registry';
 
 export const meta: WidgetMeta = {
   id: 'gk13-emergency-scene', title: 'First on scene: crash, fire, alcohol', lesson: 'GK-13', anchor: /^accident procedures$/i,
-  summary: 'Put the 5 accident steps in order, match extinguishers to fires, fight a truck fire, and test the .04 alcohol rule. Then an 8-question challenge.',
-  stamp: { id: 'first-on-scene', name: 'First on scene', rule: 'Answer all 8 crash, fire and alcohol questions with no mistakes.' },
+  summary: 'Walk a crash scene through the 5 accident steps, match extinguishers to fires, fight a truck fire, and test the .04 alcohol rule. Then order the steps and answer 8 questions.',
+  stamp: { id: 'first-on-scene', name: 'First on scene', rule: 'Put the 5 accident steps in order and answer all 8 crash, fire and alcohol questions with no mistakes.' },
 };
 
 const P = ({ p }: { p: string }) => <span class="plate">p. {p}</span>;
 const T = { 'font-size': 13, fill: 'var(--ink)' } as const;
+const cols = (n: number) => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: '6px' });
+const segOn = { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' };
 
 // ---- Part A: accident steps (p. 2-44) ----
 export const STEPS = [
-  { id: 'protect', name: 'Protect the area', detail: 'First job: stop a second crash at the same spot. Move your truck to the side of the road (or, if you stopped to help, park away from the wreck). Turn on 4-way flashers. Place reflective triangles so other drivers see them in time (where to place them: GK-06, section 2.5).' },
-  { id: 'notify', name: 'Notify authorities', detail: 'Have a phone or CB? Call before you get out of the truck. No phone? Protect the scene first, then call or send someone. Know your exact location.' },
-  { id: 'care', name: 'Care for the injured', detail: 'Let trained people work. Otherwise: don’t move a badly injured person unless fire or passing traffic makes it necessary; direct pressure on heavy bleeding; keep them warm.' },
-  { id: 'collect', name: 'Collect information', detail: 'Drivers’ names, addresses, DL numbers; plates and vehicle types; owners; damage; injured and witnesses; officer’s name, badge number and agency; exact location; direction of travel.' },
-  { id: 'report', name: 'Report the accident', detail: 'File the required accident report. [CA] The DMV SR 1 report is covered in GK-03.' },
+  { id: 'protect', name: 'Protect the area', short: 'Protect', detail: 'First job: stop a second crash at the same spot. Move your truck to the side of the road (or, if you stopped to help, park away from the wreck). Turn on 4-way flashers. Place reflective triangles so other drivers see them in time (where to place them: GK-06, section 2.5).' },
+  { id: 'notify', name: 'Notify authorities', short: 'Notify', detail: 'Have a phone or CB? Call for help before you get out of the truck. No phone? Protect the scene first, then phone the police or send someone. Know your exact location.' },
+  { id: 'care', name: 'Care for the injured', short: 'Care', detail: 'A trained person is helping? Let them work. Otherwise: don’t move a badly injured person unless fire or passing traffic makes it necessary; direct pressure on heavy bleeding; keep them warm.' },
+  { id: 'collect', name: 'Collect information', short: 'Collect', detail: 'Drivers’ names, addresses, DL numbers; plates and vehicle types; owners; damage; injured and witnesses; officer’s name, badge number and agency; exact location; direction of travel.' },
+  { id: 'report', name: 'Report the accident', short: 'Report', detail: 'If you were in the accident, you must file an accident report, using the information you collected. [CA] The DMV SR 1 report is covered in GK-03.' },
 ] as const;
 const WRONG: Record<string, string> = {
-  protect: 'Nothing warns traffic yet. A car comes over the rise onto the wreck — a second crash at the same spot, maybe hitting you and the injured.',
+  protect: 'Nothing warns traffic yet. A driver comes up on the wreck — a second crash at the same spot, maybe hitting you and the injured.',
   notify: 'Help isn’t called yet. With a phone or CB, the handbook says call before you even get out of the truck.',
   care: 'Paperwork can wait. People who are hurt come before collecting information.',
   collect: 'You can’t report yet — first collect the information the report needs.',
+  report: 'The information sits unused: if you were in the accident, you must file an accident report.',
 };
 
-export function CrashVis({ done, second }: { done: number; second?: boolean }) {
+/** One picture of the whole scene, in step order: step 1 on the road, steps 2–5 as cards left to right. `cur` is highlighted; steps before it
+ *  are done; later steps are dimmed (or hidden when `hide` is set, for the ordering check). `skip` shows what goes wrong without the current step. */
+export function CrashScene({ cur, hide, skip }: { cur: number; hide?: boolean; skip?: boolean }) {
+  const st = (k: number) => (k < cur ? 'done' : k === cur ? 'cur' : 'todo');
+  const show = (k: number) => !hide || k < cur;
+  const lost = (k: number) => !!skip && k === cur;
+  const edge = (k: number) => (lost(k) ? 'var(--red)' : st(k) === 'cur' ? 'var(--amber)' : st(k) === 'done' ? 'var(--ok)' : 'var(--line)');
+  const Tag = ({ k, x, y }: { k: number; x: number; y: number }) => (
+    <g><circle cx={x} cy={y} r="10" fill={st(k) === 'done' ? 'var(--ok)' : st(k) === 'cur' ? 'var(--accent)' : 'var(--surface-2)'} stroke="var(--ink)" stroke-width="1.2" />
+      <text x={x} y={y + 5} text-anchor="middle" font-size="14" font-weight="700" fill={st(k) === 'todo' ? 'var(--ink)' : 'var(--surface)'}>{st(k) === 'done' ? '✓' : k + 1}</text></g>
+  );
+  const safe = show(0) && !lost(0);
+  const done = STEPS.filter((_, k) => k < cur).map((x) => x.short).join(', ');
+  /** Steps 2–5: one card each, left to right in order. */
+  const Card = ({ k, lines, bad, children }: { k: number; lines: string[]; bad: string; children: preact.ComponentChildren }) => {
+    const x = 4 + (k - 1) * 79;
+    if (!show(k)) return <g><rect x={x} y="178" width="75" height="100" rx="8" fill="var(--surface-2)" stroke="var(--line)" stroke-dasharray="4 3" /><text x={x + 37.5} y="234" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink-2)">?</text></g>;
+    return (
+      <g opacity={st(k) === 'todo' ? 0.35 : 1}>
+        <rect x={x} y="178" width="75" height="100" rx="8" fill={lost(k) ? 'var(--red-soft)' : st(k) === 'cur' ? 'var(--amber-soft)' : 'var(--surface)'} stroke={edge(k)} stroke-width={st(k) === 'todo' ? 1.2 : 2.5} stroke-dasharray={lost(k) ? '5 3' : '0'} />
+        <g transform={`translate(${x} 178)`}>{children}</g>
+        {(lost(k) ? [bad] : lines).map((l, j) => <text x={x + 37.5} y={252 + j * 16} text-anchor="middle" font-size="13" font-weight={lost(k) ? 700 : 400} fill={lost(k) ? 'var(--red)' : 'var(--ink)'}>{l}</text>)}
+        <Tag k={k} x={x + 13} y={191} />
+      </g>
+    );
+  };
   return (
-    <svg viewBox="0 0 360 130" width="100%" style={{ maxWidth: '560px' }} role="img" aria-label={`Crash scene. Steps done: ${done} of 5.${second ? ' A car hits the unprotected wreck: a second crash.' : ''}${done >= 1 ? ' Flashers on and triangles placed.' : ''}`}>
-      <rect x="0" y="0" width="360" height="130" fill="var(--surface)" />
-      <rect x="0" y="30" width="360" height="70" fill="var(--ink-2)" fill-opacity="0.28" />
-      <line x1="0" y1="65" x2="360" y2="65" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 6" />
-      <rect x="0" y="100" width="360" height="12" fill="var(--surface-2)" />
-      <g transform="rotate(20 250 76)"><rect x="232" y="68" width="36" height="18" rx="3" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.4" /></g>
-      <text x="228" y="58" text-anchor="end" {...T}>wreck</text><text x="300" y="94" text-anchor="middle" {...T}>your truck</text>
-      <path d="M 262 60 l 5 -8 l 3 7 l 6 -4 l -2 8" fill="none" stroke="var(--red)" stroke-width="2" />
-      <rect x="276" y="98" width="50" height="16" rx="2" fill="var(--accent)" stroke="var(--ink)" /><rect x="328" y="99" width="14" height="14" rx="2" fill="var(--accent)" stroke="var(--ink)" />
-      {done >= 1 && <>{[[274, 100], [274, 112], [344, 100], [344, 112]].map(([x, y]) => <circle cx={x} cy={y} r="3" fill="var(--amber)" stroke="var(--ink)" stroke-width="0.6" />)}
-        {[200, 130, 40].map((x) => <path d={`M ${x} 70 l 7 12 l -14 0 Z`} fill="var(--red)" stroke="var(--ink)" stroke-width="0.8" />)}<text x="120" y="24" {...T}>▲ triangles + flashers</text></>}
-      {done >= 2 && <text x="250" y="124" {...T}>✆ help called</text>}
-      {done >= 3 && <><rect x="300" y="36" width="16" height="16" rx="3" fill="var(--surface)" stroke="var(--red)" /><path d="M 308 39 v10 M 303 44 h10" stroke="var(--red)" stroke-width="3" /></>}
-      {done >= 4 && <text x="4" y="124" {...T}>✎ info collected</text>}
-      {done >= 5 && <text x="120" y="124" {...T}>✓ report filed</text>}
-      {second && <><rect x="150" y="68" width="32" height="16" rx="3" fill="var(--surface)" stroke="var(--ink)" /><path d="M 186 76 L 226 76" stroke="var(--red)" stroke-width="3" /><circle cx="228" cy="76" r="12" fill="var(--red)" /><text x="228" y="81" text-anchor="middle" font-size="14" font-weight="700" fill="var(--surface)">!</text><text x="10" y="24" font-size="13" font-weight="700" fill="var(--red)">SECOND CRASH</text></>}
+    <svg viewBox="0 0 320 282" width="100%" style={{ display: 'block', maxWidth: '400px', marginInline: 'auto' }} role="img"
+      aria-label={`Crash scene with the 5 accident steps in order. ${done ? `Done: ${done}. ` : ''}${cur < 5 ? `Now: step ${cur + 1}, ${hide ? 'not yet chosen' : STEPS[cur].name}.` : 'All 5 steps done.'}${lost(0) ? ' Skipped: a car runs into the unprotected wreck — a second crash.' : ''}`}>
+      <rect width="320" height="282" fill="var(--surface)" />
+      {/* step rail */}
+      <line x1="30" y1="17" x2="290" y2="17" stroke="var(--line)" stroke-width="3" />
+      {STEPS.map((x, k) => { const cx = 30 + k * 65; const s = st(k); return (
+        <g key={x.id}>
+          {s === 'cur' && <circle cx={cx} cy="17" r="16" fill="none" stroke={skip ? 'var(--red)' : 'var(--amber)'} stroke-width="3" />}
+          <circle cx={cx} cy="17" r="12" fill={s === 'done' ? 'var(--ok)' : s === 'cur' ? 'var(--accent)' : 'var(--surface-2)'} stroke="var(--ink)" stroke-width="1.2" />
+          <text x={cx} y="22" text-anchor="middle" font-size="14" font-weight="700" fill={s === 'todo' ? 'var(--ink)' : 'var(--surface)'}>{s === 'done' ? '✓' : k + 1}</text>
+          <text x={cx} y="48" text-anchor="middle" font-size="13" font-weight={s === 'cur' ? 700 : 400} fill={s === 'todo' ? 'var(--ink-2)' : 'var(--ink)'}>{show(k) ? x.short : '?'}</text>
+        </g>); })}
+      {/* road: traffic drives left → right in the lower lane; shoulder below */}
+      <rect x="0" y="58" width="320" height="84" fill="var(--ink-2)" fill-opacity="0.28" />
+      <line x1="0" y1="100" x2="320" y2="100" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 6" />
+      <rect x="0" y="142" width="320" height="26" fill="var(--amber-soft)" />
+      <text x="4" y="94" font-size="13" fill="var(--ink-2)">oncoming</text><text x="4" y="120" font-size="13" fill="var(--ink-2)">traffic →</text>
+      <g transform="rotate(-18 206 120)"><rect x="186" y="109" width="40" height="22" rx="4" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.4" /></g>
+      <path d="M 230 104 l 5 -8 l 3 7 l 6 -4 l -2 8" fill="none" stroke="var(--red)" stroke-width="2" />
+      <text x="206" y="84" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">wreck</text>
+      {/* step 1 — protect: truck on the shoulder, 4-way flashers, triangles behind the scene */}
+      {(show(0) || lost(0)) && <rect x="2" y="139" width="316" height="32" rx="6" fill="none" stroke={edge(0)} stroke-width={st(0) === 'cur' || lost(0) ? 2.5 : 0} stroke-dasharray={lost(0) ? '5 3' : '0'} />}
+      <g transform={safe ? '' : 'translate(0 -30)'}>
+        <rect x="240" y="146" width="50" height="19" rx="2" fill="var(--accent)" stroke="var(--ink)" /><rect x="292" y="147" width="17" height="17" rx="2" fill="var(--accent)" stroke="var(--ink)" />
+        {safe && [[238, 148], [238, 163], [311, 148], [311, 163]].map(([x, y]) => <circle cx={x} cy={y} r="4" fill="var(--amber)" stroke="var(--ink)" stroke-width="0.8" />)}
+      </g>
+      <text x="265" y={safe ? 136 : 110} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">your truck</text>
+      {safe && [70, 118, 166].map((x) => <path d={`M ${x} 146 l 8 15 l -16 0 Z`} fill="var(--red)" stroke="var(--ink)" stroke-width="0.8" />)}
+      {safe && <text x="118" y="136" text-anchor="middle" font-size="13" fill="var(--ink)" stroke="var(--surface-2)" stroke-width="3" paint-order="stroke">triangles (GK-06)</text>}
+      {show(0) && <Tag k={0} x={222} y={156} />}
+      {lost(0) && <g><rect x="120" y="110" width="38" height="20" rx="4" fill="var(--surface)" stroke="var(--ink)" /><path d="M 160 120 L 180 120" stroke="var(--red)" stroke-width="3" />
+        <circle cx="184" cy="120" r="11" fill="var(--red)" /><text x="184" y="125" text-anchor="middle" font-size="14" font-weight="700" fill="var(--surface)">!</text>
+        <text x="100" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">SECOND CRASH</text></g>}
+      {/* steps 2–5 */}
+      <Card k={1} lines={['call from', 'the cab']} bad="✗ no call">
+        <rect x="30" y="18" width="16" height="28" rx="4" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" /><rect x="33" y="22" width="10" height="10" rx="1" fill="var(--blue-soft)" />
+        {!lost(1) && <path d="M 52 24 q 6 8 0 16 M 58 19 q 11 13 0 26" fill="none" stroke="var(--blue)" stroke-width="2.2" />}
+      </Card>
+      <Card k={2} lines={['pressure,', 'keep warm']} bad="✗ no care">
+        <circle cx="18" cy="42" r="6" fill="var(--surface)" stroke="var(--ink)" /><rect x="25" y="35" width="40" height="14" rx="6" fill={lost(2) ? 'var(--surface)' : 'var(--blue-soft)'} stroke="var(--ink)" />
+        {!lost(2) && <g><circle cx="52" cy="18" r="5.5" fill="var(--amber)" stroke="var(--ink)" /><path d="M 52 24 L 48 34 M 50 27 L 40 38" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" /></g>}
+      </Card>
+      <Card k={3} lines={['names,', 'plates, DL']} bad="✗ blank">
+        <rect x="24" y="16" width="30" height="38" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" /><rect x="32" y="12" width="14" height="7" rx="2" fill="var(--ink-2)" />
+        {!lost(3) && [26, 33, 40, 47].map((y) => <line x1="29" x2="49" y1={y} y2={y} stroke="var(--ink-2)" stroke-width="1.8" />)}
+      </Card>
+      <Card k={4} lines={['file the', 'report']} bad="✗ not filed">
+        <path d="M 24 12 h 22 l 8 8 v 34 h -30 Z" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.6" />
+        <text x="39" y="42" text-anchor="middle" font-size="14" font-weight="700" fill={lost(4) ? 'var(--red)' : 'var(--ok)'}>{lost(4) ? '✗' : '✓'}</text>
+      </Card>
     </svg>
   );
 }
 
 function PartA() {
-  const [done, setDone] = useState(0); const [bad, setBad] = useState<string | null>(null);
-  const order = ['collect', 'care', 'report', 'protect', 'notify'];
+  const [cur, setCur] = useState(0); const [skip, setSkip] = useState(false);
+  const s = STEPS[cur];
+  const go = (k: number) => { setCur(k); setSkip(false); };
   return (
     <div class="stack">
-      <p class="small">You were in a crash but are not badly hurt. Tap the step that comes <strong>next</strong>. <P p="2-44" /></p>
-      <CrashVis done={done} second={bad === 'protect'} />
-      <div class="row" role="group" aria-label="Accident steps">{order.map((id) => { const i = STEPS.findIndex((s) => s.id === id); const s = STEPS[i]; const placed = i < done; return (
-        <button class={`btn sm ${placed ? 'primary' : ''}`} disabled={placed || done === 5} onClick={() => { if (i === done) { setDone(done + 1); setBad(null); } else setBad(STEPS[done].id); }}>{placed ? `${i + 1}. ` : ''}{s.name}</button>); })}</div>
-      {bad && <div class="feedback bad" role="status"><div class="verdict">Not yet — {STEPS[STEPS.findIndex((s) => s.id === bad)].name} comes first</div><p class="small">{WRONG[bad]} <P p="2-44" /></p></div>}
-      {done > 0 && <ol class="small">{STEPS.slice(0, done).map((s) => <li><strong>{s.name}.</strong> {s.detail}</li>)}</ol>}
-      {done === 5 && <button class="btn sm" onClick={() => { setDone(0); setBad(null); }}>Reset scene</button>}
+      <p class="small">You were in a crash but are not badly hurt. The scene shows the <strong>5 steps in order</strong>; the highlighted one is the step you are on. <P p="2-44" /></p>
+      <CrashScene cur={cur} skip={skip} />
+      <div role="group" aria-label="Accident steps" style={cols(5)}>{STEPS.map((x, k) => (
+        <button class="btn sm" aria-pressed={k === cur} aria-label={`Step ${k + 1}: ${x.name}`} style={{ paddingInline: '2px', ...(k === cur ? segOn : {}) }} onClick={() => go(k)}>{k + 1}</button>))}</div>
+      <div class="card tint stack" style={{ gap: '6px' }} role="status" aria-live="polite">
+        <div class="eyebrow">Step {cur + 1} of 5</div>
+        <strong>{s.name}</strong>
+        <p class="small" style={{ margin: 0 }}>{s.detail} <P p="2-44" /></p>
+      </div>
+      <div style={cols(2)}>
+        <button class="btn sm" aria-pressed={skip} onClick={() => setSkip(!skip)} style={skip ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}}>{skip ? 'Show it done right' : 'What if I skip it?'}</button>
+        <button class="btn primary sm" onClick={() => go((cur + 1) % 5)}>{cur < 4 ? 'Next step →' : 'Start again'}</button>
+      </div>
+      {skip && <div class="feedback bad" role="status"><div class="verdict">Skipping “{s.name}”</div><p class="small" style={{ margin: 0 }}>{WRONG[s.id]} <P p="2-44" /></p></div>}
+      <p class="small muted" style={{ margin: 0 }}>Time order: make the scene safe → get help coming → help people → paperwork (collect, then report).</p>
+    </div>
+  );
+}
+
+/** Challenge item 1: tap the steps in order. One evidence call when the order is complete (ok only if no wrong tap). */
+const SHUFFLED = ['collect', 'care', 'report', 'protect', 'notify'];
+function OrderCheck({ onDone }: { onDone: (ok: boolean) => void }) {
+  const [n, setN] = useState(0); const [bad, setBad] = useState<string | null>(null); const [slips, setSlips] = useState(0);
+  const tap = (id: string) => {
+    if (n >= 5) return;
+    const k = STEPS.findIndex((x) => x.id === id);
+    if (k === n) { setN(n + 1); setBad(null); if (n + 1 === 5) onDone(slips === 0); } else { setBad(STEPS[n].id); setSlips(slips + 1); }
+  };
+  return (
+    <div class="stack">
+      <strong>You were in a crash but are not badly hurt. Tap the 5 steps in the order you do them.</strong>
+      <CrashScene cur={n} hide skip={bad === 'protect'} />
+      <div role="group" aria-label="Accident steps to order" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' }}>{SHUFFLED.map((id) => { const k = STEPS.findIndex((x) => x.id === id); const placed = k < n; return (
+        <button class={`btn sm ${placed ? 'primary' : ''}`} style={{ lineHeight: 1.2, ...(placed ? { opacity: 1 } : {}) }} disabled={placed || n === 5} onClick={() => tap(id)}>{placed ? `${k + 1}. ` : ''}{STEPS[k].name}</button>); })}</div>
+      {bad && <div class="feedback bad" role="status"><div class="verdict">Not yet — {STEPS[n].name} comes next</div><p class="small" style={{ margin: 0 }}>{WRONG[bad]} <P p="2-44" /></p></div>}
+      {n === 5 && <div class={`feedback ${slips === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{slips === 0 ? 'Right order' : `In order now — ${slips} slip${slips > 1 ? 's' : ''}`}</div><p class="small" style={{ margin: 0 }}>Protect → Notify → Care → Collect → Report. <P p="2-44" /></p></div>}
     </div>
   );
 }
@@ -81,7 +173,7 @@ export const DRILL = [
 export function FireVis({ size, station }: { size: number; station?: boolean }) {
   const f = 0.7 + size * 0.28;
   return (
-    <svg viewBox="0 0 300 136" width="100%" style={{ maxWidth: '460px' }} role="img" aria-label={`Truck fire, ${size === 0 ? 'small and under control' : size >= 3 ? 'large and spreading' : 'growing'}.${station ? ' Stopped beside fuel pumps: explosion risk.' : ''}`}>
+    <svg viewBox="0 0 300 136" width="100%" style={{ display: 'block', maxWidth: '400px', marginInline: 'auto' }} role="img" aria-label={`Truck fire, ${size === 0 ? 'small and under control' : size >= 3 ? 'large and spreading' : 'growing'}.${station ? ' Stopped beside fuel pumps: explosion risk.' : ''}`}>
       <rect x="0" y="0" width="300" height="136" fill="var(--surface)" /><g transform="translate(0 26)"><rect x="0" y="92" width="300" height="18" fill="var(--surface-2)" />
       <rect x="40" y="44" width="150" height="46" rx="2" fill="var(--surface-2)" stroke="var(--ink)" /><rect x="192" y="54" width="40" height="36" rx="3" fill="var(--accent)" stroke="var(--ink)" />
       {[70, 170, 216].map((x) => <circle cx={x} cy="92" r="9" fill="var(--ink-2)" stroke="var(--ink)" />)}
@@ -94,7 +186,7 @@ export function FireVis({ size, station }: { size: number; station?: boolean }) 
 export function MatchVis({ fire, agent, ok }: { fire: Fire; agent: Agent; ok: boolean }) {
   const res = ok ? 'Fire out' : agent === 'water' ? (fire === 'elec' ? 'Shock!' : 'Flames spread') : 'Still burning';
   return (
-    <svg viewBox="0 0 300 64" width="100%" style={{ maxWidth: '420px' }} role="img" aria-label={`${AGENT_L[agent]} on ${FIRE_L[fire]}: ${res}.`}>
+    <svg viewBox="0 0 300 64" width="100%" style={{ display: 'block', maxWidth: '400px', marginInline: 'auto' }} role="img" aria-label={`${AGENT_L[agent]} on ${FIRE_L[fire]}: ${res}.`}>
       <rect x="0" y="0" width="300" height="64" fill="var(--surface)" />
       <rect x="14" y="16" width="16" height="36" rx="5" fill="var(--red)" stroke="var(--ink)" /><path d="M 30 22 L 52 18" stroke="var(--ink)" stroke-width="3" />
       <path d="M 56 20 Q 80 26 96 34" fill="none" stroke={agent === 'water' ? 'var(--blue)' : 'var(--ink-2)'} stroke-width="3" stroke-dasharray="3 3" />
@@ -112,15 +204,17 @@ function PartB() {
   return (
     <div class="stack">
       <strong>Match the extinguisher to the fire</strong>
-      <div class="row" role="group" aria-label="What is burning">{(Object.keys(FIRE_L) as Fire[]).map((k) => <button class="btn sm" aria-pressed={fire === k} style={fire === k ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => { setFire(k); setAgent(null); }}>{FIRE_L[k]}</button>)}</div>
-      <div class="row" role="group" aria-label="What you use">{(Object.keys(AGENT_L) as Agent[]).map((k) => <button class="btn sm" aria-pressed={agent === k} style={agent === k ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => setAgent(k)}>{AGENT_L[k]}</button>)}</div>
+      <span class="small" id="g13-burn">What is burning?</span>
+      <div role="group" aria-labelledby="g13-burn" style={cols(3)}>{(Object.keys(FIRE_L) as Fire[]).map((k) => <button class="btn sm" aria-pressed={fire === k} style={{ paddingInline: '6px', lineHeight: 1.2, ...(fire === k ? segOn : {}) }} onClick={() => { setFire(k); setAgent(null); }}>{FIRE_L[k]}</button>)}</div>
+      <span class="small" id="g13-use">What do you use?</span>
+      <div role="group" aria-labelledby="g13-use" style={cols(3)}>{(Object.keys(AGENT_L) as Agent[]).map((k) => <button class="btn sm" aria-pressed={agent === k} style={{ paddingInline: '6px', lineHeight: 1.2, ...(agent === k ? segOn : {}) }} onClick={() => setAgent(k)}>{AGENT_L[k]}</button>)}</div>
       {m && agent && <div class={`feedback ${m[0] ? 'good' : 'bad'}`} role="status"><div class="verdict">{m[0] ? '✓ Works' : '✗ Wrong choice'}</div><MatchVis fire={fire} agent={agent} ok={m[0]} /><p class="small">{m[1]} <P p="2-45" /></p></div>}
       <p class="small muted">Burning tire: it must be cooled — it may take a lot of water. Not sure which extinguisher, above all with HazMat? Wait for firefighters. <P p="2-45" /></p>
       <strong>Truck fire drill</strong>
       <FireVis size={wrong} station={ch[0] === false} />
       {DRILL.map((d, i) => (
         <div class="stack" style={{ gap: '6px' }}><span class="small"><strong>{d.q}</strong></span>
-          <div class="row" role="group" aria-label={d.q}>{(i % 2 ? [false, true] : [true, false]).map((g) => { const lab = g ? d.good : d.bad; return (
+          <div role="group" aria-label={d.q} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '6px' }}>{(i % 2 ? [false, true] : [true, false]).map((g) => { const lab = g ? d.good : d.bad; return (
             <button class="btn sm" aria-pressed={ch[i] === g} style={{ textAlign: 'left', ...(ch[i] === g ? { borderColor: g ? 'var(--ok)' : 'var(--red)', background: g ? 'var(--ok-soft)' : 'var(--red-soft)' } : {}) }} onClick={() => { const n = [...ch]; n[i] = g; setCh(n); }}>{ch[i] === g ? (g ? '✓ ' : '✗ ') : ''}{lab}</button>); })}</div>
           {ch[i] === false && <p class="small" role="status">{d.why} <P p="2-45" /></p>}
         </div>))}
@@ -138,13 +232,13 @@ export function bacRule(b: number): { ok: boolean; h: string; t: string; p: stri
 export function BacVis({ b }: { b: number }) {
   const x = (v: number) => 20 + v * 2800;
   return (
-    <svg viewBox="0 0 320 64" width="100%" style={{ maxWidth: '460px' }} role="img" aria-label={`BAC gauge at ${b.toFixed(2)}. The CMV limit line is at .04.`}>
+    <svg viewBox="0 0 320 64" width="100%" style={{ display: 'block', maxWidth: '400px', marginInline: 'auto' }} role="img" aria-label={`BAC gauge at ${b.toFixed(2)}. The CMV limit line is at .04.`}>
       <rect x="0" y="0" width="320" height="64" fill="var(--surface)" />
       <rect x="20" y="20" width="280" height="16" rx="8" fill="var(--surface-2)" stroke="var(--ink-2)" />
       <rect x="20" y="20" width={Math.max(0, x(b) - 20)} height="16" rx="8" fill={b === 0 ? 'var(--ok)' : b < 0.04 ? 'var(--amber)' : 'var(--red)'} />
-      <line x1={x(0.04)} y1="12" x2={x(0.04)} y2="44" stroke="var(--red)" stroke-width="2" /><text x={x(0.04)} y="58" text-anchor="middle" {...T}>.04 CMV</text>
-      <line x1={x(0.08)} y1="16" x2={x(0.08)} y2="40" stroke="var(--ink-2)" stroke-dasharray="3 2" /><text x={x(0.08)} y="58" text-anchor="middle" {...T}>.08</text>
-      <text x="20" y="12" {...T}>0</text><text x={Math.min(x(b), 280)} y="12" {...T} font-weight="700">{b.toFixed(2)}</text>
+      <line x1={x(0.04)} y1="12" x2={x(0.04)} y2="44" stroke="var(--red)" stroke-width="2" /><text x={x(0.04)} y="58" text-anchor="middle" {...T} font-size="14">.04 CMV</text>
+      <line x1={x(0.08)} y1="16" x2={x(0.08)} y2="40" stroke="var(--ink-2)" stroke-dasharray="3 2" /><text x={x(0.08)} y="58" text-anchor="middle" {...T} font-size="14">.08</text>
+      <text x="20" y="12" {...T} font-size="14">0</text><text x={Math.min(x(b), 280)} y="12" {...T} font-size="14" font-weight="700">{b.toFixed(2)}</text>
     </svg>
   );
 }
@@ -156,7 +250,7 @@ function PartC() {
       <BacVis b={b} />
       <div class={`feedback ${r.ok ? 'good' : 'bad'}`} role="status" aria-live="polite"><div class="verdict">{r.h}</div><p class="small">{r.t} <P p={r.p} /></p></div>
       <strong class="small">What lowers your BAC?</strong>
-      <div class="row" role="group" aria-label="Ways to sober up">{['Black coffee', 'Cold shower', 'Fresh air', 'Time'].map((k) => <button class="btn sm" aria-pressed={s === k} onClick={() => setS(k)}>{k}</button>)}</div>
+      <div role="group" aria-label="Ways to sober up" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '6px' }}>{['Black coffee', 'Cold shower', 'Fresh air', 'Time'].map((k) => <button class="btn sm" aria-pressed={s === k} style={s === k ? segOn : {}} onClick={() => setS(k)}>{k}</button>)}</div>
       {s && <div class={`feedback ${s === 'Time' ? 'good' : 'bad'}`} role="status"><p class="small">{s === 'Time' ? '✓ Only time. ' : `✗ ${s} does nothing. `}The liver handles about 1/3 ounce of alcohol per hour, and that rate never changes. <P p="2-47" /></p></div>}
       <p class="small muted">One drink = 12 oz beer = 5 oz wine = 1½ oz 80-proof liquor — same alcohol. <P p="2-47" /></p>
     </div>
@@ -178,33 +272,46 @@ export const QS: Q[] = [
 ];
 
 export default function EmergencyScene({ onEvidence, onChallenge, concepts }: WidgetProps) {
-  const [tab, setTab] = useState<'a' | 'b' | 'c' | 'x'>('a');
+  const [mode, setMode] = useState<'explore' | 'x'>('explore');
+  const [tab, setTab] = useState<'a' | 'b' | 'c'>('a');
+  // challenge: item 0 = order the 5 steps, items 1..8 = QS
   const [i, setI] = useState(0); const [pick, setPick] = useState<number | null>(null); const [misses, setMisses] = useState(0);
-  const q = QS[i];
-  const reset = () => { setI(0); setPick(null); setMisses(0); };
-  const answer = (k: number) => { if (pick !== null) return; setPick(k); const ok = k === q.a; if (!ok) setMisses(misses + 1); onEvidence({ concepts, ok }); };
-  const next = () => { if (i + 1 === QS.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); };
+  const [ordered, setOrdered] = useState<boolean | null>(null);
+  const total = QS.length + 1;
+  const q = i > 0 ? QS[i - 1] : undefined;
+  const reset = () => { setI(0); setPick(null); setMisses(0); setOrdered(null); };
+  const answer = (k: number) => { if (pick !== null || !q) return; setPick(k); const ok = k === q.a; if (!ok) setMisses(misses + 1); onEvidence({ concepts, ok }); };
+  const next = () => { if (i + 1 === total && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); };
   const ok = pick !== null && pick === q?.a;
+  const crashStep = i === 1 ? 0 : i === 2 ? 1 : 2;
   return (
     <div class="stack">
-      <div class="tabs" role="tablist">{([['a', 'Crash'], ['b', 'Fire'], ['c', 'Alcohol'], ['x', 'Challenge']] as const).map(([k, l]) => <button role="tab" aria-selected={tab === k} onClick={() => { setTab(k); if (k === 'x') reset(); }}>{l}</button>)}</div>
-      {tab === 'a' && <PartA />}{tab === 'b' && <PartB />}{tab === 'c' && <PartC />}
-      {tab === 'x' && (q ? (
+      <div class="tabs" role="tablist"><button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Explore</button><button role="tab" aria-selected={mode === 'x'} onClick={() => { setMode('x'); reset(); }}>Challenge ({total})</button></div>
+      {mode === 'explore' && <>
+        <div role="group" aria-label="Topic" style={cols(3)}>{([['a', 'Crash'], ['b', 'Fire'], ['c', 'Alcohol']] as const).map(([k, l]) => <button class="btn sm" aria-pressed={tab === k} style={tab === k ? segOn : {}} onClick={() => setTab(k)}>{l}</button>)}</div>
+        {tab === 'a' && <PartA />}{tab === 'b' && <PartB />}{tab === 'c' && <PartC />}
+      </>}
+      {mode === 'x' && i === 0 && <div class="stack">
+        <span class="small muted num">Check 1 of {total} · Crash</span>
+        <OrderCheck onDone={(good) => { setOrdered(good); if (!good) setMisses(misses + 1); onEvidence({ concepts, ok: good }); }} />
+        {ordered !== null && <button class="btn primary sm" style={{ alignSelf: 'flex-start' }} onClick={next}>Next</button>}
+      </div>}
+      {mode === 'x' && i > 0 && (q ? (
         <div class="stack">
-          <span class="small muted num">Question {i + 1} of {QS.length} · {q.vis === 'crash' ? 'Crash' : q.vis === 'fire' ? 'Fire' : 'Alcohol'}</span>
+          <span class="small muted num">Check {i + 1} of {total} · {q.vis === 'crash' ? 'Crash' : q.vis === 'fire' ? 'Fire' : 'Alcohol'}</span>
           <strong>{q.q}</strong>
           <div class="stack" role="group" aria-label="Answers">{q.opts.map((o, k) => (
-            <button class={`btn sm ${pick !== null && k === q.a ? 'primary' : ''}`} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick === k && k !== q.a ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }} disabled={pick !== null} onClick={() => answer(k)}>{pick !== null && (k === q.a ? '✓ ' : k === pick ? '✗ ' : '')}{o}</button>))}</div>
+            <button class={`btn sm ${pick !== null && k === q.a ? 'primary' : ''}`} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && k === q.a ? { opacity: 1 } : {}), ...(pick === k && k !== q.a ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }} disabled={pick !== null} onClick={() => answer(k)}>{pick !== null && (k === q.a ? '✓ ' : k === pick ? '✗ ' : '')}{o}</button>))}</div>
+          {pick !== null && q.vis === 'crash' && <CrashScene cur={crashStep} skip={!ok} />}
+          {pick !== null && q.vis === 'fire' && <FireVis size={ok ? 0 : 3} station={!ok && pick === 2 && i === 5} />}
+          {pick !== null && q.vis === 'bac' && <BacVis b={i === 7 ? 0.02 : 0.04} />}
           {pick !== null && <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">
             <div class="verdict">{ok ? 'Right' : 'Not quite'}</div>
-            {q.vis === 'crash' && <CrashVis done={ok ? (i === 0 ? 1 : i === 1 ? 2 : 3) : 0} second={!ok && i === 0} />}
-            {q.vis === 'fire' && <FireVis size={ok ? 0 : 3} station={!ok && pick === 2 && i === 4} />}
-            {q.vis === 'bac' && <BacVis b={i === 6 ? 0.02 : 0.04} />}
             <p class="small">{!ok && <><strong>What happens:</strong> {q.bad} </>}{q.why} <P p={q.p} /></p>
-            <button class="btn primary sm" onClick={next}>{i + 1 === QS.length ? 'Finish' : 'Next'}</button></div>}
+            <button class="btn primary sm" onClick={next}>{i + 1 === total ? 'Finish' : 'Next'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 8 right — stamp earned' : `${QS.length - misses} of ${QS.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `All ${total} right — stamp earned` : `${total - misses} of ${total} right`}</div>
           <button class="btn sm" onClick={reset}>Try again</button></div>
       ))}
     </div>

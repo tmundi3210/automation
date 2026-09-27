@@ -8,7 +8,8 @@ export const meta: WidgetMeta = {
   stamp: { id: 'triangles-placed', name: 'Triangles placed', rule: 'Place all 3 triangles right on the divided, two-lane and curve roads, and know the 10-minute rule, with no mistakes.' },
 };
 
-interface Slot { id: string; x: number; y: number; label: string; ly?: number; lx?: number }
+/** x/y in scene units (360 x 200). label = bare number shown under the spot; sub = optional 2nd line; name = spoken/feedback name. */
+interface Slot { id: string; x: number; y: number; label: string; name: string; sub?: string; ly?: number; lx?: number }
 interface Scene {
   id: string; name: string; tag: string; page: string; fig: string;
   slots: Slot[];
@@ -22,8 +23,8 @@ const SCENES: Scene[] = [
   {
     id: 'div', name: 'Divided or one-way highway', tag: 'Traffic comes from behind only', page: '2-14', fig: 'Figure 2.8',
     slots: [
-      { id: 'b200', x: 48, y: 133, label: '200 ft' }, { id: 'b150', x: 94, y: 133, label: '150 ft' }, { id: 'b100', x: 140, y: 133, label: '100 ft' },
-      { id: 'b50', x: 186, y: 133, label: '50 ft' }, { id: 'b10', x: 226, y: 133, label: '10 ft' }, { id: 'a100', x: 330, y: 133, label: '100 ft ahead', lx: 318 },
+      { id: 'b200', x: 32, y: 133, label: '200', name: '200 ft behind' }, { id: 'b150', x: 78, y: 133, label: '150', name: '150 ft behind' }, { id: 'b100', x: 124, y: 133, label: '100', name: '100 ft behind' },
+      { id: 'b50', x: 170, y: 133, label: '50', name: '50 ft behind' }, { id: 'b10', x: 216, y: 133, label: '10', name: '10 ft behind' }, { id: 'a100', x: 332, y: 133, label: '100', sub: 'ahead', name: '100 ft ahead' },
     ],
     need: [
       { ids: ['b10'], ok: '10 ft behind — marks where your truck is.', missing: 'Nothing at 10 ft behind: the triangle closest to the truck is missing.' },
@@ -40,8 +41,8 @@ const SCENES: Scene[] = [
   {
     id: 'two', name: 'Two-lane road, traffic both ways', tag: 'Traffic comes from both directions', page: '2-15', fig: 'Figure 2.9',
     slots: [
-      { id: 'b200', x: 40, y: 142, label: '200 ft' }, { id: 'b100', x: 104, y: 142, label: '100 ft' }, { id: 'r10', x: 154, y: 142, label: '10 ft', ly: 170 },
-      { id: 'f10', x: 246, y: 142, label: '10 ft', ly: 170 }, { id: 'a100', x: 296, y: 142, label: '100 ft' }, { id: 'a200', x: 340, y: 142, label: '200 ft' },
+      { id: 'b200', x: 40, y: 142, label: '200', name: '200 ft behind' }, { id: 'b100', x: 104, y: 142, label: '100', name: '100 ft behind' }, { id: 'r10', x: 150, y: 142, label: '10', name: '10 ft from the rear corner' },
+      { id: 'f10', x: 246, y: 142, label: '10', name: '10 ft from the front corner' }, { id: 'a100', x: 292, y: 142, label: '100', name: '100 ft ahead' }, { id: 'a200', x: 338, y: 142, label: '200', name: '200 ft ahead' },
     ],
     need: [
       { ids: ['r10', 'f10'], ok: 'Within 10 ft of a corner — marks where the vehicle is.', missing: 'No triangle within 10 ft of the front or rear corner to mark the vehicle.' },
@@ -59,8 +60,8 @@ const SCENES: Scene[] = [
   {
     id: 'curve', name: 'Curve hides the truck', tag: 'Drivers cannot see you within 500 ft', page: '2-15', fig: 'Figure 2.10',
     slots: [
-      { id: 'bc', x: 22, y: 26, label: '≈400 ft', ly: 54, lx: 38 }, { id: 'b100', x: 176, y: 150, label: '100 ft', ly: 180 },
-      { id: 'r10', x: 226, y: 156, label: '10 ft', ly: 182 }, { id: 'f10', x: 310, y: 156, label: '10 ft', ly: 182 }, { id: 'a100', x: 346, y: 156, label: '100 ft', ly: 196, lx: 340 },
+      { id: 'bc', x: 24, y: 30, label: '100–500', sub: 'back', ly: 66, lx: 40, name: 'beyond the curve (100–500 ft back)' }, { id: 'b100', x: 164, y: 150, label: '100', ly: 184, name: '100 ft behind' },
+      { id: 'r10', x: 212, y: 156, label: '10', ly: 184, name: '10 ft from the rear corner' }, { id: 'f10', x: 292, y: 156, label: '10', ly: 184, name: '10 ft from the front corner' }, { id: 'a100', x: 338, y: 156, label: '100', ly: 184, name: '100 ft ahead' },
     ],
     need: [
       { ids: ['r10', 'f10'], ok: 'Within 10 ft of a corner — marks where the vehicle is.', missing: 'No triangle within 10 ft of a corner to mark the vehicle.' },
@@ -90,7 +91,9 @@ export function judge(sc: Scene, placed: Placed): { items: Judged[]; missing: st
   return { items, missing, ok: items.every((i) => i.ok) && missing.length === 0 };
 }
 const answer = (sc: Scene): Placed => sc.need.map((n) => n.ids[0]);
-const slotName = (sc: Scene, id: string) => { const s = sc.slots.find((x) => x.id === id)!; return id === 'bc' ? 'beyond the curve (≈400 ft back)' : id.startsWith('a') ? `${s.label} ahead`.replace(' ahead ahead', ' ahead') : id === 'r10' ? '10 ft from the rear corner' : id === 'f10' ? '10 ft from the front corner' : `${s.label} behind`; };
+const slotName = (sc: Scene, id: string) => sc.slots.find((x) => x.id === id)!.name;
+/** Scene art is drawn in 360 x 200 units under a 22-unit header strip ("distances in feet" / "not to scale"). */
+const TOP = 22, VH = 200 + TOP;
 
 const T = ({ x, y, bad }: { x: number; y: number; bad?: boolean }) => (
   <g><path d={`M${x} ${y - 9} L${x + 9} ${y + 7} L${x - 9} ${y + 7} Z`} fill="var(--red)" stroke={bad ? 'var(--ink)' : 'var(--surface)'} stroke-width="1.5" />
@@ -111,16 +114,15 @@ const Car = ({ x, y, dir }: { x: number; y: number; dir: 1 | -1 }) => (
 );
 
 function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean }) {
-  const txt = { 'font-size': 13, fill: 'var(--ink)' } as const;
-  const base = <rect width="360" height="200" fill="var(--accent-soft)" />;
+  const txt = { 'font-size': 14, fill: 'var(--ink)' } as const;
   let body: JSX.Element;
   if (sc.id === 'div') body = (<g>
-    <rect y="8" width="360" height="18" fill="var(--accent-soft)" stroke="var(--ink-2)" stroke-dasharray="2 3" /><text x="180" y="21" text-anchor="middle" {...txt} font-size="13">Median</text>
+    <rect y="8" width="360" height="18" fill="var(--accent-soft)" stroke="var(--ink-2)" stroke-dasharray="2 3" /><text x="180" y="22" text-anchor="middle" {...txt}>Median</text>
     <rect y="30" width="360" height="90" fill="var(--surface)" /><line x1="0" x2="360" y1="75" y2="75" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="10 8" />
     <rect y="120" width="360" height="26" fill="var(--surface-2)" /><line x1="0" x2="360" y1="120" y2="120" stroke="var(--ink-2)" stroke-width="2" />
     <Car x={40} y={52} dir={1} /><Car x={120} y={98} dir={1} /><text x="64" y="57" {...txt}>traffic →</text>
     <Truck x={240} y={123} w={60} flash={flash} rm={rm} />
-    <text x="8" y="190" {...txt} font-size="13">◄ distances behind the truck</text>
+    <text x="8" y="194" {...txt} font-weight="700">◄ behind the truck</text>
   </g>);
   else if (sc.id === 'two') body = (<g>
     <rect y="20" width="360" height="20" fill="var(--surface-2)" /><rect y="40" width="360" height="90" fill="var(--surface)" /><rect y="130" width="360" height="24" fill="var(--surface-2)" />
@@ -129,7 +131,7 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
     <Car x={320} y={62} dir={-1} /><text x="296" y="67" text-anchor="end" {...txt}>← traffic</text>
     <Car x={30} y={108} dir={1} /><text x="54" y="113" {...txt}>traffic →</text>
     <Truck x={170} y={132} w={60} flash={flash} rm={rm} />
-    <text x="8" y="192" {...txt} font-size="13">◄ behind</text><text x="352" y="192" text-anchor="end" {...txt} font-size="13">ahead ►</text>
+    <text x="8" y="196" {...txt} font-weight="700">◄ behind</text><text x="352" y="196" text-anchor="end" {...txt} font-weight="700">ahead ►</text>
   </g>);
   else body = (<g>
     <path d="M85 8 h92 v66 h-92 z" fill="var(--ok)" opacity=".35" />
@@ -137,16 +139,25 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
     <path d="M40 -10 V50 C40 118 80 118 150 118 H370" fill="none" stroke="var(--ink-2)" stroke-width="74" />
     <path d="M40 -10 V50 C40 118 80 118 150 118 H370" fill="none" stroke="var(--surface)" stroke-width="70" />
     <path d="M40 -10 V50 C40 118 80 118 150 118 H370" fill="none" stroke="var(--amber)" stroke-width="3" stroke-dasharray="12 8" />
-    <line x1="22" y1="4" x2="240" y2="150" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4 4" /><text x="92" y="46" font-size="18" font-weight="700" fill="var(--red)">✕</text>
-    <text x="186" y="30" {...txt} font-size="13">Trees hide the</text><text x="186" y="44" {...txt} font-size="13">truck until the bend</text>
-    <text x="292" y="98" text-anchor="end" {...txt} font-size="13">← traffic</text>
-    <text x="22" y="92" text-anchor="middle" font-size="16" font-weight="700" fill="var(--blue)">↓</text><text x="160" y="143" font-size="16" font-weight="700" fill="var(--blue)">→</text>
-    <Truck x={240} y={146} w={56} flash={flash} rm={rm} />
+    <line x1="50" y1="4" x2="226" y2="150" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4 4" /><text x="100" y="54" font-size="16" font-weight="700" fill="var(--red)">✕</text>
+    <text x="186" y="30" {...txt}>Trees hide the</text><text x="186" y="46" {...txt}>truck until the bend</text>
+    <text x="292" y="100" text-anchor="end" {...txt}>← traffic</text>
+    <text x="22" y="108" text-anchor="middle" font-size="16" font-weight="700" fill="var(--blue)">↓</text><text x="138" y="146" font-size="16" font-weight="700" fill="var(--blue)">→</text>
+    <Truck x={226} y={146} w={52} flash={flash} rm={rm} />
   </g>);
   return (
-    <svg viewBox="0 0 360 200" width="100%" role="img" aria-label={`${sc.name}, top view. Your truck is stopped at the roadside. ${sc.tag}. Marked spots show distances from the truck.`}>
-      {base}{body}
-      {sc.slots.map((s) => <text x={s.lx ?? s.x} y={s.ly ?? (sc.id === 'div' ? 164 : 172)} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{s.label}</text>)}
+    <svg viewBox={`0 0 360 ${VH}`} width="100%" role="img" style={{ display: 'block' }} aria-label={`${sc.name}, top view, not to scale. Your truck is stopped at the roadside. ${sc.tag}.${sc.id === 'curve' ? ' The road bends; trees hide your truck until drivers come around the bend. The 100 ft behind spot is still inside the bend.' : ''} Marked spots show distances from the truck in feet.`}>
+      <g transform={`translate(0 ${TOP})`}>
+        <rect width="360" height="200" fill="var(--accent-soft)" />
+        {body}
+        {sc.slots.map((s) => <g><text x={s.lx ?? s.x} y={s.ly ?? (sc.id === 'div' ? 166 : 174)} text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{s.label}</text>
+          {s.sub && <text x={s.lx ?? s.x} y={(s.ly ?? (sc.id === 'div' ? 166 : 174)) + 16} text-anchor="middle" font-size="14" fill="var(--ink)">{s.sub}</text>}</g>)}
+      </g>
+      {/* header strip drawn last so no scene art can cover it */}
+      <rect width="360" height={TOP} fill="var(--surface)" />
+      <text x="6" y="16" font-size="14" fill="var(--ink-2)">Distances in feet</text>
+      <rect x="252" y="2" width="104" height="19" rx="4" fill="var(--amber-soft)" stroke="var(--amber)" />
+      <text x="304" y="16" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">Not to scale</text>
     </svg>
   );
 }
@@ -167,17 +178,19 @@ function Road({ sc, placed, setPlaced, sel, setSel, flash, rm, locked, result, s
   const ans = showAnswer ? answer(sc) : [];
   return (
     <div class="stack" style={{ gap: '8px' }}>
-      <div style={{ position: 'relative', maxWidth: '560px', width: '100%', margin: '0 auto' }}>
+      <div style={{ position: 'relative', maxWidth: '420px', width: '100%', margin: '0 auto' }}>
         <SceneSvg sc={sc} flash={flash} rm={rm} />
-        <svg viewBox="0 0 360 200" width="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          {ans.map((id) => { const s = sc.slots.find((x) => x.id === id)!; return <circle cx={s.x} cy={s.y} r={15} fill="none" stroke="var(--ok)" stroke-width="3" stroke-dasharray="4 3" />; })}
-          {placed.map((id) => { if (!id) return null; const s = sc.slots.find((x) => x.id === id)!; const bad = result?.items.find((i) => i.slot === id && !i.ok); return <g><T x={s.x} y={s.y} bad={!!bad} />{result && <text x={Math.min(s.x + 10, 346)} y={s.y - 8} font-size="14" font-weight="700" fill={bad ? 'var(--red)' : 'var(--ok)'}>{bad ? '✕' : '✓'}</text>}</g>; })}
+        <svg viewBox={`0 0 360 ${VH}`} width="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <g transform={`translate(0 ${TOP})`}>
+          {ans.map((id) => { const s = sc.slots.find((x) => x.id === id)!; return <circle cx={s.x} cy={s.y} r={19} fill="none" stroke="var(--ok)" stroke-width="3" stroke-dasharray="4 3" />; })}
+          {placed.map((id) => { if (!id) return null; const s = sc.slots.find((x) => x.id === id)!; const bad = result?.items.find((i) => i.slot === id && !i.ok); return <g><T x={s.x} y={s.y} bad={!!bad} />{result && <text x={Math.min(s.x + 10, 344)} y={s.y - 8} font-size="16" font-weight="700" fill={bad ? 'var(--red)' : 'var(--ok)'} stroke="var(--surface)" stroke-width="3" paint-order="stroke">{bad ? '✕' : '✓'}</text>}</g>; })}
+          </g>
         </svg>
         {sc.slots.map((s) => {
           const who = placed.indexOf(s.id);
           return <button aria-label={`Spot ${slotName(sc, s.id)}${who >= 0 ? `, has triangle ${who + 1}` : ', empty'}`} disabled={locked}
             onClick={() => tap(s.id)}
-            style={{ position: 'absolute', left: `${(s.x / 360) * 100}%`, top: `${(s.y / 200) * 100}%`, transform: 'translate(-50%,-50%)', width: '30px', height: '30px', borderRadius: '50%', padding: 0, cursor: locked ? 'default' : 'pointer', background: 'transparent',
+            style={{ position: 'absolute', left: `${(s.x / 360) * 100}%`, top: `${((s.y + TOP) / VH) * 100}%`, transform: 'translate(-50%,-50%)', width: '36px', height: '36px', borderRadius: '50%', padding: 0, cursor: locked ? 'default' : 'pointer', background: 'transparent',
               border: who >= 0 ? '2px solid transparent' : `2px dashed ${sel !== null ? 'var(--accent)' : 'var(--ink)'}`, boxShadow: sel !== null && who < 0 ? '0 0 0 2px var(--accent-soft)' : 'none' }} />;
         })}
       </div>
@@ -189,7 +202,7 @@ function Road({ sc, placed, setPlaced, sel, setSel, flash, rm, locked, result, s
           </button>
         ))}
       </div>
-      <p class="small muted" style={{ margin: 0 }}>{sel !== null ? `Triangle ${sel + 1} picked up — tap a dashed spot on the road.` : 'Tap a dashed spot to drop the next triangle there, or tap a triangle first to move it. Tap a placed triangle’s spot to pick it back up.'} Not to scale.</p>
+      <p class="small muted" style={{ margin: 0 }}>{sel !== null ? `Triangle ${sel + 1} picked up — tap a dashed spot on the road.` : 'Tap a dashed spot to drop the next triangle there, or tap a triangle first to move it. Tap a placed triangle’s spot to pick it back up.'} The drawing is not to scale: go by the numbers (feet).</p>
     </div>
   );
 }
@@ -228,7 +241,7 @@ export default function WarningTriangles({ onEvidence, onChallenge, concepts, re
   const allPlaced = placed.every(Boolean);
   const flashBtn = (
     <button class="btn sm" aria-pressed={flash} disabled={mode === 'challenge' && !!shown} onClick={() => setFlash(!flash)}
-      style={flash ? { background: 'var(--amber)', borderColor: 'var(--amber)', color: 'var(--amber-ink)' } : {}}>
+      style={flash ? { background: 'var(--amber-soft)', borderColor: 'var(--amber)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 1px var(--amber)' } : {}}>
       <span aria-hidden="true">⚠</span> 4-way flashers: {flash ? 'ON' : 'off'}
     </button>
   );

@@ -38,12 +38,13 @@ function GradeStrip({ s }: { s: Sim | null }) {
       <path d={`M 0 ${y0} L ${x0} ${y0} L ${x1} ${y1} L ${W} ${y1}`} fill="none" stroke="var(--ink-2)" stroke-width="3" />
       <path d={`M ${x1 + 8} ${y1} L 352 ${y1 - 22}`} fill="none" stroke="var(--amber)" stroke-width="5" stroke-linecap="round" />
       <text x="354" y="46" text-anchor="end" font-size="14" font-weight="700" fill="var(--ink)">escape ramp</text>
-      <text x={x0 + 70} y={y0 + 40} font-size="14" fill="var(--ink-2)" transform={`rotate(${ang.toFixed(1)} ${x0 + 70} ${y0 + 40})`}>long, steep downgrade</text>
+      <text x={x0 + 44} y={y0 + 30} font-size="14" fill="var(--ink-2)" transform={`rotate(${ang.toFixed(1)} ${x0 + 44} ${y0 + 30})`}>long, steep downgrade</text>
       <g transform={`translate(${tx.toFixed(1)} ${ty.toFixed(1)}) rotate(${ang.toFixed(1)})`}>
         <rect x="-44" y="-15" width="32" height="13" rx="1.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.3" />
         <rect x="-11" y="-15" width="11" height="13" rx="2" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.3" />
       </g>
-      <text x="6" y="20" font-size="14" font-weight="700" fill={s?.gear === 'none' ? 'var(--red)' : 'var(--ink)'}>{s ? `Truck: ${gearTxt}` : 'Pick your gear here, at the top ↓'}</text>
+      {s ? <text x="354" y="20" text-anchor="end" font-size="14" font-weight="700" fill={s.gear === 'none' ? 'var(--red)' : 'var(--ink)'}>{`Truck: ${gearTxt}`}</text>
+        : <text x="54" y="22" font-size="14" font-weight="700" fill="var(--ink)">← pick your gear here, at the top</text>}
     </svg>
   );
 }

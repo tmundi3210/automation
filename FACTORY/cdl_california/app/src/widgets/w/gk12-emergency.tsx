@@ -27,44 +27,59 @@ const P: Record<string, { d: string; end: [number, number]; tag: string }> = {
   noCounter: { d: 'M215 150 C215 118 204 98 146 86', end: [146, 86], tag: 'skids other way' },
 };
 
+/** Situation caption for each scene, drawn in the empty verge on the left so the scene reads before any tap. */
+const CAPTION: Record<SceneId, string[]> = {
+  obstacle: ['Stalled car', 'in your lane.', 'Not enough', 'room to stop.'],
+  oncoming: ['Oncoming car', 'drifted into', 'your lane.'],
+  shoulder: ['Crash ahead.', 'You must', 'leave the', 'road.'],
+  blowout: ['Bang! A front', 'tire blew out.', 'Steering', 'feels heavy.'],
+  abs: ['Car pulls out.', 'Tractor: ABS.', 'Trailer: no', 'ABS.'],
+  skid: ['Drive wheels', 'locked. The', 'rear is', 'sliding out.'],
+};
+
 function Scene({ id, path, ok }: { id: SceneId; path?: string; ok?: boolean }) {
   const p = path ? P[path] : null;
   const col = ok ? 'var(--ok)' : 'var(--red)';
   const rot = id === 'skid' ? 18 : 0;
+  const lab = { 'font-size': 14, stroke: 'var(--surface)', 'stroke-width': 3, 'paint-order': 'stroke' } as const;
   const desc: Record<SceneId, string> = {
-    obstacle: 'A stalled car blocks your lane; not enough room to stop; the shoulder is clear.',
+    obstacle: 'A stalled car blocks your lane; not enough room to stop; the shoulder on your right is clear.',
     oncoming: 'An oncoming car has drifted into your lane.',
-    shoulder: 'You must leave the road onto the shoulder to avoid a crash.',
+    shoulder: 'A crash blocks the road ahead; you must leave the road onto the shoulder.',
     blowout: 'Bang: a front tire blows out and the steering feels heavy.',
     abs: 'A car pulls out ahead. Your tractor has ABS; the trailer does not.',
     skid: 'Your rear drive wheels have locked under braking; the rear is sliding out.',
   };
   return (
-    <svg viewBox="0 0 360 230" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Top view. ${desc[id]}${p ? ` Your path ends: ${p.tag}.` : ''}`}>
+    <svg viewBox="0 0 360 230" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Top view, you drive up the right lane. ${desc[id]}${p ? ` Your path ends: ${p.tag}.` : ''}`}>
       <rect x="0" y="0" width="360" height="230" fill="var(--surface-2)" />
       <rect x="110" y="0" width="140" height="230" fill="var(--surface)" stroke="var(--ink-2)" />
       <rect x="250" y="0" width="50" height="230" fill="var(--amber-soft)" stroke="var(--ink-2)" />
       {[20, 70, 120, 170, 210].map((y) => <g><circle cx="262" cy={y} r="2" fill="var(--ink-2)" /><circle cx="286" cy={y + 22} r="2" fill="var(--ink-2)" /></g>)}
       <line x1="180" y1="0" x2="180" y2="230" stroke="var(--amber)" stroke-width="2" stroke-dasharray="14 10" />
-      <text x="116" y="224" font-size="13" fill="var(--ink-2)">oncoming</text>
-      <text x="304" y="224" font-size="13" fill="var(--ink-2)">off road</text>
-      <text x="275" y="16" font-size="13" fill="var(--ink-2)" text-anchor="middle">shoulder</text>
-      {id === 'obstacle' && <g><rect x="200" y="46" width="30" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="234" y="40" font-size="13" fill="var(--ink)" text-anchor="end">stalled car</text></g>}
-      {id === 'oncoming' && <g><rect x="198" y="40" width="26" height="40" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /><path d="M200 38 L186 12" stroke="var(--red)" stroke-width="2" fill="none" /><text x="116" y="30" font-size="13" fill="var(--red)">drifted in ↓</text></g>}
-      {id === 'abs' && <g><rect x="190" y="58" width="44" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="238" y="54" font-size="13" fill="var(--ink)">pulls out</text></g>}
-      {id === 'blowout' && <text x="150" y="176" font-size="15" font-weight="700" fill="var(--red)">BANG!</text>}
+      <text x="4" y="24" font-size="14" font-weight="700" fill="var(--ink)">{CAPTION[id].map((l, i) => <tspan x="4" dy={i ? 18 : 0}>{l}</tspan>)}</text>
+      <text x="145" y="224" font-size="14" fill="var(--ink-2)" text-anchor="middle">oncoming</text>
+      <text x="275" y="224" font-size="14" fill="var(--ink-2)" text-anchor="middle">shoulder</text>
+      <text x="330" y="16" font-size="14" fill="var(--ink-2)" text-anchor="middle">off</text><text x="330" y="32" font-size="14" fill="var(--ink-2)" text-anchor="middle">road</text>
+      {id === 'obstacle' && <g><rect x="200" y="46" width="30" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="215" y="40" text-anchor="middle" {...lab} font-weight="700" fill="var(--ink)">stalled car</text>
+        <text x="275" y="112" text-anchor="middle" {...lab} fill="var(--ok)" font-weight="700">clear</text></g>}
+      {id === 'oncoming' && <g><rect x="198" y="40" width="26" height="40" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /><path d="M200 38 L186 12" stroke="var(--red)" stroke-width="2" fill="none" /><text x="226" y="98" {...lab} font-weight="700" fill="var(--red)">drifted in ↓</text></g>}
+      {id === 'shoulder' && <g><g transform="rotate(-24 200 50)"><rect x="170" y="40" width="30" height="20" rx="4" fill="var(--amber)" stroke="var(--ink)" /><rect x="202" y="38" width="36" height="24" rx="4" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /></g><text x="200" y="96" text-anchor="middle" {...lab} font-weight="700" fill="var(--red)">crash</text></g>}
+      {id === 'abs' && <g><rect x="190" y="58" width="44" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="212" y="52" text-anchor="middle" {...lab} fill="var(--ink)">pulls out</text></g>}
+      {id === 'blowout' && <g><path d="M 197 160 l -8 -6 l 2 8 l -9 1 l 8 5 l -6 7 l 10 -3" fill="var(--red)" stroke="var(--red)" stroke-width="1.5" /><text x="176" y="140" text-anchor="end" {...lab} font-weight="700" fill="var(--red)">BANG!</text></g>}
       {p && <g>
         <path d={p.d} fill="none" stroke={col} stroke-width="4" stroke-dasharray={ok ? '0' : '8 6'} stroke-linecap="round" />
         <circle cx={p.end[0]} cy={p.end[1]} r="11" fill={col} />
         <text x={p.end[0]} y={p.end[1] + 5} font-size="14" font-weight="700" text-anchor="middle" fill="var(--surface)">{ok ? '✓' : '✕'}</text>
-        <text x={Math.min(Math.max(p.end[0], 60), 300)} y={p.end[1] + 28} font-size="13" font-weight="700" text-anchor="middle" fill={col} stroke="var(--surface)" stroke-width="4" paint-order="stroke">{p.tag}</text>
+        <text x={Math.min(Math.max(p.end[0], 60), 300)} y={p.end[1] + 28} font-size="14" font-weight="700" text-anchor="middle" fill={col} stroke="var(--surface)" stroke-width="4" paint-order="stroke">{p.tag}</text>
       </g>}
       <g transform={`rotate(${rot} 215 180)`}>
-        <rect x="202" y="150" width="26" height="28" rx="4" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
-        <rect x="205" y="153" width="20" height="8" rx="2" fill="var(--surface)" />
-        <rect x="201" y="180" width="28" height="48" rx="2" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" />
+        <rect x="199" y="150" width="32" height="28" rx="4" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
+        <rect x="203" y="153" width="24" height="8" rx="2" fill="var(--surface)" />
+        <rect x="199" y="180" width="32" height="48" rx="2" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" />
+        <text x="215" y="209" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink)">YOU</text>
       </g>
-      {id === 'skid' && <text x="244" y="206" font-size="13" fill="var(--red)" font-weight="700">← rear sliding</text>}
+      {id === 'skid' && <text x="236" y="214" {...lab} fill="var(--red)" font-weight="700">← rear sliding</text>}
     </svg>
   );
 }
@@ -190,8 +205,8 @@ export default function Emergency(props: WidgetProps) {
       </div>
       {mode === 'try' && (
         <div class="stack">
-          <div class="row" role="group" aria-label="Emergency" style={{ gap: '6px' }}>{ORDER.map((id, k) => (
-            <button class="btn sm" aria-pressed={id === sc} style={id === sc ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => { setSc(id); setPick(null); }}>{k + 1}. {EXPLORE[id].label}</button>
+          <div role="group" aria-label="Emergency" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(136px, 1fr))', gap: '6px' }}>{ORDER.map((id, k) => (
+            <button class="btn sm" aria-pressed={id === sc} style={{ justifyContent: 'flex-start', textAlign: 'left', lineHeight: 1.2, paddingInline: '10px', ...(id === sc ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}) }} onClick={() => { setSc(id); setPick(null); }}>{k + 1}. {EXPLORE[id].label}</button>
           ))}</div>
           <Decision d={EXPLORE[sc].dec} pick={pick} locked={false} onPick={setPick} />
           <p class="small muted">Explore freely — tap every choice to see where it takes you. Paths are teaching sketches.</p>

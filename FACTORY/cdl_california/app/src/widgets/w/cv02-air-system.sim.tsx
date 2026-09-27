@@ -41,7 +41,7 @@ export function simulate(s: AirState, hints = false): AirOut {
   else if (s.emBreak) msgs.push({ t: 'Emergency line lost its air → tractor protection valve closed and the knob popped out. Trailer emergency brakes came on — you could lose control.', p: '6-5', tone: 'bad' });
   else if (s.psi < BAND[0]) msgs.push({ t: `Pressure is ${s.psi} psi — below the ${band} band. The knob already popped out on the way down (this truck’s maker set ${POP} psi): valve closed, no air can leave the tractor, trailer emergency brakes on.`, p: '6-5', tone: 'bad' });
   else if (s.psi <= POP) msgs.push({ t: `Pressure fell into the ${band} band (this truck’s maker set ${POP} psi) → knob popped out by itself, valve closed: no air can leave the tractor, the trailer emergency line is vented, trailer emergency brakes on.${s.svcBreak ? ' The broken service line drained the air fast the moment you braked.' : ''}`, p: s.svcBreak ? '6-5, 6-7' : '6-5', tone: 'bad' });
-  else msgs.push({ t: 'Knob pulled out → air to the trailer is shut off and the trailer emergency brakes come on.', p: '6-5', tone: 'warn' });
+  else msgs.push({ t: 'Knob out → air to the trailer is shut off and the trailer emergency brakes are on.', p: '6-5', tone: 'warn' });
   if (hints && !tpv && !s.emBreak && s.psi <= POP) msgs.push({ t: `Knob will not stay in yet: in this sim the valve stays closed until the pressure is above ${POP} psi. Slide the pressure up, then push the knob in.`, p: '6-5', tone: 'warn' });
   if (hints && canPushIn) msgs.push({ t: (s.crossed || s.svcBreak) ? 'The knob is out, so no air reaches the glad hands and this fault cannot show. Push the knob in to see it.' : 'Push the knob in to recharge the trailer.', p: '6-5', tone: 'warn' });
   if (s.svcBreak && tpv && !apply) msgs.push({ t: 'Service line is apart, yet nothing shows. A major service line leak may go unnoticed until you brake. Press the brake to see.', p: '6-7', tone: 'warn' });
@@ -170,7 +170,7 @@ export function AirDiagram({ s, motion }: { s: AirState; motion: boolean }) {
       <Line d={`M${X_RED} 212 C${X_RED} 244 ${redIn} 238 ${redIn} ${T_Y - 2}`} on={o.redT && !s.emBreak} color="var(--red)" motion={motion} />
       <Line d={`M${X_BLUE} 212 C${X_BLUE} 244 ${blueIn} 238 ${blueIn} ${T_Y - 2}`} on={o.blueT && !s.svcBreak} color="var(--blue)" motion={motion} />
       {s.emBreak && <Tag x={10} y={240} w={146} color="var(--red)">✕ red line broken</Tag>}
-      {s.svcBreak && <Tag x={350} y={240} w={146} anchor="end" color="var(--blue)">✕ blue line apart</Tag>}
+      {s.svcBreak && <Tag x={350} y={240} w={146} anchor="end" color="var(--blue)">{o.leakingSvc ? '✕ air rushing out' : '✕ blue line apart'}</Tag>}
       {s.crossed && <Tag x={170} y={266} w={150} anchor="middle" color="var(--red)">✕ LINES CROSSED</Tag>}
       {o.units.map((u, i) => <UnitDraw y={T_Y + i * U_H} u={u} s={s} o={o} idx={i} motion={motion} />)}
       {/* inside trailer: supply to tank, signal to relay (drawn over the panel so the inflow shows) */}

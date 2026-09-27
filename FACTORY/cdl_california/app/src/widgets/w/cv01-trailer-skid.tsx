@@ -17,8 +17,9 @@ function Scene({ a, mirror }: { a: number; mirror: boolean }) {
   const tl = 96;
   const rx = hx - Math.sin(rad) * tl, ry = hy + Math.cos(rad) * tl;
   const label = s < 3 ? 'Trailer straight behind you' : s >= 45 ? 'Jackknife: rig folded into a V' : out ? 'Trailer has left your lane' : 'Trailer swinging out';
+  const short = s < 3 ? 'Straight behind' : s >= 45 ? 'Jackknife!' : out ? 'Out of your lane' : 'Swinging out';
   return (
-    <svg viewBox="0 0 360 220" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`${mirror ? 'Left mirror and top view' : 'Top view (mirror not checked)'}: ${label}.`}>
+    <svg viewBox="0 0 360 220" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`${mirror ? 'Left mirror and top view' : 'Top view (mirror not checked)'}: ${label}.`}>
       <rect x="0" y="0" width="360" height="220" fill="var(--surface-2)" />
       {/* mirror */}
       <g>
@@ -29,10 +30,10 @@ function Scene({ a, mirror }: { a: number; mirror: boolean }) {
             <polygon points="14,180 152,180 152,60 70,60" fill="var(--surface-2)" />
             <line x1="40" y1="180" x2="84" y2="62" stroke="var(--amber)" stroke-width="3" stroke-dasharray="12 9" />
             <polygon points={`152,34 152,176 ${152 - far},${118 - s * 0.2} ${152 - far},${70 - s * 0.3}`} fill={out ? 'var(--red-soft)' : 'var(--surface-2)'} stroke={out ? 'var(--red)' : 'var(--ink)'} stroke-width="2" />
-            <text x="22" y="36" font-size="13" fill="var(--ink-2)">mirror</text>
+            <text x="22" y="36" font-size="14" fill="var(--ink-2)">mirror</text>
           </g>
         ) : <text x="83" y="102" font-size="14" text-anchor="middle" fill="var(--surface)">not checked</text>}
-        <text x="83" y="206" font-size="13" text-anchor="middle" fill="var(--ink)" font-weight="700">{mirror ? (s < 3 ? '✓ behind you' : out ? '✕ out of lane' : '! swinging') : '?'}</text>
+        <text x="83" y="206" font-size="14" text-anchor="middle" fill="var(--ink)" font-weight="700">{mirror ? (s < 3 ? '✓ behind you' : out ? '✕ out of lane' : '! swinging') : '?'}</text>
       </g>
       {/* top view */}
       <rect x="182" y="10" width="170" height="176" fill="var(--surface)" stroke="var(--line)" />
@@ -46,7 +47,7 @@ function Scene({ a, mirror }: { a: number; mirror: boolean }) {
         <rect x="-13" y="0" width="26" height={tl} rx="2" fill={out ? 'var(--red-soft)' : 'var(--surface-2)'} stroke={out ? 'var(--red)' : 'var(--ink)'} stroke-width="1.5" />
       </g>
       {s >= 3 && <path d={`M ${rx.toFixed(1)} ${ry.toFixed(1)} q -6 10 -2 22`} fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="3 3" />}
-      <text x="267" y="206" font-size="13" text-anchor="middle" fill={out ? 'var(--red)' : 'var(--ink)'} font-weight="700">{label.length > 26 ? label.split(':')[0] : label}</text>
+      <text x="267" y="206" font-size="14" text-anchor="middle" fill={out ? 'var(--red)' : 'var(--ink)'} font-weight="700">{short}</text>
     </svg>
   );
 }
@@ -145,8 +146,8 @@ export default function TrailerSkid(props: WidgetProps) {
       </div>
       {mode === 'try' && (
         <div class="stack">
-          <ol class="row small" aria-label="Steps" style={{ listStyle: 'none', padding: 0, margin: 0, gap: '6px' }}>{STEPS.map((s, k) => (
-            <li class="chip" aria-current={k === Math.min(step, 2) ? 'step' : undefined} style={{ background: k <= step ? 'var(--accent-soft)' : 'var(--surface-2)', color: k <= step ? 'var(--accent)' : 'var(--ink-2)' }}>{k + 1}. {s}</li>
+          <ol class="small" aria-label="Steps" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '6px' }}>{STEPS.map((s, k) => (
+            <li class="chip" aria-current={k === Math.min(step, 2) ? 'step' : undefined} style={{ justifyContent: 'center', textAlign: 'center', lineHeight: 1.2, whiteSpace: 'normal', background: k <= step ? 'var(--accent-soft)' : 'var(--surface-2)', color: k <= step ? 'var(--accent)' : 'var(--ink-2)', outline: k === Math.min(step, 2) ? '2px solid var(--accent)' : 'none' }}>{k + 1}. {s}</li>
           ))}</ol>
           <Scene a={a} mirror={step >= 2 && looked !== false || step === 0} />
           <div aria-live="polite" class="stack">

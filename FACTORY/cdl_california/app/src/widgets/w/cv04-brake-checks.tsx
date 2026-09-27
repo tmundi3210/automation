@@ -8,27 +8,28 @@ export const meta: WidgetMeta = {
   stamp: { id: 'brake-checks-passed', name: 'Brake checks passed', rule: 'Order all four brake tests and match every pass result with no mistakes.' },
 };
 
-interface Step { text: string; rig: Partial<Rig>; skip?: string }
-interface Test { name: string; short: string; steps: Step[]; pass: string; passRig: Partial<Rig>; fail: string; failRig: Partial<Rig>; why: string }
+/** skipRig: what the rig looks like when this step is left out (shown when a learner orders it too late). */
+interface Step { text: string; rig: Partial<Rig>; skip?: string; skipRig?: Partial<Rig> }
+interface Test { name: string; short: string; base?: Partial<Rig>; steps: Step[]; pass: string; passRig: Partial<Rig>; fail: string; failRig: Partial<Rig>; why: string }
 const CHARGED: Partial<Rig> = { psi: 'normal', knob: 'in', emAir: true };
 const TESTS: Test[] = [
-  { name: 'Test 1 · Air flows to all trailers', short: 'Air flow',
+  { name: 'Test 1 · Air flows to all trailers', short: 'Air flow', base: { doubles: true },
     steps: [
-      { text: 'Hold the rig with the tractor parking brake and/or wheel chocks.', rig: { parking: true, chocks: true }, skip: 'The rig is not held still while you walk to the back.' },
-      { text: 'Wait for air pressure to reach normal.', rig: { parking: true, chocks: true, psi: 'normal' }, skip: 'Pressure is not normal yet, so the system is not fully charged.' },
-      { text: 'Push in the red trailer air supply knob — air goes to the emergency (supply) lines.', rig: { parking: true, chocks: true, ...CHARGED }, skip: 'With the knob still out, no air goes to the emergency (supply) lines — nothing would rush out at the back.' },
-      { text: 'Apply the trailer hand brake — air goes into the service line.', rig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true }, skip: 'Without the hand brake (or pedal) applied, the service line has no air, so its valve gives nothing.' },
-      { text: 'At the back of the last trailer, open the emergency-line shut-off valve, listen for air rushing out, then close it.', rig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true, emValve: true, flag: 'Emergency line: air rushing out' }, skip: 'The handbook checks the emergency line first, then the service line.' },
+      { text: 'Hold the rig with the tractor parking brake and/or wheel chocks.', rig: { parking: true, chocks: true }, skip: 'The rig is not held still while you walk to the back.', skipRig: { ...CHARGED, hand: true, svcAir: true, flag: '⚠ Not held: no brake, no chocks', bad: true } },
+      { text: 'Wait for air pressure to reach normal.', rig: { parking: true, chocks: true, psi: 'normal' }, skip: 'Pressure is not normal yet, so the system is not fully charged.', skipRig: { parking: true, chocks: true, psi: 'low', flag: '⚠ Pressure not normal yet', bad: true } },
+      { text: 'Push in the red trailer air supply knob — air goes to the emergency (supply) lines.', rig: { parking: true, chocks: true, ...CHARGED }, skip: 'With the knob still out, no air goes to the emergency (supply) lines — nothing would rush out at the back.', skipRig: { parking: true, chocks: true, psi: 'normal', knob: 'out', hand: true, emValve: true, flag: '⚠ Knob out: no air to the lines', bad: true } },
+      { text: 'Apply the trailer hand brake — air goes into the service line.', rig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true }, skip: 'Without the hand brake (or pedal) applied, the service line has no air, so its valve gives nothing.', skipRig: { parking: true, chocks: true, ...CHARGED, svcValve: true, flag: '⚠ No brake applied: no service air', bad: true } },
+      { text: 'At the back of the last trailer, open the emergency-line shut-off valve, listen for air rushing out, then close it.', rig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true, emValve: true, flag: 'Emergency line: air rushing out' }, skip: 'The handbook checks the emergency line first, then the service line.', skipRig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true, svcValve: true, flag: '⚠ Emergency line comes first', bad: true } },
       { text: 'Open the service-line valve, listen for air, then close it.', rig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true, svcValve: true, flag: 'Service line: air coming out' } },
     ],
     pass: 'Air comes out of BOTH lines at the back of the last trailer: the whole system is charged and service pressure reaches every trailer.', passRig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true, flag: 'Both lines had air ✓' },
-    fail: 'No air from one or both lines → check that the shut-off valves on the trailers and dollies are OPEN. You must have air all the way to the back for all the brakes to work.', failRig: { parking: true, chocks: true, psi: 'normal', knob: 'in', hand: true, emValve: true, svcValve: true, flag: '⚠ No air at the back', bad: true },
+    fail: 'No air from one or both lines → check that the shut-off valves on the trailers and dollies are OPEN (in the picture, trailer 1’s rear valves were left shut, so the air stops there). You must have air all the way to the back for all the brakes to work.', failRig: { parking: true, chocks: true, ...CHARGED, hand: true, svcAir: true, midShut: true, emValve: true, svcValve: true, flag: '⚠ Valves shut → no air at the back', bad: true },
     why: 'Only the valves at the rear of the last trailer stay closed; you open them just for this test.' },
   { name: 'Test 2 · Tractor protection valve', short: 'Protection valve',
     steps: [
-      { text: 'Charge the trailer air system: build normal pressure and push the air supply knob in.', rig: { ...CHARGED }, skip: 'The system is not charged — there is no pushed-in knob to pop out.' },
-      { text: 'Shut the engine off.', rig: { ...CHARGED, engine: false }, skip: 'The engine must be off so the compressor stops and the pressure can only go down.' },
-      { text: 'Step on and off the brake pedal several times to lower the tank pressure.', rig: { ...CHARGED, engine: false, pedal: 'pumping', psi: 'falling' }, skip: 'If you never pump the pedal, the pressure never drops, so the valve is never tested.' },
+      { text: 'Charge the trailer air system: build normal pressure and push the air supply knob in.', rig: { ...CHARGED }, skip: 'The system is not charged — there is no pushed-in knob to pop out.', skipRig: { psi: 'low', knob: 'out', engine: false, flag: '⚠ Not charged: knob already out', bad: true } },
+      { text: 'Shut the engine off.', rig: { ...CHARGED, engine: false }, skip: 'The engine must be off so the compressor stops and the pressure can only go down.', skipRig: { ...CHARGED, pedal: 'pumping', flag: '⚠ Engine still ON', bad: true } },
+      { text: 'Step on and off the brake pedal several times to lower the tank pressure.', rig: { ...CHARGED, engine: false, pedal: 'pumping', psi: 'falling' }, skip: 'If you never pump the pedal, the pressure never drops, so the valve is never tested.', skipRig: { ...CHARGED, engine: false, flag: '⚠ No pumping: pressure stays up', bad: true } },
       { text: 'Watch the trailer air supply knob as the pressure falls.', rig: { engine: false, pedal: 'pumping', psi: '20–45 psi', knob: 'out', flag: 'Knob popped out' } },
     ],
     pass: 'The knob pops out (or a lever goes from “normal” to “emergency”) when pressure falls into the maker’s range — usually 20 to 45 psi.', passRig: { engine: false, psi: '20–45 psi', knob: 'out', flag: 'Popped out in 20–45 psi ✓' },
@@ -36,9 +37,9 @@ const TESTS: Test[] = [
     why: 'The valve exists to keep air in the tractor if the trailer breaks away or leaks badly.' },
   { name: 'Test 3 · Trailer emergency brakes', short: 'Emergency brakes',
     steps: [
-      { text: 'Charge the trailer air system and check that the trailer rolls freely.', rig: { ...CHARGED, trailer: 'free', move: 'slow' }, skip: 'First charge the system and check the trailer rolls freely (brakes released) — only then does a “hold” mean something.' },
-      { text: 'Stop.', rig: { ...CHARGED }, skip: 'The handbook says to stop before you pull the knob.' },
-      { text: 'Pull out the trailer air supply control (or put it in “emergency”).', rig: { psi: 'normal', knob: 'out' }, skip: 'With the knob still in, the trailer emergency brakes are off — the trailer would just roll.' },
+      { text: 'Charge the trailer air system and check that the trailer rolls freely.', rig: { ...CHARGED, trailer: 'free', move: 'slow' }, skip: 'First charge the system and check the trailer rolls freely (brakes released) — only then does a “hold” mean something.', skipRig: { psi: 'low', knob: 'out', flag: '⚠ Not charged yet', bad: true } },
+      { text: 'Stop.', rig: { ...CHARGED }, skip: 'The handbook says to stop before you pull the knob.', skipRig: { psi: 'normal', knob: 'out', move: 'slow', flag: '⚠ Still moving', bad: true } },
+      { text: 'Pull out the trailer air supply control (or put it in “emergency”).', rig: { psi: 'normal', knob: 'out' }, skip: 'With the knob still in, the trailer emergency brakes are off — the trailer would just roll.', skipRig: { ...CHARGED, move: 'tug', trailer: 'free', flag: '⚠ Knob still IN', bad: true } },
       { text: 'Pull gently against the trailer with the tractor.', rig: { psi: 'normal', knob: 'out', move: 'tug', trailer: 'held' } },
     ],
     pass: 'The trailer emergency brakes are on and hold the trailer still.', passRig: { psi: 'normal', knob: 'out', move: 'tug', trailer: 'held', flag: 'Brakes held ✓' },
@@ -46,24 +47,24 @@ const TESTS: Test[] = [
     why: 'Pulling the knob out shuts off trailer air and sets the trailer emergency brakes (p. 6-5).' },
   { name: 'Test 4 · Trailer service brakes', short: 'Service brakes',
     steps: [
-      { text: 'Check for normal air pressure.', rig: { ...CHARGED, parking: true }, skip: 'The handbook starts this test by checking for normal air pressure.' },
-      { text: 'Release the parking brakes.', rig: { ...CHARGED }, skip: 'With the parking brakes on, the rig cannot roll, so you cannot feel the trailer brakes.' },
-      { text: 'Move the vehicle forward slowly.', rig: { ...CHARGED, move: 'slow', trailer: 'free' }, skip: 'Standing still, you cannot feel the trailer brakes grab.' },
+      { text: 'Check for normal air pressure.', rig: { ...CHARGED, parking: true }, skip: 'The handbook starts this test by checking for normal air pressure.', skipRig: { psi: 'low', knob: 'out', parking: true, flag: '⚠ Air pressure not checked', bad: true } },
+      { text: 'Release the parking brakes.', rig: { ...CHARGED }, skip: 'With the parking brakes on, the rig cannot roll, so you cannot feel the trailer brakes.', skipRig: { ...CHARGED, parking: true, hand: true, svcAir: true, flag: '⚠ Parking brakes still on', bad: true } },
+      { text: 'Move the vehicle forward slowly.', rig: { ...CHARGED, move: 'slow', trailer: 'free' }, skip: 'Standing still, you cannot feel the trailer brakes grab.', skipRig: { ...CHARGED, hand: true, svcAir: true, flag: '⚠ Standing still: nothing to feel', bad: true } },
       { text: 'Apply the trailer brakes with the hand control (trolley valve).', rig: { ...CHARGED, move: 'slow', hand: true, svcAir: true, trailer: 'grab' } },
     ],
     pass: 'You feel the trailer brakes come on — they are connected and working. (Test with the hand valve; in normal driving brake with the foot pedal, which works the service brakes at all wheels.)', passRig: { ...CHARGED, hand: true, svcAir: true, trailer: 'grab', flag: 'Felt the brakes come on ✓' },
     fail: 'You feel nothing → the test has not shown the trailer brakes are connected and working.', failRig: { ...CHARGED, move: 'slow', hand: true, svcAir: true, trailer: 'free', flag: '⚠ Felt nothing', bad: true },
     why: 'Never use the hand valve while driving — braking the trailer alone can make it skid (p. 6-5).' },
 ];
-const rig = (p: Partial<Rig>): Rig => ({ ...IDLE, ...p });
+const rig = (T: Test, p: Partial<Rig>): Rig => ({ ...IDLE, ...T.base, ...p });
 
 const OPTIONS = [
   { t: 'Air comes out of both the emergency and service valves at the rear of the last trailer', test: 0 },
   { t: 'The knob pops out, usually between 20 and 45 psi', test: 1 },
   { t: 'The trailer does not move when you tug gently with the knob out', test: 2 },
   { t: 'You feel the trailer brakes come on while rolling slowly', test: 3 },
-  { t: 'The knob stays in until pressure reaches 0 psi', test: -1, why: 'A knob that stays in is a FAILED tractor protection valve test: a leak could drain all the tractor’s air.' },
-  { t: 'The trailer rolls freely when you tug with the knob out', test: -1, why: 'A trailer that rolls with the knob out means the emergency brakes are NOT holding — a failed test.' },
+  { t: 'The knob stays in until pressure reaches 0 psi', test: -1, fail: 1, why: 'A knob that stays in is a FAILED tractor protection valve test: a leak could drain all the tractor’s air.' },
+  { t: 'The trailer rolls freely when you tug with the knob out', test: -1, fail: 2, why: 'A trailer that rolls with the knob out means the emergency brakes are NOT holding — a failed test.' },
 ];
 
 const WALK = [
@@ -99,8 +100,8 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
           ))}
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', alignItems: 'start' }}>
-          <RigView r={rig(done ? (fail ? T.failRig : T.passRig) : k < 0 ? {} : T.steps[k].rig)} motion={!reducedMotion} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px', alignItems: 'start' }}>
+          <RigView r={rig(T, done ? (fail ? T.failRig : T.passRig) : k < 0 ? {} : T.steps[k].rig)} motion={!reducedMotion} />
           <div class="stack">
             <strong>{T.name} <span class="plate">p. 6-17</span></strong>
             <div class="eyebrow">What you do</div>
@@ -165,10 +166,10 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
             {!ok && <p class="small"><strong>Consequence:</strong> you did “{T.steps[seq[firstBad]].text}” before “{T.steps[firstBad].text}” — {T.steps[firstBad].skip ?? ''} <span class="plate">p. 6-17</span></p>}
             <ol class="small" style={{ margin: 0, paddingLeft: '1.3em' }}>{T.steps.map((s) => <li>{s.text}</li>)}</ol>
             <p class="small">Pass result: {T.pass}</p>
-            <RigView r={rig(ok ? T.passRig : T.failRig)} motion={false} />
             <button class="btn primary sm" style={{ alignSelf: 'flex-start' }} onClick={next}>Next</button>
           </div>
         )}
+        {checked !== null && <RigView r={rig(T, ok ? T.passRig : T.steps[firstBad].skipRig ?? T.failRig)} motion={false} />}
       </div>
     );
   }
@@ -193,7 +194,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
           <button class="btn primary sm" style={{ alignSelf: 'flex-start' }} onClick={next}>{stage === 7 ? 'Finish' : 'Next'}</button>
         </div>
       )}
-      <RigView r={rig(chosen ? (good ? T.passRig : T.failRig) : {})} motion={false} />
+      <RigView r={!chosen ? rig(T, {}) : good ? rig(T, T.passRig) : chosen.test >= 0 ? rig(TESTS[chosen.test], { ...TESTS[chosen.test].passRig, flag: `That is Test ${chosen.test + 1}’s pass`, bad: true }) : rig(TESTS[chosen.fail ?? ti], TESTS[chosen.fail ?? ti].failRig)} motion={false} />
     </div>
   );
 }

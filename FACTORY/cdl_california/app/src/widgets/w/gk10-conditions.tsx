@@ -88,8 +88,8 @@ export function TireVis({ letOut }: { letOut: boolean }) {
       <rect x="0" y="0" width="240" height="100" fill="var(--surface)" />
       <ellipse cx="70" cy={letOut ? 60 : 55} rx="44" ry={letOut ? 34 : 40} fill="var(--ink-2)" stroke="var(--ink)" /><circle cx="70" cy={letOut ? 60 : 55} r="16" fill="var(--surface-2)" stroke="var(--ink)" />
       <rect x="20" y="92" width="100" height="4" fill="var(--ink)" />
-      <text x="130" y="40" {...T}>After it cools:</text>
-      <text x="130" y="62" font-size="14" font-weight="700" fill={letOut ? 'var(--red)' : 'var(--ok)'}>{letOut ? '✗ Pressure too low' : '✓ Pressure normal'}</text>
+      <text x="126" y="36" {...T}>After it cools:</text>
+      <text x="126" y="60" font-size="14" font-weight="700" fill={letOut ? 'var(--red)' : 'var(--ok)'}><tspan x="126">{letOut ? '✗ Pressure' : '✓ Pressure'}</tspan><tspan x="126" dy="18">{letOut ? 'too low' : 'normal'}</tspan></text>
     </svg>
   );
 }
@@ -204,7 +204,7 @@ export default function Conditions({ onEvidence, onChallenge, concepts }: Widget
   const reset = () => { setI(0); setPick(null); setMisses(0); };
   return (
     <div class="stack">
-      <div class="tabs" role="tablist"><button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Explore conditions</button><button role="tab" aria-selected={mode === 'challenge'} onClick={() => { setMode('challenge'); reset(); }}>Do or don’t (8)</button></div>
+      <div class="tabs" role="tablist"><button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Explore</button><button role="tab" aria-selected={mode === 'challenge'} onClick={() => { setMode('challenge'); reset(); }}>Do or don’t (8)</button></div>
       {mode === 'explore' && <>
         <Seg label="Condition" value={cond} set={setCond} opts={COND.map((x) => [x.id, x.label] as [Cond, string])} />
         {cond === 'night' && <Night />}{cond === 'fog' && <Fog />}{cond === 'winter' && <Winter />}{cond === 'heat' && <Heat />}

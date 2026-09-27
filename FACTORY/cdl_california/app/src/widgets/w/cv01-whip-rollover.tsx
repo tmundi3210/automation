@@ -59,13 +59,13 @@ function LaneChange({ rig, t }: { rig: Rig; t: number }) {
   const last = units.length - 1;
   const offRoad = units[last].ry < 36;
   return (
-    <svg viewBox="0 0 360 200" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Top view: ${rig.short} in a quick lane change. The sideways swing grows from the tractor to the last trailer, which swings ${rig.ra} times as much.`}>
+    <svg viewBox="0 0 360 200" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Top view: ${rig.short} in a quick lane change. The sideways swing grows from the tractor to the last trailer, which swings ${rig.ra} times as much.`}>
       <rect x="0" y="0" width="360" height="200" fill="var(--surface-2)" />
       <rect x="0" y="30" width="360" height="120" fill="var(--surface)" stroke="var(--line)" />
       <line x1="0" x2="360" y1="90" y2="90" stroke="var(--amber)" stroke-width="2" stroke-dasharray="14 10" />
-      <text x="6" y="22" font-size="13" fill="var(--ink-2)">shoulder</text>
-      <text x="6" y="84" font-size="13" fill="var(--ink-2)">new lane</text>
-      <text x="6" y="144" font-size="13" fill="var(--ink-2)">old lane</text>
+      <text x="6" y="22" font-size="14" fill="var(--ink-2)">shoulder</text>
+      <text x="6" y="84" font-size="14" fill="var(--ink-2)">new lane</text>
+      <text x="6" y="144" font-size="14" fill="var(--ink-2)">old lane</text>
       {env.map((e, i) => e.lo < 58 && (
         <g key={`e${i}`} aria-hidden="true">
           <line x1={e.x} x2={e.x} y1={60} y2={e.lo} stroke={i === last ? 'var(--red)' : 'var(--blue)'} stroke-width="4" stroke-linecap="round" opacity=".6" />
@@ -81,23 +81,23 @@ function LaneChange({ rig, t }: { rig: Rig; t: number }) {
           )}
         </g>
       ))}
-      <text x="342" y="178" font-size="13" text-anchor="end" fill="var(--ink)">tractor ×1.0 →</text>
-      <text x={Math.max(6, units[last].rx)} y="196" font-size="13" fill={rig.ra > 1 ? 'var(--red)' : 'var(--ink)'} font-weight="700">last trailer ×{rig.ra.toFixed(1)}{offRoad ? ' — swings off the lane!' : ''}</text>
+      <text x="342" y="178" font-size="14" text-anchor="end" fill="var(--ink)">tractor ×1.0 →</text>
+      <text x="6" y="196" font-size="14" fill={rig.ra > 1 ? 'var(--red)' : 'var(--ink)'} font-weight="700">last trailer ×{rig.ra.toFixed(1)}{offRoad ? ' — swings past the lane!' : ''}</text>
     </svg>
   );
 }
 
 function RankBars({ sel }: { sel: string }) {
   return (
-    <svg viewBox="0 0 360 96" width="100%" style={{ maxWidth: '420px', marginInline: 'auto' }} role="img" aria-label="Rearward amplification from Figure 6.1: tractor-semitrailer 1.0, conventional double 2.0, triples 3.5.">
+    <svg viewBox="0 0 360 96" width="100%" style={{ display: 'block', maxWidth: '380px', marginInline: 'auto' }} role="img" aria-label="Rearward amplification from Figure 6.1: tractor-semitrailer 1.0, conventional double 2.0, triples 3.5.">
       {RIGS.map((r, i) => {
         const y = 6 + i * 30, w = (r.ra / 3.5) * 150;
         return (
           <g key={r.id}>
-            <text x="0" y={y + 16} font-size="13" fill="var(--ink)" font-weight={r.id === sel ? '700' : '400'}>{r.short}</text>
+            <text x="0" y={y + 16} font-size="14" fill="var(--ink)" font-weight={r.id === sel ? '700' : '400'}>{r.short}</text>
             <rect x="160" y={y + 3} width="150" height="18" rx="3" fill="var(--surface-2)" />
             <rect x="160" y={y + 3} width={w} height="18" rx="3" fill={r.id === sel ? 'var(--accent)' : 'var(--ink-2)'} opacity={r.id === sel ? 1 : 0.45} />
-            <text x="316" y={y + 17} font-size="13" fill="var(--ink)" font-weight="700">{r.ra.toFixed(1)}</text>
+            <text x="316" y={y + 17} font-size="14" fill="var(--ink)" font-weight="700">{r.ra.toFixed(1)}</text>
           </g>
         );
       })}
@@ -113,17 +113,17 @@ function RollView({ l }: { l: Load }) {
   const cgY = !l.loaded ? 96 : l.high ? 58 : 108;
   const cgX = 180 + (l.loaded && l.side ? 22 : 0);
   return (
-    <svg viewBox="0 0 360 170" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Rear view of the trailer in a turn. Center of gravity ${l.loaded ? (l.high ? 'high' : 'low') : 'empty'}${l.side ? ', load to one side' : ''}. ${tip ? 'Wheels lifting: rollover.' : 'Trailer stays upright.'}`}>
+    <svg viewBox="0 0 360 170" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Rear view of the trailer in a turn. Center of gravity ${l.loaded ? (l.high ? 'high' : 'low') : 'empty'}${l.side ? ', load to one side' : ''}. ${tip ? 'Wheels lifting: rollover.' : 'Trailer stays upright.'}`}>
       <rect x="0" y="0" width="360" height="170" fill="var(--surface-2)" />
       <rect x="0" y="146" width="360" height="24" fill="var(--ink-2)" opacity=".35" />
-      <text x="354" y="20" font-size="13" text-anchor="end" fill="var(--ink-2)">← turning this way</text>
+      <text x="354" y="20" font-size="14" text-anchor="end" fill="var(--ink-2)">← turning this way</text>
       <g transform={`rotate(${lean} 244 146)`}>
         <rect x="116" y="30" width="128" height="100" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
         {l.loaded && (l.high
           ? <rect x={l.side ? 176 : 132} y="36" width={l.side ? 62 : 96} height="40" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2" />
           : <rect x={l.side ? 176 : 122} y="92" width={l.side ? 64 : 116} height="34" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2" />)}
         <circle cx={cgX} cy={cgY} r="7" fill="var(--red)" stroke="var(--ink)" />
-        <text x={cgX + 11} y={cgY + 5} font-size="13" fill="var(--ink)" font-weight="700">CG</text>
+        <text x={cgX + 11} y={cgY + 5} font-size="14" fill="var(--ink)" font-weight="700">CG</text>
         <rect x="120" y="130" width="22" height="16" rx="3" fill="var(--ink)" /><rect x="218" y="130" width="22" height="16" rx="3" fill="var(--ink)" />
       </g>
       {tip && <text x="12" y="112" font-size="14" font-weight="700" fill="var(--red)">✕ wheels lift</text>}
@@ -178,11 +178,14 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   );
 }
 
-const seg = (on: boolean) => (on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {});
+const seg = (on: boolean) => ({ width: '100%', paddingInline: '6px', lineHeight: 1.2, ...(on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}) });
+/** Equal-column control rows, so buttons never wrap raggedly on a phone. */
+const cols = (n: number) => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: '6px' });
 
 export default function WhipRollover(props: WidgetProps) {
   const { reducedMotion } = props;
   const [mode, setMode] = useState<'whip' | 'roll' | 'check'>('whip');
+  const [part, setPart] = useState<'whip' | 'roll'>('whip');
   const [rigId, setRigId] = useState('dbl');
   const [t, setT] = useState(0.62);
   const [playing, setPlaying] = useState(false);
@@ -214,14 +217,17 @@ export default function WhipRollover(props: WidgetProps) {
   return (
     <div class="stack">
       <div class="tabs" role="tablist">
-        <button role="tab" aria-selected={mode === 'whip'} onClick={() => setMode('whip')}>Lane change</button>
-        <button role="tab" aria-selected={mode === 'roll'} onClick={() => setMode('roll')}>Rollover</button>
+        <button role="tab" aria-selected={mode !== 'check'} onClick={() => setMode(part)}>Explore</button>
         <button role="tab" aria-selected={mode === 'check'} onClick={() => setMode('check')}>Challenge (5)</button>
       </div>
+      {mode !== 'check' && <div role="group" aria-label="Explore topic" style={cols(2)}>
+        <button class="btn sm" aria-pressed={mode === 'whip'} style={seg(mode === 'whip')} onClick={() => { setMode('whip'); setPart('whip'); }}>Lane change (whip)</button>
+        <button class="btn sm" aria-pressed={mode === 'roll'} style={seg(mode === 'roll')} onClick={() => { setMode('roll'); setPart('roll'); }}>Rollover</button>
+      </div>}
 
       {mode === 'whip' && (
         <div class="stack">
-          <div class="row" role="group" aria-label="Pick a rig">{RIGS.map((r) => (
+          <div role="group" aria-label="Pick a rig" style={cols(3)}>{RIGS.map((r) => (
             <button class="btn sm" aria-pressed={r.id === rigId} style={seg(r.id === rigId)} onClick={() => setRigId(r.id)}>{r.short} {r.ra.toFixed(1)}{r.ca ? ' *' : ''}</button>
           ))}</div>
           <LaneChange rig={rig} t={t} />
@@ -243,11 +249,12 @@ export default function WhipRollover(props: WidgetProps) {
 
       {mode === 'roll' && (
         <div class="stack">
-          <div class="grid2">
-            <div class="row" role="group" aria-label="Load"><button class="btn sm" aria-pressed={!l.loaded} style={seg(!l.loaded)} onClick={() => setL({ ...l, loaded: false })}>Empty</button><button class="btn sm" aria-pressed={l.loaded} style={seg(l.loaded)} onClick={() => setL({ ...l, loaded: true })}>Fully loaded</button></div>
-            <div class="row" role="group" aria-label="Cargo height"><button class="btn sm" disabled={!l.loaded} aria-pressed={!l.high} style={seg(l.loaded && !l.high)} onClick={() => setL({ ...l, high: false })}>Cargo low</button><button class="btn sm" disabled={!l.loaded} aria-pressed={l.high} style={seg(l.loaded && l.high)} onClick={() => setL({ ...l, high: true })}>Cargo high</button></div>
-            <div class="row" role="group" aria-label="Cargo position"><button class="btn sm" disabled={!l.loaded} aria-pressed={!l.side} style={seg(l.loaded && !l.side)} onClick={() => setL({ ...l, side: false })}>Centered</button><button class="btn sm" disabled={!l.loaded} aria-pressed={l.side} style={seg(l.loaded && l.side)} onClick={() => setL({ ...l, side: true })}>To one side</button></div>
-            <div class="row" role="group" aria-label="Speed in the turn"><button class="btn sm" aria-pressed={!l.fast} style={seg(!l.fast)} onClick={() => setL({ ...l, fast: false })}>Slowed before turn</button><button class="btn sm" aria-pressed={l.fast} style={seg(l.fast)} onClick={() => setL({ ...l, fast: true })}>Too fast in turn</button></div>
+          <span class="eyebrow">Load the trailer, then take the turn</span>
+          <div class="grid2" style={{ gap: '8px' }}>
+            <div role="group" aria-label="Load" style={cols(2)}><button class="btn sm" aria-pressed={!l.loaded} style={seg(!l.loaded)} onClick={() => setL({ ...l, loaded: false })}>Empty</button><button class="btn sm" aria-pressed={l.loaded} style={seg(l.loaded)} onClick={() => setL({ ...l, loaded: true })}>Fully loaded</button></div>
+            <div role="group" aria-label="Cargo height" style={cols(2)}><button class="btn sm" disabled={!l.loaded} aria-pressed={!l.high} style={seg(l.loaded && !l.high)} onClick={() => setL({ ...l, high: false })}>Cargo low</button><button class="btn sm" disabled={!l.loaded} aria-pressed={l.high} style={seg(l.loaded && l.high)} onClick={() => setL({ ...l, high: true })}>Cargo high</button></div>
+            <div role="group" aria-label="Cargo position" style={cols(2)}><button class="btn sm" disabled={!l.loaded} aria-pressed={!l.side} style={seg(l.loaded && !l.side)} onClick={() => setL({ ...l, side: false })}>Centered</button><button class="btn sm" disabled={!l.loaded} aria-pressed={l.side} style={seg(l.loaded && l.side)} onClick={() => setL({ ...l, side: true })}>To one side</button></div>
+            <div role="group" aria-label="Speed in the turn" style={cols(2)}><button class="btn sm" aria-pressed={!l.fast} style={seg(!l.fast)} onClick={() => setL({ ...l, fast: false })}>Slowed before turn</button><button class="btn sm" aria-pressed={l.fast} style={seg(l.fast)} onClick={() => setL({ ...l, fast: true })}>Too fast in turn</button></div>
           </div>
           <RollView l={l} />
           <ul class="small stack" style={{ gap: '4px', paddingLeft: '18px', margin: 0 }} aria-live="polite">{notes.map((n) => <li>{n}</li>)}</ul>

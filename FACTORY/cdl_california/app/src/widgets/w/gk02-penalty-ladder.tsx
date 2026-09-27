@@ -71,9 +71,9 @@ export function Timeline({ drops, kinds, reveal = true, ghost }: { drops: Drop[]
         return (
           <g>
             <line x1={0} x2={W} y1={top} y2={top} stroke="var(--line)" stroke-width={1} />
-            {reveal && last && info.window && <rect x={(wStart - Y0) * COL + 1} y={top + 20} width={(last.year - wStart + 1) * COL - 2} height={24} rx={4} fill="none" stroke={info.color} stroke-width={1.5} stroke-dasharray="4 3" />}
-            <text x={4} y={top + 16} font-size={FS} font-weight={700} fill="var(--ink)">{info.short}{reveal && last && info.window ? ` · ${info.window}-yr window` : ''}</text>
-            {hasLife && <text x={W - 4} y={top + 16} font-size={FS} font-weight={700} text-anchor="end" fill="var(--red)">LIFE →</text>}
+            {reveal && last && info.window && <rect x={(wStart - Y0) * COL + 1} y={top + 21} width={(last.year - wStart + 1) * COL - 2} height={22} rx={4} fill="none" stroke={info.color} stroke-width={1.5} stroke-dasharray="4 3" />}
+            <text x={4} y={top + 15} font-size={FS} font-weight={700} fill="var(--ink)">{info.short}{reveal && last && info.window ? ` · ${info.window}-yr window` : ''}</text>
+            {hasLife && <text x={W - 4} y={top + 15} font-size={FS} font-weight={700} text-anchor="end" fill="var(--red)">LIFE →</text>}
             {mine.map((d) => {
               const o = outcome(drops, d), x = cx(d), cy = top + 32;
               const len = o.days === LIFE ? W - x : Math.max(2, (o.days / Y) * COL);

@@ -81,12 +81,12 @@ function RightScene({ k, p, label, choices, oncoming }: { k: Kind | null; p: num
       {k === 'jug' && i >= JUG_OPEN && <Car {...CAR} />}
       {oncoming && <Car x={250} y={119} w={40} h={22} fill="var(--amber)" />}
       {frames && <Rig fr={frames[i]} />}
-      {k && <g aria-hidden="true">
+      {k === 'button' && <g aria-hidden="true">
         <path d="M 196 226 L 150 192" stroke="var(--ink)" stroke-width="1.5" fill="none" marker-end="url(#tnArrow)" />
         <text x="160" y="242" font-size="14" font-weight="700" fill="var(--ink)">rear wheels cut</text><text x="160" y="258" font-size="14" font-weight="700" fill="var(--ink)">inside the turn</text>
-        {k === 'jug' && i >= JUG_OPEN && <text x="160" y="290" font-size="14" font-weight="700" fill="var(--red)">← car fills the gap</text>}
         <defs><marker id="tnArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--ink)" /></marker></defs>
       </g>}
+      {k === 'jug' && <text x="148" y={i >= JUG_OPEN ? 262 : 300} font-size="14" font-weight="700" fill="var(--red)" aria-hidden="true">{i >= JUG_OPEN ? '← car fills the gap' : '← gap opens on your right'}</text>}
       {hit && <Crash x={CAR.x + 11} y={CAR.y + 8} />}
     </svg>
   );
