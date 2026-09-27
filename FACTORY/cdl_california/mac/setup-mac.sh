@@ -41,8 +41,8 @@ npm ci --no-audit --no-fund --loglevel=error
 
 # 3) Build both versions: installable offline app (dist/) and one-file version (dist-single/)
 say "Building the app…"
-npm run -s build:pwa >/dev/null
-npm run -s build:single >/dev/null
+npm run -s build:pwa >/dev/null 2>&1 || die "building the installable app failed (run: cd \"$APP\" && npm run build:pwa to see why)."
+npm run -s build:single >/dev/null 2>&1 || die "building the one-file app failed (run: cd \"$APP\" && npm run build:single to see why)."
 [[ -f dist/index.html && -f dist-single/index.html ]] || die "the build did not produce the app files."
 
 # 4) Desktop launchers
