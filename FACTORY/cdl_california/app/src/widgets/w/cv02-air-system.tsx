@@ -110,7 +110,7 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
         <AirDiagram s={s} motion={!reducedMotion} />
         <div class="stack"><Controls s={s} set={set} /><Status s={s} hints /></div>
       </div>
-      <div class="row"><button class="btn sm" onClick={() => setS({ ...START })}>Reset rig</button><span class="small muted">Solid coloured line = air flowing; dotted grey = no air.</span></div>
+      <div class="row"><button class="btn sm" onClick={() => setS({ ...START })}>Reset rig</button><span class="small muted">Thick coloured line = air flowing; thin dotted grey line = no air.</span></div>
     </div>
   );
 }

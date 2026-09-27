@@ -113,7 +113,7 @@ export function MockScreen({ test }: { test: TestId }) {
       {answered ? (
         <div class={`feedback ${chosen === it.key ? 'good' : 'bad'}`} role="status" aria-live="polite">
           <div class="verdict">{chosen === it.key ? 'Correct' : 'Incorrect'}</div>
-          {chosen !== it.key && <><Html class="small" html={it.explanation} /><Pages pages={it.pages} /></>}
+          {chosen !== it.key && <><Html class="small" html={it.explanation} /><div><Pages pages={it.pages} /></div></>}
           <button class="btn primary block" onClick={next} autoFocus>{remaining === 1 ? 'See my result' : 'Next question'}</button>
         </div>
       ) : (

@@ -46,10 +46,10 @@ export function CrashScene({ cur, hide, skip }: { cur: number; hide?: boolean; s
     const x = 4 + (k - 1) * 79;
     if (!show(k)) return <g><rect x={x} y="178" width="75" height="100" rx="8" fill="var(--surface-2)" stroke="var(--line)" stroke-dasharray="4 3" /><text x={x + 37.5} y="234" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink-2)">?</text></g>;
     return (
-      <g opacity={st(k) === 'todo' ? 0.35 : 1}>
-        <rect x={x} y="178" width="75" height="100" rx="8" fill={lost(k) ? 'var(--red-soft)' : st(k) === 'cur' ? 'var(--amber-soft)' : 'var(--surface)'} stroke={edge(k)} stroke-width={st(k) === 'todo' ? 1.2 : 2.5} stroke-dasharray={lost(k) ? '5 3' : '0'} />
+      <g>
+        <rect x={x} y="178" width="75" height="100" rx="8" fill={lost(k) ? 'var(--red-soft)' : st(k) === 'cur' ? 'var(--amber-soft)' : st(k) === 'todo' ? 'var(--surface-2)' : 'var(--surface)'} stroke={edge(k)} stroke-width={st(k) === 'todo' ? 1.2 : 2.5} stroke-dasharray={lost(k) ? '5 3' : st(k) === 'todo' ? '4 3' : '0'} />
         <g transform={`translate(${x} 178)`}>{children}</g>
-        {(lost(k) ? [bad] : lines).map((l, j) => <text x={x + 37.5} y={252 + j * 16} text-anchor="middle" font-size="13" font-weight={lost(k) ? 700 : 400} fill={lost(k) ? 'var(--red)' : 'var(--ink)'}>{l}</text>)}
+        {(lost(k) ? [bad] : lines).map((l, j) => <text x={x + 37.5} y={252 + j * 16} text-anchor="middle" font-size="13" font-weight={lost(k) ? 700 : 400} fill={lost(k) ? 'var(--red)' : st(k) === 'todo' ? 'var(--ink-2)' : 'var(--ink)'}>{l}</text>)}
         <Tag k={k} x={x + 13} y={191} />
       </g>
     );

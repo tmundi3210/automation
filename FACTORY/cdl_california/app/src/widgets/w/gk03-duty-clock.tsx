@@ -38,7 +38,7 @@ export function Lanes({ start, log, pick }: { start: number; log: Cell[]; pick?:
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" style={{ display: 'block', maxWidth: '430px' }}
       aria-label={`On duty at ${clock(start)}. Federal: no driving after ${clock(start + 14)}. California: no driving after ${clock(start + 16)}.${log.some((c) => c === 'D') ? ` Illegal driving hours: federal ${log.filter((_, h) => check(log, h, 'fed')).length}, California ${log.filter((_, h) => check(log, h, 'ca')).length}.` : ''}`}>
       {Array.from({ length: 24 }, (_, h) => <rect x={h * CW} y={0} width={CW} height={150} fill={h % 2 ? 'var(--surface)' : 'var(--surface-2)'} />)}
-      <text x={2} y={15} font-size={FS} font-weight={700} fill="var(--ink)">Your log <tspan font-weight={400} fill="var(--ink-2)">(dark = driving)</tspan></text>
+      <text x={2} y={15} font-size={FS} font-weight={700} fill="var(--ink)">Your log <tspan font-weight={400} fill="var(--ink-2)">(filled = driving)</tspan></text>
       {log.map((c, h) => <rect x={h * CW + 1} y={21} width={CW - 2} height={18} rx={2} fill={c === 'D' ? 'var(--ink)' : 'var(--surface)'} stroke="var(--ink-2)" stroke-width={0.8} />)}
       {rows.map((s, i) => {
         const r = RULES[s], top = 46 + i * 52, x = r.window * CW;

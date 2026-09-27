@@ -39,7 +39,7 @@ export function SettingsScreen() {
         <h2>License and tests</h2>
         <div class="field"><label for="cls">License class</label>
           <select id="cls" value={p.cls ?? ''} onChange={(e) => setCls((e.target as HTMLSelectElement).value as Cls)}>
-            <option value="" disabled>Choose…</option><option value="A">Class A (tractor-trailer and other combinations)</option><option value="B">Class B (single heavy truck or bus)</option><option value="C">Class C (smaller vehicle carrying placarded HazMat)</option>
+            <option value="" disabled>Choose…</option><option value="A">Class A (tractor-trailer)</option><option value="B">Class B (heavy truck or bus)</option><option value="C">Class C (small HazMat/passenger)</option>
           </select>
           <span class="small muted">{p.cls === 'A' ? 'Tests in this app: General Knowledge + Combination Vehicles.' : p.cls ? 'Tests in this app: General Knowledge. Your class also needs endorsement tests this version does not cover yet.' : 'Not sure? The first lesson has a class finder.'}</span>
         </div>

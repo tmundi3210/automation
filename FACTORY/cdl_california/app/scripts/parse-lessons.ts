@@ -343,9 +343,11 @@ function deriveItems() {
     const id = `${lid(t.lesson)}-dt-${fnv(t.id)}`;
     const L = all.lessons.find((l) => l.id === t.lesson)!;
     const cands = L.conceptIds.map((c) => all.concepts[c]).filter((c) => c.pages.some((p) => t.pages.includes(p)));
-    const stmt = t.trap.replace(/^[a-z]/, (c) => c.toUpperCase());
+    // Trap text is often a fragment ("6 triangles"); present it as a quoted claim so the stem is a full sentence.
+    let stmt = t.trap.replace(/^[a-z]/, (c) => c.toUpperCase()).replace(/[.\s]+$/, '');
+    if ((stmt.match(/"/g) ?? []).length % 2) stmt = stmt.replace(/"/g, '');
     all.items[id] = {
-      id, lesson: t.lesson, test: L.test, origin: 'derived-trap', stem: `True or false? ${inline(stmt)}`, stemText: `True or false? ${stmt}`,
+      id, lesson: t.lesson, test: L.test, origin: 'derived-trap', stem: `True or false? The handbook says: “${inline(stmt)}.”`, stemText: `True or false? The handbook says: “${stmt}.”`,
       options: ['True', 'False'], optionsText: ['True', 'False'], key: 1, explanation: `<strong>False.</strong> ${t.correctHtml}`, pages: t.pages,
       polarity: 'tf', numeric: false, tags: ['trap_named', null], concepts: (cands.length ? cands.slice(0, 1) : [all.concepts[L.conceptIds[0]]]).map((c) => c.id), ku: t.id,
     };
@@ -445,6 +447,9 @@ mapFacts();
 deriveItems();
 mergeEnrichment();
 mergeNotes();
+// Stems that name a handbook section number a beginner cannot know; source lessons stay verbatim.
+const STEM_FIX: [RegExp, string][] = [[/is NOT a rule in Section 1\.4\?/, 'is NOT one of the CDL reporting rules (license, convictions, employer notices)?']];
+for (const it of Object.values(all.items)) for (const [re, to] of STEM_FIX) if (re.test(it.stemText)) { it.stem = it.stem.replace(re, to); it.stemText = it.stemText.replace(re, to); }
 for (const it of Object.values(all.items)) positionSafe(it);
 mapConcepts(); // re-map every item (incl. derived) by page + keyword overlap
 const derivedNumbers = Object.values(all.items).filter((i) => i.origin === 'derived-number').length;
