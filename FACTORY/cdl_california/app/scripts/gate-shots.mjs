@@ -49,7 +49,7 @@ for (const [vp, scheme] of [['m', 'light'], ['m', 'dark'], ['d', 'light']]) {
   // a question with feedback, and a mock question
   await page.goto(URL + '#lesson.GK-08'); await page.getByRole('tab', { name: 'Practice test' }).click(); await page.getByRole('button', { name: /^Start$/ }).click();
   await shoot(page, `${vp}-${scheme}-20-question`); await page.locator('.opt').nth(2).click(); await shoot(page, `${vp}-${scheme}-21-feedback`);
-  await page.goto(URL + '#practice'); await page.getByRole('button', { name: 'Start GK mock' }).click(); await page.getByRole('button', { name: 'Begin' }).click();
+  await page.goto(URL + '#practice'); await page.getByRole('button', { name: 'Start General Knowledge mock' }).click(); await page.getByRole('button', { name: 'Begin' }).click();
   await page.locator('.opt').first().click(); await shoot(page, `${vp}-${scheme}-22-mock`);
   await ctx.close();
 }

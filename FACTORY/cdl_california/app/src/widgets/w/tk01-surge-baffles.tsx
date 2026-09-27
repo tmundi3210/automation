@@ -66,8 +66,8 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
     <svg viewBox="0 0 360 180" width="100%" style={{ display: 'block' }} role="img" aria-label={aria}>
       <rect x="0" y="0" width="360" height="180" fill="var(--surface-2)" />
       <rect x="0" y="146" width="360" height="34" fill={s.ice ? 'var(--blue-soft)' : 'var(--surface)'} />
-      <text x="6" y="172" font-size="12" fill="var(--ink-2)">{s.ice ? 'ice (slippery)' : 'dry road'}</text>
-      {(ev === 'brake' || ev === 'early') && <g><rect x="308" y="146" width="52" height="34" fill="var(--amber-soft)" /><line x1="308" x2="308" y1="118" y2="180" stroke="var(--ink)" stroke-width="3" /><text x="304" y="174" font-size="12" text-anchor="end" fill="var(--ink)">stop line</text><text x="334" y="160" font-size="12" text-anchor="middle" fill="var(--amber-ink)">inter-</text><text x="334" y="174" font-size="12" text-anchor="middle" fill="var(--amber-ink)">section</text></g>}
+      <text x="6" y="172" font-size="13" fill="var(--ink-2)">{s.ice ? 'ice (slippery)' : 'dry road'}</text>
+      {(ev === 'brake' || ev === 'early') && <g><rect x="308" y="146" width="52" height="34" fill="var(--amber-soft)" /><line x1="308" x2="308" y1="118" y2="180" stroke="var(--ink)" stroke-width="3" /><text x="304" y="174" font-size="13" text-anchor="end" fill="var(--ink)">stop line</text><text x="334" y="160" font-size="13" text-anchor="middle" fill="var(--amber-ink)">inter-</text><text x="334" y="174" font-size="13" text-anchor="middle" fill="var(--amber-ink)">section</text></g>}
       <g transform={`translate(${g.dx.toFixed(1)} 0)`}>
         <rect x="30" y="126" width="282" height="8" fill="var(--ink-2)" />
         <path d="M244 72 h40 l20 26 v38 h-60 z" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
@@ -75,19 +75,19 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
         <defs><clipPath id="tk-clip"><rect x={X0} y={YT} width={X1 - X0} height={H} rx="26" /></clipPath></defs>
         <rect x={X0} y={YT} width={X1 - X0} height={H} rx="26" fill="var(--surface)" />
         <g clip-path="url(#tk-clip)">{liquid}
-          {s.fill < 100 && <text x={(X0 + X1) / 2} y={YT + 12} font-size="12" text-anchor="middle" fill="var(--ink-2)">outage</text>}
+          {s.fill < 100 && <text x={(X0 + X1) / 2} y={YT + 12} font-size="13" text-anchor="middle" fill="var(--ink-2)">outage</text>}
         </g>
         {walls.map((x, i) => s.tank === 'bulk'
           ? <line key={i} x1={x} x2={x} y1={YT} y2={YB} stroke="var(--ink)" stroke-width="3" />
           : <line key={i} x1={x} x2={x} y1={YT + 2} y2={YB - 2} stroke="var(--ink)" stroke-width="3" stroke-dasharray="8 6" />)}
         <rect x={X0} y={YT} width={X1 - X0} height={H} rx="26" fill="none" stroke="var(--ink)" stroke-width="2" />
         <rect x={(X0 + X1) / 2 - 10} y={YT - 7} width="20" height="7" fill="var(--surface-2)" stroke="var(--ink)" />
-        {g.over && <g><path d={`M${(X0 + X1) / 2} ${YT - 8} q-6 -14 -18 -10 M${(X0 + X1) / 2} ${YT - 8} q6 -14 18 -10`} stroke="var(--red)" stroke-width="3" fill="none" /><text x={(X0 + X1) / 2} y={YT - 24} font-size="12" font-weight="700" text-anchor="middle" fill="var(--red)">no room to expand!</text></g>}
+        {g.over && <g><path d={`M${(X0 + X1) / 2} ${YT - 8} q-6 -14 -18 -10 M${(X0 + X1) / 2} ${YT - 8} q6 -14 18 -10`} stroke="var(--red)" stroke-width="3" fill="none" /><text x={(X0 + X1) / 2} y={YT - 24} font-size="13" font-weight="700" text-anchor="middle" fill="var(--red)">no room to expand!</text></g>}
         {[70, 110, 212, 282].map((x) => <circle key={x} cx={x} cy="140" r="11" fill="var(--ink)" stroke="var(--surface)" stroke-width="2" />)}
-        {hitFront && <g><path d={`M200 40 h${Math.min(60, 12 + g.push)}`} stroke="var(--red)" stroke-width="4" /><path d={`M${204 + Math.min(60, 12 + g.push)} 40 l-9 -6 v12 z`} fill="var(--red)" /><text x="196" y="36" font-size="12" font-weight="700" text-anchor="end" fill="var(--red)">wave pushes truck</text></g>}
-        {hitRear && <g><path d="M90 40 h-40" stroke="var(--red)" stroke-width="4" /><path d="M46 40 l9 -6 v12 z" fill="var(--red)" /><text x="96" y="44" font-size="12" font-weight="700" fill="var(--red)">wave hits rear: jerk</text></g>}
+        {hitFront && <g><path d={`M200 40 h${Math.min(60, 12 + g.push)}`} stroke="var(--red)" stroke-width="4" /><path d={`M${204 + Math.min(60, 12 + g.push)} 40 l-9 -6 v12 z`} fill="var(--red)" /><text x="196" y="36" font-size="13" font-weight="700" text-anchor="end" fill="var(--red)">wave pushes truck</text></g>}
+        {hitRear && <g><path d="M90 40 h-40" stroke="var(--red)" stroke-width="4" /><path d="M46 40 l9 -6 v12 z" fill="var(--red)" /><text x="96" y="44" font-size="13" font-weight="700" fill="var(--red)">wave hits rear: jerk</text></g>}
       </g>
-      <text x="354" y="16" font-size="12" text-anchor="end" fill="var(--ink-2)">front →</text>
+      <text x="354" y="16" font-size="13" text-anchor="end" fill="var(--ink-2)">front →</text>
     </svg>
   );
 }
@@ -112,11 +112,11 @@ function RearView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
         <circle cx={cx + side * 10} cy={cy + 6} r="5" fill="var(--amber)" stroke="var(--ink)" />
       </g>
       <line x1="14" x2="14" y1="160" y2={cy + 6} stroke="var(--amber)" stroke-width="3" />
-      <line x1="14" x2={cx - R - 2} y1={cy + 6} y2={cy + 6} stroke="var(--amber)" stroke-dasharray="3 3" /><text x="20" y={cy - 2} font-size="12" fill="var(--ink)">CG 60–78 in</text>
+      <line x1="14" x2={cx - R - 2} y1={cy + 6} y2={cy + 6} stroke="var(--amber)" stroke-dasharray="3 3" /><text x="20" y={cy - 2} font-size="13" fill="var(--ink)">CG 60–78 in</text>
       <line x1="8" x2="26" y1="132" y2="132" stroke="var(--ink-2)" stroke-dasharray="3 3" />
-      <text x="20" y="128" font-size="12" fill="var(--ink-2)">pickup 18–24 in</text>
+      <text x="20" y="128" font-size="13" fill="var(--ink-2)">pickup 18–24 in</text>
       {fast && t > 0.6 && <text x="110" y="20" font-size="14" font-weight="700" text-anchor="middle" fill="var(--red)">ROLLOVER</text>}
-      {curve && <text x="194" y="176" font-size="12" text-anchor="end" fill="var(--ink-2)">outside of curve →</text>}
+      {curve && <text x="194" y="176" font-size="13" text-anchor="end" fill="var(--ink-2)">outside of curve →</text>}
     </svg>
   );
 }

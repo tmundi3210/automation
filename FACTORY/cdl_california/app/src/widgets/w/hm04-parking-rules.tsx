@@ -17,14 +17,13 @@ function Truck({ x, y, load }: { x: number; y: number; load: Load }) {
     <rect x={x - 26} y={y - 7} width="38" height="14" rx="2" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.8" />
     <rect x={x + 14} y={y - 6} width="12" height="12" rx="2" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.8" />
     <rect x={x - 11} y={y - 6} width="10" height="10" transform={`rotate(45 ${x - 6} ${y - 1})`} fill="var(--amber)" stroke="var(--ink)" stroke-width="1" />
-    <text x={x - 6} y={y + 3} text-anchor="middle" font-size="7" font-weight="700" fill="#14201a">{load === 'exp' ? '1' : '3'}</text>
   </g>);
 }
 
 function MapSvg({ s, hot }: { s: State; hot: Feat[] }) {
   const sp = spot(s.spot);
   const t = { 'font-size': 13, fill: 'var(--ink)' } as const;
-  const hl = (f: Feat) => { const [x, y, w, h] = FEAT_XY[f]; return hot.includes(f) ? <g><rect x={x - 4} y={y - 4} width={w + 8} height={h + 8} rx="4" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-dasharray="5 3" /><text x={x + w / 2} y={y - 7} text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">{sp.d[f]} ft</text></g> : null; };
+  const hl = (f: Feat) => { const [x, y, w, h] = FEAT_XY[f]; return hot.includes(f) ? <g><rect x={x - 4} y={y - 4} width={w + 8} height={h + 8} rx="4" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-dasharray="5 3" /><text x={x + w / 2} y={y - 7} text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">{sp.d[f]} ft</text></g> : null; };
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" style={{ display: 'block' }}
       aria-label={`Map, not to scale. Highway across the top with a bridge over a river on the left and a tunnel on the right. Below: a diner with people outside, a fuel island, a brush fire, a roadside turnout, a shipper's yard and a safe haven. Your ${LOAD[s.load]} truck is at spot ${sp.n}, ${sp.name}.${hot.length ? ` Within 300 ft: ${hot.map((f) => FEAT_NAME[f]).join(', ')}.` : ''}`}>
@@ -37,12 +36,12 @@ function MapSvg({ s, hot }: { s: State; hot: Feat[] }) {
       <rect x="30" y="26" width="38" height="4" fill="var(--ink)" /><rect x="30" y="70" width="38" height="4" fill="var(--ink)" /><text x="72" y="22" {...t}>bridge</text>
       <path d="M318 0 H360 V100 H318 Z" fill="var(--ok)" opacity=".45" /><path d="M318 70 V38 a10 10 0 0 1 10 -10 H360 V70 Z" fill="#2a332d" /><text x="339" y="18" text-anchor="middle" {...t}>tunnel</text>
       <rect x="98" y="150" width="58" height="36" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="127" y="172" text-anchor="middle" {...t}>diner</text>
-      {[166, 176, 186].map((x) => <g><circle cx={x} cy="158" r="3.5" fill="var(--ink)" /><rect x={x - 3} y="163" width="6" height="12" rx="2" fill="var(--ink)" /></g>)}<text x="200" y="198" text-anchor="middle" font-size="13" fill="var(--ink)">people</text>
+      {[166, 176, 186].map((x) => <g><circle cx={x} cy="158" r="3.5" fill="var(--ink)" /><rect x={x - 3} y="163" width="6" height="12" rx="2" fill="var(--ink)" /></g>)}<text x="200" y="198" text-anchor="middle" font-size="14" fill="var(--ink)">people</text>
       <rect x="228" y="118" width="50" height="8" fill="var(--ink-2)" /><rect x="244" y="142" width="8" height="10" fill="var(--blue)" /><text x="253" y="166" text-anchor="middle" {...t}>fuel</text>
-      <rect x="284" y="140" width="36" height="24" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.2" /><text x="302" y="180" text-anchor="middle" font-size="13" fill="var(--ink)">store</text>
-      <path d="M313 122 q-10 -8 -4 -20 q2 8 6 4 q-2 -8 6 -12 q-2 10 6 12 q4 10 -6 16 Z" fill="var(--red)" stroke="var(--ink)" stroke-width="1" /><text x="334" y="138" text-anchor="middle" font-size="13" fill="var(--ink)">fire</text>
-      <rect x="20" y="200" width="56" height="40" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="48" y="225" text-anchor="middle" font-size="13" fill="var(--ink)">shipper</text>
-      <rect x="258" y="202" width="96" height="42" rx="4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4" /><text x="306" y="198" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">SAFE HAVEN</text>
+      <rect x="284" y="140" width="36" height="24" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.2" /><text x="302" y="180" text-anchor="middle" font-size="14" fill="var(--ink)">store</text>
+      <path d="M313 122 q-10 -8 -4 -20 q2 8 6 4 q-2 -8 6 -12 q-2 10 6 12 q4 10 -6 16 Z" fill="var(--red)" stroke="var(--ink)" stroke-width="1" /><text x="334" y="138" text-anchor="middle" font-size="14" fill="var(--ink)">fire</text>
+      <rect x="20" y="200" width="56" height="40" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="48" y="225" text-anchor="middle" font-size="14" fill="var(--ink)">shipper</text>
+      <rect x="258" y="202" width="96" height="42" rx="4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4" /><text x="306" y="198" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent)">SAFE HAVEN</text>
       {(Object.keys(FEAT_XY) as Feat[]).map(hl)}
       <Truck x={sp.x} y={sp.y} load={s.load} />
       {s.dev === 'flare' && <g>{[-50, -40].map((dx) => <circle cx={sp.x + dx} cy={sp.y + 4} r="3" fill="var(--red)" stroke="var(--amber)" stroke-width="2" />)}</g>}

@@ -21,10 +21,10 @@ export function Placard({ label, cls, faded, size = 92 }: { label: string; cls: 
       <rect x="15" y="15" width="70" height="70" transform="rotate(45 50 50)" fill="var(--surface)" stroke="var(--ink)" stroke-width="3" stroke-dasharray={faded ? '6 4' : undefined} />
       <rect x="21" y="21" width="58" height="58" transform="rotate(45 50 50)" fill="none" stroke="var(--ink-2)" stroke-width="1.2" />
       {lines.map((w, i) => {
-        const est = w.length * 8.4;
-        return <text x="50" y={y0 + i * 14} text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)" textLength={est > 60 ? 60 : undefined} lengthAdjust="spacingAndGlyphs">{w}</text>;
+        const est = w.length * 7.8;
+        return <text x="50" y={y0 + i * 14} text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)" textLength={est > 52 ? 52 : undefined} lengthAdjust="spacingAndGlyphs">{w}</text>;
       })}
-      {cls && <text x="50" y="83" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{cls}</text>}
+      {cls && <text x="50" y="83" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{cls}</text>}
     </svg>
   );
 }
@@ -40,14 +40,14 @@ function Rig({ set }: { set: string[] }) {
       aria-label={n ? `Top view of the tractor-trailer. The same ${n} placard${n > 1 ? 's' : ''} (${set.join(', ')}) go on the front, rear, left side and right side: 4 identical sets.` : 'Top view of the tractor-trailer. No placards are required for this load.'}>
       <rect width="364" height="156" fill="var(--surface-2)" />
       <rect x="44" y="52" width="58" height="48" rx="6" fill="var(--accent)" stroke="var(--ink)" stroke-width="2" />
-      <text x="73" y="81" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">tractor</text>
+      <text x="73" y="81" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-ink)">tractor</text>
       <rect x="106" y="46" width="222" height="60" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
-      <text x="217" y="81" text-anchor="middle" font-size="13" fill="var(--ink-2)">trailer (top view)</text>
+      <text x="217" y="81" text-anchor="middle" font-size="14" fill="var(--ink-2)">trailer (top view)</text>
       {spots.map(([x, y]) => d(x, y))}
-      <text x="20" y="114" text-anchor="middle" font-size="13" fill="var(--ink)">front</text>
-      <text x="344" y="114" text-anchor="middle" font-size="13" fill="var(--ink)">rear</text>
-      <text x="234" y="27" font-size="13" fill="var(--ink)">left side</text>
-      <text x="234" y="137" font-size="13" fill="var(--ink)">right side</text>
+      <text x="20" y="114" text-anchor="middle" font-size="14" fill="var(--ink)">front</text>
+      <text x="344" y="114" text-anchor="middle" font-size="14" fill="var(--ink)">rear</text>
+      <text x="234" y="27" font-size="14" fill="var(--ink)">left side</text>
+      <text x="234" y="137" font-size="14" fill="var(--ink)">right side</text>
     </svg>
   );
 }
@@ -84,8 +84,8 @@ function Meter({ total }: { total: number }) {
       <rect x="8" y="16" width="344" height="14" rx="3" fill="var(--surface-2)" stroke="var(--line)" />
       <rect x="8" y="16" width={Math.max(0, x(total) - 8)} height="14" rx="3" fill={total >= 1001 ? 'var(--amber)' : 'var(--accent)'} />
       <line x1={x(1001)} x2={x(1001)} y1="10" y2="36" stroke="var(--red)" stroke-width="2.5" />
-      <text x={x(1001)} y="9" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">1,001 lb</text>
-      <text x="8" y="50" font-size="13" fill="var(--ink)">Table 2 total: {fmt(total)} lb {total >= 1001 ? '(placard)' : '(no Table 2 placard)'}</text>
+      <text x={x(1001)} y="9" text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">1,001 lb</text>
+      <text x="8" y="50" font-size="14" fill="var(--ink)">Table 2 total: {fmt(total)} lb {total >= 1001 ? '(placard)' : '(no Table 2 placard)'}</text>
     </svg>
   );
 }

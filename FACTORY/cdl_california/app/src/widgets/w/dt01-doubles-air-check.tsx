@@ -57,27 +57,27 @@ function Schematic({ r, hide, mark, order, heavyFirst = true, motion, onValve }:
   const puff = (x: number, y: number, key: string, label: string) => (
     <g key={key} aria-hidden="true">
       {[0, 1, 2].map((i) => <path key={i} d={`M${x + 2 + i * 5} ${y - 7} q4 7 0 14`} fill="none" stroke="var(--ink)" stroke-width="1.6">{motion && <animate attributeName="opacity" values="1;0.2;1" dur="0.9s" begin={`${i * 0.2}s`} repeatCount="indefinite" />}</path>)}
-      <text x={x + 2} y={y - 10} font-size="12" font-weight="700" fill="var(--ink)">{label}</text>
+      <text x={x + 2} y={y - 10} font-size="13" font-weight="700" fill="var(--ink)">{label}</text>
     </g>
   );
   const els: JSX.Element[] = [];
   const brakesOk = (t: number) => fe.reach >= t;
   // tractor
-  els.push(<g key="tr"><rect x="4" y="44" width="42" height="36" rx="4" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" /><rect x="8" y="48" width="14" height="14" rx="2" fill="var(--surface)" stroke="var(--ink)" /><circle cx="14" cy="84" r="6" fill="var(--ink)" /><circle cx="38" cy="84" r="6" fill="var(--ink)" /><text x="25" y="36" font-size="12" text-anchor="middle" fill="var(--ink-2)">Tractor</text></g>);
+  els.push(<g key="tr"><rect x="4" y="44" width="42" height="36" rx="4" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" /><rect x="8" y="48" width="14" height="14" rx="2" fill="var(--surface)" stroke="var(--ink)" /><circle cx="14" cy="84" r="6" fill="var(--ink)" /><circle cx="38" cy="84" r="6" fill="var(--ink)" /><text x="25" y="36" font-size="13" text-anchor="middle" fill="var(--ink-2)">Tractor</text></g>);
   for (let t = 0; t < r.n; t++) {
     const x = fx(t), ok = brakesOk(t);
     const lbl = order && r.n === 2 ? ((t === 0) === heavyFirst ? 'HEAVIER' : 'lighter') : `Trailer ${t + 1}`;
     els.push(<g key={`t${t}`}>
       <rect x={x} y="30" width={tw} height="46" rx="3" fill={order && r.n === 2 && lbl === 'HEAVIER' ? 'var(--surface)' : 'var(--surface-2)'} stroke="var(--ink)" stroke-width={lbl === 'HEAVIER' ? 3 : 1.5} />
-      <text x={x + tw / 2} y="50" font-size="13" font-weight="700" text-anchor="middle" fill="var(--ink)">{lbl}</text>
-      <text x={x + tw / 2} y="67" font-size="12" text-anchor="middle" fill={ok ? 'var(--ok)' : 'var(--ink-2)'}>{ok ? 'air ✓' : 'no air'}</text>
+      <text x={x + tw / 2} y="50" font-size="14" font-weight="700" text-anchor="middle" fill="var(--ink)">{lbl}</text>
+      <text x={x + tw / 2} y="67" font-size="13" text-anchor="middle" fill={ok ? 'var(--ok)' : 'var(--ink-2)'}>{ok ? 'air ✓' : 'no air'}</text>
       <circle cx={x + tw - 44} cy="82" r="6" fill="var(--ink)" /><circle cx={x + tw - 58} cy="82" r="6" fill="var(--ink)" />
-      {r.n === 3 && t === 2 && <text x={x + tw / 2} y="24" font-size="12" font-weight="700" text-anchor="middle" fill="var(--red)">not legal in CA</text>}
+      {r.n === 3 && t === 2 && <text x={x + tw / 2} y="24" font-size="13" font-weight="700" text-anchor="middle" fill="var(--red)">not legal in CA</text>}
     </g>);
     if (t > 0) { // converter dolly in front of trailer t
       const dx = x - dg + 2, di = t - 1, air = fe.reach >= t;
       els.push(<g key={`d${t}`}><rect x={dx} y="70" width={dg - 4} height="10" rx="2" fill="var(--amber-soft)" stroke="var(--ink)" /><circle cx={dx + (dg - 4) / 2} cy="84" r="5" fill="var(--ink)" />
-        <text x={dx + (dg - 4) / 2} y="97" font-size="12" text-anchor="middle" fill="var(--ink-2)">dolly</text>
+        <text x={dx + (dg - 4) / 2} y="97" font-size="13" text-anchor="middle" fill="var(--ink-2)">dolly</text>
         {!hide && r.drain[di] && air && puff(dx + 4, 150, `dp${t}`, 'drain hiss')}</g>);
     }
     for (const l of ['e', 's'] as Line[]) {
@@ -87,9 +87,9 @@ function Schematic({ r, hide, mark, order, heavyFirst = true, motion, onValve }:
       const hl = mark === key;
       els.push(<g key={`v${key}`} onClick={onValve ? () => onValve(key) : undefined} style={onValve ? { cursor: 'pointer' } : undefined}>
         <circle cx={vx} cy={y} r="9" fill={hl ? 'var(--amber)' : 'var(--surface)'} stroke="var(--ink)" stroke-width="1.5" />
-        {hide ? <text x={vx} y={y + 4} font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)">?</text>
+        {hide ? <text x={vx} y={y + 4} font-size="13" font-weight="700" text-anchor="middle" fill="var(--ink)">?</text>
           : <line x1={open ? vx - 6 : vx} x2={open ? vx + 6 : vx} y1={open ? y : y - 6} y2={open ? y : y + 6} stroke="var(--ink)" stroke-width="2.5" />}
-        {!hide && <text x={vx - 11} y={y + 16} font-size="12" text-anchor="end" fill="var(--ink-2)">{open ? 'open' : 'shut'}</text>}
+        {!hide && <text x={vx - 11} y={y + 16} font-size="13" text-anchor="end" fill="var(--ink-2)">{open ? 'open' : 'shut'}</text>}
       </g>);
       if (t === r.n - 1 && f.out) els.push(puff(vx + 8, y, `o${l}`, 'hiss'));
     }
@@ -98,10 +98,10 @@ function Schematic({ r, hide, mark, order, heavyFirst = true, motion, onValve }:
   return (
     <svg viewBox={`0 0 ${W} 166`} width="100%" style={{ display: 'block', maxWidth: '560px', marginInline: 'auto' }} role="img" aria-label={desc}>
       <rect x="0" y="0" width={W} height="166" fill="var(--surface)" />
-      <text x="4" y={Y.e + 4} font-size="12" font-weight="700" fill="var(--red)">E</text>
-      <text x="4" y={Y.s + 4} font-size="12" font-weight="700" fill="var(--blue)">S</text>
-      <text x="14" y={Y.e + 4} font-size="12" fill="var(--ink-2)">red</text>
-      <text x="14" y={Y.s + 4} font-size="12" fill="var(--ink-2)">blue</text>
+      <text x="4" y={Y.e + 4} font-size="13" font-weight="700" fill="var(--red)">E</text>
+      <text x="4" y={Y.s + 4} font-size="13" font-weight="700" fill="var(--blue)">S</text>
+      <text x="14" y={Y.e + 4} font-size="13" fill="var(--ink-2)">red</text>
+      <text x="14" y={Y.s + 4} font-size="13" fill="var(--ink-2)">blue</text>
       {els}
     </svg>
   );

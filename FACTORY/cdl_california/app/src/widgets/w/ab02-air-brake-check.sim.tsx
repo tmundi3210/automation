@@ -87,12 +87,12 @@ export function Gauge({ psi, ghost, cx = 92, cy = 100, r = 80 }: { psi: number; 
       <path d={arc(cx, cy, r - 6, 55, 75)} fill="none" stroke="var(--amber)" stroke-width="8" />
       <path d={arc(cx, cy, r - 6, CUT_IN, CUT_OUT)} fill="none" stroke="var(--ok)" stroke-width="8" />
       {Array.from({ length: 16 }, (_, i) => i * 10).map((p) => { const [x1, y1] = pt(cx, cy, r - 1, p), [x2, y2] = pt(cx, cy, r - (p % 50 === 0 ? 14 : 10), p); return <line key={p} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--ink)" stroke-width={p % 50 === 0 ? 2 : 1} />; })}
-      {[0, 50, 100, 150].map((p) => { const [x, y] = pt(cx, cy, r - 26, p); return <text key={p} x={x} y={y + 4} text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">{p}</text>; })}
+      {[0, 50, 100, 150].map((p) => { const [x, y] = pt(cx, cy, r - 26, p); return <text key={p} x={x} y={y + 4} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{p}</text>; })}
       {ghost != null && needle(ghost, 'var(--ink-2)', 2, '3 3')}
       {needle(psi, 'var(--red)', 3.5)}
       <circle cx={cx} cy={cy} r="6" fill="var(--ink)" stroke="none" />
       <text x={cx} y={cy + 34} text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)">{Math.round(psi)}</text>
-      <text x={cx} y={cy + 49} text-anchor="middle" font-size="11" fill="var(--ink-2)">psi · tank</text>
+      <text x={cx} y={cy + 49} text-anchor="middle" font-size="13" fill="var(--ink-2)">psi · tank</text>
     </g>
   );
 }
@@ -107,8 +107,8 @@ export function Dash({ s, rig, label }: { s: Sim; rig: Rig; label: string }) {
         <rect x={x - 4} y="112" width="8" height={y - 112} fill="var(--ink-2)" stroke="none" />
         {diamond ? <rect x={x - 12} y={y - 12} width="24" height="24" transform={`rotate(45 ${x} ${y})`} fill={color} stroke="var(--ink)" stroke-width="1.5" />
           : <polygon points={[0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const a = (i * 45 + 22.5) * Math.PI / 180; return `${(x + 16 * Math.cos(a)).toFixed(1)},${(y + 16 * Math.sin(a)).toFixed(1)}`; }).join(' ')} fill={color} stroke="var(--ink)" stroke-width="1.5" />}
-        <text x={x} y="178" text-anchor="middle" font-size="13" fill="var(--ink)">{name}</text>
-        <text x={x} y="194" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{out ? 'OUT · on' : 'IN · off'}</text>
+        <text x={x} y="178" text-anchor="middle" font-size="14" fill="var(--ink)">{name}</text>
+        <text x={x} y="194" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{out ? 'OUT · on' : 'IN · off'}</text>
       </g>
     );
   };
@@ -118,8 +118,8 @@ export function Dash({ s, rig, label }: { s: Sim; rig: Rig; label: string }) {
       <Gauge psi={s.psi} />
       <rect x="190" y="8" width="164" height="36" rx="6" fill={warn ? 'var(--red)' : 'var(--surface)'} stroke="var(--ink)" stroke-width="1.5" />
       <text x="272" y="31" text-anchor="middle" font-size="14" font-weight="700" fill={warn ? 'var(--on-red)' : 'var(--ink-2)'}>{warn ? '⚠ LOW AIR · BZZZ' : 'Low air: off'}</text>
-      <text x="272" y="66" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{!s.engine ? 'Engine off' : s.pumping ? 'Compressor pumping ▲' : 'Governor cut-out'}</text>
-      <text x="272" y="88" text-anchor="middle" font-size="13" fill="var(--ink)">{s.pedal ? 'Foot brake: HELD DOWN' : 'Foot brake: up'}</text>
+      <text x="272" y="66" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{!s.engine ? 'Engine off' : s.pumping ? 'Compressor pumping ▲' : 'Governor cut-out'}</text>
+      <text x="272" y="88" text-anchor="middle" font-size="14" fill="var(--ink)">{s.pedal ? 'Foot brake: HELD DOWN' : 'Foot brake: up'}</text>
       {knob(cmb ? 232 : 272, s.park, 'var(--amber)', true, 'Parking')}
       {cmb && knob(314, s.supply, 'var(--red)', false, 'Trailer air')}
     </svg>

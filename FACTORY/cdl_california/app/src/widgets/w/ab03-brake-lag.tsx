@@ -44,25 +44,25 @@ function Road({ mph, on, label, marks, pick, hide, hydraulic }: { mph: number; o
         return w > 0 && (
           <g key={s.p.key}>
             <rect x={fx(s.from)} y="56" width={w} height="22" fill={s.p.color} stroke={s.p.key === 'R' ? 'var(--amber)' : 'var(--ink)'} stroke-width={s.p.key === 'R' ? 2.5 : 1} />
-            {w >= 13 && <text x={fx(s.from) + w / 2} y="72" text-anchor="middle" font-size="13" font-weight="700" fill={s.p.ink}>{s.p.key}</text>}
+            {w >= 13 && <text x={fx(s.from) + w / 2} y="72" text-anchor="middle" font-size="14" font-weight="700" fill={s.p.ink}>{s.p.key}</text>}
           </g>
         );
       })}
       {!hide && hydraulic && on.L && <g>
         <line x1={fx(total - d[2])} y1="84" x2={fx(total - d[2])} y2="92" stroke="var(--ink)" stroke-width="2" />
-        <text x={Math.min(fx(total - d[2]), 318)} y="92" text-anchor="end" font-size="11" fill="var(--ink)" dx="-3">{`no lag: ${total - d[2]} ft`}</text>
+        <text x={Math.min(fx(total - d[2]), 318)} y="92" text-anchor="end" font-size="13" fill="var(--ink)" dx="-3">{`no lag: ${total - d[2]} ft`}</text>
       </g>}
       {!hide && total > 0 && <g><line x1={fx(total)} y1="44" x2={fx(total)} y2="90" stroke="var(--ink)" stroke-width="2.5" />
         <text x={Math.max(Math.min(fx(total), 300), 90)} y="28" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">{`Stops: ${total} ft`}</text></g>}
       {pick != null && <g>
         <line x1={fx(pick)} y1="38" x2={fx(pick)} y2="96" stroke={pick === total ? 'var(--ok)' : 'var(--red)'} stroke-width="3" stroke-dasharray="5 3" />
-        <text x={Math.max(Math.min(fx(pick), 316), 44)} y="13" text-anchor="middle" font-size="13" font-weight="700" fill={pick === total ? 'var(--ok)' : 'var(--red)'}>{pick === total ? '✓ your line' : '✗ your line'}</text>
+        <text x={Math.max(Math.min(fx(pick), 316), 44)} y="13" text-anchor="middle" font-size="14" font-weight="700" fill={pick === total ? 'var(--ok)' : 'var(--red)'}>{pick === total ? '✓ your line' : '✗ your line'}</text>
       </g>}
       {[0, 100, 200, 300, 400].map((t) => (
-        <g key={t} aria-hidden="true"><line x1={fx(t)} y1="96" x2={fx(t)} y2="104" stroke="var(--ink-2)" stroke-width="1" /><text x={fx(t)} y="119" text-anchor="middle" font-size="13" fill="var(--ink-2)">{t}</text></g>
+        <g key={t} aria-hidden="true"><line x1={fx(t)} y1="96" x2={fx(t)} y2="104" stroke="var(--ink-2)" stroke-width="1" /><text x={fx(t)} y="119" text-anchor="middle" font-size="14" fill="var(--ink-2)">{t}</text></g>
       ))}
-      <text x="356" y="119" text-anchor="end" font-size="13" fill="var(--ink-2)">ft</text>
-      {marks && marks.map((m, i) => <g key={m}><line x1={fx(m)} y1="38" x2={fx(m)} y2="96" stroke="var(--ink-2)" stroke-width="1.2" stroke-dasharray="2 3" /><text x={fx(m)} y="138" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{String.fromCharCode(65 + i)}</text></g>)}
+      <text x="356" y="119" text-anchor="end" font-size="14" fill="var(--ink-2)">ft</text>
+      {marks && marks.map((m, i) => <g key={m}><line x1={fx(m)} y1="38" x2={fx(m)} y2="96" stroke="var(--ink-2)" stroke-width="1.2" stroke-dasharray="2 3" /><text x={fx(m)} y="138" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{String.fromCharCode(65 + i)}</text></g>)}
     </svg>
   );
 }
