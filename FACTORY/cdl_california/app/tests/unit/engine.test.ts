@@ -7,6 +7,7 @@ import { recordAnswer, diagnose, openRows } from '../../src/engine/learner';
 import { fillPct, buildPlan, buildMock, today } from '../../src/engine/plan';
 import { binomTail, readiness } from '../../src/engine/readiness';
 import { makeResumeCode, readResumeCode } from '../../src/store/resume';
+import { readFileSync, readdirSync } from 'node:fs';
 
 const C = content as unknown as Content;
 const T0 = new Date(2026, 8, 28, 10).getTime();
@@ -185,5 +186,26 @@ describe('resume code', () => {
     expect(Object.keys(back.cards).length).toBe(1);
     expect(() => readResumeCode(code.slice(0, -4), T0)).toThrow();
     expect(() => readResumeCode('hello', T0)).toThrow();
+  });
+});
+
+// Number drift guard: exam numbers that a single edit could silently change (round-3 review).
+// Keyed answers and widget sources must never state the known wrong variant; the right value must be present.
+describe('key numbers stay consistent across questions and widgets', () => {
+  const strip = (h: string) => h.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
+  const keyed = Object.values(C.items).map((i) => strip(i.options[i.key]) + ' ' + strip(i.stem));
+  const widgetSrc = readdirSync('src/widgets/w').map((f) => readFileSync('src/widgets/w/' + f, 'utf8')).join('\n');
+  const FACTS: { name: string; wrong: RegExp; right: RegExp; widget?: RegExp }[] = [
+    { name: 'railroad stop 15–50 ft', wrong: /\b10\s*(ft|feet)?\s*(–|-|to|and)\s*(no farther than\s*)?50\s*(ft|feet)/i, right: /15\s*(ft|feet)?\s*(–|-|to|and)\s*(no farther than\s*)?50\s*(ft|feet)/i, widget: /15\s*(–|to)\s*50 ft/ },
+    { name: 'following distance 1 s per 10 ft', wrong: /(each|every|per)\s+20\s*(ft|feet)/i, right: /(each|every|per)\s+10\s*(ft|feet)/i, widget: /÷ 10|per 10 ft|each 10 f/ },
+    { name: 'tractor protection valve 20–45 psi', wrong: /^25\s*(–|to)\s*40 psi/i, right: /20\s*(–|to)\s*45 psi/i, widget: /20–45 psi/ },
+    { name: 'tread 4/32 front', wrong: /front[^.]{0,20}2\/32|2\/32[^.]{0,12}front/i, right: /4\/32/, widget: /4\/32/ },
+    { name: 'stopping distance 419 ft', wrong: /\b(319|519) ft/, right: /419/, widget: /419/ },
+  ];
+  for (const f of FACTS) it(f.name, () => {
+    const keysOnly = Object.values(C.items).map((i) => strip(i.options[i.key]));
+    expect(keysOnly.filter((k) => f.wrong.test(k)), 'keyed answers with the wrong value').toEqual([]);
+    expect(keyed.some((k) => f.right.test(k)), 'some question teaches the right value').toBe(true);
+    if (f.widget) expect(f.widget.test(widgetSrc), 'a widget shows the right value').toBe(true);
   });
 });

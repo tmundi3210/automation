@@ -92,13 +92,15 @@ export function MockScreen({ test }: { test: TestId }) {
   };
   const skip = () => { const q = [...queue.slice(1), id]; setQueue(q); persist(q, answers); t0.current = now(); };
   const remaining = queue.length;
+  // the counter includes the answer on screen, so it updates as soon as a wrong answer shows
+  const wrongNow = wrong + (answered && chosen !== it.key ? 1 : 0);
   return (
     <div class="page">
       <div class="spread">
         <span class="eyebrow">{f.name} mock</span>
-        <span class="small num"><strong>{f.n - remaining + 1}</strong> of {f.n} · <span style={{ color: wrong > maxWrong ? 'var(--red)' : 'var(--ink-2)', fontWeight: 700 }}>{wrong} wrong</span> (you can miss {maxWrong})</span>
+        <span class="small num"><strong>{f.n - remaining + 1}</strong> of {f.n} · <span style={{ color: wrongNow > maxWrong ? 'var(--red)' : 'var(--ink-2)', fontWeight: 700 }}>{wrongNow} wrong</span> (you can miss {maxWrong})</span>
       </div>
-      {wrong > maxWrong && <div class="card warn small" role="status"><strong>You can no longer pass this mock</strong> — more than {maxWrong} wrong. On the real test that would be a fail. Keep going for practice; every miss goes to your mistake list.</div>}
+      {wrongNow > maxWrong && <div class="card warn small" role="status"><strong>You can no longer pass this mock</strong> — more than {maxWrong} wrong. On the real test that would be a fail. Keep going for practice; every miss goes to your mistake list.</div>}
       <div class="progressbar" aria-hidden="true"><span style={{ width: `${((f.n - remaining) / f.n) * 100}%` }} /></div>
       <div class="card stack">
         <Html class="q-stem" html={it.stem} />
