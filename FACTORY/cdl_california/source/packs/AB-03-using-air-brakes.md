@@ -88,7 +88,7 @@ Figure 5.6 (described) — distance in feet by speed:
 | 45 mph | 117 | 50 | 27 | 152 | **346** |
 | 55 mph | 142 | 61 | 32 | 216 | **451** |
 
-*Worked example:* at 55 mph, 142 + 61 + 32 + 216 = **451 feet** — longer than a football field and a half. Brake lag alone (32 ft) is about the length of a car and a half... only the 32 ft is tested; remember **32 ft** and **over 450 ft**.
+*Worked example:* at 55 mph, 142 + 61 + 32 + 216 = **451 feet**. Of that, **32 feet** is brake lag — distance a car with hydraulic brakes would not need. For the test, remember **32 ft** of lag and **over 450 ft** total.
 
 ### 5.4.5 Brake fading or failure (p. 5-12)
 - Brakes slow you when shoes or pads **rub** against drums or discs. That makes **heat**. Brakes are built to take a lot of heat, but they can **fade or fail** from **too much heat** — caused by **using them too much** and **not relying on engine braking**.

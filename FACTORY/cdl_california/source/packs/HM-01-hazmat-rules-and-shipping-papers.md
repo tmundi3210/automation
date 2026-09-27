@@ -142,8 +142,8 @@ Figure 9.4 shows one row of the table (Acetaldehyde ammonia: Class 9, UN1841, PG
 - **Column 2 — proper shipping names**, in **alphabetical order**. Proper shipping names are in **regular type**; names in **italics are not** proper shipping names. The shipping paper must use proper shipping names.
 - **Column 3 — hazard class or division**, or the word **"Forbidden"**. **Never haul a "Forbidden" material.** To choose placards you need 3 facts: the material's **hazard class**, the **amount shipped**, and the **amount of all HazMat of all classes** on your vehicle.
 - **Column 4 — ID number**, with **"UN"**, **"NA"** or **"ID"** in front.
-  - **NA** = names used only **inside the U.S. and to and from Canada**.
-  - **ID** = names recognized by the International Civil Aviation Organization for **air** shipping.
+  - **NA** marks names used only **inside the U.S. and to and from Canada**.
+  - **ID** marks names recognized by the International Civil Aviation Organization for **air** shipping.
   - The ID number must be on the **shipping paper** (in the description) and on the **package**, and also on **cargo tanks and other bulk packaging**. *Why:* police and firefighters use it to identify the material quickly.
 - **Column 5 — packing group**, in **Roman numerals**.
 - **Column 6 — required labels.** Some products need **more than 1 label** because they have more than one hazard.

@@ -139,8 +139,8 @@ The DANGEROUS placard is an **option, not a requirement**. You can always placar
 - You **may** display placards even when they are **not required**, as long as they **correctly identify the hazard** of the material you carry.
 
 ### 9.3.11 Bulk packaging (p. 9-11)
-- **Bulk packaging** = a **single container** with a capacity **greater than 119 gallons**.
-- A bulk package, and a vehicle carrying one, **must be placarded even if it holds only residue** of a HazMat. *Why:* an "empty" tank can still hold enough vapor or liquid to be dangerous.
+- **Bulk packaging** means a **single container** with a capacity **greater than 119 gallons**.
+- A bulk package, and a vehicle carrying one, **must be placarded even if it holds only residue** of a HazMat. *Why:* even a small amount left inside is still HazMat, so others must still be warned.
 - **Certain** bulk packages need placards on only the **2 opposite sides**, or may show labels instead. **All other** bulk packages must be placarded on **all 4 sides**.
 - Remember that the **1,001-pound** rule for Table 2 does **not** apply to bulk packaging. (p. 9-10)
 
@@ -335,8 +335,8 @@ The DANGEROUS placard is an **option, not a requirement**. You can always placar
     c) be placarded only if it holds 1,001 pounds or more
 26. Bulk packaging is a single container with a capacity of:
     a) more than 119 gallons
-    b) more than 1,001 gallons
-    c) more than 2,205 gallons
+    b) 119 gallons or less
+    c) 64 cubic feet or more
 
 ### Answer key
 1. a — The key package marking is the HazMat's name, the same one used on the shipping paper. (p. 9-9)
@@ -364,7 +364,7 @@ The DANGEROUS placard is an **option, not a requirement**. You can always placar
 23. b — Table 2 lists "None" for 6.2 infectious substances (and ORM-D). (p. 9-10)
 24. c — The Class 9 placard is not required for domestic transportation. (p. 9-10)
 25. a — A bulk package, and the vehicle carrying it, must be placarded even with only residue. (p. 9-11)
-26. a — Bulk packaging is a single container with a capacity greater than 119 gallons; 1,001 and 2,205 are placard weights in pounds. (p. 9-11)
+26. a — Bulk packaging is a single container with a capacity greater than 119 gallons; 119 gallons or less is nonbulk. (pp. 9-11, 9-25)
 
 ## One-minute recap
 - Package **name marking** = the shipping-paper name. More than 1 label → **close together near the shipping name**. Liquids inside → **upright arrows**. Unsure → **ask the shipper to call your office**.
