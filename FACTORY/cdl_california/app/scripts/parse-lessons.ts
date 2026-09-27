@@ -151,7 +151,7 @@ function parseLesson(file: string, md: string) {
     if (r.length !== 3) { problems.push(`${id}: numbers row ${i + 1} has ${r.length} cells`); return; }
     const nid = `${lid(id)}-n${String(i + 1).padStart(2, '0')}-${fnv(r[0] + r[1])}`;
     const item = r[0].replace(/\*\*\[CA\]\*\*|\[CA\]/g, '').replace(/\*\*/g, '').trim();
-    all.numbers[nid] = { id: nid, lesson: id, item, valueHtml: inline(r[1]), value: plain(r[1]), pages: pageTokens(r[2]), ca: /\[CA\]/.test(r[0] + r[1]), ku: nid };
+    all.numbers[nid] = { id: nid, lesson: id, item, valueHtml: inline(r[1]), value: plain(r[1]), pages: pageTokens(r[2]), ca: /\[CA\]/.test(r[0] + r[1]), ku: nid, concepts: [] };
     L.numberIds.push(nid);
   });
 
@@ -161,7 +161,7 @@ function parseLesson(file: string, md: string) {
     if (!m) { problems.push(`${id}: trap unparsed: ${l.slice(0, 60)}`); return; }
     const tid = `${lid(id)}-t${String(i + 1).padStart(2, '0')}-${fnv(m[1])}`;
     const corr = m[2].trim();
-    all.traps[tid] = { id: tid, lesson: id, trap: plain(m[1]).replace(/^"|"$/g, ''), correct: plain(stripTrailingCite(corr)), correctHtml: inline(stripTrailingCite(corr)), pages: citePages(corr), ca: /\[CA\]/.test(l), ku: tid };
+    all.traps[tid] = { id: tid, lesson: id, trap: plain(m[1]).replace(/^"|"$/g, ''), correct: plain(stripTrailingCite(corr)), correctHtml: inline(stripTrailingCite(corr)), pages: citePages(corr), ca: /\[CA\]/.test(l), ku: tid, concepts: [] };
     L.trapIds.push(tid);
   });
 
@@ -176,7 +176,7 @@ function parseLesson(file: string, md: string) {
     const box = m[1].replace(/^Subsections?\s+/i, '').replace(/["“”]/g, '').replace(/\s*(&|AND|and)\s*/g, '–').replace(/,\s*/g, '–').replace(/\s+/g, '').toUpperCase();
     const kid = `TYK-${box}-${m[2]}`;
     if (all.tyk[kid]) problems.push(`${id}: duplicate TYK ${kid}`);
-    all.tyk[kid] = { id: kid, lesson: id, box, n: +m[2], q: inline(m[3]), aHtml: inline(stripTrailingCite(a)), a: plain(stripTrailingCite(a)), pages: citePages(a), ku: kid };
+    all.tyk[kid] = { id: kid, lesson: id, box, n: +m[2], q: inline(m[3]), aHtml: inline(stripTrailingCite(a)), a: plain(stripTrailingCite(a)), pages: citePages(a), ku: kid, concepts: [] };
     L.tykIds.push(kid);
   }
 
@@ -186,7 +186,7 @@ function parseLesson(file: string, md: string) {
     const cells = l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
     if (cells.length !== 3) { problems.push(`${id}: flashcard cells ${cells.length}: ${l.slice(0, 50)}`); return; }
     const fid = `${lid(id)}-f${cells[0].padStart(2, '0')}-${fnv(cells[1])}`;
-    all.flash[fid] = { id: fid, lesson: id, n: +cells[0], q: inline(cells[1]), a: inline(cells[2]), ca: /\[CA\]/.test(cells[1]), ku: fid };
+    all.flash[fid] = { id: fid, lesson: id, n: +cells[0], q: inline(cells[1]), a: inline(cells[2]), ca: /\[CA\]/.test(cells[1]), ku: fid, concepts: [] };
     L.flashIds.push(fid);
   });
 
@@ -305,7 +305,7 @@ function parseStartHere(md: string) {
 }
 
 // ---------- main
-const files = readdirSync(SRC).filter((f) => /^(GK|CV)-\d\d.*\.md$/.test(f)).sort((a, b) => (a.startsWith('GK') === b.startsWith('GK') ? a.localeCompare(b) : a.startsWith('GK') ? -1 : 1));
+const files = readdirSync(SRC).filter((f: string) => /^(GK|CV)-\d\d.*\.md$/.test(f)).sort((a: string, b: string) => (a.startsWith('GK') === b.startsWith('GK') ? a.localeCompare(b) : a.startsWith('GK') ? -1 : 1));
 for (const f of files) parseLesson(f, readFileSync(join(SRC, f), 'utf8'));
 mapConcepts();
 mapFacts();

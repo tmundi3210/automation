@@ -181,3 +181,16 @@ export function examCapDays(state: AppState, test: TestId, now: number): number 
   if (!d) return 365;
   return Math.max(1, daysBetween(dayKey(now), d));
 }
+
+/** Evidence from an interactive widget check (untimed). Writes BKT only (weight 0.5); never FSRS; explore/timed modes must not call this. */
+export function recordCheck(state: AppState, concepts: string[], ok: boolean, now: number) {
+  const today = dayKey(now);
+  for (const cid of concepts) {
+    const b = state.bkt[cid] ?? { p: BKT.L0, n: 0 };
+    b.p = bktEvidence(b.p, ok, 'check');
+    if (ok && b.lastDayGain !== today) { b.p = bktTransition(b.p, 0.5); b.lastDayGain = today; }
+    b.n += 1; b.lastT = now;
+    state.bkt[cid] = b;
+  }
+  creditTime(state, now, 20_000);
+}
