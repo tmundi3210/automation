@@ -47,7 +47,7 @@ function side(s: Scene, ev: Ev | null, t: number) {
 }
 
 /* ---------- Side view */
-function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
+function SideView({ s, ev, t, mask }: { s: Scene; ev: Ev | null; t: number; mask?: boolean }) {
   const g = side(s, ev, t);
   const X0 = 40, X1 = 236, YT = 58, YB = 122, H = YB - YT;
   const walls = s.tank === 'smooth' ? [] : [X0 + (X1 - X0) / 3, X0 + (2 * (X1 - X0)) / 3];
@@ -61,7 +61,7 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
     return <polygon key={i} points={`${a},${YB + 2} ${a},${lvl + r / 2} ${b},${lvl - r / 2} ${b},${YB + 2}`} fill="var(--blue)" opacity={0.6} />;
   });
   const hitFront = Math.abs(g.push) > 3 && g.push > 0, hitRear = g.push < -3;
-  const aria = `Side view: ${TANK_NAME[s.tank]} tanker, ${s.fill}% full${ev ? `, ${EV_NAME[ev]}` : ''}. ${hitFront ? `The surge wave hits the front and pushes the truck forward ${g.push > 20 ? 'past the stop line' : 'a little'}.` : ''}${hitRear ? 'The wave hits the rear and jerks the rig.' : ''}${g.over ? ' Liquid has no room to expand and spills out.' : ''}`;
+  const aria = mask ? 'Side view: tanker with its inside hidden until you answer.' : `Side view: ${TANK_NAME[s.tank]} tanker, ${s.fill}% full${ev ? `, ${EV_NAME[ev]}` : ''}. ${hitFront ? `The surge wave hits the front and pushes the truck forward ${g.push > 20 ? 'past the stop line' : 'a little'}.` : ''}${hitRear ? 'The wave hits the rear and jerks the rig.' : ''}${g.over ? ' Liquid has no room to expand and spills out.' : ''}`;
   return (
     <svg viewBox="0 0 360 180" width="100%" style={{ display: 'block' }} role="img" aria-label={aria}>
       <rect x="0" y="0" width="360" height="180" fill="var(--surface-2)" />
@@ -80,6 +80,7 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
         {walls.map((x, i) => s.tank === 'bulk'
           ? <line key={i} x1={x} x2={x} y1={YT} y2={YB} stroke="var(--ink)" stroke-width="3" />
           : <line key={i} x1={x} x2={x} y1={YT + 2} y2={YB - 2} stroke="var(--ink)" stroke-width="3" stroke-dasharray="8 6" />)}
+        {mask && <g><rect x={X0} y={YT} width={X1 - X0} height={H} rx="26" fill="var(--surface)" /><text x={(X0 + X1) / 2} y={(YT + YB) / 2 + 9} font-size="26" font-weight="700" text-anchor="middle" fill="var(--ink-2)">?</text></g>}
         <rect x={X0} y={YT} width={X1 - X0} height={H} rx="26" fill="none" stroke="var(--ink)" stroke-width="2" />
         <rect x={(X0 + X1) / 2 - 10} y={YT - 7} width="20" height="7" fill="var(--surface-2)" stroke="var(--ink)" />
         {g.over && <g><path d={`M${(X0 + X1) / 2} ${YT - 8} q-6 -14 -18 -10 M${(X0 + X1) / 2} ${YT - 8} q6 -14 18 -10`} stroke="var(--red)" stroke-width="3" fill="none" /><text x={(X0 + X1) / 2} y={YT - 24} font-size="13" font-weight="700" text-anchor="middle" fill="var(--red)">no room to expand!</text></g>}
@@ -92,31 +93,40 @@ function SideView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
   );
 }
 
-/* ---------- Rear view: high center of gravity + side-to-side surge in a curve (p. 8-2 Fig. 8.1) */
-function RearView({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
+/* ---------- Rear view: high center of gravity + side-to-side surge in a curve (p. 8-2 Fig. 8.1). Labels sit left of the drawing. */
+function RearView({ s, ev, t, mask }: { s: Scene; ev: Ev | null; t: number; mask?: boolean }) {
   const fast = ev === 'curveFast', curve = fast || ev === 'curveSlow';
   const side = curve ? fillF(s.fill) * 0.9 * sm(t / 0.4) * (fast ? 1 : 0.35) : 0; // baffles do not stop side-to-side surge
-  const ang = fast ? 32 * sm((t - 0.35) / 0.5) : curve ? 2 * sm(t / 0.5) : 0;
-  const cx = 136, cy = 88, R = 40, lvl = cy + R - (2 * R * Math.min(s.fill, 100)) / 100, rise = side * 40;
+  const ang = fast ? 90 * sm((t - 0.3) / 0.55) : curve ? 2 * sm(t / 0.5) : 0; // 90° = rig lying on its side
+  const tipped = ang > 45;
+  const cx = 136, cy = 88, R = 40, lvl = cy + R - (2 * R * Math.min(s.fill, 100)) / 100, rise = side * 40, cg = cy + 6;
   return (
-    <svg viewBox="0 0 200 180" width="100%" style={{ display: 'block', maxWidth: '260px', marginInline: 'auto' }} role="img" aria-label={`Rear view: tanker center of gravity about 60 to 78 inches high (a pickup's is 18 to 24 inches).${fast ? ' At the posted curve speed the liquid surges sideways and the tanker rolls over.' : ev === 'curveSlow' ? ' Well below the posted speed the tanker leans only slightly.' : ''}`}>
-      <rect x="0" y="0" width="200" height="180" fill="var(--surface-2)" />
-      <rect x="0" y="160" width="200" height="20" fill="var(--surface)" />
+    <svg viewBox="0 0 300 200" width="100%" style={{ display: 'block', maxWidth: '360px', marginInline: 'auto' }} role="img" aria-label={`Rear view: from Figure 8.1, a tanker's center of gravity is about 60 to 78 inches high; a pickup's is about 18 to 24 inches.${fast ? ` At the posted curve speed the liquid surges sideways and the tanker ${tipped ? 'has rolled over onto its side' : 'is rolling over'}.` : ev === 'curveSlow' ? ' Well below the posted speed the tanker leans only slightly.' : ''}`}>
+      <rect x="0" y="0" width="300" height="200" fill="var(--surface-2)" />
+      <rect x="0" y="160" width="300" height="40" fill="var(--surface)" />
+      <line x1="0" x2="300" y1="160" y2="160" stroke="var(--ink-2)" stroke-width="1.5" />
       <g transform={`rotate(${ang.toFixed(1)} 180 160)`}>
         <rect x="94" y="128" width="84" height="10" fill="var(--ink-2)" />
         <rect x="92" y="136" width="20" height="24" rx="4" fill="var(--ink)" /><rect x="160" y="136" width="20" height="24" rx="4" fill="var(--ink)" />
         <defs><clipPath id="tk-rc"><circle cx={cx} cy={cy} r={R} /></clipPath></defs>
         <circle cx={cx} cy={cy} r={R} fill="var(--surface)" />
-        <polygon clip-path="url(#tk-rc)" points={`${cx - R},${cy + R} ${cx - R},${lvl + rise / 2} ${cx + R},${lvl - rise / 2} ${cx + R},${cy + R}`} fill="var(--blue)" opacity={0.6} />
+        {!mask && <polygon clip-path="url(#tk-rc)" points={`${cx - R},${cy + R} ${cx - R},${lvl + rise / 2} ${cx + R},${lvl - rise / 2} ${cx + R},${cy + R}`} fill="var(--blue)" opacity={0.6} />}
+        {mask && <text x={cx} y={cy + 8} font-size="24" font-weight="700" text-anchor="middle" fill="var(--ink-2)" transform={`rotate(${-ang.toFixed(1)} ${cx} ${cy})`}>?</text>}
         <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--ink)" stroke-width="2" />
-        <circle cx={cx + side * 10} cy={cy + 6} r="5" fill="var(--amber)" stroke="var(--ink)" />
+        <circle cx={cx + side * 10} cy={cg} r="5" fill="var(--amber)" stroke="var(--ink)" />
       </g>
-      <line x1="14" x2="14" y1="160" y2={cy + 6} stroke="var(--amber)" stroke-width="3" />
-      <line x1="14" x2={cx - R - 2} y1={cy + 6} y2={cy + 6} stroke="var(--amber)" stroke-dasharray="3 3" /><text x="20" y={cy - 2} font-size="13" fill="var(--ink)">CG 60–78 in</text>
-      <line x1="8" x2="26" y1="132" y2="132" stroke="var(--ink-2)" stroke-dasharray="3 3" />
-      <text x="20" y="128" font-size="13" fill="var(--ink-2)">pickup 18–24 in</text>
-      {fast && t > 0.6 && <text x="110" y="20" font-size="14" font-weight="700" text-anchor="middle" fill="var(--red)">ROLLOVER</text>}
-      {curve && <text x="194" y="176" font-size="13" text-anchor="end" fill="var(--ink-2)">outside of curve →</text>}
+      <g aria-hidden="true">
+        <line x1="80" x2="80" y1="160" y2={cg} stroke="var(--amber)" stroke-width="3" />
+        {ang < 3 && <line x1="80" x2={cx - R - 3} y1={cg} y2={cg} stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="3 3" />}
+        <text x="74" y={cg - 4} font-size="13" font-weight="700" text-anchor="end" fill="var(--ink)">tanker CG</text>
+        <text x="74" y={cg + 11} font-size="13" text-anchor="end" fill="var(--ink)">60–78 in</text>
+        <line x1="70" x2="88" y1="136" y2="136" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="3 3" />
+        <text x="66" y="134" font-size="13" text-anchor="end" fill="var(--ink-2)">pickup CG</text>
+        <text x="66" y="149" font-size="13" text-anchor="end" fill="var(--ink-2)">18–24 in</text>
+        <text x="6" y="178" font-size="12" fill="var(--ink-2)">Heights from Figure 8.1 (p. 8-2)</text>
+        {curve && <text x="294" y="195" font-size="13" text-anchor="end" fill="var(--ink-2)">outside of curve →</text>}
+      </g>
+      {fast && tipped && <text x="150" y="22" font-size="15" font-weight="700" text-anchor="middle" fill="var(--red)">⚠ ROLLOVER: rig on its side</text>}
     </svg>
   );
 }
@@ -158,8 +168,8 @@ function useAnim(motion: boolean) {
   return { ev, t, run };
 }
 
-function Views({ s, ev, t }: { s: Scene; ev: Ev | null; t: number }) {
-  return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', alignItems: 'center' }}><SideView s={s} ev={ev} t={t} /><RearView s={s} ev={ev} t={t} /></div>;
+function Views({ s, ev, t, mask }: { s: Scene; ev: Ev | null; t: number; mask?: boolean }) {
+  return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', alignItems: 'center' }}><SideView s={s} ev={ev} t={t} mask={mask} /><RearView s={s} ev={ev} t={t} mask={mask} /></div>;
 }
 
 function Explore({ motion }: { motion: boolean }) {
@@ -191,14 +201,14 @@ function Explore({ motion }: { motion: boolean }) {
 }
 
 /* ---------- Challenge: 8 scenarios */
-interface Q { text: string; s: Scene; ev?: Ev; opts: string[]; ans: number; why: string; page: string; bad?: { s?: Partial<Scene>; ev: Ev }; good?: { s?: Partial<Scene>; ev: Ev } }
+interface Q { text: string; s: Scene; ev?: Ev; hide?: 'tank' | 'fill'; opts: string[]; ans: number; why: string; page: string; bad?: { s?: Partial<Scene>; ev: Ev }; good?: { s?: Partial<Scene>; ev: Ev } }
 const B: Scene = { tank: 'smooth', fill: 70, liquid: 'fuel', pattern: 'even', ice: false };
 const RAW: Q[] = [
-  { text: 'You will haul milk. Which kind of tank will it usually be?', s: { ...B, liquid: 'milk' }, opts: ['Smooth bore (unbaffled)', 'Baffled, to control surge', 'Any tank, as long as it has baffles for safety'], ans: 0, why: 'Smooth bore tanks usually haul food products like milk. Sanitation rules forbid baffles because they make the inside hard to clean.', page: '8-2', bad: { s: { tank: 'baffle', liquid: 'milk' }, ev: 'brake' } },
+  { text: 'You will haul milk. Which kind of tank will it usually be?', s: { ...B, liquid: 'milk' }, hide: 'tank', opts: ['Smooth bore (unbaffled)', 'Baffled, to control surge', 'Any tank, as long as it has baffles for safety'], ans: 0, why: 'Smooth bore tanks usually haul food products like milk. Sanitation rules forbid baffles because they make the inside hard to clean.', page: '8-2', bad: { s: { tank: 'baffle', liquid: 'milk' }, ev: 'brake' } },
   { text: 'Smooth bore tank, partly full, coming to a red light. How do you stop?', s: B, opts: ['Keep steady pressure on the brakes and don’t let off too soon', 'Ease off the brakes just before you stop for a smooth stop', 'Brake late and hard'], ans: 0, why: 'Keep steady brake pressure and don’t release too soon: the wave hits the front and pushes the truck forward. Brake far ahead of the stop.', page: '8-3', bad: { ev: 'early' }, good: { ev: 'brake' } },
   { text: 'You are stopped on an icy road with a partly filled tank. Can surge still move you?', s: { ...B, ice: true }, opts: ['Yes: the wave can shove the stopped truck out into the intersection', 'No: once you’re stopped, surge can’t move the truck', 'Only if the tank is full'], ans: 0, why: 'On a slippery road the surge wave can push a stopped truck out into an intersection.', page: '8-2', good: { ev: 'brake' }, bad: { ev: 'brake' } },
   { text: 'Baffled tank, half full, in a tight curve. What do the baffles do about side-to-side surge?', s: { ...B, tank: 'baffle', fill: 50 }, opts: ['Nothing: side-to-side surge can still happen and cause a rollover', 'They stop all surge', 'They stop side-to-side but not forward-and-back surge'], ans: 0, why: 'Baffles control forward-and-back surge. Side-to-side surge can still happen and cause a rollover.', page: '8-2', good: { ev: 'curveFast' }, bad: { ev: 'curveFast' } },
-  { text: 'Loading fuel. How full should the tank be?', s: { ...B, fill: 90 }, opts: ['Totally full, so the liquid can’t surge', 'Leave outage: room for the liquid to expand as it warms', 'Outage is only needed for food loads'], ans: 1, why: 'Never load a cargo tank totally full. Liquids expand as they warm; leave outage, and know the outage requirement for your liquid.', page: '8-2', bad: { s: { fill: 100 }, ev: 'warm' }, good: { ev: 'warm' } },
+  { text: 'Loading fuel. How full should the tank be?', s: { ...B, fill: 90 }, hide: 'fill', opts: ['Totally full, so the liquid can’t surge', 'Leave outage: room for the liquid to expand as it warms', 'Outage is only needed for food loads'], ans: 1, why: 'Never load a cargo tank totally full. Liquids expand as they warm; leave outage, and know the outage requirement for your liquid.', page: '8-2', bad: { s: { fill: 100 }, ev: 'warm' }, good: { ev: 'warm' } },
   { text: 'Loading a dense acid. Can you fill the tank to near its capacity?', s: { ...B, liquid: 'acid', fill: 95 }, opts: ['Yes, if the tank does not leak', 'Not always: a full tank of dense liquid may be over the legal weight limit', 'Yes: heavy liquids never surge'], ans: 1, why: 'A full tank of a dense (heavy) liquid, like some acids, may be over the legal weight limit, so it is often loaded only part way.', page: '8-2', good: { s: { fill: 60 }, ev: 'brake' } },
   { text: 'Bulkhead tank. You load only the rear compartment. What must you watch?', s: { ...B, tank: 'bulk', pattern: 'rear', fill: 90 }, opts: ['Nothing: bulkheads keep each load separate', 'Weight distribution: not too much weight on the front or rear', 'Side-to-side surge from the baffle holes'], ans: 1, why: 'Bulkheads divide the tank into smaller tanks. When loading and unloading, watch weight distribution: don’t put too much weight on the front or rear.', page: '8-2', good: { s: { pattern: 'even' }, ev: 'brake' } },
   { text: 'An off-ramp curve has a posted speed sign. How do you take it in a tanker?', s: B, opts: ['At the posted speed: that is what the sign is for', 'Slow down before the curve, well below the posted speed, then accelerate slightly through it', 'Brake hard in the middle of the curve'], ans: 1, why: 'Tests show tankers can turn over at the posted curve speed. Slow down before the curve and accelerate slightly through it.', page: '8-3', bad: { ev: 'curveFast' }, good: { ev: 'curveSlow' } },
@@ -220,6 +230,7 @@ function Challenge({ onEvidence, onChallenge, concepts, motion }: WidgetProps & 
   const ok = pick === q.ans;
   const shown = pick === null ? null : ok ? q.good : q.bad;
   const scene: Scene = { ...q.s, ...(shown?.s ?? {}) };
+  const masked = pick === null && !!q.hide;
   const choose = (j: number) => {
     if (pick !== null) return;
     setPick(j); const good = j === q.ans; if (!good) setMisses(misses + 1); onEvidence({ concepts, ok: good });
@@ -231,8 +242,9 @@ function Challenge({ onEvidence, onChallenge, concepts, motion }: WidgetProps & 
     <div class="stack">
       <span class="small muted num">Scenario {i + 1} of {QS.length}</span>
       <strong>{q.text}</strong>
-      <p class="small muted">{TANK_NAME[scene.tank]} · {LIQ_NAME[scene.liquid]} · {scene.fill}% full{scene.tank === 'bulk' && scene.pattern !== 'even' ? ` · ${scene.pattern} compartment only` : ''}{scene.ice ? ' · icy road' : ''}</p>
-      <Views s={scene} ev={pick === null ? null : ev} t={pick === null ? 1 : t} />
+      <p class="small muted">{masked ? (q.hide === 'tank' ? `${LIQ_NAME[scene.liquid]} · tank type hidden until you answer` : `${LIQ_NAME[scene.liquid]} · fill level hidden until you answer`)
+        : <>{TANK_NAME[scene.tank]} · {LIQ_NAME[scene.liquid]} · {scene.fill}% full{scene.tank === 'bulk' && scene.pattern !== 'even' ? ` · ${scene.pattern} compartment only` : ''}{scene.ice ? ' · icy road' : ''}</>}</p>
+      <Views s={scene} ev={pick === null ? null : ev} t={pick === null ? 1 : t} mask={masked} />
       <div class="stack" role="group" aria-label="Choose an answer" style={{ gap: '6px' }}>{q.opts.map(opt)}</div>
       {pick !== null && <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">
         <div class="verdict">{ok ? 'Right' : `Answer: ${q.opts[q.ans]}`}</div>

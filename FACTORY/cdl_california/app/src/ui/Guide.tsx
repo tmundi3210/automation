@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks';
 import { C, go, S } from '../app';
 import { Html, Shield } from './bits';
-import { ENDOS, TESTS } from '../content/tests';
+import { ENDOS, TESTS, TEST_ORDER, isWritten } from '../content/tests';
+import type { TestId } from '../content/types';
 
 const VERIFIED = 'September 2026';
 
@@ -42,13 +43,13 @@ export function GuideScreen() {
       </section>
       <section class="card stack" aria-label="Answer the handbook way">
         <h2>Answer the handbook way</h2>
-        <p class="small">Websites, apps, federal law and the car handbook sometimes give a different answer. The DMV test follows the California Commercial Driver Handbook.</p>
+        <p class="small">Websites, apps, federal law and the car handbook sometimes give a different answer. The DMV test follows the California Commercial Driver Handbook. This table covers General Knowledge and Combination; for the other tests, each lesson has a “Handbook vs other sources” note where they differ, and its Traps tab.</p>
         <div class="tbl" tabindex={0} role="region" aria-label="Table (scrolls sideways)"><table><thead><tr><th>Topic</th><th>Test answer (handbook)</th><th>What you may see elsewhere</th></tr></thead><tbody>
           {C.handbookWay.map((r) => <tr><td><Html tag="span" html={r.topic} /></td><td><Html tag="span" html={r.answer} /></td><td><Html tag="span" html={r.elsewhere} /></td></tr>)}
         </tbody></table></div>
       </section>
       <section class="card stack" aria-label="Most missed">
-        <h2>The most-missed questions</h2>
+        <h2>Most-missed questions and common traps</h2>
         <MostMissed />
       </section>
       <p class="small muted">Not affiliated with the California DMV, CHP or FMCSA. Lessons follow the California Commercial Driver Handbook (DL 650, 2019 edition) with page numbers so you can check every fact.</p>
@@ -57,13 +58,21 @@ export function GuideScreen() {
 }
 
 function MostMissed() {
-  const [t, setT] = useState<'GK' | 'CV'>('GK');
+  // GK/CV: the owner's most-missed list; other tests: the lessons' exam traps (the wrong ideas each lesson warns about)
+  const tabs = TEST_ORDER.filter((t) => S().profile.tests.includes(t) && isWritten(t) && C.lessons.some((l) => l.test === t));
+  const [t, setT] = useState<TestId>(tabs[0] ?? 'GK');
+  const mm = C.mostMissed.filter((m) => m.test === t);
+  const traps = mm.length ? [] : C.lessons.filter((l) => l.test === t).flatMap((l) => l.trapIds.slice(0, 3).map((id) => ({ tr: C.traps[id], lesson: l.id })));
   return (
     <div class="stack">
-      <div class="tabs" role="tablist"><button role="tab" aria-selected={t === 'GK'} onClick={() => setT('GK')}>General Knowledge</button><button role="tab" aria-selected={t === 'CV'} onClick={() => setT('CV')}>Combination</button></div>
-      <ol class="stack" style={{ margin: 0, paddingLeft: '1.4em', gap: '8px' }}>
-        {C.mostMissed.filter((m) => m.test === t).map((m) => <li><Html tag="span" html={m.text} /> <button class="linkbtn small" onClick={() => go('lesson', m.lesson)}>{m.lesson}</button></li>)}
-      </ol>
+      <div class="tabs" role="tablist">{tabs.map((x) => <button role="tab" aria-selected={t === x} onClick={() => setT(x)}>{TESTS[x].short}</button>)}</div>
+      {mm.length ? <ol class="stack" style={{ margin: 0, paddingLeft: '1.4em', gap: '8px' }}>
+        {mm.map((m) => <li><Html tag="span" html={m.text} /> <button class="linkbtn small" onClick={() => go('lesson', m.lesson)}>{m.lesson}</button></li>)}
+      </ol> : <>
+        <p class="small muted">The wrong ideas the {TESTS[t].name} lessons warn about most, with the handbook answer.</p>
+        <ol class="stack" style={{ margin: 0, paddingLeft: '1.4em', gap: '8px' }}>
+          {traps.map(({ tr, lesson }) => <li><span class="small">Not “{tr.trap}”.</span> <Html tag="span" html={tr.correctHtml} /> <button class="linkbtn small" onClick={() => go('lesson', lesson)}>{lesson}</button></li>)}
+        </ol></>}
     </div>
   );
 }

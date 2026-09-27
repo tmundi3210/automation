@@ -105,12 +105,12 @@ function Explore() {
   );
 }
 
-interface Q { q: string; opts: string[]; a: number; why: string; bad?: string; place?: number[]; mph?: number }
+interface Q { q: string; opts: string[]; a: number; why: string; place?: number[]; mph?: number }
 const ORDER: Key[] = ['P', 'R', 'L', 'B'];
 const SHUF: Key[] = ['L', 'B', 'P', 'R'];
 const QS: Q[] = [
   { q: 'A hazard appears when your truck front is at 0 ft. At 55 mph with air brakes, at which line do you stop?', opts: ['216 ft', '419 ft', '451 ft'], place: [216, 419, 451], mph: 55, a: 2,
-    why: 'Perception 142 + reaction 61 + brake lag 32 + braking 216 = 451 ft — over 450 ft. 419 ft forgets brake lag; 216 ft is only the braking part.', bad: 'At your line the truck is still moving — it rolls on to 451 ft.' },
+    why: 'Perception 142 + reaction 61 + brake lag 32 + braking 216 = 451 ft — over 450 ft. 419 ft forgets brake lag; 216 ft is only the braking part.' },
   { q: 'At 55 mph on dry pavement, about how much distance does brake lag add?', opts: ['32 ft', '61 ft', '142 ft'], a: 0,
     why: 'Brake lag adds about 32 ft at 55 mph. 61 ft is reaction distance and 142 ft is perception distance in Figure 5.6.' },
   { q: 'Why do air brakes have brake lag?', opts: ['The driver needs time to see the hazard', 'Air has to flow through the lines to the brakes', 'The brakes are too hot'], a: 1,
@@ -118,7 +118,7 @@ const QS: Q[] = [
   { q: 'How long is brake lag on air brakes?', opts: ['None — they work instantly', '½ second or more', 'Up to 1 second, then it stops'], a: 1,
     why: 'Air brakes take ½ second or more. Hydraulic brakes (cars, light/medium trucks) work instantly. “Up to 1 second” is how long wheels may take to start rolling in stab braking.' },
   { q: 'Your truck is doing 35 mph with air brakes. What is the total stopping distance in Figure 5.6?', opts: ['222 ft', '243 ft', '346 ft'], place: [222, 243, 346], mph: 35, a: 1,
-    why: '91 + 39 + 21 + 92 = 243 ft. 222 ft leaves out the 21 ft of brake lag; 346 ft is the 45 mph total.', bad: 'At your line the truck is still moving — it rolls on to 243 ft.' },
+    why: '91 + 39 + 21 + 92 = 243 ft. 222 ft leaves out the 21 ft of brake lag; 346 ft is the 45 mph total.' },
   { q: 'Which is NOT one of the 4 parts of total stopping distance with air brakes?', opts: ['Brake lag distance', 'Following distance', 'Perception distance'], a: 1,
     why: 'The 4 parts are perception + reaction + brake lag + braking. Following distance is the space you keep ahead — not part of the stop.' },
 ];
@@ -168,6 +168,10 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   );
   const answer = (c: number) => { if (pick !== null) return; setPick(c); const ok = c === q.a; if (!ok) setMisses(misses + 1); onEvidence({ concepts, ok }); };
   const ok = pick === q.a;
+  const real = q.mph ? FIG_5_6[q.mph][4] : 0, mine = q.place && pick !== null ? q.place[pick] : 0;
+  const bad = !q.place || pick === null || ok ? null : mine < real
+    ? `At your line the truck is still moving; it rolls on to ${real} ft.`
+    : `It would stop ${mine - real} ft before your line. You’d be planning for more room than needed, but the real number is ${real} ft.`;
   return (
     <div class="stack">
       <span class="small muted num">Check {i + 2} of {n}</span>
@@ -176,12 +180,12 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
       {q.place && pick === null && <p class="small muted">Only the scale shows until you answer. Letters mark the choices.</p>}
       <div role="group" aria-label="Answers" style={{ display: 'grid', gap: '6px' }}>{q.opts.map((o, c) => (
         <button class="btn sm" disabled={pick !== null} aria-pressed={pick === c}
-          style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && c === q.a ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
+          style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && c === q.a ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}
           onClick={() => answer(c)}>{q.place ? `${String.fromCharCode(65 + c)} · ` : ''}{o}{pick !== null && c === q.a ? ' ✓' : pick === c ? ' ✗' : ''}</button>
       ))}</div>
       {pick !== null && <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">
         <div class="verdict">{ok ? 'Right' : `No — ${q.opts[q.a]}`}</div>
-        {!ok && q.bad && <p class="small"><strong>Consequence:</strong> {q.bad}</p>}
+        {bad && <p class="small"><strong>Consequence:</strong> {bad}</p>}
         <p class="small">{q.why} <span class="plate">p. 5-12</span></p>
         <button class="btn primary sm" onClick={() => { if (i + 1 === QS.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === QS.length ? 'Finish' : 'Next'}</button>
       </div>}

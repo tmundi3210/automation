@@ -232,7 +232,7 @@ Figure 5.6 (described) — distance in feet by speed:
 ## Practice test (real-exam style)
 1. You are making a normal stop in a truck with a manual transmission. When should you push in the clutch?
    a) As soon as you start braking
-   b) When the engine rpm is down close to idle
+   b) When engine rpm is close to idle
    c) Before you touch the brake pedal
 2. Without ABS, you brake hard on a slippery road and the steering wheels lock. What happens?
    a) You lose steering control
@@ -240,7 +240,7 @@ Figure 5.6 (described) — distance in feet by speed:
    c) The vehicle stops in a shorter distance
 3. What does ABS do when it senses a wheel is about to lock?
    a) Applies the spring brakes
-   b) Increases pressure to all brakes
+   b) Increases the braking pressure to all wheels
    c) Reduces the braking pressure to a safe level
 4. Which statement about ABS is TRUE?
    a) ABS always lets you stop in a shorter distance
@@ -273,13 +273,13 @@ Figure 5.6 (described) — distance in feet by speed:
 11. During stab braking, what happens if you reapply the brakes before the wheels start rolling?
     a) The vehicle will not straighten out
     b) The ABS will turn off
-    c) The spring brakes will come on
+    c) The spring brakes will come on automatically
 12. After you release the brakes in stab braking, it can take up to how long for the wheels to start rolling?
     a) 3 seconds
     b) ½ second
     c) 1 second
 13. What is brake lag?
-    a) The time it takes you to see a hazard
+    a) The time it takes you to see a hazard and decide to hit the brakes
     b) The time it takes the air brakes to work after you push the pedal
     c) The distance the vehicle rolls after it stops
 14. With air brakes, brake lag is about:
@@ -299,7 +299,7 @@ Figure 5.6 (described) — distance in feet by speed:
     b) 61 feet
     c) 142 feet
 18. Which of these is a cause of brake fade?
-    a) Using the engine braking effect on a long grade
+    a) Using the engine braking effect to control speed on a long grade
     b) Excessive heat that reduces lining friction and makes the drums expand
     c) Keeping all the brakes in proper adjustment
 19. Why can brakes that are out of adjustment cause brake fade?
@@ -307,7 +307,7 @@ Figure 5.6 (described) — distance in feet by speed:
     b) They use extra air from the tanks
     c) They stop doing their share, so the other brakes overheat and fade
 20. Your "safe" speed on a long downgrade is 40 mph and you are in the right low gear. What is the proper braking technique?
-    a) When you reach 40 mph, brake to about 35 mph, then release; repeat as needed
+    a) At 40 mph, brake to about 35 mph, then release; repeat as needed
     b) Hold the brakes lightly the whole way down to stay under 40 mph
     c) Wait until 45 mph, then brake hard to 30 mph
 21. When you use the proper downhill braking technique, each brake application should last about:
@@ -321,7 +321,7 @@ Figure 5.6 (described) — distance in feet by speed:
 23. Why is a heavily loaded vehicle slow to stop when the spring brakes come on?
     a) The spring brakes do not work on all axles
     b) The spring brakes release at 20 psi
-    c) The ABS turns off the spring brakes
+    c) The anti-lock system turns off the spring brakes
 24. You just came down a steep grade and your brakes are very hot. How should you park?
     a) Set the parking brakes firmly
     b) Chock the wheels on a level surface and let the brakes cool before using the parking brakes

@@ -268,3 +268,14 @@ test('every added lesson opens without errors', async ({ page }) => {
     await noOverflow(page);
   }
 });
+
+test('switching lessons opens the Learn tab; mock intro names its own test', async ({ page }) => {
+  await onboard(page);
+  await page.goto(URL + '#practice');
+  await page.getByRole('button', { name: 'Start Air Brakes mock' }).click();
+  await expect(page.getByText(/of the 3 Air Brakes lessons/)).toBeVisible();
+  await page.goto(URL + '#lesson.AB-01');
+  await page.getByRole('tab', { name: 'Recap' }).click();
+  await page.goto(URL + '#lesson.AB-02');
+  await expect(page.getByRole('tab', { name: 'Learn' })).toHaveAttribute('aria-selected', 'true');
+});

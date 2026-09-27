@@ -197,8 +197,8 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 **Be ready to give:** your **name**; the carrier's **name and address**; a **phone number** where you can be reached; the **date, time and location**; the extent of **injuries**; the **classification, name and quantity** of HazMat, if known; the **type of incident**, how the HazMat is involved, and whether there is a **continuing danger to life**. If a **reportable quantity** of a hazardous substance was involved, also the **shipper's name** and the **quantity discharged**.
 
 - Give your **employer** the same information.
-- Carriers must send **detailed written reports within 30 days** of an incident **to CHEMTREC** (**1-800-424-9300**).
-- **CHEMTREC** (the Chemical Transportation Emergency Center in Washington, DC) also runs a **24-hour toll-free line**. It was set up to give emergency crews **technical information** about the physical properties of HazMat. The National Response Center and CHEMTREC **talk to each other** — call either one and they will tell the other when appropriate. (p. 9-22)
+- Carriers must make **detailed written reports within 30 days** of an incident.
+- Separately, **CHEMTREC** (the Chemical Transportation Emergency Center in Washington, DC, **1-800-424-9300**) has a **24-hour toll-free line**. It was set up to give emergency crews **technical information** about the physical properties of HazMat. The National Response Center and CHEMTREC **talk to each other** — call either one and they will tell the other when appropriate. (p. 9-22)
 
 **[CA] California immediate spill reporting (p. 9-23).** A HazMat spill on a California highway must be reported **immediately** to the **CHP** office or **police department** with traffic jurisdiction.
 
@@ -236,8 +236,8 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 | NRC call: road closure | major artery closed **1 hour or more** | 9-22 |
 | NRC call: marine pollutant | more than **119 gallons** (liquid) or **882 lb** (solid) | 9-22 |
 | National Response Center | **1-800-424-8802** (24-hour, toll-free) | 9-22 |
-| Written incident report | within **30 days**, to **CHEMTREC** | 9-22 |
-| CHEMTREC | **1-800-424-9300**, technical info on HazMat | 9-22 |
+| Carrier's detailed written incident report | within **30 days** of the incident | 9-22 |
+| CHEMTREC | **1-800-424-9300** (24-hour, toll-free), technical info on HazMat | 9-22 |
 | [CA] Spill on a California highway | report **immediately** to CHP or police | 9-23 |
 
 ## Exam traps
@@ -323,7 +323,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 | 36 | What must happen before reusing a vehicle after a radioactive spill? | Cleaned and checked with a survey meter |
 | 37 | Property damage that triggers an NRC call? | More than $50,000 |
 | 38 | Evacuation time that triggers an NRC call? | Public evacuated more than 1 hour |
-| 39 | Carrier's detailed written incident report: when, and to whom? | Within 30 days, to CHEMTREC |
+| 39 | Carrier's detailed written incident report: due when? | Within 30 days of the incident |
 | 40 | What does CHEMTREC provide? | Technical information about HazMat for emergency crews |
 | 41 | [CA] Who must be told immediately of a HazMat spill on a California highway? | CHP or the police department with traffic jurisdiction |
 

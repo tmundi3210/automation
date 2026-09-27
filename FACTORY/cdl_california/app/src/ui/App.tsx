@@ -1,3 +1,4 @@
+import { isWritten } from '../content/tests';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { C, glossOpen, go, route, S, toast } from '../app';
 import { Html } from './bits';
@@ -49,7 +50,9 @@ export function App() {
   const q = onboarding ? null : today(s, C, Date.now());
   const openFix = q ? new Set(q.fixes.map((r) => r.concept)).size : 0;
   const chip = !onboarding ? (() => {
-    const t = s.profile.tests[0] as TestId;
+    // the first written test (in study order) that is not yet 'likely' — the one to work on now
+    const wr = s.profile.tests.filter(isWritten);
+    const t = (wr.find((x) => readiness(s, C, x, Date.now(), 200).band !== 'likely') ?? wr[0] ?? 'GK') as TestId;
     const rd = readiness(s, C, t, Date.now(), 400);
     return `${t}: ${!s.attempts.some((a) => C.items[a.id]?.test === t) ? 'not started' : rd.band === 'likely' ? 'likely pass' : rd.band === 'borderline' ? 'borderline' : 'not ready yet'}`;
   })() : null;
@@ -57,7 +60,7 @@ export function App() {
   if (onboarding) screen = <OnboardingScreen />;
   else switch (r.name) {
     case 'path': screen = <PathScreen />; break;
-    case 'lesson': screen = <LessonScreen id={r.param ?? 'GK-01'} focus={r.sub} />; break;
+    case 'lesson': screen = <LessonScreen id={r.param ?? 'GK-01'} focus={r.sub} key={r.param ?? 'GK-01'} />; break;
     case 'practice': screen = <PracticeScreen />; break;
     case 'session': screen = <SessionScreen />; break;
     case 'mock': screen = <MockScreen test={(r.param as TestId) ?? 'GK'} key={r.param} />; break;

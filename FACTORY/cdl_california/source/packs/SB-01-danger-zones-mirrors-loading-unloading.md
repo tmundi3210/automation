@@ -338,33 +338,33 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
     b) To show 200 feet of road behind the bus
     c) To show the left and right front tires
 12. When should you turn on the alternating flashing amber lights before a stop?
-    a) About 100 feet before the stop
+    a) About 100 feet before you reach the bus stop
     b) Only after the bus has stopped
     c) At least 200 feet, or about 5–10 seconds, before the stop
 13. When should you turn on the right turn signal before pulling over at a stop?
     a) About 100–300 feet, or 3–5 seconds, before
     b) At least 500 feet before
-    c) Only once the bus has stopped
+    c) Only once the bus has come to a complete stop
 14. How far from the waiting students should the front bumper be when you stop?
     a) Right next to them
     b) At least 10 feet away
     c) At least 30 feet away
 15. At every stop, you should:
     a) keep the bus in gear and hold the service brake
-    b) put the bus in Neutral and hold the service brake
-    c) put the bus in Park (or Neutral if there is no Park) and set the parking brake
+    b) put the bus in Neutral and keep your foot on the service brake
+    c) put it in Park (or Neutral if no Park) and set the parking brake
 16. When should you turn on the alternating red lights?
-    a) As soon as you start to slow down for the stop
-    b) When traffic is a safe distance from the bus, with the stop arm out
+    a) As soon as you start to slow down as you approach the stop
+    b) When traffic is a safe distance away, with the stop arm out
     c) After the students have taken their seats
 17. While loading, you cannot account for one student. What should you do?
-    a) Ask the other students, then leave on schedule
+    a) Ask the other students where they are, then leave on schedule
     b) Sound the horn and wait one minute
     c) Secure the bus, take the key, and check around and under the bus
 18. After getting off on the route, students should walk:
     a) at least 10 feet from the side of the bus, where you can see them
     b) straight behind the bus
-    c) along the side of the bus toward the rear
+    c) along the side of the bus toward the rear, close to the bus
 19. [CA] Where no officer or traffic signal controls traffic, which students must the driver escort across the road?
     a) Only kindergarten students
     b) Prekindergarten, kindergarten and grades 1 through 8
@@ -382,12 +382,12 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
     b) To count the seat belts
     c) To test the stop arm
 23. A student drops a paper near the bus while getting off. What should the student be taught to do?
-    a) Pick it up quickly before the bus moves
+    a) Bend down and pick it up quickly before the bus starts to move
     b) Crawl under the bus to reach it if it rolls
     c) Leave it, move out of the danger zone, and get the driver's attention
 24. [CA] Parents, legal guardians and chartering parties may not put which children on a bus with seat belts unless they are buckled in?
     a) Children at least 8 but under 16 years old
-    b) Only children under 8 years old
+    b) Only children who are under 8 years old
     c) Only riders 16 and older
 
 ### Answer key

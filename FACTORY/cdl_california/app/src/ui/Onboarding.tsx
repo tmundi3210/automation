@@ -18,7 +18,12 @@ export function OnboardingScreen() {
   const [endo, setEndo] = useState<Endo[]>(s.profile.endorsements ?? []);
   const [skills, setSkills] = useState(s.profile.skills !== false);
   const choice = () => ({ airBrakesPassed: ab === 'passed', noAirBrakes: ab === 'none', endorsements: endo, skills });
-  const tog = (e: Endo) => setEndo((x) => (x.includes(e) ? x.filter((y) => y !== e && !(e === 'P' && y === 'S')) : [...x, e, ...(e === 'S' && !x.includes('P') ? ['P' as Endo] : [])]));
+  const [endoMsg, setEndoMsg] = useState('');
+  const tog = (e: Endo) => setEndo((x) => {
+    if (x.includes(e)) { setEndoMsg(e === 'P' && x.includes('S') ? 'School bus (S) needs Passenger (P), so S was removed too.' : ''); return x.filter((y) => y !== e && !(e === 'P' && y === 'S')); }
+    setEndoMsg(e === 'S' && !x.includes('P') ? 'School bus (S) needs Passenger (P), so P was added too.' : '');
+    return [...x, e, ...(e === 'S' && !x.includes('P') ? ['P' as Endo] : [])];
+  });
   const [date, setDate] = useState(s.profile.examDates.GK ?? addDays(dayKey(now()), 35));
   const [minutes, setMinutes] = useState(s.profile.minutesPerDay);
   const [paste, setPaste] = useState('');
@@ -103,8 +108,9 @@ export function OnboardingScreen() {
           <fieldset class="card stack" style={{ border: 0 }}>
             <legend class="t"><strong>Endorsements</strong> <span class="small muted">(extra tests for special loads; pick any)</span></legend>
             {ENDOS.map((x) => (
-              <label class="choice" style={{ cursor: 'pointer' }}><input type="checkbox" checked={endo.includes(x.e)} onChange={() => tog(x.e)} style={{ width: '22px', height: '22px', accentColor: 'var(--accent)' }} /><span><span class="t">{x.label}</span><br /><span class="small muted">{TESTS[x.test].blurb} {TESTS[x.test].n} questions, pass {TESTS[x.test].pass}.</span></span></label>
+              <label class="choice" style={{ cursor: 'pointer' }}><input type="checkbox" checked={endo.includes(x.e)} onChange={() => tog(x.e)} style={{ width: '22px', height: '22px', accentColor: 'var(--accent)' }} /><span><span class="t">{x.label}</span><br /><span class="small muted">{TESTS[x.test].blurb} {TESTS[x.test].n} questions, pass {TESTS[x.test].pass}.{x.e === 'T' && cls && cls !== 'A' ? ' Doubles are combination vehicles, driven with a Class A license.' : ''}</span></span></label>
             ))}
+            {endoMsg && <p class="small card info" role="status">{endoMsg}</p>}
             {cls === 'C' && !endo.some((e) => e === 'H' || e === 'P' || e === 'N' || e === 'S') && <p class="small card warn" role="status">A Class C commercial license needs at least one of H, P or N. Pick the one for the vehicle you will drive.</p>}
           </fieldset>
           <label class="choice" style={{ cursor: 'pointer' }}><input type="checkbox" checked={skills} onChange={(e) => setSkills((e.target as HTMLInputElement).checked)} style={{ width: '22px', height: '22px', accentColor: 'var(--accent)' }} /><span><span class="t">Also prepare me for the skills tests</span><br /><span class="small muted">Vehicle inspection, basic control and road test. You take them after your permit; these lessons come after the written ones and are not counted in your countdown.</span></span></label>
