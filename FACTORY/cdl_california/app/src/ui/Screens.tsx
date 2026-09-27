@@ -8,6 +8,10 @@ import { Bar, Calendar, Html, Ring, Shield } from './bits';
 import { startTest } from './Lesson';
 import type { TestId } from '../content/types';
 import { WIDGETS } from '../widgets/registry';
+import { planToIcs } from '../engine/ics';
+
+const inArtifact = () => !!(globalThis as unknown as { claude?: unknown }).claude;
+function downloadIcs(text: string) { try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar' })); a.download = 'cdl-study-plan.ics'; document.body.appendChild(a); a.click(); a.remove(); } catch { /* */ } }
 
 const TNAME: Record<TestId, string> = { GK: 'General Knowledge', CV: 'Combination Vehicles' };
 
@@ -261,6 +265,7 @@ export function ProgressScreen() {
       <section class="card stack" aria-label="Schedule">
         <h3>Schedule</h3>
         <p class="small">{plan.message}</p>
+        {!inArtifact() && plan.days.length > 0 && <button class="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => downloadIcs(planToIcs(plan, C, now()))}>Add plan to my calendar (.ics)</button>}
         <div class="list">
           {plan.days.filter((d) => daysBetween(k, d.day) >= 0).slice(0, 21).map((d) => (
             <div class="li" style={{ cursor: 'default', gridTemplateColumns: '110px 1fr' }}>
