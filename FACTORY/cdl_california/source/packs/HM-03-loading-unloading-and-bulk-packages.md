@@ -220,7 +220,7 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
 | Charged storage batteries | not with **Division 1.1** | 9-14 |
 | Cyanides (Div. 6.1) | not with **acids or corrosives** (could release hydrocyanic acid) | 9-14 |
 | Bulk packaging (liquid) | capacity **more than 119 gallons** | 9-11, 9-24 |
-| Bulk packaging (solid) | more than **882 lb** and more than **119 gallons** | 9-24 |
+| Bulk packaging (solid) | more than **882 lb** and more than **119 gallons** (p. 9-24; the glossary on p. 13-5 says "or") | 9-24, 13-5 |
 | Bulk packaging (gas) | water capacity more than **1,000 lb** | 9-24 |
 | Most common cargo tanks | **MC306 = liquids**, **MC331 = gases** | 9-15 |
 | ID number source | **Column 4** of the Hazardous Materials Table | 9-15 |
