@@ -145,7 +145,7 @@ export function OtherBrake({ kind, applied, label }: { kind: 'wedge' | 'disc' | 
         {T(108, 30, 'Rotor (disc)')}{T(34, 186, 'Caliper')}<Lead d={[40, 174, 72, 144]} />
         {T(150, 176, 'Pads')}<Lead d={[140, 164, 124, 132]} />
         {T(140, 84, 'Power screw', 'start')}{T(244, 150, 'Slack', 'start')}{T(244, 166, 'adjuster', 'start')}
-        {T(330, 180, 'Brake', 'middle')}{T(330, 262, 'chamber', 'middle')}{T(40, 272, 'Axle')}
+        {T(330, 172, 'Brake', 'middle')}{T(330, 188, 'chamber', 'middle')}{T(40, 272, 'Axle')}
         {note(266, 292, ['Like a big C-clamp:', 'the screw squeezes the pads'])}
       </g>}
     </svg>
