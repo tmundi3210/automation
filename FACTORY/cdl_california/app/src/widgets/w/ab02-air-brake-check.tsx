@@ -11,6 +11,8 @@ export const meta: WidgetMeta = {
 const segOn = { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' };
 const Mark = ({ ok }: { ok: boolean }) => <strong style={{ color: ok ? 'var(--ok)' : 'var(--red)', whiteSpace: 'nowrap' }}>{ok ? '✓ pass' : '✗ fail'}</strong>;
 
+const Bands = () => <p class="small muted" style={{ margin: 0 }}>Gauge bands: <strong style={{ color: 'var(--red)' }}>▬ 20–45</strong> spring brakes come on · <strong style={{ color: 'var(--amber-ink)' }}>▬ 55–75</strong> low-air warning range · <strong style={{ color: 'var(--ok)' }}>▬ 100–125</strong> governor cut-in to cut-out.</p>;
+
 function Explore() {
   const [rig, setRig] = useState<Rig>({ kind: 'two', fault: 'none' });
   const [s, setS] = useState<Sim>(START);
@@ -51,7 +53,7 @@ function Explore() {
     const o = drop(s, rig, 4);
     setS({ ...o, pedal: o.popAt === s.popAt, note: s.park ? 'Foot brake held — but the parking brake is still on. For the applied test release it first (step 3). p. 5-8' : 'Foot brake held down fully. Now watch the gauge settle and time 1 minute.' });
   };
-  const fan = () => { const o = drop({ ...s, pedal: false }, rig, 6); setS({ ...o, note: 'Fanned: pressed and released the pedal quickly. Each release lets air out.' }); };
+  const fan = () => { const o = drop({ ...s, pedal: false }, rig, 6); setS({ ...o, note: `Fanned: pressed and released the pedal quickly. Each release lets air out.${s.park && (!cmb || s.supply) ? ' For the spring brake test, push the knob(s) in first so they can pop out.' : ''}` }); };
   const parkTest = () => {
     if (!s.engine) return say('Parking brake test: start the engine so you can pull against the brake in a low gear.');
     if (!s.park) return say('Set the parking brake first (pull the yellow knob), then pull gently against it in a low gear. p. 5-10');
@@ -82,6 +84,7 @@ function Explore() {
           <select id="ab02-f" value={rig.fault} onChange={(e) => newRig({ ...rig, fault: (e.target as HTMLSelectElement).value as Fault })}>{FAULTS.map((f) => <option value={f.f}>{f.label}</option>)}</select></div>
       </div>
       <Dash s={s} rig={rig} label={`Tank pressure ${Math.round(s.psi)} psi. Low air warning ${s.psi < n.warn ? 'on' : 'off'}. Engine ${s.engine ? 'running' : 'off'}. Parking knob ${s.park ? 'out, applied' : 'in, released'}${cmb ? `. Trailer air supply knob ${s.supply ? 'out' : 'in'}` : ''}. Foot brake ${s.pedal ? 'held' : 'up'}.`} />
+      <Bands />
       <div role="group" aria-label="Cab controls" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '6px' }}>
         {b(s.engine ? 'Stop engine' : 'Start engine (idle)', s.engine, () => say(s.engine ? 'Engine off: the compressor stops.' : 'Engine at normal idle: the compressor pumps until governor cut-out.', { engine: !s.engine }))}
         {b(s.pedal ? 'Let foot brake up' : 'Hold foot brake down', s.pedal, pedal)}
@@ -153,6 +156,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
           <strong>{c.rig}</strong>
           <p class="small" style={{ margin: 0 }}>{c.read}</p>
           {c.ghost != null && <p class="small muted" style={{ margin: 0 }}>Dashed needle = start · solid = end</p>}
+          <Bands />
         </div>
       </div>
       <div role="group" aria-label="Your call" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>

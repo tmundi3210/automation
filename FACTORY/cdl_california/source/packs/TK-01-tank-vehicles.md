@@ -71,7 +71,7 @@ If your tanker has any of these, make sure it **works**:
 ### 8.2.1 High center of gravity (p. 8-2)
 - Hauling liquid takes special skill for **2 reasons**: the **high center of gravity** and the **movement of the liquid (surge)**.
 - High center of gravity = much of the load's weight rides **high above the road**. The vehicle is **top-heavy** and **easy to roll over**. Liquid tankers are **especially** easy to roll over.
-- Figure 8.1 compares a tanker with a pickup truck: the tanker's center of gravity is about **60–78 inches** high; the pickup's is about **18–24 inches**. (Numbers row: '(pickup: 18–24 inches)')
+- Figure 8.1 compares a tanker with a pickup truck: the tanker's center of gravity is about **60–78 inches** high; the pickup's is about **18–24 inches**.
 - **Tests show tankers can turn over at the speed limits posted for curves.** So take highway curves and on/off-ramp curves **well below** the posted speed.
 
 ### 8.2.2 Danger of surge (p. 8-2)
@@ -133,7 +133,7 @@ If your tanker has any of these, make sure it **works**:
 | Most important inspection item | **Leaks** | 8-1 |
 | Driving a leaking tank | A **crime** — cited, stopped from driving, may pay cleanup | 8-1 |
 | Special purpose equipment | Vapor recovery kits; grounding and bonding cables; emergency shutoff systems; built-in fire extinguisher | 8-1 |
-| Tanker center of gravity (Fig. 8.1) | About **60–78 inches** high (car: **18–24 inches**) | 8-2 |
+| Tanker center of gravity (Fig. 8.1) | About **60–78 inches** high (pickup truck: **18–24 inches**) | 8-2 |
 | 2 reasons tankers need special care | **High center of gravity** and **liquid surge** | 8-2 |
 | Rollover speed | Tankers can roll over **at the posted curve speed limit** | 8-2 |
 | Baffles control | **Forward-and-back** surge (**not** side-to-side) | 8-2 |

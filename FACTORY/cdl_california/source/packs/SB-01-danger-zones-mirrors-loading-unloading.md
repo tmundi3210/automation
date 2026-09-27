@@ -17,7 +17,7 @@ More students die **getting on and off** a school bus each year than die **ridin
 The handbook also says you must know California law and your own school district's rules well. (p. 10-1)
 
 - A **CLP** holder with a **P** (passenger) and/or **S** (school bus) endorsement may **not** drive a CMV with passengers. The only people allowed on board are federal/state auditors and inspectors, test examiners, other trainees, and the CDL holder who rides along. (p. 10-1)
-- **[CA]** Keep this bullet; make Numbers row, Flashcard 35 and Q24 consistent with it (see those items). Parents, guardians and chartering parties may **not** put a child who is **at least 8 but under 16 years old** on a bus unless the child is properly buckled. (p. 10-1)
+- **[CA]** Since **July 1, 2018**, every passenger on a bus with seat belts must be buckled. Parents, guardians and chartering parties may **not** put a child who is **at least 8 but under 16 years old** on a bus unless the child is properly buckled. (p. 10-1)
 
 **Key words**
 - **CLP** = commercial learner's permit, the permit you drive on while learning, before you have your CDL.
@@ -221,7 +221,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
 ## Exam traps
 - **Trap:** The danger zone reaches 12 ft in front of the bus. → **Correct:** It can reach **30 ft** in front; the **first 12 ft** is the most dangerous part. Sides and rear are 12 ft. (p. 10-1)
 - **Trap:** The right side is the most dangerous side because students get off there. → **Correct:** The **left** side is **always** dangerous because of **passing cars**. (p. 10-1)
-- **Trap:** Convex mirrors show objects at their true size and distance. → **Correct:** **Correct:** Convex and crossview mirrors do **not** show people and objects at their true size and distance. (p. 10-2) (p. 10-2)
+- **Trap:** Convex mirrors show objects at their true size and distance. → **Correct:** Convex and crossview mirrors do **not** show people and objects at their true size and distance. (p. 10-2)
 - **Trap:** The flat mirrors should show 400 ft behind the bus. → **Correct:** Flat mirrors should show **200 ft (4 bus lengths)**. 400 ft is how far the **blind spot** behind the bus can reach. (p. 10-2)
 - **Trap:** The inside overhead mirror is for watching traffic behind the bus. → **Correct:** It is for watching **students inside**. Use the outside side mirrors for traffic in the big blind spot behind. (p. 10-3)
 - **Trap:** Turn on the amber lights when you come to a stop. → **Correct:** Amber lights go on **before** the stop, at least **200 ft / 5–10 s** out. The **red** lights go on once you are stopped and traffic is a safe distance away. (p. 10-4)
