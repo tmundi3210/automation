@@ -28,7 +28,7 @@ function Scene({ rig, fx, focus, reducedMotion }: { rig: Rig; fx: Fx | null; foc
   if (fx === 'high') py = 186;
   if (fx === 'low') { py = 224; cx = 312; }
   if (fx === 'gap') { py = 196; cx = 390; gap = true; }
-  if (fx === 'drop') { cx = rig.tractor === 'under' ? 390 : 196; }
+  if (fx === 'drop' && (rig.tractor === 'under' || rig.tractor === 'partly')) cx = TX.clear;
   if (fx === 'roll') rollX = 46;
   if (fx === 'angle') rot = -4;
   const dropping = fx === 'drop';
