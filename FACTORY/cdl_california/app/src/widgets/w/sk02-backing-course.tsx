@@ -9,17 +9,20 @@ export const meta: WidgetMeta = {
 };
 
 const H: Record<string, number> = { straight: 92, off: 64, par: 54, alley: 108 };
+/** Cropped view box per course [x, y, w, h] so the rig reads large at 390 px (course is not to scale). */
+const VB: Record<string, [number, number, number, number]> = { straight: [16, 22, 176, 58], off: [2, 0, 196, 64], par: [18, 0, 164, 54], alley: [16, 0, 120, 108] };
+const RS = 1.25; // rig drawing scale
 const pressed = (on: boolean) => (on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {});
 const TAG: Record<Ev, [string, string]> = { enc: ['ENCROACHMENT', 'var(--red)'], pull: ['PULL-UP', 'var(--amber)'], stop: ['STOP — not a pull-up', 'var(--ink-2)'], look: ['LOOK', 'var(--blue)'], lookBad: ['LOOK — not secured', 'var(--red)'], fwd: ['Forward: part of the exercise', 'var(--ink-2)'] };
 
 function Rig({ p, rm }: { p: Pose; rm: boolean }) {
   const tr = rm ? 'none' : 'transform .7s ease-in-out';
   return (<g>
-    <g style={{ transform: `translate(${p.x}px,${p.y}px) rotate(${p.t}deg)`, transition: tr }}>
+    <g style={{ transform: `translate(${p.x}px,${p.y}px) rotate(${p.t}deg) scale(${RS})`, transition: tr }}>
       <rect x="-3" y="-4.25" width="40" height="8.5" rx="0.8" fill="var(--surface)" stroke="var(--ink)" stroke-width="0.9" />
       <line x1="30" x2="36" y1="0" y2="0" stroke="var(--ink-2)" stroke-width="0.6" /><rect x="35.5" y="-4.25" width="1.5" height="8.5" fill="var(--red)" />
     </g>
-    <g style={{ transform: `translate(${p.x}px,${p.y}px) rotate(${p.c}deg)`, transition: tr }}>
+    <g style={{ transform: `translate(${p.x}px,${p.y}px) rotate(${p.c}deg) scale(${RS})`, transition: tr }}>
       <rect x="-17" y="-4" width="19" height="8" rx="1.5" fill="var(--accent)" stroke="var(--ink)" stroke-width="0.9" />
       <rect x="-16" y="-3.2" width="4" height="6.4" rx="0.6" fill="var(--surface-2)" />
       <rect x="-13" y="-5.4" width="1.4" height="1.4" fill="var(--ink)" /><rect x="-13" y="4" width="1.4" height="1.4" fill="var(--ink)" />
@@ -32,20 +35,20 @@ function courseArt(base: string) {
   const cones: [number, number][] = [], lines: string[] = [];
   const lbl: [number, number, string][] = [];
   if (base === 'straight') { for (let x = 60; x <= 180; x += 12) cones.push([x, 40], [x, 60]); lbl.push([120, 33, '2 rows of cones'], [120, 74, '← cab · trailer backs this way →']); }
-  if (base === 'off') { [120, 190].forEach((x) => [10, 30, 50].forEach((y) => cones.push([x, y]))); lines.push('M120 10 H190 M120 30 H190 M120 50 H190'); lbl.push([120, 58, 'first set of cones'], [8, 58, 'outer boundary'], [176, 20, 'lane B'], [176, 40, 'lane A']); }
-  if (base === 'par') { [[90, 12], [90, 26], [160, 12], [160, 26], [113, 12], [137, 12]].forEach((c) => cones.push(c as [number, number])); lbl.push([125, 21, 'space'], [100, 48, 'drive past, then back in']); }
+  if (base === 'off') { [120, 190].forEach((x) => [10, 30, 50].forEach((y) => cones.push([x, y]))); lines.push('M120 10 H190 M120 30 H190 M120 50 H190'); lbl.push([120, 58, 'first set of cones'], [8, 58, 'outer boundary'], [106, 20, 'lane B'], [106, 40, 'lane A']); }
+  if (base === 'par') { [[90, 12], [90, 26], [160, 12], [160, 26], [113, 12], [137, 12]].forEach((c) => cones.push(c as [number, number])); lbl.push([125, 5, 'space'], [100, 48, 'drive past, then back in']); }
   if (base === 'alley') { for (let y = 45; y <= 93; y += 12) cones.push([88, y], [112, y]); lines.push('M88 95 H112'); lbl.push([100, 7, 'outer boundary'], [100, 102, 'back of alley'], [128, 90, '3 ft']); }
   return { cones, lines, lbl };
 }
 
-function Course({ ex, frames, k, rm }: { ex: Ex; frames: Frame[]; k: number; rm: boolean }) {
+function Course({ ex, frames, k, rm, reveal }: { ex: Ex; frames: Frame[]; k: number; rm: boolean; reveal: boolean }) {
   const e = EX[ex], h = H[e.base], my = (y: number) => (e.mirror ? h - y : y);
   const { cones, lines, lbl } = courseArt(e.base);
   const hit = frames.slice(0, k + 1).filter((f) => f.cone).map((f) => f.cone!);
-  const f = frames[k];
+  const f = frames[k], vb = VB[e.base];
   return (
-    <svg viewBox={`0 0 200 ${h}`} width="100%" role="img" style={{ display: 'block', background: 'var(--surface-2)', borderRadius: '8px' }}
-      aria-label={`${e.name} course, top view, not to scale. Step ${k + 1}: ${f.say}${hit.length ? ` ${hit.length} cone${hit.length > 1 ? 's' : ''} touched so far.` : ''}`}>
+    <svg viewBox={vb.join(' ')} width="100%" role="img" style={{ display: 'block', background: 'var(--surface-2)', borderRadius: '8px' }}
+      aria-label={`${e.name} course, top view, not to scale. Step ${k + 1}: ${f.say}${reveal && hit.length ? ` ${hit.length} cone${hit.length > 1 ? 's' : ''} touched so far.` : ''}`}>
       <g transform={e.mirror ? `translate(0 ${h}) scale(1 -1)` : undefined}>
         {e.base === 'off' && <line x1="8" x2="8" y1="10" y2="50" stroke="var(--ink)" stroke-width="0.8" stroke-dasharray="3 2" />}
         {e.base === 'alley' && <><line x1="10" x2="190" y1="10" y2="10" stroke="var(--ink)" stroke-width="0.8" stroke-dasharray="3 2" /><rect x="88" y="92" width="24" height="3" fill="var(--ok)" opacity=".35" /></>}
@@ -55,13 +58,14 @@ function Course({ ex, frames, k, rm }: { ex: Ex; frames: Frame[]; k: number; rm:
         {cones.map(([x, y]) => cone(x, y))}
         <Rig p={f.p} rm={rm} />
       </g>
-      {hit.map(([x, y]) => <g><circle cx={x} cy={my(y)} r="3.4" fill="var(--red)" stroke="var(--surface)" stroke-width="0.8" /><text x={x} y={my(y) + 2.4} text-anchor="middle" font-size="6.5" font-weight="700" fill="var(--on-red)">✕</text></g>)}
+      {!reveal && f.cone && <circle cx={f.cone[0]} cy={my(f.cone[1])} r="4.5" fill="none" stroke="var(--ink)" stroke-width="1" stroke-dasharray="1.5 1.5" />}
+      {reveal && hit.map(([x, y]) => <g><circle cx={x} cy={my(y)} r="3.4" fill="var(--red)" stroke="var(--surface)" stroke-width="0.8" /><text x={x} y={my(y) + 2.4} text-anchor="middle" font-size="6.5" font-weight="700" fill="var(--on-red)">✕</text></g>)}
       {lbl.map(([x, y, t]) => <text x={x} y={my(y)} dominant-baseline="middle" text-anchor={x < 20 ? 'start' : 'middle'} font-size="7" fill="var(--ink)" stroke="var(--surface-2)" stroke-width="2" paint-order="stroke">{t}</text>)}
     </svg>
   );
 }
 
-function Replay({ ex, frames, k, setK, rm }: { ex: Ex; frames: Frame[]; k: number; setK: (n: number) => void; rm: boolean }) {
+function Replay({ ex, frames, k, setK, rm, reveal = true }: { ex: Ex; frames: Frame[]; k: number; setK: (n: number) => void; rm: boolean; reveal?: boolean }) {
   const [play, setPlay] = useState(false);
   useEffect(() => {
     if (!play) return;
@@ -72,10 +76,10 @@ function Replay({ ex, frames, k, setK, rm }: { ex: Ex; frames: Frame[]; k: numbe
   const f = frames[k];
   return (
     <div class="stack" style={{ gap: '8px' }}>
-      <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto' }}><Course ex={ex} frames={frames} k={k} rm={rm} /></div>
+      <div style={{ maxWidth: '640px', width: '100%', margin: '0 auto' }}><Course ex={ex} frames={frames} k={k} rm={rm} reveal={reveal} /></div>
       <div class="card" style={{ padding: '8px 12px' }} aria-live="polite">
         <div class="spread"><span class="small muted num">Step {k + 1} of {frames.length}</span>
-          {f.ev && <span class="chip" style={{ border: `1.5px solid ${TAG[f.ev][1]}`, color: 'var(--ink)' }}>{TAG[f.ev][0]}</span>}</div>
+          {reveal && f.ev && <span class="chip" style={{ border: `1.5px solid ${TAG[f.ev][1]}`, color: 'var(--ink)' }}>{TAG[f.ev][0]}</span>}</div>
         <p class="small">{f.say}</p>
       </div>
       <div class="row" role="group" aria-label="Replay controls">
@@ -147,7 +151,8 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
     <div class="stack">
       <span class="small muted num">Attempt {i + 1} of {RUNS.length} · {e.name}</span>
       <p class="small">{e.finish} <span class="plate">p. {e.page}</span></p>
-      <Replay ex={run.ex} frames={run.frames} k={k} setK={setK} rm={reducedMotion} />
+      <Replay ex={run.ex} frames={run.frames} k={k} setK={setK} rm={reducedMotion} reveal={done} />
+      {!done && <p class="small muted">Watch every step and score it yourself. The examiner’s labels appear after you submit.</p>}
       <fieldset class="card stack" style={{ gap: '8px', margin: 0 }} disabled={done}>
         <legend class="eyebrow">Your score sheet</legend>
         <Step label="Encroachments" v={c.enc} set={(n) => setC({ ...c, enc: n })} />

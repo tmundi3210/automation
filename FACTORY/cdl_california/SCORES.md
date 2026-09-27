@@ -27,3 +27,15 @@
 | 2026-09-27 | G8 independent eval — round 3, ev3 visual/a11y/fidelity | 3 | blind P/Q (P = canary), axe light+dark, 25-fact audit, 23 widget scores (mean ≈8.1) | real 8.15 (D1 9 D2 8 D3 9 D4 8 D5 8 D6 8 D7 7 D8 8 D9 8 D10 8), canary capped | all canaries found; 25/25 facts; D7 held at 7 by one axe serious: dark-mode "9+" badge 2.28:1 |
 | 2026-09-27 | **Round 3 combined (final round)** | 3 | per-dim median of 3 | **8.15 weighted; D7 median 7 → gate not formally passed** (D1 9 D2 8 D3 9 D4 8 D5 8 D6 8 D7 7 D8 8 D9 8 D10 8) | no hard fails in the real build; every planted fault caught by all 3 evaluators |
 | 2026-09-27 | Post-round-3 fixes (objective re-check only; no 4th independent round per protocol) | — | orchestrator + 1 widget agent | ALL PASS: unit 29/29, E2E 115 passed (23 desktop-skips of phone-only checks), PWA offline PASS, gate-shots 0/0 | D7 causes fixed + tested: badge `--on-red` token (new dark-mode E2E with a direct 4.5:1 badge check; it failed at 2.28 when the old colour was restored), scroll tables keyboard-reachable regions, focus moves to the page h1 on navigation, mock h1. Also: widget evidence ≤3 answers/concept/day and ceiling 0.55 (never "proficient" from widgets; unit test), FSRS long-term only (first correct → ≥1 day; unit test), class-specific Air Brakes/endorsement guidance, mistake ranking keeps recent misses on top, never-opened lesson → "Not learned yet", mock answer saved on choice (reload shows it answered, recorded once; E2E), readiness label by attempts, glossary list definitions + no raw markdown, onboarding "What do these words mean?", label collisions gk12/gk06/gk13/gk14/cv04, gk02 bars min width + text + stripes, gk05 dark road, railroad slider direction + aria-valuetext, duty clock shows the binding limit, mock counter live, number-drift guard test (railroad 15–50, 1 s/10 ft, 20–45 psi, 4/32, 419 ft) |
+
+## Round 4 — new packs (AB, DT, TK, PV, SB, HM, SK), 1 blind evaluator, 2026-09-27
+Evaluator drove the build (390/1280, light/dark), read all 16 new lessons, took 3 lesson tests and 2 mocks, finished all 10 new widget challenges, fact-checked ~60 facts against page text (1 mismatch: CHEMTREC layout on p. 9-22).
+| Dim | Score |
+|---|---|
+| D1 handbook fidelity (new content) | 8 |
+| D2 understanding-first teaching | 7 |
+| D3 interactive visuals | 7 |
+| D6 class/endorsement path + guidance | 6 |
+| D7 plain language & accessibility | 7 |
+| D10 visual/UX polish | 7 |
+All top-15 defects fixed afterwards (mock intro text, lesson tab carry-over, header chip, endorsement notices, per-test traps in Guide, verdict-button contrast, TK answer leak + labels + rollover drawing, SK-02 give-away captions + larger course, AB-03 overshoot text, PV label + 500 lb case, CHEMTREC wording, Figure 8.1 caveat, answer-length balance + lint). Not re-scored after the fixes.

@@ -42,7 +42,7 @@ export const ITEMS: Item[] = [
 const ACTS: { a: Act; label: string; icon: string }[] = [
   { a: 'allow', label: 'Allow on board', icon: '✓' }, { a: 'refuse', label: 'Refuse', icon: '✕' }, { a: 'fix', label: 'Fix first', icon: '⚠' },
 ];
-const SPOT: Record<Spot, [number, number]> = { aisle: [150, 96], exit: [40, 96], front: [296, 96], door: [334, 156], seat: [200, 58] };
+const SPOT: Record<Spot, [number, number]> = { aisle: [222, 96], exit: [40, 96], front: [296, 96], door: [334, 156], seat: [200, 58] };
 const STOW: [number, number] = [150, 196];
 const BEHIND: [number, number] = [250, 96];
 const OFF: [number, number] = [334, 200];
@@ -81,7 +81,7 @@ function BusPlan({ it, act, reducedMotion }: { it: Item | null; act: Act | null;
       <rect x="22" y="24" width="316" height="146" rx="12" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
       {[0, 1, 2, 3, 4, 5, 6].map((i) => <rect key={`t${i}`} x={54 + i * 32} y="32" width="24" height="40" rx="3" fill="var(--surface-2)" stroke="var(--ink-2)" />)}
       {[0, 1, 2, 3, 4, 5].map((i) => <rect key={`b${i}`} x={54 + i * 32} y="120" width="24" height="40" rx="3" fill="var(--surface-2)" stroke="var(--ink-2)" />)}
-      <rect x="40" y="82" width="250" height="28" fill="var(--accent-soft)" opacity=".6" /><text x="90" y="101" font-size="12.5" fill="var(--ink-2)">aisle: keep clear</text>
+      <rect x="40" y="82" width="250" height="28" fill="var(--accent-soft)" opacity=".6" /><text x="62" y="101" font-size="12.5" fill="var(--ink-2)">aisle: keep clear</text>
       <rect x="298" y="32" width="28" height="36" rx="4" fill="var(--blue-soft)" stroke="var(--ink)" /><text x="312" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">D</text>
       <line x1="290" y1="30" x2="290" y2="164" stroke="var(--amber)" stroke-width="4" /><text x="286" y="178" text-anchor="end" font-size="12.5" font-weight="700" fill="var(--amber-ink)">standee line ▲</text>
       <rect x="310" y="160" width="28" height="10" fill="var(--accent)" /><text x="324" y="184" text-anchor="middle" font-size="12.5" fill="var(--ink)">door</text>
@@ -110,7 +110,7 @@ function Verdict({ it, act }: { it: Item; act: Act }) {
 }
 
 const CLASSES = [
-  { k: 'c4', name: 'Class 4 flammable solid' }, { k: 'c5', name: 'Class 5 oxidizer' }, { k: 'c6', name: 'Class 6 poison (solid)' },
+  { k: 'c3', name: 'Class 3 flammable liquid' }, { k: 'c4', name: 'Class 4 flammable solid' }, { k: 'c5', name: 'Class 5 oxidizer' }, { k: 'c6', name: 'Class 6 poison (solid)' },
   { k: 'c8', name: 'Class 8 corrosive' }, { k: 'c9', name: 'Class 9 miscellaneous' },
 ];
 /** Limits (p. 4-3): no single class over 100 lb (solid Class 6 poison: never over 100 lb), never over 500 lb in all. */
@@ -121,7 +121,7 @@ export function checkLoad(w: Record<string, number>) {
 }
 
 function Scale() {
-  const [w, setW] = useState<Record<string, number>>({ c4: 90, c5: 90, c6: 0, c8: 0, c9: 0 });
+  const [w, setW] = useState<Record<string, number>>({ c3: 0, c4: 90, c5: 90, c6: 0, c8: 0, c9: 0 });
   const r = checkLoad(w);
   const bar = (v: number, max: number, lim: number, label: string) => (
     <svg viewBox="0 0 300 22" width="100%" aria-hidden="true">
@@ -133,7 +133,12 @@ function Scale() {
   return (
     <div class="card stack">
       <div class="spread"><strong>HazMat weight check</strong><span class="plate">p. 4-3</span></div>
-      <p class="small muted">Only small amounts the shipper cannot send any other way. Slide each class. Dashed line = the limit.</p>
+      <p class="small muted">Only small amounts the shipper cannot send any other way. Slide each class. Dashed line = the limit. Both rules apply: 6 classes of up to 100 lb each can still add up to more than 500 lb.</p>
+      <div class="row" role="group" aria-label="Try a load" style={{ gap: '6px' }}>
+        <button class="btn sm" onClick={() => setW({ c3: 0, c4: 90, c5: 90, c6: 0, c8: 0, c9: 0 })}>90 + 90 lb</button>
+        <button class="btn sm" onClick={() => setW({ c3: 0, c4: 120, c5: 0, c6: 0, c8: 0, c9: 0 })}>One class 120 lb</button>
+        <button class="btn sm" onClick={() => setW({ c3: 90, c4: 90, c5: 90, c6: 90, c8: 90, c9: 90 })}>6 classes × 90 lb</button>
+      </div>
       {CLASSES.map((c) => (
         <div class="field" key={c.k} style={{ gap: '2px' }}>
           <label for={`pv-${c.k}`} class="small spread"><span>{c.name}</span><span class="num" style={{ fontWeight: 700, color: (w[c.k] || 0) > 100 ? 'var(--red)' : 'var(--ink)' }}>{w[c.k]} lb{(w[c.k] || 0) > 100 ? ' ✕ over 100' : ''}</span></label>
@@ -142,7 +147,7 @@ function Scale() {
         </div>
       ))}
       <div class="small spread"><strong>Total allowed HazMat</strong><span class="num" style={{ fontWeight: 700 }}>{r.total} lb of 500</span></div>
-      {bar(r.total, 750, 500, `Total ${r.total} of 500 lb`)}
+      {bar(r.total, 900, 500, `Total ${r.total} of 500 lb`)}
       <div class={`feedback ${r.ok ? 'good' : 'bad'}`} role="status" aria-live="polite">
         <div class="verdict">{r.ok ? '✓ Within the limits' : '✕ Refuse this load'}</div>
         <p class="small">{r.ok ? `Every class is 100 lb or less, and the total (${r.total} lb) is 500 lb or less.`
@@ -161,7 +166,7 @@ function Desk({ it, act, onAct, locked }: { it: Item; act: Act | null; onAct: (a
         {ACTS.map((a) => {
           const on = act === a.a, good = act && a.a === it.act;
           return <button key={a.a} class={`btn sm ${good ? 'primary' : ''}`} aria-pressed={on} disabled={locked && !!act}
-            style={on && !good ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}} onClick={() => onAct(a.a)}>{a.icon} {a.label}</button>;
+            style={on && !good ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : good ? { borderColor: 'var(--accent)' } : {}} onClick={() => onAct(a.a)}>{a.icon} {a.label}</button>;
         })}
       </div>
     </div>

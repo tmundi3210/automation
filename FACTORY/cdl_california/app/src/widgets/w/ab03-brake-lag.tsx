@@ -149,7 +149,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
         <div role="group" aria-label="Parts to place" style={segRow(2)}>{SHUF.map((k) => {
           const p = PARTS.find((x) => x.key === k)!;
           const used = built.includes(k);
-          return <button key={k} class="btn sm" disabled={used || done} aria-label={`${p.name}${used ? ', placed' : ''}`} style={{ justifyContent: 'flex-start', ...(used ? { opacity: 0.5 } : wrongKey === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }} onClick={() => tap(k)}>
+          return <button key={k} class="btn sm" disabled={used || done} aria-label={`${p.name}${used ? ', placed' : ''}`} style={{ justifyContent: 'flex-start', ...(used ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : wrongKey === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }} onClick={() => tap(k)}>
             <span aria-hidden="true" style={{ display: 'inline-grid', placeItems: 'center', width: '20px', height: '20px', marginRight: '6px', background: p.color, color: p.ink, border: p.key === 'R' ? '2px solid var(--amber)' : '1px solid var(--ink)', font: '700 .75rem/1 var(--body)' }}>{p.key}</span>{p.name}{used ? ' ✓' : ''}</button>;
         })}</div>
         {wp && !done && <div class="feedback bad" role="status"><div class="verdict">Not yet — {wp.name} comes later</div>

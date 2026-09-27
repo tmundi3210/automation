@@ -99,7 +99,10 @@ function RearView({ s, ev, t, mask }: { s: Scene; ev: Ev | null; t: number; mask
   const side = curve ? fillF(s.fill) * 0.9 * sm(t / 0.4) * (fast ? 1 : 0.35) : 0; // baffles do not stop side-to-side surge
   const ang = fast ? 90 * sm((t - 0.3) / 0.55) : curve ? 2 * sm(t / 0.5) : 0; // 90° = rig lying on its side
   const tipped = ang > 45;
-  const cx = 136, cy = 88, R = 40, lvl = cy + R - (2 * R * Math.min(s.fill, 100)) / 100, rise = side * 40, cg = cy + 6;
+  const cx = 136, cy = 88, R = 40, cg = cy + 6;
+  const rad = (ang * Math.PI) / 180, rot = (x: number, y: number) => [180 + (x - 180) * Math.cos(rad) - (y - 160) * Math.sin(rad), 160 + (x - 180) * Math.sin(rad) + (y - 160) * Math.cos(rad)];
+  const [wx, wy] = rot(cx, cy), [gx, gy] = rot(cx + side * 10, cg);
+  const lvl = wy + R - (2 * R * Math.min(s.fill, 100)) / 100, rise = side * 40 * (1 - ang / 90);
   return (
     <svg viewBox="0 0 300 200" width="100%" style={{ display: 'block', maxWidth: '360px', marginInline: 'auto' }} role="img" aria-label={`Rear view: from Figure 8.1, a tanker's center of gravity is about 60 to 78 inches high; a pickup's is about 18 to 24 inches.${fast ? ` At the posted curve speed the liquid surges sideways and the tanker ${tipped ? 'has rolled over onto its side' : 'is rolling over'}.` : ev === 'curveSlow' ? ' Well below the posted speed the tanker leans only slightly.' : ''}`}>
       <rect x="0" y="0" width="300" height="200" fill="var(--surface-2)" />
@@ -108,13 +111,14 @@ function RearView({ s, ev, t, mask }: { s: Scene; ev: Ev | null; t: number; mask
       <g transform={`rotate(${ang.toFixed(1)} 180 160)`}>
         <rect x="94" y="128" width="84" height="10" fill="var(--ink-2)" />
         <rect x="92" y="136" width="20" height="24" rx="4" fill="var(--ink)" /><rect x="160" y="136" width="20" height="24" rx="4" fill="var(--ink)" />
-        <defs><clipPath id="tk-rc"><circle cx={cx} cy={cy} r={R} /></clipPath></defs>
-        <circle cx={cx} cy={cy} r={R} fill="var(--surface)" />
-        {!mask && <polygon clip-path="url(#tk-rc)" points={`${cx - R},${cy + R} ${cx - R},${lvl + rise / 2} ${cx + R},${lvl - rise / 2} ${cx + R},${cy + R}`} fill="var(--blue)" opacity={0.6} />}
-        {mask && <text x={cx} y={cy + 8} font-size="24" font-weight="700" text-anchor="middle" fill="var(--ink-2)" transform={`rotate(${-ang.toFixed(1)} ${cx} ${cy})`}>?</text>}
-        <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--ink)" stroke-width="2" />
-        <circle cx={cx + side * 10} cy={cg} r="5" fill="var(--amber)" stroke="var(--ink)" />
       </g>
+      {/* Tank drawn in the road's frame so the liquid surface stays level as the rig rolls. */}
+      <defs><clipPath id="tk-rc"><circle cx={wx} cy={wy} r={R} /></clipPath></defs>
+      <circle cx={wx} cy={wy} r={R} fill="var(--surface)" />
+      {!mask && <polygon clip-path="url(#tk-rc)" points={`${wx - R},${wy + R} ${wx - R},${lvl + rise / 2} ${wx + R},${lvl - rise / 2} ${wx + R},${wy + R}`} fill="var(--blue)" opacity={0.6} />}
+      {mask && <text x={wx} y={wy + 8} font-size="24" font-weight="700" text-anchor="middle" fill="var(--ink-2)">?</text>}
+      <circle cx={wx} cy={wy} r={R} fill="none" stroke="var(--ink)" stroke-width="2" />
+      {!mask && <circle cx={gx} cy={gy} r="5" fill="var(--amber)" stroke="var(--ink)" />}
       <g aria-hidden="true">
         <line x1="80" x2="80" y1="160" y2={cg} stroke="var(--amber)" stroke-width="3" />
         {ang < 3 && <line x1="80" x2={cx - R - 3} y1={cg} y2={cg} stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="3 3" />}

@@ -96,10 +96,10 @@ Orchestration: Workflows batched ≤9 agents/run (session guideline), builders i
 | Phase | Status |
 |---|---|
 | P0–P7 | done |
-| P8 | done: 3 blind evaluation rounds (canaries caught by every evaluator in every round); round 3 = 8.15 weighted with every dimension ≥ 8 except D7 (median 7), whose causes were then fixed and covered by tests (see `SCORES.md`); private Artifact published at https://claude.ai/artifact/Nty4XqrFLkp3eTjd69NBez |
+| P8 | done: 3 blind evaluation rounds (canaries caught by every evaluator in every round); round 3 = 8.15 weighted with every dimension ≥ 8 except D7 (median 7), whose causes were then fixed and covered by tests (see `SCORES.md`); private Artifact published at https://claude.ai/artifact/Nty4XqrFLkp3eTjd69NBez (version 2 = all tests) |
 
 | P9 (all remaining tests) | done: 16 lessons in `source/packs/` (Air Brakes 3, Doubles 1, Tank 1, Passenger 2, School Bus 2, HazMat 4, Skills 3) written from DL 650 per `PACK_BRIEF.md`; every lesson fact-checked by an independent default-refute reviewer (`PACK_VERIFY_BRIEF.md`) and all findings applied; key points / distractor tags / number questions / why-wrong notes per `PACK_ENRICH_BRIEF.md`, independently re-checked (`PACK_ENRICH_VERIFY_BRIEF.md`); 10 new widgets; setup, settings, path, plan, mocks and readiness driven by class + air brakes + endorsements + skills choice (`src/content/tests.ts`) |
 
-Latest objective run: unit 31/31 · E2E 149 passed (33 phone-only checks skipped on desktop) · PWA offline PASS · gate screenshots 0 errors / 0 overflow.
+Latest objective run: unit 31/31 · E2E 151 passed (33 phone-only checks skipped on desktop) · PWA offline PASS · gate screenshots 0 errors / 0 overflow.
 Open follow-ups: iOS Safari check; shorter resume code (QR); calibration display after ≥2 mocks; a 4th independent scoring round if wanted.
 

@@ -30,7 +30,7 @@ npm ci
 npm run parse          # lessons + enrich/ → src/content/content.json (fails on any golden-count drift)
 npm run dev            # local dev server
 npm test               # unit tests (engine, content, number-drift guard, test choice): 31
-npx playwright test    # E2E: flows, a11y (axe light + dark), widgets (isolation, legibility), both viewports: 149 + 33 phone-only skips
+npx playwright test    # E2E: flows, a11y (axe light + dark), widgets (isolation, legibility), both viewports: 151 + 33 phone-only skips
 node scripts/pwa-offline.mjs   # after build:pwa — service worker + offline reload
 ```
 
