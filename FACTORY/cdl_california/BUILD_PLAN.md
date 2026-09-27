@@ -91,3 +91,13 @@ Orchestration: Workflows batched ≤9 agents/run (session guideline), builders i
 - Artifact runtime: storage/downloads via declared capabilities; external links may be restricted → copyable URL fallback.
 - Vite 8/Rolldown vs plugins → Vite 7.3.6 fallback.
 - Regulatory items (English-only testing, ELDT, fees, non-domiciled) = dated notices + links, never hardcoded fees or legal advice.
+
+## Status (2026-09-27)
+| Phase | Status |
+|---|---|
+| P0–P7 | done |
+| P8 | done: 3 blind evaluation rounds (canaries caught by every evaluator in every round); round 3 = 8.15 weighted with every dimension ≥ 8 except D7 (median 7), whose causes were then fixed and covered by tests (see `SCORES.md`); private Artifact published at https://claude.ai/artifact/Nty4XqrFLkp3eTjd69NBez |
+
+Latest objective run: unit 29/29 · E2E 115 passed (23 phone-only checks skipped on desktop) · PWA offline PASS · gate screenshots 0 errors / 0 overflow.
+Open follow-ups: Air Brakes and endorsement lessons; iOS Safari check; shorter resume code (QR); calibration display after ≥2 mocks; a 4th independent scoring round if wanted.
+

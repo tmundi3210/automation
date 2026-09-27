@@ -11,7 +11,7 @@ Not affiliated with the California DMV, CHP or FMCSA. When anything here differs
 | Mac | `bash ../mac/setup-mac.sh`: installs, builds, and puts **Start CDL Workshop.command** and a one-file copy on the Desktop. Run it again to update. |
 | Any computer | `npm ci && npm run build:pwa && npm run preview`, then open the printed localhost URL. Chrome/Edge: install icon in the address bar; Safari (macOS 14+): File → Add to Dock. Works offline once loaded. |
 | One file | `npm run build:single` → `dist-single/index.html`. Opens in any browser, no server. |
-| claude.ai | Published as a private Artifact; progress is kept in the viewer's private per-artifact store. |
+| claude.ai | Private Artifact: https://claude.ai/artifact/Nty4XqrFLkp3eTjd69NBez (share it from the page's Share menu). Progress is kept in each viewer's private per-artifact store. |
 
 ## What it does
 
@@ -29,8 +29,8 @@ Not affiliated with the California DMV, CHP or FMCSA. When anything here differs
 npm ci
 npm run parse          # lessons + enrich/ → src/content/content.json (fails on any golden-count drift)
 npm run dev            # local dev server
-npm test               # unit tests (engine, content)
-npx playwright test    # E2E: flows, a11y (axe), widgets (isolation, legibility), both viewports
+npm test               # unit tests (engine, content, number-drift guard): 29
+npx playwright test    # E2E: flows, a11y (axe light + dark), widgets (isolation, legibility), both viewports: 115 + 23 phone-only skips
 node scripts/pwa-offline.mjs   # after build:pwa — service worker + offline reload
 ```
 
