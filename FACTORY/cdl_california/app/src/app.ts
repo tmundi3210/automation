@@ -24,7 +24,7 @@ export function mutate(fn: (s: AppState) => void) {
 }
 
 // ---------- routing (hash tokens restricted to [A-Za-z0-9._~-] so they survive the Artifact viewer)
-export type RouteName = 'today' | 'path' | 'lesson' | 'practice' | 'session' | 'mock' | 'notebook' | 'progress' | 'guide' | 'glossary' | 'settings' | 'more' | 'onboarding';
+export type RouteName = 'today' | 'path' | 'lesson' | 'practice' | 'session' | 'mock' | 'notebook' | 'progress' | 'guide' | 'glossary' | 'settings' | 'more' | 'onboarding' | 'widget';
 export interface Route { name: RouteName; param?: string; sub?: string }
 export const route = signal<Route>({ name: 'today' });
 
@@ -39,7 +39,7 @@ export function routeFromHash(): Route | null {
   const h = (location.hash || '').slice(1);
   if (!h) return null;
   const [name, ...rest] = h.split('.');
-  const known: RouteName[] = ['today', 'path', 'lesson', 'practice', 'notebook', 'progress', 'guide', 'glossary', 'settings', 'more'];
+  const known: RouteName[] = ['widget', 'today', 'path', 'lesson', 'practice', 'notebook', 'progress', 'guide', 'glossary', 'settings', 'more'];
   if (!known.includes(name as RouteName)) return null;
   // lesson ids contain '-', concept ids contain '.', so rejoin
   if (name === 'lesson') return { name: 'lesson', param: rest[0], sub: rest.slice(1).join('.') || undefined };

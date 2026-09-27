@@ -13,6 +13,7 @@ import { OnboardingScreen } from './Onboarding';
 import { TodayScreen, PathScreen, PracticeScreen, NotebookScreen, ProgressScreen, MoreScreen } from './Screens';
 import { getStatus, onStatus } from '../store/store';
 import type { TestId } from '../content/types';
+import { WidgetPreview } from './Lesson';
 
 const TABS: [RouteName, string, 'today' | 'path' | 'practice' | 'notebook' | 'more', RouteName[]][] = [
   ['today', 'Today', 'today', ['today']],
@@ -27,6 +28,7 @@ export function App() {
   const r = route.value;
   const [sync, setSync] = useState(getStatus());
   useEffect(() => onStatus(setSync), []);
+  if (r.name === 'widget') return <main id="main" style={{ paddingBlock: '16px' }}><div class="page"><WidgetPreview id={r.param ?? ''} /></div></main>;
   const onboarding = !s.profile.onboarded || r.name === 'onboarding';
   const q = onboarding ? null : today(s, C, Date.now());
   const openFix = q ? q.fixes.length : 0;

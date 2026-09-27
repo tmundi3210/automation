@@ -10,6 +10,7 @@ import type { Content, Lesson, Concept, NumberFact, Trap, Tyk, Flashcard, Item, 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, '../../source/lessons');
 const OUT = join(HERE, '../src/content/content.json');
+const ENRICH = join(HERE, '../../enrich');
 
 // ---------- golden fixture (verified by independent review, see research/REVIEW_FINDINGS.md)
 const GOLDEN: Record<string, [number, number, number, number, number]> = {
@@ -287,6 +288,46 @@ function deriveItems() {
   }
 }
 
+
+// ---------- verified enrichment (enrich/<LESSON>.json): number MCQs + per-option distractor tags
+interface EnrichFile {
+  numberItems?: { numberId: string; stem: string; options: string[]; key: number; tags: (DistractorTag | null)[]; explanation: string; verified?: boolean }[];
+  distractorTags?: Record<string, (DistractorTag | null)[]>;
+}
+function mergeEnrichment() {
+  let files: string[] = [];
+  try { files = readdirSync(ENRICH).filter((f: string) => /^(GK|CV)-\d\d\.json$/.test(f)); } catch { return; }
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+  for (const f of files.sort()) {
+    const lesson = f.replace('.json', '');
+    const E = JSON.parse(readFileSync(join(ENRICH, f), 'utf8')) as EnrichFile;
+    const L = all.lessons.find((l) => l.id === lesson)!;
+    for (const [iid, tags] of Object.entries(E.distractorTags ?? {})) {
+      const it = all.items[iid];
+      if (!it) { problems.push(`enrich ${f}: unknown item ${iid}`); continue; }
+      if (tags.length !== it.options.length || tags[it.key] !== null || tags.some((t, k) => k !== it.key && !t)) { problems.push(`enrich ${f}: bad tags for ${iid}`); continue; }
+      it.tags = tags;
+    }
+    for (const n of E.numberItems ?? []) {
+      if (n.verified === false) continue;
+      const nf = all.numbers[n.numberId];
+      if (!nf) { problems.push(`enrich ${f}: unknown number ${n.numberId}`); continue; }
+      const bad = n.options.length !== 3 || n.key < 0 || n.key > 2 || new Set(n.options.map(norm)).size !== 3 || n.tags.length !== 3 || n.tags[n.key] !== null;
+      if (bad) { problems.push(`enrich ${f}: malformed number item ${n.numberId}`); continue; }
+      const keyNums = (n.options[n.key].match(/\d[\d,./]*/g) || []).map((x) => x.replace(/,/g, ''));
+      const factNums = (nf.value.match(/\d[\d,./]*/g) || []).map((x) => x.replace(/,/g, ''));
+      if (keyNums.length && !keyNums.every((x) => factNums.includes(x))) { problems.push(`enrich ${f}: key of ${n.numberId} not in fact value (${n.options[n.key]} vs ${nf.value})`); continue; }
+      const id = `${lid(lesson)}-dn-${fnv(n.numberId + n.stem)}`;
+      all.items[id] = {
+        id, lesson, test: L.test, origin: 'derived-number', stem: inline(n.stem), stemText: plain(n.stem), options: n.options.map(inline), optionsText: n.options.map(plain),
+        key: n.key, explanation: inline(n.explanation), pages: nf.pages, polarity: /\b(NOT|EXCEPT)\b/.test(n.stem) ? 'neg' : 'pos', numeric: true, tags: n.tags,
+        concepts: nf.concepts.length ? nf.concepts : [L.conceptIds[0]], ku: nf.id, heldOut: rnd() < 0.5,
+      };
+    }
+  }
+}
+
 // ---------- START-HERE: handbook-way table + most-missed list
 function parseStartHere(md: string) {
   const S = sections(md);
@@ -310,6 +351,7 @@ for (const f of files) parseLesson(f, readFileSync(join(SRC, f), 'utf8'));
 mapConcepts();
 mapFacts();
 deriveItems();
+mergeEnrichment();
 const derivedNumbers = Object.values(all.items).filter((i) => i.origin === 'derived-number').length;
 const sh = parseStartHere(readFileSync(join(SRC, '00-START-HERE.md'), 'utf8'));
 

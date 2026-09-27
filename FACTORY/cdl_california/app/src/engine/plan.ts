@@ -125,7 +125,7 @@ export function activeDaysLast30(state: AppState, now: number): number {
 // ---------- mock exam builder: test-shaped, stratified by lesson, unseen items first
 export function buildMock(state: AppState, c: Content, test: TestId, seed: number): string[] {
   const n = test === 'GK' ? 50 : 20;
-  const items = Object.values(c.items).filter((i) => i.test === test && i.origin === 'pack');
+  const items = Object.values(c.items).filter((i) => i.test === test && (i.origin === 'pack' || i.heldOut));
   const seen = new Set(state.attempts.map((a) => a.id));
   const byLesson = new Map<string, string[]>();
   const rnd = mulberry32(seed);

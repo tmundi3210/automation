@@ -22,11 +22,10 @@ const setStatus = (s: SyncStatus) => { status = s; listeners.forEach((f) => f(s)
 export const getStatus = () => status;
 
 export async function loadLocal(now: number): Promise<AppState> {
-  let raw: unknown = null;
-  try { raw = await idbGet(KEY); if (raw) setStatus('device'); } catch { /* blocked */ }
-  if (!raw) {
-    try { const s = localStorage.getItem(KEY); if (s) { raw = JSON.parse(s); setStatus('device'); } } catch { /* blocked */ }
-  }
+  let raw: AppState | null = null;
+  try { raw = (await idbGet(KEY)) as AppState | null; if (raw) setStatus('device'); } catch { /* blocked */ }
+  // synchronous backup copy (written on every change) may be newer than the async IndexedDB copy
+  try { const s = localStorage.getItem(KEY); if (s) { const b = JSON.parse(s) as AppState; if (!raw || (b.updatedAt ?? 0) > (raw.updatedAt ?? 0)) raw = b; setStatus('device'); } } catch { /* blocked */ }
   if (status === 'memory') { try { await idbSet(KEY + '.probe', 1); await idbDel(KEY + '.probe'); setStatus('device'); } catch { /* memory only */ } }
   return raw ? migrate(raw as AppState, now) : emptyState(now);
 }
@@ -37,15 +36,15 @@ let remotePending: AppState | null = null;
 let lastRemote = { core: '', cards: '', log: '' };
 
 export function save(state: AppState) {
+  // synchronous backup so nothing is lost if the tab closes right after an answer
+  try { localStorage.setItem(KEY, JSON.stringify({ ...state, attempts: state.attempts.slice(-600) })); } catch { /* quota or blocked */ }
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => void flush(state), 600);
 }
 
 export async function flush(state: AppState) {
   const snapshot = JSON.parse(JSON.stringify(state)) as AppState;
-  try { await idbSet(KEY, snapshot); } catch {
-    try { localStorage.setItem(KEY, JSON.stringify(snapshot)); } catch { /* memory only */ }
-  }
+  try { await idbSet(KEY, snapshot); } catch { /* localStorage backup already written in save() */ }
   void pushRemote(snapshot);
 }
 

@@ -80,7 +80,7 @@ export function TodayScreen() {
 
 export function fixDrill(concept: string, lesson: string) {
   const ids = [
-    ...Object.values(C.items).filter((i) => i.concepts.includes(concept)).map((i) => i.id),
+    ...Object.values(C.items).filter((i) => !i.heldOut && i.concepts.includes(concept)).map((i) => i.id),
     ...Object.values(C.numbers).filter((n) => n.concepts.includes(concept)).map((n) => n.id),
   ].slice(0, 8);
   startSession({ title: `Fix drill: ${C.concepts[concept].title}`, ids, mode: 'fix', lesson, back: { name: 'notebook' }, shuffleOptions: true });

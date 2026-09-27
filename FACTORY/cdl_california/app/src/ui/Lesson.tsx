@@ -3,7 +3,7 @@ import { C, go, lessonById, mutate, now, S, startSession, say } from '../app';
 import { recordCheck } from '../engine/learner';
 import { band } from '../engine/srs';
 import { Back, Html, Pages, Ring, Shield, YouTube } from './bits';
-import { widgetsForLesson } from '../widgets/registry';
+import { widgetsForLesson, widgetById, WIDGETS } from '../widgets/registry';
 import type { Concept } from '../content/types';
 
 type Tab = 'learn' | 'numbers' | 'traps' | 'cards' | 'test' | 'recap';
@@ -216,4 +216,13 @@ function RecapTab({ id }: { id: string }) {
       {missed.length > 0 && <div class="card warn stack"><h3>Most-missed on the real test</h3><ul class="core">{missed.map((m) => <Html tag="li" html={m.text} />)}</ul></div>}
     </div>
   );
+}
+
+/** Test/preview route: #widget.<id> renders one widget alone (used by screenshot scoring). */
+export function WidgetPreview({ id }: { id: string }) {
+  const m = widgetById(id);
+  if (!m) return <div class="card"><p>Unknown widget “{id}”. Known: {WIDGETS.map((w) => w.meta.id).join(', ')}</p></div>;
+  const L = lessonById(m.meta.lesson);
+  const host = L.conceptIds.find((c) => m.meta.anchor.test(C.concepts[c].title));
+  return <div class="stack"><div class="row"><Shield id={L.id} /><span class="small muted">{host ? `Hosted in: ${C.concepts[host].title}` : 'Hosted at lesson top (anchor matched no concept)'}</span></div><WidgetFrame mod={m} concepts={host ? [host] : L.conceptIds} /></div>;
 }
