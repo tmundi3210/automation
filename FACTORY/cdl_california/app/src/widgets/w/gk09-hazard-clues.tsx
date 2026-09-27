@@ -50,7 +50,7 @@ function Car({ x, y, w, h, fill = 'var(--surface)', face = 'right' }: { x: numbe
 export function Scene({ found, sel, plan, planOk }: { found: Set<string>; sel?: string | null; plan?: PlanQ | null; planOk?: boolean | null }) {
   const ring = (id: string) => { const o = OBJS.find((x) => x.id === id)!; const [x, y, w, h] = o.box; return <rect x={x} y={y} width={w} height={h} rx="5" fill="none" stroke={o.hazard ? 'var(--amber)' : 'var(--ink-2)'} stroke-width="2.5" stroke-dasharray={sel === id ? '0' : '4 3'} />; };
   return (
-    <svg viewBox="0 0 360 300" width="100%" style={{ display: 'block' }} role="img" aria-label="Top-down city street. Your truck drives east in the lower lane. Around it are parked cars, a delivery van, a rental truck, an ice cream truck with children, a car in a covered alley, a car drifting over the center line, and a work zone ahead.">
+    <svg viewBox="0 36 360 222" width="100%" style={{ display: 'block' }} role="img" aria-label="Top-down city street. Your truck drives east in the lower lane. Around it are parked cars, a delivery van, a rental truck, an ice cream truck with children, a car in a covered alley, a car drifting over the center line, and a work zone ahead.">
       <rect x="0" y="0" width="360" height="300" fill="var(--surface)" />
       <rect x="0" y="0" width="248" height="70" fill="var(--line)" /><rect x="288" y="0" width="72" height="70" fill="var(--line)" />
       <rect x="0" y="230" width="360" height="70" fill="var(--line)" />
@@ -58,7 +58,7 @@ export function Scene({ found, sel, plan, planOk }: { found: Set<string>; sel?: 
       <rect x="0" y="88" width="360" height="124" fill="var(--ink-2)" fill-opacity="0.28" />
       <rect x="248" y="0" width="40" height="88" fill="var(--ink-2)" fill-opacity="0.28" />
       <line x1="0" y1="150" x2="360" y2="150" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 6" />
-      <text x="8" y="44" font-size="12" fill="var(--ink-2)">Shops</text><text x="8" y="272" font-size="12" fill="var(--ink-2)">Houses</text>
+      <text x="8" y="60" font-size="12" fill="var(--ink-2)">Shops</text><text x="300" y="252" font-size="12" fill="var(--ink-2)">Houses</text>
       {/* empty parked car (decoy) */}
       <Car x={18} y={90} w={38} h={16} face="left" />
       {/* confused driver: luggage + backup lights (rear = right side, facing west) */}
@@ -100,10 +100,10 @@ export function Scene({ found, sel, plan, planOk }: { found: Set<string>; sel?: 
       {[...found].map(ring)}
       {sel && !found.has(sel) && ring(sel)}
       {plan && planOk === false && <g><path d={`M ${plan.from[0]} ${plan.from[1]} L ${plan.to[0]} ${plan.to[1]}`} stroke="var(--red)" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#g9arrow)" />
-        <circle cx={plan.to[0]} cy={plan.to[1]} r="11" fill="var(--red)" /><text x={plan.to[0]} y={plan.to[1] + 5} text-anchor="middle" font-size="15" font-weight="700" fill="#fff">!</text>
-        <rect x="100" y="236" width="160" height="22" rx="4" fill="var(--red)" /><text x="180" y="252" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">EMERGENCY — no time left</text></g>}
+        <circle cx={plan.to[0]} cy={plan.to[1]} r="11" fill="var(--red)" /><text x={plan.to[0]} y={plan.to[1] + 5} text-anchor="middle" font-size="15" font-weight="700" fill="var(--surface)">!</text>
+        <rect x="70" y="234" width="220" height="22" rx="4" fill="var(--red)" /><text x="180" y="252" text-anchor="middle" font-size="13" font-weight="700" fill="var(--surface)">EMERGENCY — no time left</text></g>}
       {plan && planOk === true && <g><path d={`M ${plan.from[0]} ${plan.from[1]} L ${plan.to[0]} ${plan.to[1]}`} stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 4" />
-        <rect x="88" y="156" width="6" height="32" fill="var(--ok)" /><rect x="100" y="236" width="160" height="22" rx="4" fill="var(--ok)" /><text x="180" y="252" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Slowed early — room to act</text></g>}
+        <rect x="88" y="156" width="6" height="32" fill="var(--ok)" /><rect x="70" y="234" width="220" height="22" rx="4" fill="var(--ok)" /><text x="180" y="252" text-anchor="middle" font-size="13" font-weight="700" fill="var(--surface)">Slowed early — room to act</text></g>}
       <defs><marker id="g9arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--red)" /></marker></defs>
     </svg>
   );
@@ -112,7 +112,7 @@ export function Scene({ found, sel, plan, planOk }: { found: Set<string>; sel?: 
 function Hotspots({ onPick, found, sel, show }: { onPick: (id: string) => void; found: Set<string>; sel: string | null; show: boolean }) {
   return <>{OBJS.map((o, i) => { const [x, y, w, h] = o.box; return (
     <button aria-label={`${o.name}${found.has(o.id) ? ' (found)' : ''}`} aria-pressed={sel === o.id} onClick={() => onPick(o.id)}
-      style={{ position: 'absolute', left: `${(x / 360) * 100}%`, top: `${(y / 300) * 100}%`, width: `${(w / 360) * 100}%`, height: `${(h / 300) * 100}%`, background: 'transparent', border: 0, padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
+      style={{ position: 'absolute', left: `${(x / 360) * 100}%`, top: `${((y - 36) / 222) * 100}%`, width: `${(w / 360) * 100}%`, height: `${(h / 222) * 100}%`, background: 'transparent', border: 0, padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
       {show && o.hazard && <span aria-hidden="true" style={{ transform: 'translate(40%,-40%)', minWidth: '20px', height: '20px', borderRadius: '10px', background: found.has(o.id) ? 'var(--ok)' : 'var(--amber)', color: found.has(o.id) ? '#fff' : 'var(--amber-ink)', font: '700 12px/20px var(--body)', border: '1.5px solid var(--ink)' }}>{found.has(o.id) ? '✓' : i + 1}</span>}
     </button>
   ); })}</>;
@@ -160,7 +160,7 @@ export default function HazardClues({ onEvidence, onChallenge, concepts }: Widge
       </div>
       {mode === 'explore' && <>
         <p class="small">A <strong>hazard</strong> is any road condition or road user that <em>could</em> become a danger. Tap each numbered spot (or anything else) to read the clue and the plan. <span class="plate">p. 2-21</span></p>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', maxWidth: '560px', width: '100%' }}>
           <Scene found={seen} sel={sel} />
           <Hotspots show found={seen} sel={sel} onPick={(id) => { setSel(id); if (OBJS.find((o) => o.id === id)!.hazard) setSeen(new Set([...seen, id])); }} />
         </div>
@@ -170,7 +170,7 @@ export default function HazardClues({ onEvidence, onChallenge, concepts }: Widge
       {mode === 'challenge' && <>
         {phase === 'find' && <p class="small"><strong>Find {NEED} hazard clues.</strong> No markers this time — tap the things on the street that could become a danger. Not everything is a hazard. <span class="num">Found {found.size} of {NEED}.</span></p>}
         {phase === 'plan' && pq && <p class="small num"><strong>What is your plan?</strong> Question {qi + 1} of {PLANS.length}</p>}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', maxWidth: '560px', width: '100%' }}>
           <Scene found={found} sel={phase === 'find' ? last?.id ?? null : pq?.id ?? null} plan={pq && pick !== null ? pq : null} planOk={pq && pick !== null ? pq.opts[pick].ok : null} />
           {phase === 'find' && <Hotspots show={false} found={found} sel={last?.id ?? null} onPick={tapChallenge} />}
         </div>

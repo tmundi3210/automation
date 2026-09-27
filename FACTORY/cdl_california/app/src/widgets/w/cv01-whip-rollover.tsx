@@ -64,9 +64,12 @@ function LaneChange({ rig, t }: { rig: Rig; t: number }) {
       <rect x="0" y="30" width="360" height="120" fill="var(--surface)" stroke="var(--line)" />
       <line x1="0" x2="360" y1="90" y2="90" stroke="var(--amber)" stroke-width="2" stroke-dasharray="14 10" />
       <text x="6" y="22" font-size="13" fill="var(--ink-2)">shoulder</text>
-      {env.map((e, i) => (
+      <text x="6" y="84" font-size="13" fill="var(--ink-2)">new lane</text>
+      <text x="6" y="144" font-size="13" fill="var(--ink-2)">old lane</text>
+      {env.map((e, i) => e.lo < 58 && (
         <g key={`e${i}`} aria-hidden="true">
-          <line x1={e.x} x2={e.x} y1={e.lo} y2={e.hi} stroke={i === last && rig.ra > 1 ? 'var(--red)' : 'var(--blue)'} stroke-width="3" stroke-linecap="round" opacity=".55" />
+          <line x1={e.x} x2={e.x} y1={60} y2={e.lo} stroke={i === last ? 'var(--red)' : 'var(--blue)'} stroke-width="4" stroke-linecap="round" opacity=".6" />
+          <line x1={e.x - 5} x2={e.x + 5} y1={e.lo} y2={e.lo} stroke={i === last ? 'var(--red)' : 'var(--blue)'} stroke-width="3" />
         </g>
       ))}
       {units.map((u, i) => (
@@ -113,7 +116,7 @@ function RollView({ l }: { l: Load }) {
     <svg viewBox="0 0 360 170" width="100%" role="img" aria-label={`Rear view of the trailer in a turn. Center of gravity ${l.loaded ? (l.high ? 'high' : 'low') : 'empty'}${l.side ? ', load to one side' : ''}. ${tip ? 'Wheels lifting: rollover.' : 'Trailer stays upright.'}`}>
       <rect x="0" y="0" width="360" height="170" fill="var(--surface-2)" />
       <rect x="0" y="146" width="360" height="24" fill="var(--ink-2)" opacity=".35" />
-      <text x="354" y="20" font-size="13" text-anchor="end" fill="var(--ink-2)">turn this way →</text>
+      <text x="354" y="20" font-size="13" text-anchor="end" fill="var(--ink-2)">← turning this way</text>
       <g transform={`rotate(${lean} 244 146)`}>
         <rect x="116" y="30" width="128" height="100" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
         {l.loaded && (l.high
@@ -138,7 +141,7 @@ const QS: Q[] = [
   { q: 'In Figure 6.1, a rearward amplification of 2.0 means:', page: '6-1', rule: '2.0 = the rear trailer is twice as likely to turn over as the tractor.',
     opts: [{ t: 'The last trailer tips over 2 times as easily as the tractor', ok: true, why: 'Right — it compares the last trailer with the tractor.' }, { t: 'The rig needs twice as much distance to stop', why: 'The number is about rollover in a quick lane change, not stopping.' }, { t: 'The rear trailer off-tracks twice as far', why: 'Off-tracking is about turns and wheel paths, a different idea.' }] },
   { q: 'Which rig in the chart has the LEAST crack-the-whip effect?', page: '6-2', rule: 'The 5-axle tractor-semitrailer with a 45-ft trailer is at the top of Figure 6.1 with 1.0, the lowest value. Triples are highest at 3.5.',
-    opts: [{ t: '5-axle tractor-semitrailer, 45-ft trailer', ok: true, why: 'Right — 1.0, the lowest in the chart.' }, { t: '65-ft conventional double, 27-ft trailers', why: 'That rig sits at 2.0 — twice the tractor.' }, { t: 'Triples, 27-ft trailers', why: 'Triples have the most whip in the chart: 3.5.' }] },
+    opts: [{ t: '65-ft conventional double, 27-ft trailers', why: 'That rig sits at 2.0 — twice the tractor.' }, { t: '5-axle tractor-semitrailer, 45-ft trailer', ok: true, why: 'Right — 1.0, the lowest in the chart.' }, { t: 'Triples, 27-ft trailers', why: 'Triples have the most whip in the chart: 3.5.' }] },
   { q: 'A fully loaded rig is how many times more likely to roll over in a crash than an empty rig?', page: '6-1', rule: 'The handbook says 10 times. Some websites say 5 — use 10 on the test.',
     opts: [{ t: '3.5 times', why: '3.5 is the triples’ rearward amplification, not the loaded-vs-empty number.' }, { t: '5 times', why: 'A number from some practice websites; the handbook says 10.' }, { t: '10 times', ok: true, why: 'Right — fully loaded rigs are 10× more likely to roll over.' }] },
   { q: 'Which two things does the handbook say will help you prevent a rollover?', page: '6-1', rule: 'Keep the cargo as close to the ground as possible, and drive slowly around turns.',
@@ -159,7 +162,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
       <span class="small muted num">Question {i + 1} of {QS.length}</span>
       <strong>{q.q}</strong>
       <div class="stack" role="group" aria-label="Answer choices" style={{ gap: '8px' }}>{q.opts.map((o, k) => (
-        <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && o.ok ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}
+        <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && o.ok ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
           disabled={pick !== null} onClick={() => { setPick(k); if (!o.ok) setMiss(miss + 1); onEvidence({ concepts, ok: !!o.ok }); }}>
           {pick !== null && o.ok ? '✓ ' : pick === k ? '✕ ' : ''}{o.t}</button>
       ))}</div>
@@ -229,7 +232,7 @@ export default function WhipRollover(props: WidgetProps) {
               <input id="whip-t" type="range" min={0} max={100} value={Math.round(t * 100)} onInput={(e) => { setPlaying(false); setT(+(e.target as HTMLInputElement).value / 100); }} />
             </div>
           </div>
-          <p class="small"><strong>{rig.name}.</strong> The shaded bars show how far each unit’s rear swings sideways. {rig.ra === 1
+          <p class="small"><strong>{rig.name}.</strong> The colored bars show how far past the new lane each unit’s rear swings. {rig.ra === 1
             ? 'At 1.0 this rig has the least crack-the-whip in Figure 6.1.'
             : `Rearward amplification ${rig.ra.toFixed(1)}: the last trailer is ${rig.ra.toFixed(1)} times as easy to roll over as the tractor. The swing grows through each unit — the tip of the whip.`} <span class="plate">p. 6-1, 6-2</span></p>
           <RankBars sel={rigId} />

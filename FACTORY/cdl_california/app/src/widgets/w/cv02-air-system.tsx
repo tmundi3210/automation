@@ -104,8 +104,8 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
   return (
     <div class="stack">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', alignItems: 'start' }}>
-        <div class="stack"><Controls s={s} set={set} /><Status s={s} /></div>
         <AirDiagram s={s} motion={!reducedMotion} />
+        <div class="stack"><Controls s={s} set={set} /><Status s={s} /></div>
       </div>
       <div class="row"><button class="btn sm" onClick={() => setS({ ...START })}>Reset rig</button><span class="small muted">Solid coloured line = air flowing; dotted grey = no air.</span></div>
     </div>
@@ -130,7 +130,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
       <strong>{sc.q}</strong>
       <div class="stack" role="group" aria-label="Predict the outcome" style={{ gap: '8px' }}>
         {sc.choices.map((c, k) => (
-          <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && k === sc.right ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}
+          <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && k === sc.right ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
             disabled={pick !== null} onClick={() => { setPick(k); const good = k === sc.right; if (!good) setMisses(misses + 1); onEvidence({ concepts, ok: good }); }}>
             {pick !== null && k === sc.right ? '✓ ' : pick === k ? '✕ ' : ''}{c}</button>
         ))}
@@ -139,7 +139,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
         <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">
           <div class="verdict">{ok ? 'Right' : 'Not quite — watch the diagram'}</div>
           <p class="small">{sc.why} <span class="plate">p. {sc.p}</span></p>
-          <button class="btn primary sm" onClick={() => { if (i + 1 === SCEN.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === SCEN.length ? 'Finish' : 'Next scenario'}</button>
+          <button class="btn primary sm" style={{ alignSelf: 'flex-start' }} onClick={() => { if (i + 1 === SCEN.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === SCEN.length ? 'Finish' : 'Next scenario'}</button>
         </div>
       )}
       <div class="eyebrow">{pick === null ? 'The rig right now' : 'What the sim shows'}</div>
@@ -156,8 +156,8 @@ export default function AirSystem(props: WidgetProps) {
   return (
     <div class="stack">
       <div class="tabs" role="tablist">
-        <button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Explore the air system</button>
-        <button role="tab" aria-selected={mode === 'challenge'} onClick={() => setMode('challenge')}>Predict 8 scenarios</button>
+        <button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Explore</button>
+        <button role="tab" aria-selected={mode === 'challenge'} onClick={() => setMode('challenge')}>Predict 8 outcomes</button>
       </div>
       {mode === 'explore' ? <Explore reducedMotion={props.reducedMotion} /> : <Challenge {...props} />}
     </div>

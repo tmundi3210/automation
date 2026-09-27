@@ -16,11 +16,12 @@ const SPEEDS = [15, 25, 35, 45, 55];
 const RATIO: [number, number][] = [[20, 1], [40, 4], [60, 9], [80, 16]];
 
 const PARTS = [
-  { key: 'P', name: 'Perception', color: 'var(--blue)', time: '1¾ s (alert driver)', what: 'eyes see the hazard → brain knows it is a hazard' },
+  { key: 'P', name: 'Perception', color: 'var(--blue)', time: '1¾ s', what: 'eyes see the hazard → brain knows it is a hazard' },
   { key: 'R', name: 'Reaction', color: 'var(--amber)', time: '¾ s to 1 s', what: 'brain knows → foot presses the brake' },
   { key: 'B', name: 'Braking', color: 'var(--red)', time: '—', what: 'brakes working → truck stops (dry road, good brakes)' },
 ];
-const X0 = 58, K = 320 / 450; // road scale: 450 ft of road = 320 viewBox units, same at every speed
+const X0 = 58, K = 320 / 450;
+const U = (298 - 62) / 16; // ratio bars: one unit = braking distance at 20 mph (no feet given) // road scale: 450 ft of road = 320 viewBox units, same at every speed
 const fx = (ft: number) => X0 + ft * K;
 
 function Road({ mph, empty, marks, pick, label, hide }: { mph: number; empty?: boolean; marks?: number[]; pick?: number | null; label: string; hide?: boolean }) {
@@ -50,15 +51,15 @@ function Road({ mph, empty, marks, pick, label, hide }: { mph: number; empty?: b
         <text x={Math.min(fx(d[3]) + 18, 380)} y="70" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">+?</text>
       </g>}
       {!hide && <g><line x1={fx(d[3])} y1="42" x2={fx(d[3])} y2="88" stroke="var(--ink)" stroke-width="2.5" />
-      <text x={Math.min(fx(d[3]), 330)} y="28" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{`Stops: ${d[3]} ft`}</text></g>}
+      <text x={Math.min(fx(d[3]), 330)} y="28" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">{`Stops: ${d[3]} ft`}</text></g>}
       {pick != null && <g>
         <line x1={fx(pick)} y1="36" x2={fx(pick)} y2="94" stroke={pick === d[3] ? 'var(--ok)' : 'var(--red)'} stroke-width="3" stroke-dasharray="5 3" />
-        <text x={Math.max(Math.min(fx(pick), 370), 30)} y="12" text-anchor="middle" font-size="12" fill={pick === d[3] ? 'var(--ok)' : 'var(--red)'}>{pick === d[3] ? '✓ your line' : '✗ your line'}</text>
+        <text x={Math.max(Math.min(fx(pick), 370), 30)} y="14" text-anchor="middle" font-size="14" fill={pick === d[3] ? 'var(--ok)' : 'var(--red)'}>{pick === d[3] ? '✓ your line' : '✗ your line'}</text>
       </g>}
       {[0, 100, 200, 300, 400].map((t) => (
-        <g key={t} aria-hidden="true"><line x1={fx(t)} y1="94" x2={fx(t)} y2="102" stroke="var(--ink-2)" stroke-width="1" /><text x={fx(t)} y="116" text-anchor="middle" font-size="12" fill="var(--ink-2)">{t}</text></g>
+        <g key={t} aria-hidden="true"><line x1={fx(t)} y1="94" x2={fx(t)} y2="102" stroke="var(--ink-2)" stroke-width="1" /><text x={fx(t)} y="117" text-anchor="middle" font-size="14" fill="var(--ink-2)">{t}</text></g>
       ))}
-      <text x={fx(450)} y="116" text-anchor="end" font-size="12" fill="var(--ink-2)">ft</text>
+      <text x={fx(450)} y="117" text-anchor="end" font-size="14" fill="var(--ink-2)">ft</text>
       {marks && marks.map((m, i) => <g key={m}><line x1={fx(m)} y1="36" x2={fx(m)} y2="94" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 3" /><text x={fx(m)} y="134" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">{String.fromCharCode(65 + i)}</text></g>)}
     </svg>
   );
@@ -88,7 +89,7 @@ function Explore() {
               <td style={{ padding: '4px 0', textAlign: 'right' }}><strong>{d[i]} ft</strong></td>
             </tr>
           ))}
-          <tr><td style={{ padding: '4px 0' }}><strong>Total</strong></td><td /><td style={{ textAlign: 'right' }}><strong>{mph === 55 ? 'at least ' : ''}{d[3]} ft</strong></td></tr>
+          <tr><td style={{ padding: '4px 0' }}><strong>Total</strong></td><td colSpan={2} style={{ textAlign: 'right', whiteSpace: 'nowrap' }}><strong>{mph === 55 ? 'at least ' : ''}{d[3]} ft</strong></td></tr>
         </tbody>
       </table>
       <div class="card tint small" role="status" aria-live="polite">
@@ -104,12 +105,13 @@ function Explore() {
         <div class="row" role="group" aria-label="Compare speed with 20 mph">{RATIO.map(([s]) => (
           <button class="btn sm" aria-pressed={rel === s} style={rel === s ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => setRel(s)}>{s} mph</button>
         ))}</div>
-        <svg viewBox="0 0 400 70" width="100%" role="img" aria-label={`Braking distance and impact at ${rel} mph are ${relF} times those at 20 mph.`}>
-          <text x="0" y="20" font-size="13" fill="var(--ink)">20 mph</text>
-          <rect x="70" y="8" width={320 / 16} height="16" fill="var(--red)" stroke="var(--ink)" stroke-width="1" />
-          <text x="0" y="54" font-size="13" fill="var(--ink)">{rel} mph</text>
-          <rect x="70" y="42" width={(320 / 16) * relF} height="16" fill="var(--red)" stroke="var(--ink)" stroke-width="1" />
-          <text x={Math.min(78 + (320 / 16) * relF, 360)} y="55" font-size="14" font-weight="700" fill={relF === 16 ? 'var(--surface)' : 'var(--ink)'} text-anchor={relF === 16 ? 'end' : 'start'}>{`×${relF}`}</text>
+        <svg viewBox="0 0 300 64" width="100%" role="img" aria-label={`Braking distance and impact at ${rel} mph are ${relF} times those at 20 mph.`} style={{ maxWidth: '520px' }}>
+          <text x="0" y="21" font-size="14" fill="var(--ink)">20 mph</text>
+          <rect x="62" y="8" width={U} height="18" fill="var(--red)" stroke="var(--ink)" stroke-width="1" />
+          <text x={68 + U} y="22" font-size="14" font-weight="700" fill="var(--ink)">×1</text>
+          <text x="0" y="53" font-size="14" fill="var(--ink)">{rel} mph</text>
+          <rect x="62" y="40" width={U * relF} height="18" fill="var(--red)" stroke="var(--ink)" stroke-width="1" />
+          <text x={relF === 16 ? 56 + U * relF : 68 + U * relF} y="54" font-size="14" font-weight="700" fill={relF === 16 ? 'var(--surface)' : 'var(--ink)'} text-anchor={relF === 16 ? 'end' : 'start'}>{`×${relF}`}</text>
         </svg>
         <p class="small">Speed ×{rel / 20} → impact and braking distance ×{relF} ({rel / 20} × {rel / 20}). Relative sizes only: the handbook gives the ratio, not feet. <span class="plate">p. 2-16</span></p>
       </div>
@@ -119,7 +121,7 @@ function Explore() {
 
 interface Q { q: string; opts: string[]; a: number; why: string; page: string; place?: number[] }
 const QS: Q[] = [
-  { q: 'Tap where a truck going 55 mph stops (dry road, alert driver). The truck front is at 0 ft when the hazard appears.', opts: ['142 ft', '216 ft', '300 ft', '419 ft'], place: [142, 216, 300, 419], a: 3,
+  { q: 'A hazard appears when your truck front is at 0 ft. Going 55 mph (dry road, alert driver), at which line do you stop?', opts: ['142 ft', '216 ft', '300 ft', '419 ft'], place: [142, 216, 300, 419], a: 3,
     why: 'Perception 142 + reaction 61 + braking 216 = at least 419 ft. 216 ft is only the braking part; 300 ft is the football-field trap.', page: '2-16' },
   { q: 'Your speed doubles. Which part of stopping distance grows about 4 times?', opts: ['Perception distance', 'Reaction distance', 'Braking distance'], a: 2,
     why: 'Braking distance (and impact) grow 4× when speed doubles. Perception and reaction distance only about double.', page: '2-16' },

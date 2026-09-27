@@ -56,7 +56,7 @@ function Scene({ id, path, ok }: { id: SceneId; path?: string; ok?: boolean }) {
         <path d={p.d} fill="none" stroke={col} stroke-width="4" stroke-dasharray={ok ? '0' : '8 6'} stroke-linecap="round" />
         <circle cx={p.end[0]} cy={p.end[1]} r="11" fill={col} />
         <text x={p.end[0]} y={p.end[1] + 5} font-size="14" font-weight="700" text-anchor="middle" fill="var(--surface)">{ok ? '✓' : '✕'}</text>
-        <text x={Math.min(Math.max(p.end[0], 60), 300)} y={p.end[1] + 28} font-size="13" font-weight="700" text-anchor="middle" fill={col}>{p.tag}</text>
+        <text x={Math.min(Math.max(p.end[0], 60), 300)} y={p.end[1] + 28} font-size="13" font-weight="700" text-anchor="middle" fill={col} stroke="var(--surface)" stroke-width="4" paint-order="stroke">{p.tag}</text>
       </g>}
       <g transform={`rotate(${rot} 215 180)`}>
         <rect x="202" y="150" width="26" height="28" rx="4" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
@@ -121,21 +121,21 @@ const ORDER: SceneId[] = ['obstacle', 'oncoming', 'shoulder', 'blowout', 'abs', 
 /* Challenge: 8 decisions (different wording from Explore) */
 const QS: Dec[] = [
   { scene: 'obstacle', q: 'Stalled car in your lane, no room to stop, shoulder clear. Which is usually faster: stopping or steering around?', page: '2-38', rule: EXPLORE.obstacle.dec.rule,
-    opts: [{ t: 'Stopping — braking is always the safest move', path: 'straight', why: 'Stopping is not always the safest choice; a heavy truck needs a long distance to stop.' }, { t: 'Steering around — turning is almost always faster than stopping', ok: true, path: 'around', why: 'Right — and don’t brake while you turn.' }, { t: 'They take the same time', path: 'straight', why: 'Turning away almost always takes less time than stopping.' }] },
+    opts: [{ t: 'Steering around — turning is almost always faster than stopping', ok: true, path: 'around', why: 'Right — and don’t brake while you turn.' }, { t: 'Stopping — braking is always the safest move', path: 'straight', why: 'Stopping is not always the safest choice; a heavy truck needs a long distance to stop.' }, { t: 'They take the same time', path: 'straight', why: 'Turning away almost always takes less time than stopping.' }] },
   { scene: 'oncoming', q: 'An oncoming car drifts into your lane. Which way do you steer?', page: '2-39', rule: EXPLORE.oncoming.dec.rule,
     opts: [{ t: 'Left', path: 'left', why: 'The other driver will most likely swerve back into their own lane — your left.' }, { t: 'Right', ok: true, path: 'around', why: 'Right — away from where they will return.' }, { t: 'Neither — brake hard and hold the lane', path: 'straight', why: 'Not enough room, and locked wheels mean no control.' }] },
   { scene: 'shoulder', q: 'You are on the shoulder at highway speed. When may you start braking?', page: '2-39', rule: EXPLORE.shoulder.dec.rule,
-    opts: [{ t: 'Right away, as hard as possible', path: 'shoulderSkid', why: 'Hard braking on the loose shoulder causes a skid.' }, { t: 'When speed is down to about 20 mph — then very gently', ok: true, path: 'shoulderGood', why: 'Right — and keep one set of wheels on the pavement if you can.' }, { t: 'Pump the brakes the whole time', path: 'shoulderSkid', why: 'The rule is to avoid braking until about 20 mph.' }] },
+    opts: [{ t: 'Right away, as hard as possible', path: 'shoulderSkid', why: 'Hard braking on the loose shoulder causes a skid.' }, { t: 'Pump the brakes the whole time', path: 'shoulderSkid', why: 'The rule is to avoid braking until about 20 mph.' }, { t: 'When speed is down to about 20 mph — then very gently', ok: true, path: 'shoulderGood', why: 'Right — and keep one set of wheels on the pavement if you can.' }] },
   { q: 'You are forced back onto the road before you can stop. How do you get back on?', page: '2-39', rule: 'Grip the wheel tightly and turn sharply enough to get right back on the road. Do not edge back on slowly. As soon as both front tires are on the pavement, countersteer — “steer-countersteer” is one move.',
     opts: [{ t: 'Edge back on slowly and gradually', path: 'edgeBack', why: 'The tires can suddenly grab the pavement edge and you can lose control.' }, { t: 'Turn sharply back on; countersteer as soon as both front tires are on the pavement', ok: true, why: 'Right — steer-countersteer.' }, { t: 'Turn back on and wait until all wheels are on the pavement to countersteer', why: 'Countersteer immediately once both FRONT tires are on the pavement.' }] },
   { scene: 'blowout', q: 'Bang — the steering feels heavy. What first?', page: '2-40', rule: EXPLORE.blowout.dec.rule,
-    opts: [{ t: 'Brake hard', path: 'blowBad', why: 'Braking after a tire failure can make you lose control.' }, { t: 'Hold the wheel firmly and stay off the brake', ok: true, path: 'blowGood', why: 'Right — a failed front tire can twist the wheel out of your hands.' }, { t: 'Loosen your grip so the wheel can find its own line', path: 'blowBad', why: 'A failed front tire can twist the wheel out of a loose grip.' }] },
+    opts: [{ t: 'Hold the wheel firmly and stay off the brake', ok: true, path: 'blowGood', why: 'Right — a failed front tire can twist the wheel out of your hands.' }, { t: 'Brake hard', path: 'blowBad', why: 'Braking after a tire failure can make you lose control.' }, { t: 'Loosen your grip so the wheel can find its own line', path: 'blowBad', why: 'A failed front tire can twist the wheel out of a loose grip.' }] },
   { scene: 'abs', q: 'Your tractor has ABS. A car pulls out and you need to stop. How do you brake?', page: '2-42', rule: EXPLORE.abs.dec.rule,
     opts: [{ t: 'Stab braking', path: 'stab', why: 'Stab braking is only for vehicles without ABS.' }, { t: 'The way you always have — only the force you need, watching the trailer', ok: true, path: 'absGood', why: 'Right — brake normally with ABS.' }, { t: 'Pump the pedal rapidly', path: 'stab', why: 'ABS does not change how you brake: brake the way you always have.' }] },
   { q: 'Which statement about ABS is TRUE?', page: '2-41, 2-42', rule: 'ABS keeps the wheels from locking so you keep steering control. It does not necessarily shorten stopping distance, and it neither increases nor decreases your stopping power.',
     opts: [{ t: 'ABS always shortens your stopping distance', why: 'You may or may not stop sooner — ABS is about control.' }, { t: 'ABS increases your total braking power', why: 'ABS is an add-on; your stopping power does not go up or down.' }, { t: 'ABS helps you keep steering control during hard braking', ok: true, why: 'Right — you should still be able to steer around an obstacle while braking.' }] },
   { scene: 'skid', q: 'Your drive wheels lock while braking and the rear slides. What do you do?', page: '2-43', rule: EXPLORE.skid.dec.rule,
-    opts: [{ t: 'Keep braking and turn away from the skid', path: 'jackknife', why: 'Locked wheels keep sliding — jackknife risk.' }, { t: 'Stop braking, then countersteer quickly', ok: true, path: 'countersteer', why: 'Right — wheels roll and grip; countersteer stops the over-rotation.' }, { t: 'Accelerate to pull the truck straight', path: 'noCounter', why: 'Too much power spins the drive wheels — another skid cause (over-acceleration).' }] },
+    opts: [{ t: 'Keep braking and turn away from the skid', path: 'jackknife', why: 'Locked wheels keep sliding — jackknife risk.' }, { t: 'Accelerate to pull the truck straight', path: 'noCounter', why: 'Too much power spins the drive wheels — another skid cause (over-acceleration).' }, { t: 'Stop braking, then countersteer quickly', ok: true, path: 'countersteer', why: 'Right — wheels roll and grip; countersteer stops the over-rotation.' }] },
 ];
 
 function Decision({ d, pick, onPick, locked }: { d: Dec; pick: number | null; onPick: (k: number) => void; locked: boolean }) {
@@ -146,7 +146,7 @@ function Decision({ d, pick, onPick, locked }: { d: Dec; pick: number | null; on
       <strong>{d.q}</strong>
       <div class="stack" role="group" aria-label="Choices" style={{ gap: '8px' }}>{d.opts.map((x, k) => (
         <button class="btn" aria-pressed={!locked ? pick === k : undefined} disabled={locked && pick !== null}
-          style={{ justifyContent: 'flex-start', textAlign: 'left', ...((locked ? pick !== null && x.ok : pick === k && x.ok) ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}
+          style={{ justifyContent: 'flex-start', textAlign: 'left', ...((locked ? pick !== null && x.ok : pick === k && x.ok) ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
           onClick={() => onPick(k)}>{(locked ? pick !== null && x.ok : pick === k && x.ok) ? '✓ ' : pick === k ? '✕ ' : ''}{x.t}</button>
       ))}</div>
       {o && (
@@ -189,7 +189,7 @@ export default function Emergency(props: WidgetProps) {
       </div>
       {mode === 'try' && (
         <div class="stack">
-          <div class="grid2" role="group" aria-label="Emergency">{ORDER.map((id, k) => (
+          <div class="row" role="group" aria-label="Emergency" style={{ gap: '6px' }}>{ORDER.map((id, k) => (
             <button class="btn sm" aria-pressed={id === sc} style={id === sc ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => { setSc(id); setPick(null); }}>{k + 1}. {EXPLORE[id].label}</button>
           ))}</div>
           <Decision d={EXPLORE[sc].dec} pick={pick} locked={false} onPick={setPick} />

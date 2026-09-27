@@ -67,9 +67,9 @@ function useTween(target: number, reduced: boolean) {
 
 type Act = 'release' | 'valve' | 'steer' | 'harder';
 const ACTS: { id: Act; t: string; a: number; ok?: boolean; head: string; why: string }[] = [
-  { id: 'release', t: 'Release the brakes', a: 0, ok: true, head: 'Trailer straightens', why: 'With the brakes released, the trailer wheels roll and grip the road again. With traction back, the trailer follows the tractor and straightens out.' },
   { id: 'valve', t: 'Pull the trailer hand valve', a: 62, head: 'Jackknife', why: 'The hand valve brakes only the trailer. Locked trailer brakes caused the skid, so more trailer braking locks the wheels harder and the trailer swings further. Some drivers say they do this — the handbook says no.' },
   { id: 'steer', t: 'Steer hard to catch it', a: 40, head: 'Still skidding — and tipping risk', why: 'The trailer wheels are still locked, so it keeps swinging. A sudden jerk of the wheel can also tip the trailer over (crack-the-whip).' },
+  { id: 'release', t: 'Release the brakes', a: 0, ok: true, head: 'Trailer straightens', why: 'With the brakes released, the trailer wheels roll and grip the road again. With traction back, the trailer follows the tractor and straightens out.' },
   { id: 'harder', t: 'Brake harder', a: 62, head: 'Jackknife', why: 'Harder braking keeps the trailer wheels locked. Locked wheels have no grip, so the trailer swings around to the side.' },
 ];
 
@@ -79,7 +79,7 @@ interface Q { q: string; opts: Opt[]; rule: string; page: string; a?: number; mi
 const QS: Q[] = [
   { q: 'Traffic stops suddenly and you brake hard. Your trailer is lightly loaded. What should you do while you brake?', page: '6-3', a: 0, mirror: false,
     rule: 'You see a trailer skid first — and best — in your mirrors. Whenever you brake hard, glance at the mirrors to confirm the trailer is still behind you.',
-    opts: [{ t: 'Glance in the mirrors to check the trailer is still behind you', ok: true, why: 'Right — the mirror is the earliest warning. If the trailer has already left your lane, the jackknife is very hard to stop.' }, { t: 'Wait until you feel the trailer tug through the steering wheel', why: 'By the time you feel it, the trailer may have left your lane. The mirror shows it first.' }, { t: 'Listen for the trailer tires squealing', why: 'Sound is not the handbook’s signal. The mirror shows the skid first and best.' }] },
+    opts: [{ t: 'Wait until you feel the trailer tug through the steering wheel', why: 'By the time you feel it, the trailer may have left your lane. The mirror shows it first.' }, { t: 'Glance in the mirrors to check the trailer is still behind you', ok: true, why: 'Right — the mirror is the earliest warning. If the trailer has already left your lane, the jackknife is very hard to stop.' }, { t: 'Listen for the trailer tires squealing', why: 'Sound is not the handbook’s signal. The mirror shows the skid first and best.' }] },
   { q: 'In the mirror, the trailer is swinging out of line. What do you do?', page: '6-3', a: 16, mirror: true,
     rule: 'Stop using the brake: release it so the tires grip again. Do not use the trailer hand brake to straighten out the rig — the trailer brakes caused the skid.',
     opts: ACTS.map((x) => ({ t: x.t, ok: x.ok, why: `${x.head}. ${x.why}`, a: x.a })) },
@@ -108,7 +108,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
       {q.a !== undefined && <Scene a={a} mirror={!!q.mirror || (pick !== null && !!q.opts[pick].ok) || pick !== null} />}
       <strong>{q.q}</strong>
       <div class="stack" role="group" aria-label="Choices" style={{ gap: '8px' }}>{q.opts.map((o, k) => (
-        <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && o.ok ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}
+        <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && o.ok ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
           disabled={pick !== null} onClick={() => { setPick(k); if (!o.ok) setMiss(miss + 1); onEvidence({ concepts, ok: !!o.ok }); }}>
           {pick !== null && o.ok ? '✓ ' : pick === k ? '✕ ' : ''}{o.t}</button>
       ))}</div>

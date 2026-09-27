@@ -53,7 +53,7 @@ export function outcome(drops: Drop[], d: Drop): Outcome {
   }
 }
 
-const LANE = 46;
+const LANE = 52;
 export function Timeline({ drops, kinds, reveal = true, ghost }: { drops: Drop[]; kinds: Kind[]; reveal?: boolean; ghost?: { kind: Kind; days: number } }) {
   const H = kinds.length * LANE + 22;
   const cx = (d: Drop) => (d.year - Y0) * COL + COL / 2 + (drops.filter((x) => x.kind === d.kind && x.year === d.year && x.id < d.id).length * 7);
@@ -84,7 +84,7 @@ export function Timeline({ drops, kinds, reveal = true, ghost }: { drops: Drop[]
                 </g>
               );
             })}
-            {ghost && ghost.kind === k && last && ghost.days > 0 && <rect x={cx(last)} y={top + 38} width={Math.min(ghost.days === LIFE ? W : (ghost.days / Y) * COL, W - cx(last))} height={6} fill="none" stroke="var(--ink-2)" stroke-dasharray="3 2" />}
+            {ghost && ghost.kind === k && last && ghost.days > 0 && <rect x={cx(last)} y={top + 45} width={Math.min(ghost.days === LIFE ? W : (ghost.days / Y) * COL, W - cx(last))} height={6} fill="none" stroke="var(--ink-2)" stroke-dasharray="3 2" />}
           </g>
         );
       })}
@@ -98,7 +98,7 @@ const d = (id: number, kind: Kind, year: number, hz = false): Drop => ({ id, kin
 export const CASES: Case[] = [
   { text: 'In 2024 a driver is convicted of following too closely in a CMV. It is the only violation on the record. What happens to the CDL?', drops: [d(1, 'serious', 2024)], choices: ['No disqualification', 'At least 60 days', 'At least 120 days'], answer: 'No disqualification' },
   { text: 'CMV convictions: speeding 15 mph over (2023), then an erratic lane change (2025).', drops: [d(1, 'serious', 2023), d(2, 'serious', 2025)], choices: ['No disqualification', 'At least 60 days', 'At least 120 days'], answer: 'At least 60 days' },
-  { text: 'A driver ignored an out-of-service order in 2017 and again in 2025 (not HazMat). What is the penalty for the 2025 violation?', drops: [d(1, 'oos', 2017), d(2, 'oos', 2025)], choices: ['At least 90 days', 'At least 1 year', 'At least 3 years'], answer: 'At least 1 year' },
+  { text: 'A driver ignored an out-of-service order in 2016 and again in 2024 (not HazMat). What is the penalty for the 2024 violation?', drops: [d(1, 'oos', 2016), d(2, 'oos', 2024)], choices: ['At least 90 days', 'At least 1 year', 'At least 3 years'], answer: 'At least 1 year' },
   { text: 'First-ever violation: the driver did not have room to get all the way across a railroad crossing without stopping.', drops: [d(1, 'rr', 2025)], choices: ['No disqualification', 'At least 60 days', 'At least 120 days'], answer: 'At least 60 days' },
   { text: 'At a roadside check the driver’s BAC is .02 while driving a CMV.', drops: [d(1, 'alc', 2026)], choices: ['Nothing: under the limit', '24 hours out of service', 'CDL lost 1 year'], answer: '24 hours out of service' },
   { text: 'CMV DUI in 2019 (served 1 year). In 2025 the driver leaves the scene of an accident involving a CMV.', drops: [d(1, 'major', 2019), d(2, 'major', 2025)], choices: ['At least 1 year', 'At least 3 years', 'Life'], answer: 'Life' },
@@ -134,8 +134,8 @@ function Explore() {
       {lo && latest && <div class={`card ${lo.disq ? 'warn' : 'tint'}`} role="status" aria-live="polite"><div class="eyebrow">Latest: {latest.year} · {KINDS[latest.kind].short}</div>
         <div style={{ font: '700 1.4rem/1.1 var(--display)' }}>{lo.text}</div><p class="small">{lo.why} <span class="plate">p. {lo.page}</span></p></div>}
       {sorted.length > 0 && <ul class="list" style={{ margin: 0, padding: 0, listStyle: 'none' }}>{sorted.map((x) => (
-        <li class="spread" style={{ padding: '6px 0' }}><span class="small"><strong class="num">{x.year}</strong> {KINDS[x.kind].short}{x.hz ? ' (H)' : ''} → {outcome(drops, x).text}</span>
-          <button class="btn sm ghost" aria-label={`Remove ${x.year} ${KINDS[x.kind].short}`} onClick={() => setDrops(drops.filter((z) => z.id !== x.id))}>Remove</button></li>))}</ul>}
+        <li style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 0' }}><span class="small" style={{ flex: 1, minWidth: 0 }}><strong class="num">{x.year}</strong> {KINDS[x.kind].short}{x.hz ? ' (H)' : ''} → {outcome(drops, x).text}</span>
+          <button class="btn sm ghost" style={{ flex: 'none' }} aria-label={`Remove ${x.year} ${KINDS[x.kind].short}`} onClick={() => setDrops(drops.filter((z) => z.id !== x.id))}>Remove</button></li>))}</ul>}
       <div class="row"><button class="btn sm" onClick={() => setDrops([])}>Clear strip</button></div>
     </div>
   );

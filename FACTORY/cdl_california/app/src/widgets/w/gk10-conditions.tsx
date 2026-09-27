@@ -21,7 +21,7 @@ export function NightVis({ kind, d, high }: { kind: 'oncoming' | 'following'; d:
   const px = (ft: number) => 66 + ft * 0.26; const reach = high ? 500 : 250; const glare = high && mustDim(d);
   const ox = px(d); const oy = kind === 'oncoming' ? 40 : 88;
   return (
-    <svg viewBox="0 0 360 140" width="100%" role="img" aria-label={`Night road. ${kind === 'oncoming' ? 'Oncoming' : 'Leading'} vehicle ${d} feet away. Your ${high ? 'high' : 'low'} beams reach about ${high ? '350 to 500' : '250'} feet.${glare ? ' Your high beams glare into the other driver’s eyes.' : ''}`}>
+    <svg viewBox="0 0 360 140" width="100%" style={{ maxWidth: '560px' }} role="img" aria-label={`Night road. ${kind === 'oncoming' ? 'Oncoming' : 'Leading'} vehicle ${d} feet away. Your ${high ? 'high' : 'low'} beams reach about ${high ? '350 to 500' : '250'} feet.${glare ? ' Your high beams glare into the other driver’s eyes.' : ''}`}>
       <rect x="0" y="0" width="360" height="140" fill="#101813" />
       <rect x="0" y="24" width="360" height="96" fill="#2a352e" />
       <line x1="0" y1="72" x2="360" y2="72" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 6" />
@@ -30,16 +30,16 @@ export function NightVis({ kind, d, high }: { kind: 'oncoming' | 'following'; d:
       <Truck x={10} y={80} />
       <line x1={px(500)} y1="24" x2={px(500)} y2="120" stroke="#e6ece7" stroke-width="1" stroke-dasharray="3 3" />
       <text x={px(500)} y="136" text-anchor="middle" font-size="12" fill="#e6ece7">500 ft</text>
-      <text x={px(250)} y="18" text-anchor="middle" font-size="12" fill="#e6ece7">low ≈ 250 ft</text>
+      <line x1={px(250)} y1="24" x2={px(250)} y2="120" stroke="#e6ece7" stroke-width="0.8" stroke-dasharray="2 4" /><text x={px(250)} y="136" text-anchor="middle" font-size="12" fill="#e6ece7">250 ft</text><text x="8" y="16" font-size="12" fill="#e6ece7">{high ? 'High beams: see ≈ 350–500 ft' : 'Low beams: see ≈ 250 ft'}</text>
       <g><rect x={ox} y={oy} width="30" height="16" rx="3" fill="#cfd8d2" stroke="#101813" />
         {kind === 'oncoming' ? <><circle cx={ox} cy={oy + 3} r="2.5" fill="#fff" /><circle cx={ox} cy={oy + 13} r="2.5" fill="#fff" /></> : <><rect x={ox + 28} y={oy + 1} width="3" height="4" fill="var(--red)" /><rect x={ox + 28} y={oy + 11} width="3" height="4" fill="var(--red)" /></>}</g>
-      {glare && <g><circle cx={ox + 8} cy={oy + 8} r="16" fill="var(--amber)" fill-opacity="0.6" /><text x={Math.min(ox + 8, 300)} y={oy === 40 ? 16 : 136} text-anchor="middle" font-size="12" font-weight="700" fill="var(--amber)">GLARE</text></g>}
+      {glare && <g><circle cx={ox + 8} cy={oy + 8} r="16" fill="var(--amber)" fill-opacity="0.6" /><text x={ox + 40} y={oy + 13} font-size="13" font-weight="700" fill="#f2c230">GLARE</text></g>}
     </svg>
   );
 }
 export function FogVis({ high, flashers }: { high: boolean; flashers: boolean }) {
   return (
-    <svg viewBox="0 0 360 120" width="100%" role="img" aria-label={`Truck in fog with ${high ? 'high beams: light bounces off the fog back into your eyes' : 'low beams and fog lights'}${flashers ? ', 4-way flashers on' : ''}. Roadside reflectors mark the curve.`}>
+    <svg viewBox="0 0 360 120" width="100%" style={{ maxWidth: '560px' }} role="img" aria-label={`Truck in fog with ${high ? 'high beams: light bounces off the fog back into your eyes' : 'low beams and fog lights'}${flashers ? ', 4-way flashers on' : ''}. Roadside reflectors mark the curve.`}>
       <rect x="0" y="0" width="360" height="120" fill="var(--surface-2)" />
       <path d="M 0 96 C 140 96 220 90 360 50" stroke="var(--ink-2)" stroke-width="30" fill="none" stroke-opacity="0.4" />
       {[[170, 78], [230, 68], [290, 52], [340, 36]].map(([x, y]) => <rect x={x} y={y} width="4" height="8" fill="var(--amber)" stroke="var(--ink)" stroke-width="0.6" />)}
@@ -181,7 +181,7 @@ function Heat() {
       <div class="card tint small">In very hot weather, inspect tires <strong>every 2 hours or every 100 miles</strong>. <P p="2-34" /></div>
       <strong class="small">A tire is hot and its pressure reads high. You…</strong>
       <div class="row"><button class="btn sm" aria-pressed={air === 'out'} onClick={() => setAir('out')}>Let some air out</button><button class="btn sm" aria-pressed={air === 'wait'} onClick={() => setAir('wait')}>Leave the pressure alone</button></div>
-      {air && <div class={`feedback ${air === 'wait' ? 'good' : 'bad'}`} role="status"><p class="small">{air === 'out' ? '✗ When the tire cools, the pressure will be too low. Never let air out of a hot tire.' : '✓ Pressure goes up as tires heat. If a tire is too hot to touch, stay stopped until it cools, or it may blow out or catch fire.'} <P p="2-34" /></p></div>}
+      {air && <div class={`feedback ${air === 'wait' ? 'good' : 'bad'}`} role="status"><TireVis letOut={air === 'out'} /><p class="small">{air === 'out' ? '✗ When the tire cools, the pressure will be too low. Never let air out of a hot tire.' : '✓ Pressure goes up as tires heat. If a tire is too hot to touch, stay stopped until it cools, or it may blow out or catch fire.'} <P p="2-34" /></p></div>}
       <strong class="small">Radiator cap</strong>
       <Seg label="Cap temperature" value={cool ? 'c' : 'h'} set={(x) => { setCool(x === 'c'); setOpen(false); }} opts={[['h', 'Engine just shut off (hot)'], ['c', 'Cool enough to touch bare-handed']]} />
       <CapVis cool={cool} opened={open} />

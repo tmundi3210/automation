@@ -13,7 +13,7 @@ type Sys = keyof typeof RULES;
 
 export function clock(h: number): string {
   const hh = ((h % 24) + 24) % 24, ap = hh < 12 ? 'a.m.' : 'p.m.', t = hh % 12 === 0 ? 12 : hh % 12;
-  return hh === 0 ? '12:00 midnight' : hh === 12 ? '12:00 noon' : `${t}:00 ${ap}${h >= 24 ? ' (next day)' : ''}`;
+  return (hh === 0 ? '12:00 midnight' : hh === 12 ? '12:00 noon' : `${t}:00 ${ap}`) + (h >= 24 ? ' (next day)' : '');
 }
 const short = (h: number) => { const hh = h % 24; return hh === 0 ? '12a' : hh === 12 ? '12p' : `${hh % 12}${hh < 12 ? 'a' : 'p'}`; };
 
@@ -76,7 +76,7 @@ function Weekly() {
     <div class="card flat stack">
       <strong>Multi-day limit (hours on duty)</strong>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>{days.map((v, i) => (
-        <div class="field" style={{ gap: '2px' }}><label class="small" for={`dc-d${i}`}>Day {i + 1}{i === 7 ? ' (today)' : ''}</label>
+        <div class="field" style={{ gap: '2px' }}><label class="small" for={`dc-d${i}`}>{i === 7 ? 'Today' : `Day ${i + 1}`}</label>
           <input id={`dc-d${i}`} type="number" inputMode="numeric" min={0} max={24} value={v} style={{ minWidth: 0, width: '100%' }} onInput={(e) => { const n = [...days]; n[i] = Math.min(24, Math.max(0, +(e.target as HTMLInputElement).value || 0)); setDays(n); }} /></div>))}</div>
       <div class="row">
         <label class="toggle"><input type="checkbox" checked={every} onChange={(e) => setEvery((e.target as HTMLInputElement).checked)} />Carrier runs trucks every day (federal 70/8)</label>

@@ -44,8 +44,8 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
       {wheel(90, true)}{wheel(124, true)}{wheel(276, false)}
       {skid && <g><line x1="40" y1="145" x2="106" y2="145" stroke="var(--red)" stroke-width="4" /><text x="72" y="44" font-size="15" font-weight="700" fill="var(--red)" text-anchor="middle">✕ SKID</text></g>}
       {active && !skid && <text x="107" y="44" font-size="13" font-weight="700" fill="var(--accent)" text-anchor="middle">drive wheels slowed</text>}
-      <text x="72" y="104" font-size="13" fill="var(--ink)" text-anchor="middle">drive</text>
-      <text x="180" y="182" font-size="13" text-anchor="middle" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} font-weight="700">{SURF.find((s) => s.id === surf)!.label} road</text>
+      <text x="107" y="178" font-size="13" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} text-anchor="middle">drive wheels</text>
+      <text x="276" y="178" font-size="13" text-anchor="middle" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} font-weight="700">{SURF.find((s) => s.id === surf)!.label} road</text>
     </svg>
   );
 }
@@ -62,14 +62,14 @@ function HillView({ gear, when }: { gear: Gear | null; when: 'before' | 'during'
       <text x="36" y="160" font-size="13" fill="var(--ink)">climb</text>
       <text x="262" y="100" font-size="13" fill="var(--ink)">downgrade</text>
       <line x1="170" y1="60" x2="170" y2="28" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" />
-      <text x="170" y="22" font-size="13" text-anchor="middle" fill="var(--accent)" font-weight="700">shift here: BEFORE</text>
+      <text x="160" y="22" font-size="13" text-anchor="end" fill="var(--accent)" font-weight="700">shift here: BEFORE →</text>
       <g transform={when === 'before' ? 'translate(146 44)' : 'translate(250 88) rotate(25)'}>
         <rect x="-18" y="-8" width="36" height="16" rx="3" fill="var(--accent)" stroke="var(--ink)" />
       </g>
       {/* brake heat gauge */}
-      <rect x="16" y="14" width="96" height="14" rx="7" fill="var(--surface)" stroke="var(--ink)" />
-      <rect x="16" y="14" width={96 * heat} height="14" rx="7" fill={heat >= 0.8 ? 'var(--red)' : heat >= 0.5 ? 'var(--amber)' : 'var(--ok)'} />
-      <text x="16" y="44" font-size="13" fill="var(--ink)">brake heat{heat >= 0.8 ? ': hot, can fade' : heat >= 0.5 ? ': rising' : heat > 0 ? ': cool' : ''}</text>
+      <rect x="250" y="14" width="96" height="14" rx="7" fill="var(--surface)" stroke="var(--ink)" />
+      <rect x="250" y="14" width={96 * heat} height="14" rx="7" fill={heat >= 0.8 ? 'var(--red)' : heat >= 0.5 ? 'var(--amber)' : 'var(--ok)'} />
+      <text x="250" y="44" font-size="13" fill="var(--ink)">brake heat{heat >= 0.8 ? ': hot, can fade' : heat >= 0.5 ? ': rising' : heat > 0 ? ': cool' : ''}</text>
     </svg>
   );
 }
@@ -81,10 +81,10 @@ const OFF_RULE = 'When the drive wheels have poor traction, the retarder can mak
 const QS: Q[] = [
   { q: 'Light rain has made the road wet. What do you do with the retarder?', surf: 'wet', ret: [false, true, true], page: '2-11', rule: OFF_RULE,
     opts: [{ t: 'Turn it off', ok: true, why: 'Right — on a wet road the retarder can skid the drive wheels.' }, { t: 'Leave it on to help prevent skids', why: 'A retarder does not prevent skids — it can cause one on poor traction.' }, { t: 'Set it to its highest power', why: 'More retarder force on slick drive wheels makes a skid more likely.' }] },
-  { q: 'The road is dry and you are slowing for traffic. Is using the retarder OK?', surf: 'dry', ret: [true, false, true], page: '2-11', rule: 'A retarder helps slow the vehicle, reducing the need for your brakes: less brake wear and another way to slow down. (Retarders can be noisy — know where their use is allowed.)',
-    opts: [{ t: 'Yes — it reduces brake wear and gives another way to slow', ok: true, why: 'Right — on good traction the retarder is a help.' }, { t: 'No — retarders are only for icy roads', why: 'Backwards: icy is exactly when it must be off.' }, { t: 'Only if you also hold the service brake down', why: 'The retarder works each time your foot is fully off the accelerator; it does not need the brake pedal.' }] },
+  { q: 'The road is dry and you are slowing for traffic. Is using the retarder OK?', surf: 'dry', ret: [false, true, true], page: '2-11', rule: 'A retarder helps slow the vehicle, reducing the need for your brakes: less brake wear and another way to slow down. (Retarders can be noisy — know where their use is allowed.)',
+    opts: [{ t: 'No — retarders are only for icy roads', why: 'Backwards: icy is exactly when it must be off.' }, { t: 'Only if you also hold the service brake down', why: 'The retarder works each time your foot is fully off the accelerator; it does not need the brake pedal.' }, { t: 'Yes — it reduces brake wear and gives another way to slow', ok: true, why: 'Right — on good traction the retarder is a help.' }] },
   { q: 'Snow covers the road. Why must the retarder be off?', surf: 'snowy', ret: [true, true, true], page: '2-11', rule: OFF_RULE,
-    opts: [{ t: 'It can make the drive wheels skid', ok: true, why: 'Right — all of its force goes to the drive wheels, which can stop turning and slide.' }, { t: 'It overheats the engine in the cold', why: 'Not the handbook’s reason. The danger is a drive-wheel skid.' }, { t: 'It stops working below freezing', why: 'Not the handbook’s reason. It still works — and that is what can skid the drive wheels.' }] },
+    opts: [{ t: 'It overheats the engine in the cold', why: 'Not the handbook’s reason. The danger is a drive-wheel skid.' }, { t: 'It can make the drive wheels skid', ok: true, why: 'Right — all of its force goes to the drive wheels, which can stop turning and slide.' }, { t: 'It stops working below freezing', why: 'Not the handbook’s reason. It still works — and that is what can skid the drive wheels.' }] },
   { q: 'When a retarder is switched on, which wheels does it brake?', page: '2-11', rule: 'A retarder applies braking only to the drive wheels, each time your foot comes fully off the accelerator.',
     opts: [{ t: 'All wheels', why: 'That is the service brakes. The retarder works on the drive wheels only.' }, { t: 'Only the drive wheels', ok: true, why: 'Right — which is why slick drive wheels can skid.' }, { t: 'Only the steering wheels', why: 'The steering (front) wheels are not driven by the engine.' }] },
   { q: 'Which is NOT one of the 4 basic types of retarders?', page: '2-11', rule: 'The 4 basic types are exhaust, engine, hydraulic, and electric.',
@@ -110,7 +110,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
       {surf && pick !== null && <RoadView surf={surf.id} on={q.ret ? q.ret[pick] : true} footOff={true} />}
       <strong>{q.q}</strong>
       <div class="stack" role="group" aria-label="Answer choices" style={{ gap: '8px' }}>{q.opts.map((o, k) => (
-        <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && o.ok ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }}
+        <button class="btn" style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && o.ok ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === k ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
           disabled={pick !== null} onClick={() => { setPick(k); if (!o.ok) setMiss(miss + 1); onEvidence({ concepts, ok: !!o.ok }); }}>
           {pick !== null && o.ok ? '✓ ' : pick === k ? '✕ ' : ''}{o.t}</button>
       ))}</div>
@@ -141,14 +141,14 @@ export default function RetardersGears(props: WidgetProps) {
   const skid = on && footOff && s.slick;
 
   let msg: string;
-  if (s.slick) msg = on ? (footOff ? `Skid! On a ${s.label.toLowerCase()} road the drive wheels have poor traction. All the retarder’s force goes to them, so they stop turning and slide. Turn the retarder OFF.` : 'Armed: the moment your foot comes fully off the accelerator it will brake the slick drive wheels. Turn it OFF on this road.') : `Correct setting: retarder OFF on a ${s.label.toLowerCase()} road, so it cannot skid the drive wheels.`;
+  if (s.slick) msg = on ? (footOff ? `Skid! On ${surf === 'icy' ? 'an' : 'a'} ${s.label.toLowerCase()} road the drive wheels have poor traction. All the retarder’s force goes to them, so they stop turning and slide. Turn the retarder OFF.` : 'Armed: the moment your foot comes fully off the accelerator it will brake the slick drive wheels. Turn it OFF on this road.') : `Correct setting: retarder OFF on ${surf === 'icy' ? 'an' : 'a'} ${s.label.toLowerCase()} road, so it cannot skid the drive wheels.`;
   else msg = on ? (footOff ? 'Good traction: the retarder slows the drive wheels, so you need your service brakes less — less brake wear and another way to slow down.' : 'Armed: it works each time your foot comes fully off the accelerator.') : 'Allowed, but on a dry road the retarder could be helping: less brake wear, another way to slow down.';
 
   return (
     <div class="stack">
       <div class="tabs" role="tablist">
         <button role="tab" aria-selected={mode === 'ret'} onClick={() => setMode('ret')}>Retarder</button>
-        <button role="tab" aria-selected={mode === 'hill'} onClick={() => setMode('hill')}>Downhill gear</button>
+        <button role="tab" aria-selected={mode === 'hill'} onClick={() => setMode('hill')}>Hill gear</button>
         <button role="tab" aria-selected={mode === 'check'} onClick={() => setMode('check')}>Challenge (6)</button>
       </div>
 

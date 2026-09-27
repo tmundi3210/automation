@@ -84,7 +84,7 @@ function CloseView({ sel }: { sel: PartId | null }) {
   return (
     <g>
       <rect x="0" y="0" width={W} height={H} fill="var(--bg)" />
-      <circle cx="470" cy="400" r="122" fill="var(--ink)" /><circle cx="470" cy="400" r="70" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="3" />
+      <circle cx="470" cy="420" r="128" fill="var(--ink)" /><circle cx="470" cy="420" r="56" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="3" />
       {/* cab back wall + frame */}
       <rect x="-4" y="-4" width="116" height="266" fill="var(--accent)" stroke={INK} stroke-width="2" />
       <rect x="18" y="26" width="64" height="40" rx="5" fill="var(--blue-soft)" stroke={INK} stroke-width="2" />
@@ -97,9 +97,9 @@ function CloseView({ sel }: { sel: PartId | null }) {
       <rect x="140" y="226" width="46" height="32" rx="5" fill="var(--surface-2)" {...s('tpv')} />
       <circle cx="163" cy="242" r="6" fill="var(--ink-2)" />
       {/* trailer nose, upper plate, sockets */}
-      <rect x="300" y="-4" width="304" height="190" fill="var(--surface)" stroke={INK} stroke-width="2" />
-      {[380, 460, 540].map((x) => <line x1={x} y1="0" x2={x} y2="182" stroke="var(--line)" stroke-width="3" />)}
-      <rect x="300" y="186" width="304" height="18" fill="var(--surface-2)" {...s('upper')} />
+      <rect x="300" y="-4" width="304" height="180" fill="var(--surface)" stroke={INK} stroke-width="2" />
+      {[380, 460, 540].map((x) => <line x1={x} y1="0" x2={x} y2="172" stroke="var(--line)" stroke-width="3" />)}
+      <rect x="300" y="176" width="304" height="18" fill="var(--surface-2)" {...s('upper')} />
       <rect x="284" y="48" width="16" height="20" rx="3" fill="var(--surface-2)" stroke={INK} stroke-width="2" />
       <rect x="280" y="92" width="20" height="18" rx="5" fill="var(--red)" {...s('glad')} />
       <rect x="280" y="124" width="20" height="18" rx="5" fill="var(--blue)" {...s('glad')} />
@@ -108,19 +108,19 @@ function CloseView({ sel }: { sel: PartId | null }) {
       {hose('red', 'M130 112 C 190 190 250 170 280 101', 'var(--red)')}
       {hose('blue', 'M130 142 C 190 222 250 200 280 133', 'var(--blue)')}
       {/* fifth wheel with cutaway, jaws, kingpin, release handle */}
-      <path d="M384 222 L526 222 L508 262 L402 262 Z" fill="var(--surface-2)" stroke={INK} stroke-width="2" />
-      <rect x="358" y="204" width="196" height="18" rx="3" fill="var(--ink-2)" {...s('fifth')} />
-      <rect x="418" y="206" width="64" height="16" fill="var(--bg)" stroke={INK} stroke-width="1" stroke-dasharray="3 2" />
-      <rect x="424" y="208" width="20" height="14" rx="2" fill="var(--ink)" {...s('jaws', 1.5)} />
-      <rect x="456" y="208" width="20" height="14" rx="2" fill="var(--ink)" {...s('jaws', 1.5)} />
+      <path d="M380 230 L548 230 L526 262 L402 262 Z" fill="var(--surface-2)" stroke={INK} stroke-width="2" />
+      <rect x="350" y="200" width="222" height="30" rx="4" fill="var(--ink-2)" {...s('fifth')} />
+      <rect x="408" y="203" width="94" height="27" fill="var(--bg)" stroke={INK} stroke-width="1" stroke-dasharray="3 2" />
+      <rect x="414" y="206" width="30" height="22" rx="3" fill="var(--ink)" {...s('jaws', 1.5)} />
+      <rect x="466" y="206" width="30" height="22" rx="3" fill="var(--ink)" {...s('jaws', 1.5)} />
       <g {...s('kingpin', 1.5)}>
-        <rect x="438" y="198" width="24" height="8" fill="var(--surface)" />
-        <rect x="444" y="206" width="12" height="16" fill="var(--surface)" />
-        <path d="M444 222 L456 222 L462 232 L438 232 Z" fill="var(--surface)" />
+        <rect x="433" y="192" width="44" height="10" fill="var(--surface)" />
+        <rect x="446" y="202" width="18" height="24" fill="var(--surface)" />
+        <path d="M446 226 L464 226 L474 240 L436 240 Z" fill="var(--surface)" />
       </g>
-      <line x1="388" y1="234" x2="332" y2="246" {...s('jaws', 5)} stroke-linecap="round" />
-      <circle cx="328" cy="247" r="7" fill="var(--surface)" {...s('jaws')} />
-      <path d="M352 232 l6 -10 l6 10" fill="none" {...s('jaws', 2.5)} />
+      <line x1="384" y1="240" x2="330" y2="252" {...s('jaws', 6)} stroke-linecap="round" />
+      <circle cx="326" cy="253" r="8" fill="var(--surface)" {...s('jaws')} />
+      <path d="M350 240 l7 -12 l7 12" fill="none" {...s('jaws', 3)} />
     </g>
   );
 }
@@ -130,11 +130,11 @@ function Diagram({ view, sel, focus, badges, onPick, onZoom, reducedMotion }: { 
   const f = focus ? PART[focus] : null;
   const label = view === 'rig' ? 'Side view of a tractor-semitrailer (left side) with a converter dolly inset' : 'Close-up of the coupling: back of cab, air lines, glad hands, fifth wheel cut away to show jaws and kingpin';
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', maxWidth: '640px', width: '100%', margin: '0 auto' }}>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={label + (f ? `. Highlighted: ${badges ? f.name : 'a part'}.` : '')} style={{ borderRadius: '8px', background: 'var(--bg)' }}>
         {view === 'rig' ? <RigView sel={focus} /> : <CloseView sel={focus} />}
         {badges && parts.map((p) => <g><line x1={p.b[0]} y1={p.b[1]} x2={p.t[0]} y2={p.t[1]} stroke={sel === p.id ? 'var(--amber)' : 'var(--ink-2)'} stroke-width={sel === p.id ? 3 : 1.5} stroke-dasharray={sel === p.id ? '' : '4 3'} /><circle cx={p.t[0]} cy={p.t[1]} r="4" fill={sel === p.id ? 'var(--amber)' : 'var(--ink-2)'} /></g>)}
-        {badges && view === 'rig' && <line x1="266" y1="150" x2="266" y2="226" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 3" />}
+        {badges && view === 'rig' && <line x1="290" y1="96" x2="266" y2="226" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 3" />}
         {f && <circle cx={f.t[0]} cy={f.t[1]} r="30" fill="none" stroke="var(--amber)" stroke-width="4" stroke-dasharray="8 5">
           {!reducedMotion && <animate attributeName="r" values="26;34;26" dur="1.6s" repeatCount="indefinite" />}
         </circle>}
@@ -145,7 +145,7 @@ function Diagram({ view, sel, focus, badges, onPick, onZoom, reducedMotion }: { 
           style={{ position: 'absolute', left: `${(p.b[0] / W) * 100}%`, top: `${(p.b[1] / H) * 100}%`, transform: 'translate(-50%,-50%)', width: '30px', height: '30px', borderRadius: '50%', padding: 0, cursor: 'pointer', font: '700 .8rem/1 var(--body)', border: `2px solid ${on ? 'var(--accent)' : 'var(--ink)'}`, background: on ? 'var(--accent)' : 'var(--surface)', color: on ? 'var(--accent-ink)' : 'var(--ink)', boxShadow: 'var(--shadow)' }}>{i}</button>;
       })}
       {badges && view === 'rig' && <button type="button" aria-label="Zoom in on the coupling: fifth wheel, kingpin, air lines" title="Zoom in on the coupling" onClick={onZoom}
-        style={{ position: 'absolute', left: `${(266 / W) * 100}%`, top: `${(150 / H) * 100}%`, transform: 'translate(-50%,-50%)', height: '30px', padding: '0 10px', borderRadius: '15px', cursor: 'pointer', font: '700 .78rem/1 var(--body)', border: '2px solid var(--blue)', background: 'var(--blue-soft)', color: 'var(--ink)', whiteSpace: 'nowrap', boxShadow: 'var(--shadow)' }}>⊕ Coupling</button>}
+        style={{ position: 'absolute', left: `${(290 / W) * 100}%`, top: `${(96 / H) * 100}%`, transform: 'translate(-50%,-50%)', height: '30px', padding: '0 10px', borderRadius: '15px', cursor: 'pointer', font: '700 .78rem/1 var(--body)', border: '2px solid var(--blue)', background: 'var(--blue-soft)', color: 'var(--ink)', whiteSpace: 'nowrap', boxShadow: 'var(--shadow)' }}>⊕ Coupling</button>}
     </div>
   );
 }
@@ -162,9 +162,9 @@ function PartCard({ id }: { id: PartId }) {
 }
 
 const GROUPS: { name: string; ids: PartId[] }[] = [
-  { name: 'Coupling', ids: ['fifth', 'jaws', 'kingpin', 'upper', 'landing'] },
+  { name: 'Coupling (close-up)', ids: ['fifth', 'jaws', 'kingpin', 'upper'] },
   { name: 'Air & electric', ids: ['glad', 'red', 'blue', 'cord', 'tpv', 'tanks', 'relay'] },
-  { name: 'Brakes, wheels & more', ids: ['spring', 'abs', 'tires', 'dolly'] },
+  { name: 'Trailer, brakes & wheels', ids: ['landing', 'spring', 'abs', 'dolly', 'tires'] },
 ];
 
 export default function RigAnatomy({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetProps) {

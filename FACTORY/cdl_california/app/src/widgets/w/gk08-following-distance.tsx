@@ -14,42 +14,39 @@ export const followSeconds = (lengthFt: number, mph: number) => lengthFt / 10 + 
 const EXAMPLES = [30, 40, 50, 60, 70];
 
 function Gap({ len, sec, tail, slick, need, label, ask }: { len: number; sec: number; tail?: boolean; slick?: boolean; need?: number; label: string; ask?: boolean }) {
-  const truckW = 22 + len * 0.6;
+  const truckW = 18 + len * 0.45;
   const more = tail || slick;
-  const behind = tail ? 34 : 4;
+  const behind = tail ? 30 : 2;
   const n = Math.max(sec, need ?? 0);
-  const per = Math.min(36, (392 - behind - truckW - 30 - (more ? 30 : 0)) / Math.max(n, 1));
-  const x0 = behind + truckW;
-  const carX = ask ? 362 : x0 + per * sec + (more ? 30 : 0);
+  const per = Math.min(34, (316 - behind - truckW - 28 - (more ? 26 : 0)) / Math.max(n, 1));
+  const x0 = behind + truckW + 2;
+  const carX = ask ? 290 : x0 + per * sec + (more ? 26 : 0);
   const short = need != null && sec < need;
   return (
-    <svg viewBox="0 0 400 118" width="100%" role="img" aria-label={label} style={{ display: 'block' }}>
-      <rect x="0" y="30" width="400" height="48" fill="var(--surface-2)" stroke="none" />
-      <line x1="0" y1="54" x2="400" y2="54" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="10 8" />
-      {tail && <g><rect x="2" y="60" width="26" height="14" rx="4" fill="var(--amber)" stroke="var(--ink)" stroke-width="1.2" /><text x="15" y="96" text-anchor="middle" font-size="11" fill="var(--ink)">tailgater</text></g>}
+    <svg viewBox="0 0 320 112" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '560px' }}>
+      <rect x="0" y="32" width="320" height="42" fill="var(--surface-2)" stroke="none" />
+      <line x1="0" y1="53" x2="320" y2="53" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="10 8" />
+      <rect x={carX - 2} y="32" width="4" height="42" fill="var(--amber)" stroke="none" />
+      {tail && <g><rect x="2" y="56" width="26" height="14" rx="4" fill="var(--amber)" stroke="var(--ink)" stroke-width="1.2" /></g>}
       <g aria-hidden="true">
-        <rect x={behind} y="58" width={truckW - 12} height="18" rx="2" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5" />
-        <rect x={behind + truckW - 12} y="60" width="11" height="14" rx="2" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
+        <rect x={behind} y="55" width={truckW - 11} height="16" rx="2" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5" />
+        <rect x={behind + truckW - 11} y="57" width="10" height="12" rx="2" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
       </g>
-      <text x={behind + truckW / 2} y="96" text-anchor="middle" font-size="12" fill="var(--ink)">{`you · ${len} ft`}</text>
+      <text x="0" y="89" font-size="13" fill="var(--ink)">{tail ? `tailgater, then you (${len} ft)` : `you · ${len} ft`}</text>
       {Array.from({ length: n }, (_, k) => {
         const inside = k < sec;
         return (
           <g key={k}>
-            <rect x={x0 + per * k + 1} y="36" width={per - 2} height="14" fill={inside ? (short ? 'var(--red-soft)' : 'var(--accent-soft)') : 'var(--surface)'} stroke={inside ? (short ? 'var(--red)' : 'var(--accent)') : 'var(--ink-2)'} stroke-width="1" stroke-dasharray={inside ? undefined : '3 2'} />
-            <text x={x0 + per * k + per / 2} y="47" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">{k + 1}</text>
+            <rect x={x0 + per * k + 1} y="8" width={per - 2} height="20" fill={inside ? (short ? 'var(--red-soft)' : 'var(--accent-soft)') : 'var(--surface)'} stroke={inside ? (short ? 'var(--red)' : 'var(--accent)') : 'var(--ink-2)'} stroke-width="1.2" stroke-dasharray={inside ? undefined : '3 2'} />
+            <text x={x0 + per * k + per / 2} y="23" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{k + 1}</text>
           </g>
         );
       })}
-      {ask && <text x={(x0 + carX) / 2} y="47" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">? seconds</text>}
-      {more && <g><rect x={x0 + per * sec + 2} y="36" width="26" height="14" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 2" /><text x={x0 + per * sec + 15} y="47" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">+</text></g>}
-      <g aria-hidden="true">
-        <rect x={carX} y="60" width="26" height="14" rx="4" fill="var(--blue)" stroke="var(--ink)" stroke-width="1.2" />
-        <line x1={carX} y1="28" x2={carX} y2="82" stroke="var(--ink)" stroke-width="1" />
-        <rect x={carX - 4} y="18" width="8" height="10" fill="var(--amber)" stroke="var(--ink)" stroke-width="1" />
-      </g>
-      <text x={Math.min(carX + 13, 388)} y="96" text-anchor="middle" font-size="11" fill="var(--ink)">landmark</text>
-      <text x={x0} y="114" font-size="12" fill="var(--ink-2)">{ask ? 'count: “one thousand-and-one…” → ?' : `count: “one thousand-and-one…” → ${sec} s${short ? ' (too close)' : ''}`}</text>
+      {ask && <text x={(x0 + carX) / 2} y="23" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">? seconds</text>}
+      {more && <g><rect x={x0 + per * sec + 1} y="8" width="24" height="20" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="3 2" /><text x={x0 + per * sec + 13} y="23" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">+</text></g>}
+      <rect x={carX + 2} y="56" width="24" height="14" rx="4" fill="var(--blue)" stroke="var(--ink)" stroke-width="1.2" aria-hidden="true" />
+      <text x={Math.min(carX + 26, 318)} y="89" text-anchor="end" font-size="13" fill="var(--ink)">landmark</text>
+      <text x="0" y="107" font-size="13" fill="var(--ink-2)">{ask ? 'Count “one thousand-and-one…” → ?' : `Count “one thousand-and-one…” → ${sec} s${short ? ' — too close' : ''}`}</text>
     </svg>
   );
 }
@@ -103,11 +100,11 @@ function Explore() {
 
 interface Item { len: number; mph: number; note: string }
 const ITEMS: Item[] = [
-  { len: 40, mph: 35, note: 'City street, 40-ft truck' },
-  { len: 60, mph: 55, note: 'Highway, 60-ft rig' },
-  { len: 30, mph: 55, note: '30-ft truck at 55 mph' },
-  { len: 50, mph: 60, note: '50-ft truck on the freeway' },
-  { len: 40, mph: 65, note: '40-ft truck at 65 mph' },
+  { len: 40, mph: 35, note: 'City street' },
+  { len: 60, mph: 55, note: 'Highway' },
+  { len: 30, mph: 55, note: 'Two-lane road' },
+  { len: 50, mph: 60, note: 'Freeway' },
+  { len: 40, mph: 65, note: 'Fast freeway' },
 ];
 const CHOICES = [2, 3, 4, 5, 6, 7, 8];
 const TAIL = { q: 'A car is following you too closely. What do you do with your following distance?', opts: ['Increase the space in front of you', 'Flash your brake lights to warn the driver', 'Speed up to open a gap behind you'], a: 0,
@@ -133,7 +130,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
     <div class="stack">
       <span class="small muted num">Rig {i + 1} of {total}</span>
       {it ? <>
-        <strong>{it.note}: {it.len} ft long, {it.mph} mph. How many seconds of following distance?</strong>
+        <strong>{it.note}: {it.len}-ft rig at {it.mph} mph. How many seconds of following distance?</strong>
         <Gap len={it.len} sec={pick ?? 0} ask={pick === null} need={pick !== null ? truth : undefined} label={pick === null ? `${it.len}-foot rig at ${it.mph} mph.` : `Your gap ${pick} seconds; needed ${truth} seconds.`} />
         <div class="row" role="group" aria-label="Seconds">{CHOICES.map((c) => (
           <button class="btn sm num" disabled={pick !== null} aria-pressed={pick === c} style={btnStyle(c)} onClick={() => answer(c)}>{c} s{pick !== null && c === truth ? ' ✓' : pick === c ? ' ✗' : ''}</button>

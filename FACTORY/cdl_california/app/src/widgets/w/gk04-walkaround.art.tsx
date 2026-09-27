@@ -57,7 +57,7 @@ export function Tread({ v, min, verdict }: { v: number; min: number; verdict?: s
       <rect x={66} y={rt - 20} width={88} height={14} rx={3} fill="var(--blue)" />
       {min >= 0 && <text x={212} y={base - min * s + 4} font-size={12} font-weight={700} fill="var(--red)">min {min}/32</text>}
       <text x={212} y={min < 0 ? rt - 8 : Math.min(rt - 8, base - min * s - 14)} font-size={12} font-weight={700} fill="var(--ink)">reads {v}/32</text>
-      <text x={212} y={22} font-size={13} font-weight={700} fill={ok ? 'var(--ok)' : 'var(--red)'}>{verdict ?? (ok ? '✓ OK' : '✗ DEFECT')}</text>
+      <text x={296} y={22} font-size={13} font-weight={700} text-anchor="end" fill={(verdict ? !verdict.startsWith('✗') : ok) ? 'var(--ok)' : 'var(--red)'}>{verdict ?? (ok ? '✓ OK' : '✗ DEFECT')}</text>
     </svg>
   );
 }
