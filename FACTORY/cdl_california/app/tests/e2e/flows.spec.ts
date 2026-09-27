@@ -161,6 +161,21 @@ test('reopening the app (no URL hash) returns to an unfinished practice test and
   await expect(page.getByRole('button', { name: /Skip/ }).first()).toBeVisible();
 });
 
+test('mock: an answer survives a reload before Next and is recorded once', async ({ page }) => {
+  await onboard(page);
+  await page.goto(URL + '#practice');
+  await page.getByRole('button', { name: 'Start GK mock' }).click();
+  await page.getByRole('button', { name: 'Begin' }).click();
+  await page.locator('.opt').first().click();
+  const n1 = await page.evaluate(() => JSON.parse(localStorage.getItem('cdlws.state.v1') || '{}').attempts?.length);
+  await page.reload();
+  await expect(page.getByRole('button', { name: /Next question/ })).toBeVisible();   // shown as answered, not re-asked
+  await expect(page.locator('.opt').first()).toBeDisabled();
+  const n2 = await page.evaluate(() => JSON.parse(localStorage.getItem('cdlws.state.v1') || '{}').attempts?.length);
+  expect(n1).toBeGreaterThan(0);
+  expect(n2).toBe(n1);
+});
+
 test('glossary term in lesson text opens a definition', async ({ page }) => {
   await onboard(page);
   await page.goto(URL + '#lesson.GK-01');
@@ -195,3 +210,29 @@ for (const hash of ['today', 'path', 'lesson.CV-03', 'practice', 'notebook', 'pr
     expect(bad.map((v) => `${v.id}: ${v.nodes.length} ${v.nodes[0]?.target}`)).toEqual([]);
   });
 }
+
+// dark theme: axe on the same screens, with open mistakes so the tab badge is on screen (round-3 review found it at 2.28:1)
+test('a11y dark mode: main screens with a mistake badge', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await onboard(page);
+  await page.goto(URL + '#lesson.GK-02');
+  await page.getByRole('tab', { name: 'Practice test' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  for (let i = 0; i < 6; i++) { await page.locator('.opt').nth(i % 3).click(); await page.getByRole('button', { name: 'Continue' }).click(); }
+  for (const hash of ['today', 'lesson.CV-02', 'practice', 'notebook', 'progress', 'guide', 'settings']) {
+    await page.goto(URL + '#' + hash);
+    await page.waitForTimeout(200);
+    const r = await new AxeBuilder({ page } as never).withTags(['wcag2a', 'wcag2aa']).analyze();
+    const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+    expect(bad.map((v) => `${hash} ${v.id}: ${v.nodes.length} ${v.nodes[0]?.target}`)).toEqual([]);
+  }
+  await expect(page.locator('.tab .badge')).toBeVisible();
+  // axe skips 1–2 character text, so measure the badge directly (WCAG AA 4.5:1)
+  const ratio = await page.locator('.tab .badge').evaluate((e) => {
+    const rgb = (c: string) => c.match(/\d+(\.\d+)?/g)!.slice(0, 3).map(Number);
+    const lum = (c: number[]) => { const [r, g, b] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const cs = getComputedStyle(e); const a = lum(rgb(cs.color)), b = lum(rgb(cs.backgroundColor));
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  });
+  expect(ratio).toBeGreaterThanOrEqual(4.5);
+});

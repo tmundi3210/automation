@@ -44,7 +44,7 @@ function renderTable(lines: string[]): string {
   const { head, rows } = parseTable(lines);
   const th = head.map((h) => `<th>${inline(h)}</th>`).join('');
   const tb = rows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('');
-  return `<div class="tbl"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+  return `<div class="tbl" tabindex="0" role="region" aria-label="Table (scrolls sideways)"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
 }
 
 type LItem = { indent: number; ordered: boolean; text: string[]; children: LItem[] };

@@ -179,7 +179,9 @@ function parseLesson(file: string, md: string) {
 
   // ---- glossary (key-word blocks + any "**Term** = def" line)
   let inKey = false;
-  for (const line of learn.split('\n')) {
+  const learnLines = learn.split('\n');
+  for (let li = 0; li < learnLines.length; li++) {
+    const line = learnLines[li];
     if (/^(#{3}\s+Key words|\*\*Key words\.?\*\*|Key terms:|Words used a lot:|\*Terms used below:\*)/i.test(line.trim())) inKey = true;
     else if (/^### /.test(line)) inKey = false;
     const re = /\*\*([^*]{1,48})\*\*(\s*\([^)]{1,80}\))?\s*(=|:|—)\s*(.+?)(?=\s\*\*[^*]{1,48}\*\*(?:\s*\/\s*\*\*[^*]{1,48}\*\*)?(?:\s*\([^)]*\))?\s*(?:=|—)|$)/g;
@@ -191,9 +193,11 @@ function parseLesson(file: string, md: string) {
       if (term.length < 2 || /^\d/.test(term) || /^(why|note|trap|correct|step|rule|the |a )/i.test(term)) continue;
       // "GVWR = … allows. A **converter dolly** is …" → two entries, so each definition covers only its own term
       let def = m[4].trim();
+      // "X = trade or transport that goes:" + bullet list → fold the list into the definition
+      if (/:\s*$/.test(def)) { const list: string[] = []; for (let k = li + 1; k < learnLines.length && /^- /.test(learnLines[k]); k++) list.push(learnLines[k].slice(2).replace(/;?\s*(or|and)?\s*$/, '')); if (list.length) def = (def.replace(/:\s*$/, ': ') + list.join('; ')).replace(/([^.])$/, '$1.'); }
       const second = def.match(/^(.*?\.)\s+(?:An?|The)\s+\*\*([^*]{2,40})\*\*\s+(?:is|are|means)\s+(.+)$/);
       if (second) { def = second[1]; all.glossary.push({ term: second[2], defHtml: inline(stripTrailingCite(second[3].trim())), lesson: id }); }
-      all.glossary.push({ term: term + (m[2] ? m[2] : ''), defHtml: inline(stripTrailingCite(def)), lesson: id });
+      all.glossary.push({ term: (term + (m[2] ? m[2] : '')).replace(/\*\*/g, ''), defHtml: inline(stripTrailingCite(def)), lesson: id });
     }
   }
 
@@ -215,7 +219,7 @@ function parseLesson(file: string, md: string) {
     if (!m) { problems.push(`${id}: trap unparsed: ${l.slice(0, 60)}`); return; }
     const tid = `${lid(id)}-t${String(i + 1).padStart(2, '0')}-${fnv(m[1])}`;
     const corr = m[2].trim();
-    all.traps[tid] = { id: tid, lesson: id, trap: plain(m[1]).replace(/^"|"$/g, ''), correct: plain(stripTrailingCite(corr)), correctHtml: inline(stripTrailingCite(corr)), pages: citePages(corr), ca: /\[CA\]/.test(l), ku: tid, concepts: [] };
+    all.traps[tid] = { id: tid, lesson: id, trap: ((t) => ((t.match(/"/g) ?? []).length % 2 ? t.replace(/"/g, '') : t))(plain(m[1]).replace(/^"|"$/g, '')), correct: plain(stripTrailingCite(corr)), correctHtml: inline(stripTrailingCite(corr)), pages: citePages(corr), ca: /\[CA\]/.test(l), ku: tid, concepts: [] };
     L.trapIds.push(tid);
   });
 

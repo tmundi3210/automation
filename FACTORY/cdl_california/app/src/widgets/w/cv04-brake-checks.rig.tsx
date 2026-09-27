@@ -78,9 +78,10 @@ export function RigView({ r, motion }: { r: Rig; motion: boolean }) {
         <line x1="300" y1="54" x2="306" y2="54" stroke="var(--red)" stroke-width="4" /><line x1="300" y1="66" x2="306" y2="66" stroke="var(--blue)" stroke-width="4" />
         <Valve x={312} y={54} open={r.emValve} /><Valve x={312} y={66} open={r.svcValve} />
       </g>
+      {/* rear valve states: emergency above its valve, service below, centred so they keep a margin from the right edge */}
       {D && <>
-        {t(322, 50, rear(r.emValve, rearEm), { 'font-weight': r.emValve ? 700 : 400, fill: r.emValve ? 'var(--red)' : 'var(--ink-2)' })}
-        {t(322, 76, rear(r.svcValve, rearSvc), { 'font-weight': r.svcValve ? 700 : 400, fill: r.svcValve ? 'var(--blue)' : 'var(--ink-2)' })}
+        {t(318, 42, rear(r.emValve, rearEm), { 'text-anchor': 'middle', 'font-weight': r.emValve ? 700 : 400, fill: r.emValve ? 'var(--red)' : 'var(--ink-2)' })}
+        {t(318, 89, rear(r.svcValve, rearSvc), { 'text-anchor': 'middle', 'font-weight': r.svcValve ? 700 : 400, fill: r.svcValve ? 'var(--blue)' : 'var(--ink-2)' })}
       </>}
       {r.chocks && <><path d="M56 143 l7 -11 l7 11 Z" fill="var(--amber)" stroke="var(--ink)" /><path d={D ? 'M268 143 l7 -11 l7 11 Z' : 'M264 143 l7 -11 l7 11 Z'} fill="var(--amber)" stroke="var(--ink)" /></>}
       {status && <text x="180" y="165" font-size="14" font-weight="700" text-anchor="middle" fill={r.trailer === 'moves' ? 'var(--red)' : r.trailer === 'none' ? 'var(--ink)' : 'var(--ok)'}>{status}</text>}

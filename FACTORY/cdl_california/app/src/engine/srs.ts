@@ -6,7 +6,9 @@ import { EVIDENCE_WEIGHT, GUESS_RATE } from './model';
 export const DESIRED_RETENTION = 0.9;
 
 function scheduler(maxIntervalDays: number, fuzz = true) {
-  return fsrs(generatorParameters({ request_retention: DESIRED_RETENTION, maximum_interval: Math.max(1, Math.round(maxIntervalDays)), enable_fuzz: fuzz }));
+  // long-term scheduling only: a first-time correct answer is next due in days, not 10 minutes later
+  // (same-day repair of misses is the mistake list's fix drill, not the review queue)
+  return fsrs(generatorParameters({ request_retention: DESIRED_RETENTION, maximum_interval: Math.max(1, Math.round(maxIntervalDays)), enable_fuzz: fuzz, enable_short_term: false }));
 }
 
 function toCard(s: CardState): Card {

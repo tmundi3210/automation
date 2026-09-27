@@ -81,7 +81,7 @@ export function CrashScene({ cur, hide, skip }: { cur: number; hide?: boolean; s
         <rect x="240" y="146" width="50" height="19" rx="2" fill="var(--accent)" stroke="var(--ink)" /><rect x="292" y="147" width="17" height="17" rx="2" fill="var(--accent)" stroke="var(--ink)" />
         {safe && [[238, 148], [238, 163], [311, 148], [311, 163]].map(([x, y]) => <circle cx={x} cy={y} r="4" fill="var(--amber)" stroke="var(--ink)" stroke-width="0.8" />)}
       </g>
-      <text x="265" y={safe ? 136 : 110} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">your truck</text>
+      <text x={safe ? 265 : 277} y={safe ? 131 : 112} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">your truck</text>
       {safe && [70, 118, 166].map((x) => <path d={`M ${x} 146 l 8 15 l -16 0 Z`} fill="var(--red)" stroke="var(--ink)" stroke-width="0.8" />)}
       {safe && <text x="118" y="136" text-anchor="middle" font-size="13" fill="var(--ink)" stroke="var(--surface-2)" stroke-width="3" paint-order="stroke">triangles (GK-06)</text>}
       {show(0) && <Tag k={0} x={222} y={156} />}

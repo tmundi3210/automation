@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { C, glossOpen, go, route, S, toast } from '../app';
 import { Html } from './bits';
 import type { RouteName } from '../app';
@@ -35,6 +35,14 @@ export function App() {
     document.addEventListener('click', onClick); document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('click', onClick); document.removeEventListener('keydown', onKey); };
   }, []);
+  // after navigation, move keyboard/screen-reader focus to the new screen's heading (not the top of <body>)
+  const routeKey = `${r.name}.${r.param ?? ''}.${r.sub ?? ''}`;
+  const firstRoute = useRef(true);
+  useEffect(() => {
+    if (firstRoute.current) { firstRoute.current = false; return; }   // not on first load: leave focus where the browser puts it
+    const h = document.querySelector('main h1') as HTMLElement | null;
+    if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+  }, [routeKey]);
   const g = glossOpen.value !== null ? C.glossary[glossOpen.value] : null;
   if (r.name === 'widget') return <main id="main" style={{ paddingBlock: '16px' }}><div class="page"><WidgetPreview id={r.param ?? ''} /></div></main>;
   const onboarding = !s.profile.onboarded || r.name === 'onboarding';
@@ -43,7 +51,7 @@ export function App() {
   const chip = !onboarding ? (() => {
     const t = s.profile.tests[0] as TestId;
     const rd = readiness(s, C, t, Date.now(), 400);
-    return `${t}: ${rd.studiedShare < 0.1 && !s.mocks.some((m) => m.test === t) ? 'not started' : rd.band === 'likely' ? 'likely pass' : rd.band === 'borderline' ? 'borderline' : 'not ready yet'}`;
+    return `${t}: ${!s.attempts.some((a) => C.items[a.id]?.test === t) ? 'not started' : rd.band === 'likely' ? 'likely pass' : rd.band === 'borderline' ? 'borderline' : 'not ready yet'}`;
   })() : null;
   let screen;
   if (onboarding) screen = <OnboardingScreen />;
@@ -62,7 +70,7 @@ export function App() {
     default: screen = <TodayScreen />;
   }
   return (
-    <div class="shell">
+    <div class={`shell${onboarding ? ' no-nav' : ''}`}>
       <a class="skip" href="#main" onClick={(e) => { e.preventDefault(); try { (document.getElementById('main') as HTMLElement)?.focus(); } catch { /* */ } }}>Skip to content</a>
       <header class="topbar">
         <div class="topbar-in">

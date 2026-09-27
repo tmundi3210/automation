@@ -33,7 +33,8 @@ function TopView({ pos }: { pos: Pos }) {
       <path d={`M${MX} ${MY} L${MX - 300} ${MY - 300 * Math.tan(CONVEX_FOV)}`} stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5 4" />
       <path d={`M${MX} ${MY} L0 ${MY - 300 * Math.tan(FLAT_FOV)}`} stroke="var(--blue)" stroke-width="1.5" />
       <path d="M216 20 L300 20 L300 70 L230 70 Z" fill="var(--red)" opacity=".18" stroke="var(--red)" stroke-dasharray="3 3" />
-      <text x="258" y="66" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">blind spot</text>
+      {/* label sits in the verge right above the zone, clear of the lane lines and the view edges */}
+      <text x="258" y="13" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">blind spot</text>
       <rect x="150" y="82" width="140" height="30" rx="2" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" />
       <rect x="292" y="83" width="30" height="28" rx="4" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
       <rect x="296" y="73" width="8" height="6" fill="var(--ink)" /><text x="176" y="102" font-size="14" fill="var(--ink)">your truck →</text>

@@ -3,7 +3,7 @@ import content from '../../src/content/content.json';
 import type { Content } from '../../src/content/types';
 import { emptyState, dayKey } from '../../src/engine/model';
 import { review, retrievability, bktEvidence, bktTransition, gradeFor } from '../../src/engine/srs';
-import { recordAnswer, diagnose, openRows } from '../../src/engine/learner';
+import { recordAnswer, diagnose, openRows, recordCheck, CHECK_CEILING } from '../../src/engine/learner';
 import { fillPct, buildPlan, buildMock, today } from '../../src/engine/plan';
 import { binomTail, readiness } from '../../src/engine/readiness';
 import { makeResumeCode, readResumeCode } from '../../src/store/resume';
@@ -94,12 +94,15 @@ describe('diagnosis + notebook', () => {
     const s = emptyState(T0);
     const neg = Object.values(C.items).find((i) => i.polarity === 'neg')!;
     const wrong = [0, 1, 2].find((k) => k !== neg.key)!;
+    expect(diagnose(s, neg, wrong, T0)).toBe('U');            // lesson never opened: not learned yet
+    s.lessons[neg.lesson] = { conceptsSeen: {}, opened: T0 };
     expect(diagnose(s, neg, wrong, T0)).toBe('T');
   });
   it('flags numeric distractor misses as number mix-up (N)', () => {
     const s = emptyState(T0);
     const num = Object.values(C.items).find((i) => i.polarity === 'pos' && i.numeric && i.origin === 'pack')!;
     const wrong = [0, 1, 2].find((k) => k !== num.key)!;
+    s.lessons[num.lesson] = { conceptsSeen: {}, opened: T0 };
     expect(diagnose(s, num, wrong, T0)).toBe('N');
   });
   it('miss → open row; 2 correct probes on distinct days + mastery → resolved', () => {
@@ -207,5 +210,22 @@ describe('key numbers stay consistent across questions and widgets', () => {
     expect(keysOnly.filter((k) => f.wrong.test(k)), 'keyed answers with the wrong value').toEqual([]);
     expect(keyed.some((k) => f.right.test(k)), 'some question teaches the right value').toBe(true);
     if (f.widget) expect(f.widget.test(widgetSrc), 'a widget shows the right value').toBe(true);
+  });
+});
+
+describe('widget challenge evidence stays light', () => {
+  it('a long run of correct widget answers cannot make a topic proficient', () => {
+    const s = emptyState(T0);
+    for (let k = 0; k < 32; k++) recordCheck(s, ['CV-03.c03'], true, T0 + k * 1000);
+    expect(s.bkt['CV-03.c03'].n).toBe(3);                       // only the first 3 per day count
+    for (let d = 1; d < 10; d++) for (let k = 0; k < 16; k++) recordCheck(s, ['CV-03.c03'], true, T0 + d * DAY + k * 1000);
+    expect(s.bkt['CV-03.c03'].p).toBeLessThanOrEqual(CHECK_CEILING);
+  });
+  it('a correct first answer is not due again the same day', () => {
+    const s = emptyState(T0);
+    const it = Object.values(C.items).find((i) => !i.heldOut && i.polarity !== 'tf')!;
+    recordAnswer(s, C, { id: it.id, ev: 'mcq', ok: true, chosen: it.key, now: T0 });
+    const card = Object.values(s.cards)[0];
+    expect(card.due - T0).toBeGreaterThanOrEqual(DAY * 0.9);
   });
 });

@@ -16,7 +16,8 @@ export function MockScreen({ test }: { test: TestId }) {
   const predicted = useMemo(() => saved ? saved.predicted : readiness(S(), C, test, now(), 800).low, [test]);
   const [queue, setQueue] = useState<string[]>(saved ? saved.queue : ids);
   const [answers, setAnswers] = useState<Record<string, number>>(saved ? saved.answers : {});
-  const [chosen, setChosen] = useState<number | null>(null);
+  // an answer is saved when chosen; after a reload the question at the head shows as already answered (never recorded twice)
+  const [chosen, setChosen] = useState<number | null>(saved && saved.queue[0] in saved.answers ? saved.answers[saved.queue[0]] : null);
   const [started, setStarted] = useState(!!saved);
   const persist = (q: string[], a: Record<string, number>) => mutate((st) => { st.mockRun = q.length ? { test, ids, queue: q, answers: a, seenBefore, predicted, started: st.mockRun?.started ?? now() } : undefined; });
   const t0 = useRef(now());
@@ -74,11 +75,13 @@ export function MockScreen({ test }: { test: TestId }) {
     if (answered) return;
     setChosen(k);
     const rt = now() - t0.current;
+    const nextAnswers = { ...answers, [id]: k };
+    setAnswers(nextAnswers);
     mutate((st) => { recordAnswer(st, C, { id, ev: 'mock', ok: k === it.key, chosen: k, rt, now: now(), examCapDays: examCapDays(st, test, now()) }); });
+    persist(queue, nextAnswers);
   };
   const next = () => {
-    const nextAnswers = { ...answers, [id]: chosen! };
-    setAnswers(nextAnswers);
+    const nextAnswers = answers;
     setChosen(null);
     t0.current = now();
     const rest = queue.slice(1);
@@ -93,11 +96,11 @@ export function MockScreen({ test }: { test: TestId }) {
   const skip = () => { const q = [...queue.slice(1), id]; setQueue(q); persist(q, answers); t0.current = now(); };
   const remaining = queue.length;
   // the counter includes the answer on screen, so it updates as soon as a wrong answer shows
-  const wrongNow = wrong + (answered && chosen !== it.key ? 1 : 0);
+  const wrongNow = wrong;   // answers are saved on choice, so the count already includes the question on screen
   return (
     <div class="page">
       <div class="spread">
-        <span class="eyebrow">{f.name} mock</span>
+        <h1 class="eyebrow" style={{ margin: 0 }}>{f.name} mock</h1>
         <span class="small num"><strong>{f.n - remaining + 1}</strong> of {f.n} · <span style={{ color: wrongNow > maxWrong ? 'var(--red)' : 'var(--ink-2)', fontWeight: 700 }}>{wrongNow} wrong</span> (you can miss {maxWrong})</span>
       </div>
       {wrongNow > maxWrong && <div class="card warn small" role="status"><strong>You can no longer pass this mock</strong> — more than {maxWrong} wrong. On the real test that would be a fail. Keep going for practice; every miss goes to your mistake list.</div>}
@@ -119,7 +122,7 @@ export function MockScreen({ test }: { test: TestId }) {
           <button class="btn primary block" onClick={next} autoFocus>{remaining === 1 ? 'See my result' : 'Next question'}</button>
         </div>
       ) : (
-        <div class="row"><button class="btn" onClick={skip} disabled={remaining === 1}>Skip for now</button></div>
+        <div class="row"><button class="btn" onClick={skip} disabled={remaining === 1 || answered}>Skip for now</button></div>
       )}
     </div>
   );

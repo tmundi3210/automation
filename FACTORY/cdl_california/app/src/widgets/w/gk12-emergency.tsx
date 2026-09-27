@@ -51,20 +51,22 @@ function Scene({ id, path, ok }: { id: SceneId; path?: string; ok?: boolean }) {
     skid: 'Your rear drive wheels have locked under braking; the rear is sliding out.',
   };
   return (
-    <svg viewBox="0 0 360 230" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Top view, you drive up the right lane. ${desc[id]}${p ? ` Your path ends: ${p.tag}.` : ''}`}>
-      <rect x="0" y="0" width="360" height="230" fill="var(--surface-2)" />
-      <rect x="110" y="0" width="140" height="230" fill="var(--surface)" stroke="var(--ink-2)" />
-      <rect x="250" y="0" width="50" height="230" fill="var(--amber-soft)" stroke="var(--ink-2)" />
-      {[20, 70, 120, 170, 210].map((y) => <g><circle cx="262" cy={y} r="2" fill="var(--ink-2)" /><circle cx="286" cy={y + 22} r="2" fill="var(--ink-2)" /></g>)}
+    <svg viewBox="0 0 360 252" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Top view, you drive up the right lane. ${desc[id]}${p ? ` Your path ends: ${p.tag}.` : ''}`}>
+      <rect x="0" y="0" width="360" height="252" fill="var(--surface-2)" />
+      <rect x="110" y="0" width="140" height="230" fill="var(--surface)" />
+      <rect x="250" y="0" width="50" height="230" fill="var(--amber-soft)" />
+      {[110, 250, 300].map((x) => <line x1={x} y1="0" x2={x} y2="230" stroke="var(--ink-2)" />)}
+      {[20, 70, 120, 170, 204].map((y) => <g><circle cx="262" cy={y} r="2" fill="var(--ink-2)" /><circle cx="286" cy={y + 22} r="2" fill="var(--ink-2)" /></g>)}
       <line x1="180" y1="0" x2="180" y2="230" stroke="var(--amber)" stroke-width="2" stroke-dasharray="14 10" />
       <text x="4" y="24" font-size="14" font-weight="700" fill="var(--ink)">{CAPTION[id].map((l, i) => <tspan x="4" dy={i ? 18 : 0}>{l}</tspan>)}</text>
-      <text x="145" y="224" font-size="14" fill="var(--ink-2)" text-anchor="middle">oncoming</text>
-      <text x="275" y="224" font-size="14" fill="var(--ink-2)" text-anchor="middle">shoulder</text>
-      <text x="330" y="16" font-size="14" fill="var(--ink-2)" text-anchor="middle">off</text><text x="330" y="32" font-size="14" fill="var(--ink-2)" text-anchor="middle">road</text>
-      {id === 'obstacle' && <g><rect x="200" y="46" width="30" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="215" y="40" text-anchor="middle" {...lab} font-weight="700" fill="var(--ink)">stalled car</text>
+      {/* lane names sit in a strip under the road, clear of the lane lines */}
+      <text x="145" y="246" font-size="14" fill="var(--ink-2)" text-anchor="middle">oncoming</text>
+      <text x="275" y="246" font-size="14" fill="var(--ink-2)" text-anchor="middle">shoulder</text>
+      <text x="330" y="156" font-size="14" fill="var(--ink-2)" text-anchor="middle">off</text><text x="330" y="172" font-size="14" fill="var(--ink-2)" text-anchor="middle">road</text>
+      {id === 'obstacle' && <g><rect x="200" y="46" width="30" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="215" y="22" text-anchor="middle" {...lab} font-weight="700" fill="var(--ink)"><tspan x="215">stalled</tspan><tspan x="215" dy="16">car</tspan></text>
         <text x="275" y="112" text-anchor="middle" {...lab} fill="var(--ok)" font-weight="700">clear</text></g>}
-      {id === 'oncoming' && <g><rect x="198" y="40" width="26" height="40" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /><path d="M200 38 L186 12" stroke="var(--red)" stroke-width="2" fill="none" /><text x="226" y="98" {...lab} font-weight="700" fill="var(--red)">drifted in ↓</text></g>}
-      {id === 'shoulder' && <g><g transform="rotate(-24 200 50)"><rect x="170" y="40" width="30" height="20" rx="4" fill="var(--amber)" stroke="var(--ink)" /><rect x="202" y="38" width="36" height="24" rx="4" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /></g><text x="200" y="96" text-anchor="middle" {...lab} font-weight="700" fill="var(--red)">crash</text></g>}
+      {id === 'oncoming' && <g><rect x="198" y="40" width="26" height="40" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /><path d="M200 38 L186 12" stroke="var(--red)" stroke-width="2" fill="none" /><text x="215" y="98" text-anchor="middle" {...lab} font-weight="700" fill="var(--red)"><tspan x="215">drifted</tspan><tspan x="215" dy="16">in ↓</tspan></text></g>}
+      {id === 'shoulder' && <g><g transform="rotate(-24 200 50)"><rect x="170" y="40" width="30" height="20" rx="4" fill="var(--amber)" stroke="var(--ink)" /><rect x="202" y="38" width="36" height="24" rx="4" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /></g><text x="210" y="96" text-anchor="middle" {...lab} font-weight="700" fill="var(--red)">crash</text></g>}
       {id === 'abs' && <g><rect x="190" y="58" width="44" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="212" y="52" text-anchor="middle" {...lab} fill="var(--ink)">pulls out</text></g>}
       {id === 'blowout' && <g><path d="M 197 160 l -8 -6 l 2 8 l -9 1 l 8 5 l -6 7 l 10 -3" fill="var(--red)" stroke="var(--red)" stroke-width="1.5" /><text x="176" y="140" text-anchor="end" {...lab} font-weight="700" fill="var(--red)">BANG!</text></g>}
       {p && <g>

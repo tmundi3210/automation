@@ -4,6 +4,7 @@ import { addDays, dayKey, testsForClass } from '../engine/model';
 import type { Cls } from '../engine/model';
 import { ClassFinderForm } from '../widgets/w/gk01-class-finder';
 import { buildPlan } from '../engine/plan';
+import { Html } from './bits';
 import { peek, adoptState } from '../app';
 import { readResumeCode, importFile } from '../store/resume';
 
@@ -71,6 +72,14 @@ export function OnboardingScreen() {
           <div class="stack">{choices.map(([c, t, d]) => (
             <button class="choice" aria-pressed={cls === c} onClick={() => setCls(c)}><span class="shield">{c}</span><span><span class="t">{t}</span><br /><span class="small muted">{d}</span></span></button>
           ))}</div>
+          <details class="card">
+            <summary>What do these words mean?</summary>
+            <dl class="kv small" style={{ marginTop: '10px' }}>
+              {['GVWR (gross vehicle weight rating)', 'GCWR (gross combination weight rating)', 'Tractor', 'Combination vehicle (also called a rig)', 'Placarded load', 'HazMat'].map((t) => { const g = C.glossary.find((x) => x.term === t); return g ? <><dt><strong>{g.term.replace(/\s*\(.*\)$/, '')}</strong></dt><dd style={{ margin: 0 }}><Html tag="span" html={g.defHtml} /></dd></> : null; })}
+              <dt><span class="ca-tag">CA</span></dt><dd style={{ margin: 0 }}>A California rule that may differ from other states or federal rules.</dd>
+              <dt><strong>Power unit / towed unit</strong></dt><dd style={{ margin: 0 }}>The vehicle with the engine (truck or tractor) / the trailer it pulls.</dd>
+            </dl>
+          </details>
           <button class="linkbtn" style={{ alignSelf: 'flex-start' }} onClick={() => setFinder(!finder)}>{finder ? 'Hide the class finder' : 'Not sure? Use the handbook’s class finder'}</button>
           {finder && <div class="widget"><ClassFinderForm onResult={(r) => { if (r.cls === 'A' || r.cls === 'A-88') setCls('A'); else if (r.cls === 'B' || r.cls === 'C') setCls(r.cls); }} /></div>}
           {cls && cls !== 'A' && <p class="card info small">Class {cls} drivers take General Knowledge, plus endorsement tests (for example Passenger or HazMat) that this version does not teach yet. The Combination lessons stay open if you want them.</p>}
@@ -80,7 +89,7 @@ export function OnboardingScreen() {
       {step === 2 && (
         <section class="stack-lg">
           <div class="stack"><span class="eyebrow">Step 2 of 3</span><h1>What have you passed?</h1></div>
-          <label class="choice" style={{ cursor: 'pointer' }}><input type="checkbox" checked={ab} onChange={(e) => setAb((e.target as HTMLInputElement).checked)} style={{ width: '22px', height: '22px', accentColor: 'var(--accent)' }} /><span><span class="t">I already passed the Air Brakes test</span><br /><span class="small muted">Leave this unticked if you have not taken it. This version teaches General Knowledge{cls === 'A' ? ' and Combination Vehicles' : ''}; Air Brakes lessons are planned for later (until then, study Section 5 of the handbook). Combination lesson CV-02 builds on air brakes.</span></span></label>
+          <label class="choice" style={{ cursor: 'pointer' }}><input type="checkbox" checked={ab} onChange={(e) => setAb((e.target as HTMLInputElement).checked)} style={{ width: '22px', height: '22px', accentColor: 'var(--accent)' }} /><span><span class="t">I already passed the Air Brakes test</span><br /><span class="small muted">Leave this unticked if you have not taken it. This version teaches General Knowledge{cls === 'A' ? ' and Combination Vehicles' : ''}; Air Brakes lessons are planned for later (until then, study Section 5 of the handbook).{cls === 'A' ? ' Combination lesson CV-02 builds on air brakes.' : ''}</span></span></label>
           <div class="row"><button class="btn" onClick={() => setStep(1)}>Back</button><button class="btn primary" style={{ flex: 1 }} onClick={() => setStep(3)}>Next</button></div>
         </section>
       )}
@@ -91,7 +100,7 @@ export function OnboardingScreen() {
             <div class="field"><label for="ob-date">Knowledge test date</label><input id="ob-date" type="date" min={dayKey(now())} value={date} onInput={(e) => setDate((e.target as HTMLInputElement).value)} /></div>
             <div class="field"><label for="ob-min">Minutes you can study a day: <strong class="num">{minutes}</strong></label><input id="ob-min" type="range" min={15} max={180} step={5} value={minutes} onInput={(e) => setMinutes(+(e.target as HTMLInputElement).value)} /></div>
             {(() => { const tmp = JSON.parse(JSON.stringify(peek())); tmp.profile.tests = testsForClass(cls ?? 'A'); tmp.profile.examDates = {}; for (const t of tmp.profile.tests) tmp.profile.examDates[t] = date; tmp.profile.minutesPerDay = minutes; const pl = buildPlan(tmp, C, now());
-              return <div class={`card ${pl.feasibility === 'go' ? 'tint' : 'warn'}`} role="status"><strong>{pl.feasibility === 'go' ? 'That works.' : pl.feasibility === 'tight' ? 'Tight but possible.' : 'Not enough time yet.'}</strong> <span class="small">{pl.feasibility === 'go' ? `About ${pl.needMinPerDay} minutes a day gets you there.` : `You need about ${pl.needMinPerDay} minutes a day for this date. Raise the minutes or pick a later date.`}</span>{pl.feasibility !== 'go' && pl.needMinPerDay <= 175 && <button class="btn sm" style={{ marginTop: '8px' }} onClick={() => setMinutes(Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5))}>Use {Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5)} minutes a day</button>}</div>; })()}
+              return <div class={`card ${pl.feasibility === 'go' ? 'tint' : 'warn'}`} role="status"><strong>{pl.feasibility === 'go' ? 'That works.' : pl.feasibility === 'tight' ? 'Tight but possible.' : 'Not enough time yet.'}</strong> <span class="small">{pl.feasibility === 'go' ? `About ${pl.needMinPerDay} minutes a day gets you there.` : `You need about ${pl.needMinPerDay} minutes a day for this date. Raise the minutes or pick a later date.`}</span>{pl.feasibility !== 'go' && pl.needMinPerDay <= 175 && <button class="btn sm" style={{ marginTop: '8px', display: 'flex' }} onClick={() => setMinutes(Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5))}>Use {Math.min(180, Math.ceil(pl.needMinPerDay / 5) * 5 + 5)} minutes a day</button>}</div>; })()}
             <p class="small muted">The {cls === 'A' ? 18 : 14} lessons take about {Math.round(C.lessons.filter((l) => cls === 'A' || l.test === 'GK').reduce((a, l) => a + l.minutes, 0) / 60)} hours in total, plus review. Lessons stop a few days before the test so the last days are for review and mock tests.</p>
           </div>
           <div class="row"><button class="btn" onClick={() => setStep(2)}>Back</button><button class="btn primary" style={{ flex: 1 }} onClick={finish}>Build my plan</button></div>

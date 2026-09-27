@@ -101,7 +101,7 @@ export function ReadinessCard({ test }: { test: TestId }) {
   return (
     <section class="card stack" aria-label={`${f.name} readiness`}>
       <span class="eyebrow">{f.name} · {f.n} questions, pass {f.pass}</span>
-      <div class="spread"><span class={`band ${r.band}`} style={{ fontSize: '1.3rem', fontFamily: 'var(--display)' }}>{r.studiedShare < 0.1 && !S().mocks.some((m) => m.test === test) ? 'Not started' : label}</span>{(r.studiedShare >= 0.1 || S().mocks.some((m) => m.test === test)) && <span class="num small muted">est. {pctRange(r.low, r.high)} chance to pass</span>}</div>
+      <div class="spread"><span class={`band ${r.band}`} style={{ fontSize: '1.3rem', fontFamily: 'var(--display)' }}>{!S().attempts.some((a) => C.items[a.id]?.test === test) ? 'Not started' : label}</span>{S().attempts.some((a) => C.items[a.id]?.test === test) && <span class="num small muted">est. {pctRange(r.low, r.high)} chance to pass</span>}</div>
       <Bar p={r.studiedShare} label="Share of test topics studied" />
       <p class="small muted">{r.studiedShare < 0.1 ? 'Study a few lessons and the app will estimate your chance of passing. ' : ''}Based on {Math.round(r.studiedShare * 100)}% of the {test === 'GK' ? 270 : 68} practice questions studied and {S().mocks.filter((m) => m.test === test).length} mock test{S().mocks.filter((m) => m.test === test).length === 1 ? '' : 's'}.{r.strongReady ? ' Strong ready: last two mock tests at 90%+.' : ' This is an estimate; mock tests make it more accurate.'}</p>
     </section>

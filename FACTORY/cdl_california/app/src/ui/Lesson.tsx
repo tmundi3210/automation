@@ -133,7 +133,7 @@ function NumbersTab({ id }: { id: string }) {
   return (
     <div class="stack-lg">
       <p>Most misses on the DMV test are exact numbers. Learn these word for word, then drill them.</p>
-      <div class="tbl"><table><thead><tr><th>Item</th><th>Value / meaning</th><th>Page</th></tr></thead><tbody>
+      <div class="tbl" tabindex={0} role="region" aria-label="Table (scrolls sideways)"><table><thead><tr><th>Item</th><th>Value / meaning</th><th>Page</th></tr></thead><tbody>
         {L.numberIds.map((n) => { const f = C.numbers[n]; return <tr><td>{f.item}{f.ca && <span class="ca-tag">CA</span>}</td><td><Html tag="span" html={f.valueHtml} /></td><td class="num">{f.pages.join(', ')}</td></tr>; })}
       </tbody></table></div>
       <button class="btn primary" onClick={() => startSession({ title: `${id} numbers drill`, ids: L.numberIds, mode: 'cards', lesson: id, back: { name: 'lesson', param: id } })}>Drill all {L.numberIds.length} numbers</button>

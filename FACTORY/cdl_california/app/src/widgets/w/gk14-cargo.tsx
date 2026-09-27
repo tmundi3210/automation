@@ -22,8 +22,8 @@ export function FlatbedVis({ len, straps, ok }: { len: number; straps: number; o
   const w = Math.max(24, Math.min(300, len * 6.2)); const x0 = 40 + (300 - w) / 2;
   const xs = Array.from({ length: straps }, (_, i) => x0 + (w * (i + 0.5)) / straps);
   return (
-    <svg viewBox="0 0 360 132" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Flatbed with ${len}-foot cargo and ${straps} tie-down${straps === 1 ? '' : 's'}. ${ok ? 'Secured.' : 'Not enough: the cargo can shift or fall off.'}`}>
-      <rect x="0" y="0" width="360" height="132" fill="var(--surface)" />
+    <svg viewBox="0 0 360 140" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Flatbed with ${len}-foot cargo and ${straps} tie-down${straps === 1 ? '' : 's'}. ${ok ? 'Secured.' : 'Not enough: the cargo can shift or fall off.'}`}>
+      <rect x="0" y="0" width="360" height="140" fill="var(--surface)" />
       <rect x="30" y="96" width="320" height="8" fill="var(--ink-2)" />{[60, 300, 325].map((x) => <circle cx={x} cy="112" r="10" fill="var(--ink-2)" stroke="var(--ink)" />)}
       <rect x="4" y="72" width="24" height="32" rx="3" fill="var(--accent)" stroke="var(--ink)" />
       <g transform={ok ? '' : `rotate(4 ${x0 + w} 96) translate(12 -3)`}>
@@ -31,7 +31,7 @@ export function FlatbedVis({ len, straps, ok }: { len: number; straps: number; o
         {xs.map((x) => <path d={`M ${x - 6} 96 L ${x} 58 L ${x + 6} 96`} fill="none" stroke={ok ? 'var(--ok)' : 'var(--red)'} stroke-width="2.5" />)}
       </g>
       <text x="180" y="20" text-anchor="middle" font-size="14" font-weight="700" fill={ok ? 'var(--ok)' : 'var(--red)'}>{ok ? '✓ Secured' : '✗ Load can shift or fall off'}</text>
-      <text x="180" y="129" text-anchor="middle" {...T}>{len} ft cargo · {straps} tie-down{straps === 1 ? '' : 's'}</text>
+      <text x="180" y="134" text-anchor="middle" {...T}>{len} ft cargo · {straps} tie-down{straps === 1 ? '' : 's'}</text>
     </svg>
   );
 }
@@ -42,8 +42,8 @@ export function TimelineVis({ brk, missFirst }: { brk: number | null; missFirst?
   const checks = [0, 50, 200, 350, 500].filter((m) => !(missFirst && m === 50));
   const lab = (m: number) => (m === 0 ? 'Pre-trip' : m === 50 ? '≤ 50 mi' : '+150 mi');
   return (
-    <svg viewBox="0 0 360 112" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Trip timeline, 500 miles. Cargo checks at ${checks.join(', ')} miles${brk !== null ? ` and after the break at mile ${brk}` : ''}.${missFirst ? ' The 50-mile check is skipped: straps that loosened as the cargo settled are not caught.' : ''}`}>
-      <rect x="0" y="0" width="360" height="112" fill="var(--surface)" />
+    <svg viewBox="0 0 360 116" width="100%" style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }} role="img" aria-label={`Trip timeline, 500 miles. Cargo checks at ${checks.join(', ')} miles${brk !== null ? ` and after the break at mile ${brk}` : ''}.${missFirst ? ' The 50-mile check is skipped: straps that loosened as the cargo settled are not caught.' : ''}`}>
+      <rect x="0" y="0" width="360" height="116" fill="var(--surface)" />
       <line x1={X(0)} y1="54" x2={X(500)} y2="54" stroke="var(--ink-2)" stroke-width="4" stroke-linecap="round" />
       {checks.map((m) => { const up = m === 0 || m === 200 || m === 500; return <g><circle cx={X(m)} cy="54" r="10" fill="var(--accent)" stroke="var(--ink)" /><text x={X(m)} y="59" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-ink)">✓</text>
         <text x={m === 0 ? 8 : X(m)} y={up ? 34 : 84} text-anchor={m === 0 ? 'start' : 'middle'} {...T}>{lab(m)}</text></g>; })}

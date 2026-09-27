@@ -53,14 +53,39 @@ export function outcome(drops: Drop[], d: Drop): Outcome {
   }
 }
 
-const LANE = 60, AX = 24, FS = 14; // font units: 14 in a 360-wide viewBox stays >= 11 px on a 294 px phone column
-/** Timeline of drops. HazMat/passenger drops are drawn as a placard diamond (shape, not only color). */
-export function Timeline({ drops, kinds, reveal = true, ghost }: { drops: Drop[]; kinds: Kind[]; reveal?: boolean; ghost?: { kind: Kind; days: number } }) {
+const AX = 24, FS = 14; // font units: 14 in a 360-wide viewBox stays >= 11 px on a 294 px phone column
+/** Shortest drawn bar: 18 units stays >= 14 px on a 294 px column. The written length keeps short bars honest. */
+const MINBAR = 18;
+/** Compact length written next to a bar, taken from the outcome text (no new facts). Life bars already say LIFE in the lane title. */
+export function shortDur(text: string): string | null {
+  if (text === '24 hours out of service') return '24 h';
+  if (text === 'At least 180 days (180 days to 2 years)') return '180 d–2 yr';
+  if (text === '3 to 5 years') return '3–5 yr';
+  if (text === 'CDL lost 1 year') return '1 yr';
+  const m = /^At least (\d+) (days?|years?)/.exec(text);
+  return m ? `≥${m[1]} ${m[2].startsWith('day') ? 'd' : 'yr'}` : null;
+}
+const textW = (t: string) => t.length * 8.4; // bold 14-unit text, generous estimate
+type Span = [number, number];
+const free = (s: Span, taken: Span[]) => s[0] >= 1 && s[1] <= W - 1 && taken.every((t) => s[1] <= t[0] || s[0] >= t[1]);
+/** Put a label right of [x0, x1] if it fits, else left of it, else nowhere (the list under the strip still says it). */
+function place(x0: number, x1: number, lw: number, taken: Span[]): { x: number; anchor: 'start' | 'end' } | null {
+  const r: Span = [x1 + 3, x1 + 3 + lw], l: Span = [x0 - 3 - lw, x0 - 3];
+  if (free(r, taken)) { taken.push(r); return { x: r[0], anchor: 'start' }; }
+  if (free(l, taken)) { taken.push(l); return { x: l[1], anchor: 'end' }; }
+  return null;
+}
+
+/** Timeline of drops. HazMat/passenger drops are drawn as a placard diamond (shape, not only color).
+ *  Bars: solid red = disqualified, striped amber = out of service (pattern, not only color), each with its length written beside it. */
+export function Timeline({ drops, kinds, reveal = true, ghost, ghostRow }: { drops: Drop[]; kinds: Kind[]; reveal?: boolean; ghost?: { kind: Kind; days: number; text: string }; ghostRow?: boolean }) {
+  const LANE = ghostRow ? 76 : 64;
   const H = kinds.length * LANE + AX;
   const cx = (d: Drop) => (d.year - Y0) * COL + COL / 2 + (drops.filter((x) => x.kind === d.kind && x.year === d.year && x.id < d.id).length * 7);
   const desc = drops.length ? drops.map((d) => `${d.year} ${KINDS[d.kind].short}${d.hz ? ' (HazMat)' : ''}${reveal ? ': ' + outcome(drops, d).text : ''}`).join('; ') : 'empty';
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Timeline 2015 to 2026: ${desc}`} style={{ display: 'block', maxWidth: '420px' }}>
+      <defs><pattern id="gk02-oos" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--amber)" /><rect width="2.5" height="6" fill="var(--surface)" /></pattern></defs>
       {YEARS.map((y, i) => <rect x={i * COL} y={0} width={COL} height={H - AX} fill={i % 2 ? 'var(--surface)' : 'var(--surface-2)'} />)}
       {kinds.map((k, li) => {
         const top = li * LANE, info = KINDS[k];
@@ -68,25 +93,43 @@ export function Timeline({ drops, kinds, reveal = true, ghost }: { drops: Drop[]
         const last = mine[mine.length - 1];
         const wStart = last && info.window ? Math.max(Y0, last.year - info.window + 1) : 0;
         const hasLife = reveal && mine.some((d) => outcome(drops, d).days === LIFE);
+        const bars = reveal ? mine.map((d) => {
+          const o = outcome(drops, d), x = cx(d);
+          if (o.days <= 0) return null;
+          const life = o.days === LIFE;
+          const bx = life ? x : Math.min(x, W - MINBAR);
+          const bw = life ? W - x : Math.min(Math.max((o.days / Y) * COL, MINBAR), W - bx);
+          return { bx, bw, disq: o.disq, text: life ? null : shortDur(o.text) };
+        }).filter((b) => b !== null) : [];
+        const taken: Span[] = bars.map((b) => [b.bx, b.bx + b.bw]);
+        const labels = [...bars].sort((a, b) => a.bx - b.bx).map((b) => { const at = b.text ? place(b.bx, b.bx + b.bw, textW(b.text), taken) : null; return at && { ...at, text: b.text! }; });
+        const g = ghost && ghost.kind === k && last && ghost.days > 0 ? (() => {
+          const x = cx(last), life = ghost.days === LIFE;
+          const gx = life ? x : Math.min(x, W - MINBAR);
+          const gw = life ? W - x : Math.min(Math.max((ghost.days / Y) * COL, MINBAR), W - gx);
+          const t = life ? null : shortDur(ghost.text);
+          return { gx, gw, t, at: t ? place(gx, gx + gw, textW(t), []) : null };
+        })() : null;
         return (
           <g>
             <line x1={0} x2={W} y1={top} y2={top} stroke="var(--line)" stroke-width={1} />
             {reveal && last && info.window && <rect x={(wStart - Y0) * COL + 1} y={top + 21} width={(last.year - wStart + 1) * COL - 2} height={22} rx={4} fill="none" stroke={info.color} stroke-width={1.5} stroke-dasharray="4 3" />}
             <text x={4} y={top + 15} font-size={FS} font-weight={700} fill="var(--ink)">{info.short}{reveal && last && info.window ? ` · ${info.window}-yr window` : ''}</text>
             {hasLife && <text x={W - 4} y={top + 15} font-size={FS} font-weight={700} text-anchor="end" fill="var(--red)">LIFE →</text>}
+            {bars.map((b) => <rect x={b.bx} y={top + 47} width={b.bw} height={8} fill={b.disq ? 'var(--red)' : 'url(#gk02-oos)'} stroke={b.disq ? 'none' : 'var(--amber)'} stroke-width={1} />)}
+            {labels.map((l) => l && <text x={l.x} y={top + 56} font-size={FS} font-weight={700} text-anchor={l.anchor} fill="var(--ink)">{l.text}</text>)}
             {mine.map((d) => {
-              const o = outcome(drops, d), x = cx(d), cy = top + 32;
-              const len = o.days === LIFE ? W - x : Math.max(2, (o.days / Y) * COL);
+              const x = cx(d), cy = top + 32;
               return (
                 <g>
-                  {reveal && o.days > 0 && <rect x={x} y={top + 47} width={Math.min(len, W - x)} height={6} fill={o.disq ? 'var(--red)' : 'var(--amber)'} />}
                   {d.hz ? <rect x={x - 9} y={cy - 9} width={18} height={18} transform={`rotate(45 ${x} ${cy})`} fill={info.color} stroke="var(--red)" stroke-width={2} />
                     : <circle cx={x} cy={cy} r={11} fill={info.color} stroke="var(--surface)" stroke-width={1.5} />}
                   <text x={x} y={cy + 5} font-size={FS} font-weight={700} text-anchor="middle" fill="var(--surface)">{reveal ? countFor(drops, d) : '•'}</text>
                 </g>
               );
             })}
-            {ghost && ghost.kind === k && last && ghost.days > 0 && <rect x={cx(last)} y={top + 54} width={Math.min(ghost.days === LIFE ? W : (ghost.days / Y) * COL, W - cx(last))} height={5} fill="none" stroke="var(--ink-2)" stroke-dasharray="3 2" />}
+            {g && <rect x={g.gx} y={top + 62} width={g.gw} height={5} fill="none" stroke="var(--ink-2)" stroke-dasharray="3 2" />}
+            {g && g.at && <text x={g.at.x} y={top + 71} font-size={FS} text-anchor={g.at.anchor} fill="var(--ink-2)">{g.t}</text>}
           </g>
         );
       })}
@@ -132,7 +175,7 @@ function Explore() {
           {YEARS.map((y) => <button class="btn sm num" style={{ padding: '0', minWidth: 0, fontSize: '.85rem' }} aria-label={`Drop ${KINDS[kind].short} in ${y}`} onClick={() => add(y)}>{y}</button>)}
         </div>
         <Timeline drops={drops} kinds={shown} />
-        <span class="small muted">Number = which violation it is inside its window (dashed box); a diamond marks HazMat or 16+ passengers. Bar = time out of the truck (1 column = 1 year; red = CDL disqualified, amber = out of service). Drops are dated mid-year. Lanes appear for the violation you picked and any on the record.</span>
+        <span class="small muted">Number = which violation it is inside its window (dashed box); a diamond marks HazMat or 16+ passengers. Bar = time out of the truck, with its length written beside it (1 column = 1 year; short bars are drawn wider so you can see them). Solid red = CDL disqualified; striped amber = out of service. Drops are dated mid-year. Lanes appear for the violation you picked and any on the record.</span>
       </div>
       {lo && latest && <div class={`card ${lo.disq ? 'warn' : 'tint'}`} role="status" aria-live="polite"><div class="eyebrow">Latest: {latest.year} · {KINDS[latest.kind].short}</div>
         <div style={{ font: '700 1.4rem/1.1 var(--display)' }}>{lo.text}</div><p class="small">{lo.why} <span class="plate">p. {lo.page}</span></p></div>}
@@ -161,12 +204,12 @@ export default function PenaltyLadder({ onEvidence, onChallenge, concepts }: Wid
         <div class="stack">
           <span class="small muted num">Record {i + 1} of {CASES.length}</span>
           <strong>{c.text}</strong>
-          <Timeline drops={c.drops} kinds={kinds} reveal={!!pick} ghost={pick && pick !== c.answer && last ? { kind: last.kind, days: DAYS[pick] } : undefined} />
+          <Timeline drops={c.drops} kinds={kinds} reveal={!!pick} ghostRow ghost={pick && pick !== c.answer && last ? { kind: last.kind, days: DAYS[pick], text: pick } : undefined} />
           <div class="row" role="group" aria-label="Pick the result">{c.choices.map((ch) => (
             <button class={`btn sm ${pick && ch === c.answer ? 'primary' : ''}`} style={pick && ch === pick && ch !== c.answer ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}} disabled={!!pick}
               onClick={() => { setPick(ch); const ok = ch === c.answer; if (!ok) setMisses(misses + 1); onEvidence({ concepts, ok }); }}>{pick && ch === c.answer ? '✓ ' : pick && ch === pick ? '✗ ' : ''}{ch}</button>))}</div>
           {pick && <div class={`feedback ${pick === c.answer ? 'good' : 'bad'}`} role="status"><div class="verdict">{pick === c.answer ? 'Right' : `No: ${c.answer}`}</div>
-            {pick !== c.answer && <p class="small">{DAYS[pick] === 0 ? 'Your pick would let this driver keep driving' : `Your pick (dashed bar) would ${DAYS[pick] > (truth.days || 0) ? 'bench the driver longer than the rule says' : 'put the driver back in the truck too soon'}`}. The solid bar shows the handbook result.</p>}
+            {pick !== c.answer && <p class="small">{DAYS[pick] === 0 ? 'Your pick would let this driver keep driving' : `Your pick (dashed bar) would ${DAYS[pick] > (truth.days || 0) ? 'bench the driver longer than the rule says' : 'put the driver back in the truck too soon'}`}. The filled bar shows the handbook result.</p>}
             <p class="small">{truth.why} <span class="plate">p. {truth.page}</span></p>
             <button class="btn primary sm" onClick={() => { if (i + 1 === CASES.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === CASES.length ? 'Finish' : 'Next record'}</button></div>}
         </div>

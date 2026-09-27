@@ -38,6 +38,8 @@ export function diagnose(state: AppState, item: Item, chosen: number | undefined
   const tag = chosen !== undefined ? item.tags[chosen] : null;
   const chosenText = chosen !== undefined ? item.optionsText[chosen] ?? '' : '';
   const hasDigit = /\d/.test(chosenText);
+  // never opened the lesson: nothing more specific can be said yet
+  if (!state.lessons[item.lesson]?.opened) return 'U';
   // 0) a trap duel (true/false on the trap statement): fell for the trap itself
   if (item.origin === 'derived-trap') return 'M';
   // 1) the stem itself flips the wording (NOT / EXCEPT / true-false)
@@ -136,7 +138,9 @@ export function rowPriority(state: AppState, c: Content, r: NotebookRow, now: nu
   const stakes = L?.weight === 'High' ? 2 : 1;
   const p = state.bkt[r.concept]?.p ?? BKT.L0;
   const lowR = r.items.some((id) => retrievability(state.cards[c.items[id]?.ku ?? id], now) < 0.9) ? 1 : 0;
-  return stakes * (1 - p) * (1 + lowR) * (1 + Math.min(3, r.misses) * 0.1);
+  // a miss in the last 3 days keeps a topic near the top (right after a miss R is high, so lowR alone would drop it)
+  const recent = now - r.updated < 3 * 86400_000 ? 1 : 0;
+  return stakes * (1 - p) * (1 + Math.max(lowR, recent)) * (1 + Math.min(5, r.misses) * 0.25);
 }
 
 export function openRows(state: AppState, c: Content, now: number): NotebookRow[] {
@@ -192,10 +196,17 @@ export function examCapDays(state: AppState, test: TestId, now: number): number 
  * (weight 0.2, guess 1/3 — about ±0.04 per answer), no learning transition, never FSRS.
  * Explore and timed interactions must not call this (tested in tests/e2e/widgets.spec.ts).
  */
+export const CHECK_MAX_PER_DAY = 3;   // one challenge run is correlated evidence: count the first few answers per concept per day
+export const CHECK_CEILING = 0.55;    // widget answers alone never make a topic "proficient" (0.6); questions must
 export function recordCheck(state: AppState, concepts: string[], ok: boolean, now: number) {
+  const today = dayKey(now);
   for (const cid of concepts) {
     const b = state.bkt[cid] ?? { p: BKT.L0, n: 0 };
-    b.p = bktEvidence(b.p, ok, 'check');
+    if (b.checkDay !== today) { b.checkDay = today; b.checkN = 0; }
+    if ((b.checkN ?? 0) >= CHECK_MAX_PER_DAY) continue;
+    b.checkN = (b.checkN ?? 0) + 1;
+    const next = bktEvidence(b.p, ok, 'check');
+    b.p = ok ? Math.max(b.p, Math.min(next, CHECK_CEILING)) : next;
     b.n += 1; b.lastT = now;
     state.bkt[cid] = b;
   }

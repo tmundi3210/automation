@@ -21,7 +21,9 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
   const slick = SURF.find((s) => s.id === surf)!.slick;
   const active = on && footOff;
   const skid = active && slick;
-  const road = surf === 'dry' ? 'var(--ink-2)' : surf === 'wet' ? 'var(--blue)' : surf === 'icy' ? 'var(--blue-soft)' : 'var(--surface)';
+  /** Asphalt = ink at 30% over the verge: mid-grey in light AND dark themes. Each surface then adds a tinted layer on top. */
+  const film = surf === 'wet' ? { fill: 'var(--blue)', o: 0.3 } : surf === 'icy' ? { fill: 'var(--blue-soft)', o: 0.7 } : surf === 'snowy' ? { fill: 'var(--surface)', o: 0.8 } : null;
+  const onRoad = { fill: 'var(--ink)', stroke: 'var(--surface)', 'stroke-width': 3, 'paint-order': 'stroke' } as const;
   const state = skid ? 'Drive wheels locked and sliding: skid' : active ? 'Retarder slowing the drive wheels' : on ? 'Retarder armed; works when your foot is fully off the accelerator' : 'Retarder off: service brakes do the slowing';
   const wheel = (cx: number, drive: boolean) => (
     <g>
@@ -33,9 +35,11 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
   return (
     <svg viewBox="0 0 360 190" width="100%" style={{ maxWidth: '430px', marginInline: 'auto', display: 'block' }} role="img" aria-label={`Side view on a ${surf} road. ${state}.`}>
       <rect x="0" y="0" width="360" height="190" fill="var(--surface-2)" />
-      <rect x="0" y="143" width="360" height="47" fill={road} stroke="var(--ink)" stroke-width="1" />
+      <rect x="0" y="143" width="360" height="47" fill="var(--ink)" fill-opacity="0.3" />
+      {film && <rect x="0" y="143" width="360" height="47" fill={film.fill} fill-opacity={film.o} />}
+      <line x1="0" y1="143" x2="360" y2="143" stroke="var(--ink)" stroke-width="1.5" />
       {surf === 'wet' && [30, 110, 190, 270, 330].map((x) => <ellipse cx={x} cy="160" rx="16" ry="3" fill="var(--surface)" opacity=".6" />)}
-      {surf === 'icy' && [20, 90, 170, 250, 320].map((x) => <line x1={x} y1="152" x2={x + 30} y2="148" stroke="var(--surface)" stroke-width="3" />)}
+      {surf === 'icy' && [20, 90, 170, 250, 320].map((x) => <line x1={x} y1="152" x2={x + 30} y2="148" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" />)}
       {surf === 'snowy' && [16, 60, 104, 148, 192, 236, 280, 324].map((x) => <circle cx={x} cy="152" r="4" fill="var(--ink-2)" opacity=".35" />)}
       {/* truck, heading right */}
       <rect x="60" y="56" width="170" height="62" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
@@ -44,8 +48,8 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
       {wheel(90, true)}{wheel(124, true)}{wheel(276, false)}
       {skid && <g><line x1="40" y1="145" x2="106" y2="145" stroke="var(--red)" stroke-width="4" /><text x="72" y="44" font-size="15" font-weight="700" fill="var(--red)" text-anchor="middle">✕ SKID</text></g>}
       {active && !skid && <text x="107" y="44" font-size="14" font-weight="700" fill="var(--accent)" text-anchor="middle">drive wheels slowed</text>}
-      <text x="107" y="178" font-size="14" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} text-anchor="middle">drive wheels</text>
-      <text x="276" y="178" font-size="14" text-anchor="middle" fill={surf === 'dry' || surf === 'wet' ? 'var(--surface)' : 'var(--ink)'} font-weight="700">{SURF.find((s) => s.id === surf)!.label} road</text>
+      <text x="107" y="178" font-size="14" text-anchor="middle" {...onRoad}>drive wheels</text>
+      <text x="276" y="178" font-size="14" text-anchor="middle" {...onRoad} font-weight="700">{SURF.find((s) => s.id === surf)!.label} road</text>
     </svg>
   );
 }

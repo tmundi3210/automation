@@ -67,7 +67,7 @@ export interface AppState {
   schema: 1;
   profile: Profile;
   cards: Record<string, CardState>;
-  bkt: Record<string, { p: number; n: number; lastT?: number; lastDayGain?: string }>;
+  bkt: Record<string, { p: number; n: number; lastT?: number; lastDayGain?: string; checkDay?: string; checkN?: number }>;
   attempts: Attempt[];
   notebook: Record<string, NotebookRow>;
   lessons: Record<string, LessonProgress>;

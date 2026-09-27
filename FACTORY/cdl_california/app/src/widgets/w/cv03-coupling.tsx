@@ -143,6 +143,11 @@ function CloseUp({ rig, fx, focus }: { rig: Rig; fx: Fx | null; focus: string })
         <rect x={closed ? 132 : 124} y="121" width="14" height="10" rx="2" fill="var(--surface)" {...hl('jaws', 1.5)} />
         <rect x={closed ? 154 : 162} y="121" width="14" height="10" rx="2" fill="var(--surface)" {...hl('jaws', 1.5)} />
       </g>
+      {kx - 60 >= 280 && <g font-size="15" fill="var(--ink-2)" text-anchor="middle">
+        {rig.tractor === 'clear' ? <text x="160" y="72">Trailer pulled clear: its kingpin</text> : <text x="160" y="64">The trailer’s kingpin and plate</text>}
+        {rig.tractor === 'clear' ? <text x="160" y="90">is out of this view</text> : <text x="160" y="82">come in here as you back under</text>}
+        <text x="150" y="110" font-weight="700">jaws ↓</text>
+      </g>}
       {kx - 60 < 280 && <g>
         <rect x={kx - 60} y="34" width={310 - (kx - 60)} height={pb - 46} fill="var(--surface)" stroke={INK} stroke-width="2" />
         <rect x={kx - 60} y={pb - 12} width={310 - (kx - 60)} height="12" fill="var(--surface-2)" {...hl('upper')} />
