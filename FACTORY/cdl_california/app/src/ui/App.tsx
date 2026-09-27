@@ -55,6 +55,7 @@ export function App() {
   }
   return (
     <div class="shell">
+      <a class="skip" href="#main" onClick={(e) => { e.preventDefault(); try { (document.getElementById('main') as HTMLElement)?.focus(); } catch { /* */ } }}>Skip to content</a>
       <header class="topbar">
         <div class="topbar-in">
           <button class="brand" onClick={() => go('today')} aria-label="CDL Workshop, go to Today">
@@ -77,7 +78,7 @@ export function App() {
           </div>
         </nav>
       )}
-      <main id="main">{screen}</main>
+      <main id="main" tabIndex={-1}>{screen}</main>
       {toast.value && <div class="toast" role="status">{toast.value}</div>}
     </div>
   );

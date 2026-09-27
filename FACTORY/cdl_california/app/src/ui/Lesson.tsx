@@ -117,7 +117,7 @@ function WidgetFrame({ mod, concepts }: { mod: ReturnType<typeof widgetsForLesso
     <section class="widget" aria-label={mod.meta.title}>
       <div class="widget-head">
         <div class="stack" style={{ gap: '2px' }}><span class="eyebrow">Try it</span><strong>{mod.meta.title}</strong></div>
-        {stamp && <span class="chip" style={{ background: got ? 'var(--accent)' : 'var(--surface-2)', color: got ? 'var(--accent-ink)' : 'var(--ink-2)' }} title={stamp.rule}>{got ? '✓ ' : ''}{stamp.name}</span>}
+        {stamp && <span class="chip" style={{ background: got ? 'var(--accent)' : 'var(--surface-2)', color: got ? 'var(--accent-ink)' : 'var(--ink-2)' }} title={stamp.rule}>{got ? `✓ Stamp earned: ${stamp.name}` : `Stamp to earn: ${stamp.name}`}</span>}
       </div>
       <p class="small muted">{mod.meta.summary}</p>
       <W concepts={concepts} reducedMotion={s.prefs.reducedMotion}

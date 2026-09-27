@@ -98,13 +98,14 @@ export function ReadinessCard({ test }: { test: TestId }) {
   return (
     <section class="card stack" aria-label={`${f.name} readiness`}>
       <span class="eyebrow">{f.name} · {f.n} questions, pass {f.pass}</span>
-      <div class="spread"><span class={`band ${r.band}`} style={{ fontSize: '1.3rem', fontFamily: 'var(--display)' }}>{r.studiedShare < 0.1 ? 'Not started' : label}</span>{r.studiedShare >= 0.1 && <span class="num small muted">{pctRange(r.low, r.high)} chance to pass</span>}</div>
+      <div class="spread"><span class={`band ${r.band}`} style={{ fontSize: '1.3rem', fontFamily: 'var(--display)' }}>{r.studiedShare < 0.1 ? 'Not started' : label}</span>{r.studiedShare >= 0.1 && <span class="num small muted">est. {pctRange(r.low, r.high)} chance to pass</span>}</div>
       <Bar p={r.studiedShare} label="Share of test topics studied" />
-      <p class="small muted">{r.studiedShare < 0.1 ? 'Study a few lessons and the app will estimate your chance of passing. ' : ''}{Math.round(r.studiedShare * 100)}% of the practice questions studied.{r.strongReady ? ' Strong ready: last two mock tests at 90%+.' : ' This is an estimate; mock tests make it more accurate.'}</p>
+      <p class="small muted">{r.studiedShare < 0.1 ? 'Study a few lessons and the app will estimate your chance of passing. ' : ''}Based on {Math.round(r.studiedShare * 100)}% of the {test === 'GK' ? 270 : 68} practice questions studied and {S().mocks.filter((m) => m.test === test).length} mock test{S().mocks.filter((m) => m.test === test).length === 1 ? '' : 's'}.{r.strongReady ? ' Strong ready: last two mock tests at 90%+.' : ' This is an estimate; mock tests make it more accurate.'}</p>
     </section>
   );
 }
-function pctRange(a: number, b: number) { const x = Math.round(a * 100), y = Math.round(b * 100); return x === y ? `about ${x}%` : `${x}–${y}%`; }
+/** Always a range (the estimate is uncertain): at least 1 point wide, clamped to 0–100. */
+function pctRange(a: number, b: number) { let x = Math.round(a * 100), y = Math.round(b * 100); if (y <= x) { if (x >= 100) x = 99; y = x + 1; } return `${x}–${y}%`; }
 function examAt(test: TestId) {
   const d = S().profile.examDates[test];
   if (!d) return now();
@@ -290,7 +291,7 @@ export function ProgressScreen() {
       </section>
       {s.mocks.length > 0 && (
         <section class="card stack" aria-label="Mock history"><h3>Mock tests</h3>
-          <div class="list">{s.mocks.slice().reverse().map((m) => <div class="li" style={{ cursor: 'default', gridTemplateColumns: 'auto 1fr auto' }}><Shield id={m.test} /><span class="small">{new Date(m.t).toLocaleDateString()} · {Math.round(m.unseenShare * 100)}% new questions</span><strong class="num">{m.score}/{m.total}</strong></div>)}</div>
+          <div class="list">{s.mocks.slice().reverse().map((m) => <div class="li" style={{ cursor: 'default', gridTemplateColumns: 'auto 1fr auto' }}><Shield id={m.test} /><span class="small">{new Date(m.t).toLocaleDateString()} · {Math.round(m.unseenShare * 100)}% new questions{m.predicted !== undefined ? ` · app predicted ≥${Math.round(m.predicted * 100)}% pass chance, you ${m.pass ? 'passed' : 'did not pass'}` : ''}</span><strong class="num">{m.score}/{m.total}</strong></div>)}</div>
         </section>
       )}
     </div>

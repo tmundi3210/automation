@@ -360,8 +360,12 @@ const derivedNumbers = Object.values(all.items).filter((i) => i.origin === 'deri
 const sh = parseStartHere(readFileSync(join(SRC, '00-START-HERE.md'), 'utf8'));
 
 // dedupe glossary by term (first wins)
-const seen = new Set<string>();
-all.glossary = all.glossary.filter((g) => { const k = norm(g.term); if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => a.term.localeCompare(b.term));
+// dedupe by the bare term (ignoring a parenthetical expansion); keep the most informative entry; sort ignoring punctuation
+const gkey = (t: string) => norm(t.replace(/\([^)]*\)/g, ''));
+const best = new Map<string, GlossaryEntry>();
+for (const g of all.glossary) { const k = gkey(g.term); const cur = best.get(k); if (!cur || g.term.length + g.defHtml.length > cur.term.length + cur.defHtml.length) best.set(k, g); }
+const sortKey = (t: string) => t.replace(/^[^A-Za-z0-9]+/, '').toLowerCase();
+all.glossary = [...best.values()].sort((a, b) => sortKey(a.term).localeCompare(sortKey(b.term)));
 
 const pack = Object.values(all.items).filter((i) => i.origin === 'pack');
 const counts = {

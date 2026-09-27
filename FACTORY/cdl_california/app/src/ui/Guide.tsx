@@ -9,7 +9,7 @@ export function GuideScreen() {
   const cls = s.profile.cls;
   const steps: { t: string; d: string; lesson?: string }[] = [
     { t: 'Get a DOT medical exam', d: 'A certified medical examiner gives you a Medical Examination Report and a Medical Examiner’s Certificate. Bring both to the DMV; both must be dated within the last 2 years.', lesson: 'GK-01' },
-    { t: 'Apply at the DMV and pass the knowledge tests', d: `Everyone takes General Knowledge (50 questions, pass 40).${cls === 'A' ? ' Class A also takes Combination Vehicles (20 questions, pass 16), and Air Brakes (25 questions, pass 20) if the truck has air brakes.' : ' Take Air Brakes (25 questions, pass 20) if your vehicle has air brakes.'} You get 3 tries per test on one application.`, lesson: 'GK-01' },
+    { t: 'Apply at the DMV and pass the knowledge tests', d: `Everyone takes General Knowledge (50 questions, pass 40).${cls === 'A' ? ' Class A also takes Combination Vehicles (20 questions, pass 16), and Air Brakes (25 questions, pass 20) if the truck has air brakes.' : ' Take Air Brakes (25 questions, pass 20) if your vehicle has air brakes.'} You get 3 tries per test on one application. (Question counts are the DMV test format; the handbook does not print them, so confirm when you book.)`, lesson: 'GK-01' },
     { t: 'Get your commercial learner’s permit (CLP)', d: 'Once you pass the knowledge tests you get a CLP (you need a regular Class C license first). It lasts 180 days, and a CDL holder must ride along whenever you drive.', lesson: 'GK-01' },
     { t: 'Wait at least 14 days', d: 'You must hold the CLP for at least 14 days before the skills test.', lesson: 'GK-01' },
     { t: 'Finish entry-level driver training (ELDT)', d: 'Federal rules require training from a school listed on the FMCSA Training Provider Registry before a first Class A or B skills test. This app is study help, not an ELDT provider.' },
@@ -23,7 +23,7 @@ export function GuideScreen() {
         <ol class="stack" style={{ margin: 0, paddingLeft: '1.2em' }}>
           {steps.map((x) => <li><strong>{x.t}</strong><br /><span class="small">{x.d}</span>{x.lesson && <> <button class="linkbtn small" onClick={() => go('lesson', x.lesson)}>Details in {x.lesson}</button></>}</li>)}
         </ol>
-        <p class="small muted">Rules and fees change. Check the current steps and book appointments with the DMV at dmv.ca.gov or 1-800-777-0133 (checked {VERIFIED}). Knowledge-test languages are changing under federal English-proficiency rules, so confirm the language when you book.</p>
+        <p class="small muted">Rules and fees change. Check the current steps and book appointments with the DMV at <a href="https://www.dmv.ca.gov" target="_blank" rel="noopener noreferrer">dmv.ca.gov</a> or 1-800-777-0133 (checked {VERIFIED}). Find a registered ELDT school at <a href="https://tpr.fmcsa.dot.gov" target="_blank" rel="noopener noreferrer">tpr.fmcsa.dot.gov</a>. Knowledge-test languages are changing under federal English-proficiency rules, so confirm the language when you book.</p>
       </section>
       <section class="card stack" aria-label="Test day">
         <h2>On test day</h2>
