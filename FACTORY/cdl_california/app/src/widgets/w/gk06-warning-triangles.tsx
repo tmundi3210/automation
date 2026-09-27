@@ -290,7 +290,7 @@ export default function WarningTriangles({ onEvidence, onChallenge, concepts, re
         </div>
       )}
       {mode === 'challenge' && step === 4 && (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 3 roads right — stamp earned' : `${4 - misses} of 4 right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? '4 of 4 right (3 roads + the 10-minute rule) — stamp earned: Triangles placed' : `${Math.max(0, 4 - misses)} of 4 right — need all 4 for the stamp`}</div>
           <p class="small" style={{ margin: 0 }}>Divided/one-way: 10-100-200 ft behind. Two-lane: corner, 100 behind, 100 ahead. Curve or hill: rear one back beyond it.</p>
           <button class="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => go('challenge')}>Try again</button></div>
       )}

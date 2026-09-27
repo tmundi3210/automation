@@ -36,7 +36,7 @@ export const COUPLE: Step[] = [
     detail: 'Line up straight in front of the trailer. Check your line in both outside mirrors, down both sides of the trailer.',
     why: 'Never back under at an angle — you could shove the trailer sideways and break the landing gear.',
     wrong: [
-      { label: 'Back under at an angle to save time', kind: 'setup', fx: 'angle', result: 'Backing under at an angle can push the trailer sideways and break the landing gear.' },
+      { label: 'Crank the trailer up so the tractor slides under without touching', kind: 'setup', fx: 'high', result: 'Trap: too high and it may not couple correctly — the trailer should be low enough to be lifted slightly. And height is Step 6; first line up straight in front (3).' },
       { label: 'Back under the trailer in lowest reverse', kind: 'order', fx: 'order', result: 'That is Step 10. You have not touched, secured, checked height or hooked up air yet.' }] },
   { n: 4, label: 'Back slowly until the fifth wheel just touches', page: '6-9', set: { tractor: 'touch' },
     detail: 'Stop when the fifth wheel just touches the trailer. Don’t bump it.',
@@ -85,7 +85,7 @@ export const COUPLE: Step[] = [
     why: 'A trailer really locked on will hold. If not, you find out now at a crawl, not on the road.',
     wrong: [
       { label: 'Push the knob in and pull forward', kind: 'setup', fx: 'nobrakes', result: 'With the trailer brakes released, the trailer just rolls along behind you — the tug proves nothing.' },
-      { label: 'Skip it — the jaws clicked', kind: 'skip', fx: 'gap', result: 'A click is not proof. If the kingpin is not really locked, the trailer can come off on the road.' }] },
+      { label: 'Get under and inspect the coupling', kind: 'order', fx: 'order', result: 'That is Step 13. First test the connection with a gentle tug (11), then secure the vehicle and take the key (12) before you go under.' }] },
   { n: 12, label: 'Secure the vehicle; take the key', page: '6-10', set: { parked: true, engine: 'off', key: false },
     detail: 'Neutral, parking brakes on, engine off — and take the key with you.',
     why: 'So nobody can move the truck while you are under it.',
@@ -114,8 +114,8 @@ export const COUPLE: Step[] = [
     detail: 'Pull the wheel chocks and store them safely.',
     why: 'This is the last coupling step.',
     wrong: [
-      { label: 'Inspect the fifth wheel again', kind: 'order', fx: 'order', result: 'Already done (Step 1). The last step is removing and storing the chocks.' },
-      { label: 'Connect the air lines', kind: 'order', fx: 'order', result: 'Already done (Step 7). The last step is removing and storing the chocks.' }] },
+      { label: 'Pull forward gently to tug-test once more', kind: 'order', fx: 'order', result: 'The tug test was Step 11, with the landing gear only slightly off the ground. The last coupling step is removing and storing the chocks.' },
+      { label: 'Plug in the electrical cord', kind: 'order', fx: 'order', result: 'Already done (Step 14). The last step is removing and storing the chocks.' }] },
 ];
 
 export const UNCOUPLE: Step[] = [
@@ -123,7 +123,7 @@ export const UNCOUPLE: Step[] = [
     detail: 'Ground strong enough for the trailer’s weight. Tractor in line with the trailer.',
     why: 'Soft ground lets the legs sink; pulling out at an angle can damage the landing gear.',
     wrong: [
-      { label: 'Stop on soft ground, at an angle', kind: 'setup', fx: 'angle', result: 'Soft ground lets the landing gear sink, and leaving at an angle can damage it.' },
+      { label: 'Lower the landing gear', kind: 'order', fx: 'order', result: 'That is Step 4. First position the rig on firm ground in line with the trailer (1), ease pressure on the jaws (2) and chock if needed (3).' },
       { label: 'Unlock the fifth wheel', kind: 'order', fx: 'order', result: 'That is Step 6. The jaws are still loaded and the trailer brakes are not locked.' }] },
   { n: 2, label: 'Ease pressure on the locking jaws', page: '6-11', set: { knob: 'out', parked: true },
     detail: 'Pull the air supply knob to lock the trailer brakes. Back up gently to take the load off the jaws. Set the parking brakes while still pushing against the kingpin.',
@@ -178,7 +178,7 @@ export const UNCOUPLE: Step[] = [
     why: 'Check around first — people or objects may be near the rig.',
     wrong: [
       { label: 'Drive off without checking around', kind: 'skip', fx: 'hurt', result: 'Check the area before you move.' },
-      { label: 'Back under the trailer again', kind: 'order', fx: 'order', result: 'Backing under is a coupling step. You are uncoupling — check around you and pull clear.' }] },
+      { label: 'Keep the parking brakes set and pull clear', kind: 'setup', fx: 'order', result: 'Release the parking brakes first, check the area around you, then drive forward until clear.' }] },
 ];
 
 /** Apply steps 0..k-1 to the start state. */

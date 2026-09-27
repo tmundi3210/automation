@@ -100,8 +100,9 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
           ))}
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '16px', alignItems: 'start' }}>
-          <RigView r={rig(T, done ? (fail ? T.failRig : T.passRig) : k < 0 ? {} : T.steps[k].rig)} motion={!reducedMotion} />
+        <div class="stack" style={{ gap: '16px' }}>
+          {/* one column at every width: the rig picture on top (capped so it stays compact on desktop), steps below — no half-empty side column */}
+          <div style={{ width: '100%', maxWidth: '560px', marginInline: 'auto' }}><RigView r={rig(T, done ? (fail ? T.failRig : T.passRig) : k < 0 ? {} : T.steps[k].rig)} motion={!reducedMotion} /></div>
           <div class="stack">
             <strong>{T.name} <span class="plate">p. 6-17</span></strong>
             <div class="eyebrow">What you do</div>
@@ -138,7 +139,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const reset = () => { setStage(0); setSeq([]); setChecked(null); setMPick(null); setMisses(0); };
   const next = () => { if (stage === 7 && misses === 0) onChallenge?.(); setStage(stage + 1); setSeq([]); setChecked(null); setMPick(null); };
   if (stage >= 8) return (
-    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 8 right — stamp earned: Brake checks passed' : `${8 - misses} of 8 right`}</div>
+    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? '8 of 8 right — stamp earned: Brake checks passed' : `${Math.max(0, 8 - misses)} of 8 right — need all 8 for the stamp`}</div>
       {misses > 0 && <p class="small">Step through the tests in Explore, then try again for the stamp.</p>}
       <button class="btn sm" onClick={reset}>Try again</button></div>
   );

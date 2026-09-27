@@ -98,7 +98,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const [i, setI] = useState(0), [pick, setPick] = useState<number | null>(null), [miss, setMiss] = useState(0);
   const q = QS[i];
   if (!q) return (
-    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? 'All 6 right — Right gear, right grip' : `${QS.length - miss} of ${QS.length} right`}</div>
+    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? `${QS.length} of ${QS.length} right — stamp earned: Right gear, right grip` : `${Math.max(0, QS.length - miss)} of ${QS.length} right — need all ${QS.length} for the stamp`}</div>
       <p class="small">{miss === 0 ? 'Retarder off on wet, icy, or snowy roads; lower gear before the downgrade.' : 'Try the surfaces again, then retry for the stamp.'}</p>
       <div><button class="btn sm" onClick={() => { setI(0); setMiss(0); setPick(null); }}>Try again</button></div></div>
   );

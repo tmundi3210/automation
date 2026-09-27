@@ -182,7 +182,7 @@ export default function ClassFinder({ onEvidence, onChallenge, concepts }: Widge
             <button class="btn primary sm" onClick={() => { if (i + 1 === SCENARIOS.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === SCENARIOS.length ? 'Finish' : 'Next vehicle'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? 'All 7 right — stamp earned' : `${SCENARIOS.length - misses} of ${SCENARIOS.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? `${SCENARIOS.length} of ${SCENARIOS.length} right — stamp earned: Class sorter` : `${Math.max(0, SCENARIOS.length - misses)} of ${SCENARIOS.length} right — need all ${SCENARIOS.length} for the stamp`}</div>
           <button class="btn sm" onClick={() => { setI(0); setMisses(0); setPick(null); }}>Sort again</button></div>
       ))}
     </div>

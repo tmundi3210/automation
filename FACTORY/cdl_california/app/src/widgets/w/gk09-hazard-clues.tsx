@@ -140,14 +140,15 @@ export default function HazardClues({ onEvidence, onChallenge, concepts }: Widge
   const [found, setFound] = useState<Set<string>>(new Set());
   const [last, setLast] = useState<{ id: string; ok: boolean } | null>(null);
   const [misses, setMisses] = useState(0);
+  const [falseAlarms, setFalseAlarms] = useState(0);
   const [qi, setQi] = useState(0);
   const [pick, setPick] = useState<number | null>(null);
-  const reset = () => { setFound(new Set()); setLast(null); setMisses(0); setQi(0); setPick(null); };
+  const reset = () => { setFound(new Set()); setLast(null); setMisses(0); setFalseAlarms(0); setQi(0); setPick(null); };
   const tapChallenge = (id: string) => {
     if (found.has(id) || found.size >= NEED) return;
     const o = OBJS.find((x) => x.id === id)!;
     onEvidence({ concepts, ok: o.hazard });
-    if (o.hazard) setFound(new Set([...found, id])); else setMisses(misses + 1);
+    if (o.hazard) setFound(new Set([...found, id])); else { setMisses(misses + 1); setFalseAlarms(falseAlarms + 1); }
     setLast({ id, ok: o.hazard });
   };
   const phase = found.size < NEED ? 'find' : qi < PLANS.length ? 'plan' : 'done';
@@ -186,7 +187,7 @@ export default function HazardClues({ onEvidence, onChallenge, concepts }: Widge
           {pick !== null && <div class={`feedback ${pq.opts[pick].ok ? 'good' : 'bad'}`} role="status"><div class="verdict">{pq.opts[pick].ok ? 'Good plan' : 'That plan fails'}</div><p class="small">{pq.opts[pick].why} <span class="plate">p. 2-22</span> <span class="plate">p. 2-24</span></p>
             <button class="btn primary sm" onClick={next}>{qi + 1 === PLANS.length ? 'Finish' : 'Next plan'}</button></div>}
         </div>}
-        {phase === 'done' && <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'Clean run — stamp earned' : `Done with ${misses} mistake${misses > 1 ? 's' : ''}`}</div>
+        {phase === 'done' && <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict num">{`${NEED} of ${NEED} clues · ${falseAlarms} false alarm${falseAlarms === 1 ? '' : 's'} · ${PLANS.length - (misses - falseAlarms)} of ${PLANS.length} plans right`}{misses === 0 ? ' — stamp earned: Hazard spotter' : ` — need 0 false alarms and ${PLANS.length} of ${PLANS.length} plans for the stamp`}</div>
           <p class="small">{misses === 0 ? 'You spotted the clues and planned before they became emergencies.' : 'Try again with no false alarms and no wrong plans to earn the stamp.'}</p>
           <button class="btn sm" onClick={reset}>Try again</button></div>}
       </>}

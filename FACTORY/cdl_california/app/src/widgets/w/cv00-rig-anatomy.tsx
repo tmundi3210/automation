@@ -222,7 +222,7 @@ export default function RigAnatomy({ onEvidence, onChallenge, concepts, reducedM
         </div>
       ) : (
         <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status">
-          <div class="verdict">{misses === 0 ? 'All 8 named — stamp earned: Parts namer' : `${ROUNDS.length - misses} of ${ROUNDS.length} right`}</div>
+          <div class="verdict">{misses === 0 ? `${ROUNDS.length} of ${ROUNDS.length} named — stamp earned: Parts namer` : `${Math.max(0, ROUNDS.length - misses)} of ${ROUNDS.length} right — need all ${ROUNDS.length} for the stamp`}</div>
           <p class="small">{misses === 0 ? 'You know the vocabulary the CV test uses.' : 'Go back to Explore, tap the parts you missed, then try again.'}</p>
           <div><button type="button" class="btn sm" onClick={() => { setR(0); setMisses(0); setPick(null); }}>Name them again</button></div>
         </div>

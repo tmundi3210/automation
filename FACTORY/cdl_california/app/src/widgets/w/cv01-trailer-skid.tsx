@@ -98,7 +98,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
   const target = q?.a === undefined ? 0 : pick !== null && q.opts[pick].a !== undefined ? q.opts[pick].a! : pick !== null && i === 0 ? (q.opts[pick].ok ? 8 : 30) : q.a;
   const a = useTween(target, reducedMotion);
   if (!q) return (
-    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? 'All 4 right — Jackknife stopped' : `${QS.length - miss} of ${QS.length} right`}</div>
+    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? `${QS.length} of ${QS.length} right — stamp earned: Jackknife stopped` : `${Math.max(0, QS.length - miss)} of ${QS.length} right — need all ${QS.length} for the stamp`}</div>
       <p class="small">{miss === 0 ? 'Mirrors when you brake hard; release the brakes; empty rigs and bobtails need more room.' : 'Try the scenario again, then retry for the stamp.'}</p>
       <div><button class="btn sm" onClick={() => { setI(0); setMiss(0); setPick(null); }}>Try again</button></div></div>
   );

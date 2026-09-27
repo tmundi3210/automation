@@ -121,7 +121,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
   const [misses, setMisses] = useState(0);
   const sc = SCEN[i];
   if (!sc) return (
-    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 8 predicted — stamp earned: Air lines traced' : `${SCEN.length - misses} of ${SCEN.length} right`}</div>
+    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `${SCEN.length} of ${SCEN.length} predicted — stamp earned: Air lines traced` : `${Math.max(0, SCEN.length - misses)} of ${SCEN.length} right — need all ${SCEN.length} for the stamp`}</div>
       {misses > 0 && <p class="small">Play with the faults in Explore, then try again for the stamp.</p>}
       <button class="btn sm" onClick={() => { setI(0); setMisses(0); setPick(null); }}>Try again</button></div>
   );

@@ -171,7 +171,7 @@ export default function PenaltyLadder({ onEvidence, onChallenge, concepts }: Wid
             <button class="btn primary sm" onClick={() => { if (i + 1 === CASES.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === CASES.length ? 'Finish' : 'Next record'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? 'All 6 right. Stamp earned: Clean record' : `${CASES.length - misses} of ${CASES.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? `${CASES.length} of ${CASES.length} right — stamp earned: Clean record` : `${Math.max(0, CASES.length - misses)} of ${CASES.length} right — need all ${CASES.length} for the stamp`}</div>
           <p class="small">{misses === 0 ? 'You read every window and ladder correctly.' : 'Try again for the stamp. Watch the window: 3 years for serious and railroad, 10 years for out-of-service.'}</p>
           <button class="btn sm" onClick={() => { setI(0); setMisses(0); setPick(null); }}>Judge again</button></div>
       ))}

@@ -101,7 +101,7 @@ export default function Walkaround({ onEvidence, onChallenge, concepts, reducedM
             <button class="btn primary sm" onClick={() => { if (i + 1 === HUNT.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === HUNT.length ? 'Finish' : 'Next item'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? 'All 8 right. Stamp earned: Sharp eyes' : `${HUNT.length - misses} of ${HUNT.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? `${HUNT.length} of ${HUNT.length} right — stamp earned: Sharp eyes` : `${Math.max(0, HUNT.length - misses)} of ${HUNT.length} right — need all ${HUNT.length} for the stamp`}</div>
           <p class="small">4/32 front, 2/32 others · ¼ of leaves · 10° play · 3 triangles · pump 3, hold 5 · 50→90 psi in 3 min.</p>
           <button class="btn sm" onClick={() => { setI(0); setMisses(0); setPick(null); setGauge(6); }}>Hunt again</button></div>
       ))}

@@ -180,7 +180,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const [i, setI] = useState(0), [pick, setPick] = useState<number | null>(null), [miss, setMiss] = useState(0);
   const d = QS[i];
   if (!d) return (
-    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? 'All 8 right — Cool in a crisis' : `${QS.length - miss} of ${QS.length} right`}</div>
+    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? `${QS.length} of ${QS.length} right — stamp earned: Cool in a crisis` : `${Math.max(0, QS.length - miss)} of ${QS.length} right — need all ${QS.length} for the stamp`}</div>
       <p class="small">{miss === 0 ? 'Steer (right) rather than stop, no brakes on the shoulder above ~20 mph, stay off the brake after a blowout, brake normally with ABS, off the brake and countersteer in a skid.' : 'Replay the scenes, then retry for the stamp.'}</p>
       <div><button class="btn sm" onClick={() => { setI(0); setMiss(0); setPick(null); }}>Try again</button></div></div>
   );

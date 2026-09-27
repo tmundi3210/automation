@@ -116,7 +116,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const [misses, setMisses] = useState(0);
   const total = ITEMS.length + 1;
   if (i >= total) return (
-    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 6 right — stamp earned' : `${total - misses} of ${total} right`}</div>
+    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `${total} of ${total} right — stamp earned: Safe cushion` : `${Math.max(0, total - misses)} of ${total} right — need all ${total} for the stamp`}</div>
       {misses > 0 && <p class="small">Try again with no mistakes to earn the “Safe cushion” stamp.</p>}
       <button class="btn sm" onClick={() => { setI(0); setMisses(0); setPick(null); }}>Try again</button></div>
   );

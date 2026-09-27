@@ -167,7 +167,7 @@ export default function DutyClock({ onEvidence, onChallenge, concepts }: WidgetP
             <button class="btn primary sm" onClick={() => { if (i + 1 === QS.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === QS.length ? 'Finish' : 'Next check'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? 'All 5 right. Stamp earned: Clock master' : `${QS.length - misses} of ${QS.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`}><div class="verdict">{misses === 0 ? `${QS.length} of ${QS.length} right — stamp earned: Clock master` : `${Math.max(0, QS.length - misses)} of ${QS.length} right — need all ${QS.length} for the stamp`}</div>
           <p class="small">Federal 11 / 14 / 60–70; California 12 / 16 / 80. Both need 10 hours off in a row.</p>
           <button class="btn sm" onClick={() => { setI(0); setMisses(0); setPick(null); }}>Check again</button></div>
       ))}

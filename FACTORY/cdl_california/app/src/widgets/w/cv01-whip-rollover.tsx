@@ -152,7 +152,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const [i, setI] = useState(0), [pick, setPick] = useState<number | null>(null), [miss, setMiss] = useState(0);
   const q = QS[i];
   if (!q) return (
-    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? 'All 5 right — Whip tamed' : `${QS.length - miss} of ${QS.length} right`}</div>
+    <div class={`feedback ${miss === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{miss === 0 ? `${QS.length} of ${QS.length} right — stamp earned: Whip tamed` : `${Math.max(0, QS.length - miss)} of ${QS.length} right — need all ${QS.length} for the stamp`}</div>
       <p class="small">{miss === 0 ? 'Steer gently, keep cargo low, slow down before turns.' : 'Run the lane change again, then retry for the stamp.'}</p>
       <div><button class="btn sm" onClick={() => { setI(0); setMiss(0); setPick(null); }}>Try again</button></div></div>
   );
@@ -242,7 +242,7 @@ export default function WhipRollover(props: WidgetProps) {
             ? 'At 1.0 this rig has the least crack-the-whip in Figure 6.1.'
             : `Rearward amplification ${rig.ra.toFixed(1)}: the last trailer is ${rig.ra.toFixed(1)} times as easy to roll over as the tractor. The swing grows through each unit — the tip of the whip.`} <span class="plate">p. 6-1, 6-2</span></p>
           <RankBars sel={rigId} />
-          {rig.ca && <p class="small"><span class="ca-tag">CA</span> * Triple trailers are not legal in California <span class="plate">p. 1-5</span>, but the 3.5 number can still be on the test.</p>}
+          <p class="small" style={{ margin: 0 }}><span class="ca-tag">CA</span> * Triple trailers are not legal in California <span class="plate">p. 1-5</span>. The 3.5 number can still appear on the test.</p>
           <div class="card warn small"><strong>Steer gently:</strong> smooth wheel movements; a sudden jerk can tip the trailer. Leave at least 1 second per 10 ft of rig length (+1 second over 40 mph) and look far ahead so you are never forced into a sudden lane change. <span class="plate">p. 6-1</span></div>
         </div>
       )}

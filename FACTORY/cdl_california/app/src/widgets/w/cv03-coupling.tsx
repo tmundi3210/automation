@@ -5,7 +5,7 @@ import { COUPLE, UNCOUPLE, START_COUPLE, START_UNCOUPLE, rigAfter, type Rig, typ
 export const meta: WidgetMeta = {
   id: 'cv03-coupling', title: 'Coupling simulator: 16 steps, then 10 to uncouple', lesson: 'CV-03', anchor: /^coupling a tractor-semitrailer/i,
   summary: 'Step through the handbook’s coupling and uncoupling order on a live rig. Then pick each next action yourself — wrong picks show what goes wrong.',
-  stamp: { id: 'coupled-clean', name: 'Coupled clean', rule: 'Pick all 16 coupling steps in the handbook’s order with no wrong picks.' },
+  stamp: { id: 'coupled-clean', name: 'Coupled clean', rule: 'Pick all 16 coupling steps in the handbook’s order with no wrong picks (16 of 16). The 10-step uncoupling run is practice only — not needed for the stamp.' },
 };
 
 const W = 640, H = 290, GY = 262;
@@ -143,11 +143,11 @@ function CloseUp({ rig, fx, focus }: { rig: Rig; fx: Fx | null; focus: string })
         <rect x={closed ? 132 : 124} y="121" width="14" height="10" rx="2" fill="var(--surface)" {...hl('jaws', 1.5)} />
         <rect x={closed ? 154 : 162} y="121" width="14" height="10" rx="2" fill="var(--surface)" {...hl('jaws', 1.5)} />
       </g>
-      <g>
-        <rect x={kx - 60} y="34" width="400" height={pb - 46} fill="var(--surface)" stroke={INK} stroke-width="2" />
-        <rect x={kx - 60} y={pb - 12} width="400" height="12" fill="var(--surface-2)" {...hl('upper')} />
+      {kx - 60 < 280 && <g>
+        <rect x={kx - 60} y="34" width={310 - (kx - 60)} height={pb - 46} fill="var(--surface)" stroke={INK} stroke-width="2" />
+        <rect x={kx - 60} y={pb - 12} width={310 - (kx - 60)} height="12" fill="var(--surface-2)" {...hl('upper')} />
         <path d={`M${kx - 5} ${pb} H${kx + 5} V${pb + 11} L${kx + 9} ${pb + 11} L${kx + 6} ${pb + 17} H${kx - 6} L${kx - 9} ${pb + 11} L${kx - 5} ${pb + 11} Z`} fill="var(--surface)" {...hl('kingpin', 1.5)} />
-      </g>
+      </g>}
       {gap && <path d="M76 101 v16 m-6 -16 h12 m-12 16 h12" fill="none" stroke="var(--red)" stroke-width="3" />}
       {fx === 'high' && <path d={`M300 ${pb + 3} V${136}`} fill="none" stroke="var(--red)" stroke-width="3" stroke-dasharray="5 4" />}
       {(fx === 'low' || hit || fx === 'level') && <circle cx={fx === 'low' ? 252 : fx === 'level' ? 250 : 150} cy={fx === 'low' ? 140 : 126} r="20" fill="none" stroke="var(--red)" stroke-width="3.5" stroke-dasharray="5 4" />}
@@ -211,18 +211,21 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
   );
 }
 
-function Challenge({ seq, start, onEvidence, onChallenge, concepts, reducedMotion, doneName }: { seq: Step[]; start: typeof START_COUPLE; doneName: string; reducedMotion: boolean } & Pick<WidgetProps, 'onEvidence' | 'onChallenge' | 'concepts'>) {
+function Challenge({ seq, start, onEvidence, onChallenge, concepts, reducedMotion, doneName, stamp, onActive }: { seq: Step[]; start: typeof START_COUPLE; doneName: string; stamp: boolean; reducedMotion: boolean; onActive: (on: boolean) => void } & Pick<WidgetProps, 'onEvidence' | 'onChallenge' | 'concepts'>) {
   const [k, setK] = useState(0);
   const [pick, setPick] = useState<number | null>(null);
   const [misses, setMisses] = useState(0);
   const st = seq[k];
+  const right = seq.length - misses;
   if (!st) return (
     <div class="stack">
       <Picture rig={rigAfter(start, seq, seq.length)} fx={null} focus="" reducedMotion={reducedMotion} />
       <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status">
-        <div class="verdict">{misses === 0 ? `${doneName} — all ${seq.length} steps in order` : `${seq.length - misses} of ${seq.length} picked right`}</div>
-        <p class="small">{misses === 0 ? 'Every action in the handbook’s order.' : 'Step through Explore once more, then run it again.'} <span class="plate">p. {seq === COUPLE ? '6-9 to 6-10' : '6-11'}</span></p>
-        <div><button type="button" class="btn sm" onClick={() => { setK(0); setMisses(0); setPick(null); }}>Run it again</button></div>
+        <div class="verdict num">{stamp
+          ? misses === 0 ? `${right} of ${seq.length} in order — stamp earned: ${doneName}` : `${right} of ${seq.length} in order — need all ${seq.length} in order for the stamp`
+          : misses === 0 ? `${right} of ${seq.length} in order — ${doneName}` : `${right} of ${seq.length} in order — aim for all ${seq.length}`}</div>
+        <p class="small">{misses === 0 ? 'Every action in the handbook’s order.' : 'Step through the walk-through once more, then run it again.'}{stamp ? ' The stamp needs only the 16 coupling steps; uncoupling is extra practice.' : ' Practice only — the Coupled clean stamp comes from the 16-step coupling run.'} <span class="plate">p. {seq === COUPLE ? '6-9 to 6-10' : '6-11'}</span></p>
+        <div><button type="button" class="btn sm" onClick={() => { setK(0); setMisses(0); setPick(null); onActive(false); }}>Run it again</button></div>
       </div>
     </div>
   );
@@ -233,19 +236,19 @@ function Challenge({ seq, start, onEvidence, onChallenge, concepts, reducedMotio
   const rig = rigAfter(start, seq, chosen?.ok ? k + 1 : k);
   return (
     <div class="stack">
-      <div class="spread"><span class="small muted num">Step {k + 1} of {seq.length}</span><span class="small muted num">{misses === 0 ? 'No wrong picks yet' : `${misses} wrong pick${misses > 1 ? 's' : ''}`}</span></div>
+      <div class="spread"><span class="small muted num">Step {k + 1} of {seq.length}{stamp ? ` · stamp needs ${seq.length} of ${seq.length}` : ' · practice'}</span><span class="small muted num">{misses === 0 ? 'No wrong picks yet' : `${misses} wrong pick${misses > 1 ? 's' : ''}`}</span></div>
       <Picture rig={rig} fx={chosen && !chosen.ok ? chosen.fx : null} focus="" reducedMotion={reducedMotion} caption={chosen && !chosen.ok ? verdictOf(chosen) : undefined} />
       <Status rig={rig} />
       <strong>{k === 0 ? 'What do you do first?' : `Done: ${seq[k - 1].label}. What next?`}</strong>
       <div class="opts" role="group" aria-label="Pick the next action">{order.map((o, i) => (
         <button type="button" class={`opt ${pick === null ? '' : o.ok ? 'right' : i === pick ? 'wrong' : ''}`} disabled={pick !== null}
-          onClick={() => { setPick(i); if (!o.ok) setMisses(misses + 1); onEvidence({ concepts, ok: o.ok }); }}>
+          onClick={() => { setPick(i); if (!o.ok) setMisses(misses + 1); onActive(true); onEvidence({ concepts, ok: o.ok }); }}>
           <span class="letter">{'abc'[i]}</span><span>{o.label}</span></button>))}</div>
       {chosen && <div class={`feedback ${chosen.ok ? 'good' : 'bad'}`} role="status">
         <div class="verdict">{chosen.ok ? `Right — step ${st.n}` : verdictOf(chosen)}</div>
         {!chosen.ok && <p class="small">{chosen.result}</p>}
         <p class="small"><strong>Step {st.n}: {st.label}.</strong> {st.detail} <em>Why:</em> {st.why} <span class="plate">p. {st.page}</span></p>
-        <div><button type="button" class="btn primary sm" onClick={() => { if (k + 1 === seq.length && misses === 0) onChallenge?.(); setPick(null); setK(k + 1); }}>{k + 1 === seq.length ? 'Finish' : 'Next step'}</button></div>
+        <div><button type="button" class="btn primary sm" onClick={() => { if (k + 1 === seq.length) { if (stamp && misses === 0) onChallenge?.(); onActive(false); } setPick(null); setK(k + 1); }}>{k + 1 === seq.length ? 'Finish' : 'Next step'}</button></div>
       </div>}
     </div>
   );
@@ -253,16 +256,20 @@ function Challenge({ seq, start, onEvidence, onChallenge, concepts, reducedMotio
 
 export default function Coupling({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetProps) {
   const [mode, setMode] = useState<'explore' | 'couple' | 'uncouple'>('explore');
+  /** True while a pick-the-next-step run is under way: the ordered walk-through is hidden until it is finished (or restarted). */
+  const [running, setRunning] = useState(false);
+  const pickMode = (m: typeof mode) => { setRunning(false); setMode(m); };
   return (
     <div class="stack">
       <div class="tabs" role="tablist">
-        <button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Walk through</button>
-        <button role="tab" aria-selected={mode === 'couple'} onClick={() => setMode('couple')}>Couple (16)</button>
-        <button role="tab" aria-selected={mode === 'uncouple'} onClick={() => setMode('uncouple')}>Uncouple (10)</button>
+        <button role="tab" aria-selected={mode === 'explore'} disabled={running} title={running ? 'Hidden until you finish this run' : undefined} onClick={() => pickMode('explore')}>Walk through</button>
+        <button role="tab" aria-selected={mode === 'couple'} onClick={() => pickMode('couple')}>Couple (16)</button>
+        <button role="tab" aria-selected={mode === 'uncouple'} onClick={() => pickMode('uncouple')}>Uncouple (10)</button>
       </div>
+      {running && <p class="small muted" style={{ margin: 0 }}>The step-by-step walk-through is hidden until you finish this run.</p>}
       {mode === 'explore' && <Explore reducedMotion={reducedMotion} />}
-      {mode === 'couple' && <Challenge key="c" seq={COUPLE} start={START_COUPLE} doneName="Coupled clean" onEvidence={onEvidence} onChallenge={onChallenge} concepts={concepts} reducedMotion={reducedMotion} />}
-      {mode === 'uncouple' && <Challenge key="u" seq={UNCOUPLE} start={START_UNCOUPLE} doneName="Uncoupled clean" onEvidence={onEvidence} concepts={concepts} reducedMotion={reducedMotion} />}
+      {mode === 'couple' && <Challenge key="c" seq={COUPLE} start={START_COUPLE} doneName="Coupled clean" stamp onActive={setRunning} onEvidence={onEvidence} onChallenge={onChallenge} concepts={concepts} reducedMotion={reducedMotion} />}
+      {mode === 'uncouple' && <Challenge key="u" seq={UNCOUPLE} start={START_UNCOUPLE} doneName="Uncoupled clean" stamp={false} onActive={setRunning} onEvidence={onEvidence} concepts={concepts} reducedMotion={reducedMotion} />}
     </div>
   );
 }

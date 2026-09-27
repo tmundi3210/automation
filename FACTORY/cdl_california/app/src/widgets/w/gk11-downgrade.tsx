@@ -72,7 +72,10 @@ function Chart({ s, safe }: { s: Sim | null; safe: number }) {
         {ghost.slice(1).map((p, i) => p[1] < ghost[i][1] && <rect x={X(ghost[i][0])} y={B + 2} width={X(p[0]) - X(ghost[i][0])} height={8} fill="var(--red)" opacity=".45" />)}
         <polyline points={ghost.map((p) => `${X(p[0])},${Y(p[1])}`).join(' ')} fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-dasharray="5 4" opacity=".6" />
         <text x={L + 6} y={T + 16} font-size="14" font-weight="700" fill="var(--blue)">example: the handbook pattern</text>
-        <text x={X(7.5)} y={Y(safe - 5) + 36} text-anchor="middle" font-size="14" fill="var(--ink)">≈3 s</text>
+        {/* bracket over the first example brake application (red bar below), so "≈3 s" is tied to it */}
+        <path d={`M ${X(6)} ${B - 6} V ${B - 1} H ${X(9)} V ${B - 6}`} fill="none" stroke="var(--red)" stroke-width="1.5" />
+        <line x1={X(7.5)} x2={X(7.5)} y1={B - 1} y2={B + 2} stroke="var(--red)" stroke-width="1.5" />
+        <text x={X(7.5)} y={B - 9} text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">≈3 s</text>
       </g>}
       {pts.slice(1).map((p, i) => p.b && <rect x={X(pts[i].t)} y={B + 2} width={X(p.t) - X(pts[i].t)} height={8} fill="var(--red)" />)}
       {s && <polyline points={pts.map((p) => `${X(p.t)},${Y(p.v)}`).join(' ')} fill="none" stroke="var(--blue)" stroke-width="3" stroke-linejoin="round" />}
@@ -210,7 +213,7 @@ export default function Downgrade({ onEvidence, onChallenge, concepts }: WidgetP
         </div>
       )}
       {mode === 'challenge' && ci > QS.length && (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 4 right — stamp earned' : `${4 - misses} of 4 right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict num">{misses === 0 ? '4 of 4 right — stamp earned: Safe descent' : `${4 - misses} of 4 right — need all 4 for the stamp`}</div>
           <p class="small" style={{ margin: 0 }}>Low gear before the grade. Brake at safe speed to about 5 below (≈3 s), release, repeat.</p>
           <button class="btn sm" style={{ alignSelf: 'flex-start' }} onClick={resetC}>Try again</button></div>
       )}

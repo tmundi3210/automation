@@ -147,7 +147,7 @@ export default function MirrorsWidget({ onEvidence, onChallenge, concepts }: Wid
             <button class="btn primary sm" style={{ alignSelf: 'flex-start' }} onClick={() => { if (i + 1 === QS.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === QS.length ? 'Finish' : 'Next'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 4 right — stamp earned' : `${QS.length - misses} of ${QS.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `${QS.length} of ${QS.length} right — stamp earned: Mirror check` : `${Math.max(0, QS.length - misses)} of ${QS.length} right — need all ${QS.length} for the stamp`}</div>
           <p class="small" style={{ margin: 0 }}>Convex: wider view, things look smaller and farther away. Adjust with trailers straight, showing part of your truck.</p>
           <button class="btn sm" style={{ alignSelf: 'flex-start' }} onClick={() => { setI(0); setPick(null); setMisses(0); }}>Try again</button></div>
       ))}

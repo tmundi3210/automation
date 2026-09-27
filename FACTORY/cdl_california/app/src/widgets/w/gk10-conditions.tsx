@@ -223,7 +223,7 @@ export default function Conditions({ onEvidence, onChallenge, concepts }: Widget
             <button class="btn primary sm" onClick={next}>{i + 1 === CARDS.length ? 'Finish' : 'Next card'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 8 right — stamp earned' : `${CARDS.length - misses} of ${CARDS.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `${CARDS.length} of ${CARDS.length} right — stamp earned: All-weather` : `${Math.max(0, CARDS.length - misses)} of ${CARDS.length} right — need all ${CARDS.length} for the stamp`}</div>
           <button class="btn sm" onClick={reset}>Sort again</button></div>
       ))}
     </div>

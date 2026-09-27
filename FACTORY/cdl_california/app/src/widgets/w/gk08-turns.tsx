@@ -229,7 +229,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
   const [misses, setMisses] = useState(0);
   const sc = SC[i];
   if (!sc) return (
-    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 4 right — stamp earned' : `${SC.length - misses} of ${SC.length} right`}</div>
+    <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `${SC.length} of ${SC.length} right — stamp earned: Wide right` : `${Math.max(0, SC.length - misses)} of ${SC.length} right — need all ${SC.length} for the stamp`}</div>
       {misses > 0 && <p class="small">Try again with no mistakes to earn the “Wide right” stamp.</p>}
       <button class="btn sm" onClick={() => { setI(0); setMisses(0); setPick(null); }}>Try again</button></div>
   );

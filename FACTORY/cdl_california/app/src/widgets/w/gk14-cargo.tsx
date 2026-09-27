@@ -162,7 +162,7 @@ export default function Cargo({ onEvidence, onChallenge, concepts }: WidgetProps
             <button class="btn primary sm" onClick={next}>{i + 1 === QS.length ? 'Finish' : 'Next'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 6 right — stamp earned' : `${QS.length - misses} of ${QS.length} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `${QS.length} of ${QS.length} right — stamp earned: Load secured` : `${Math.max(0, QS.length - misses)} of ${QS.length} right — need all ${QS.length} for the stamp`}</div>
           <button class="btn sm" onClick={reset}>Try again</button></div>
       ))}
     </div>

@@ -136,7 +136,7 @@ export default function Railroad({ onEvidence, onChallenge, concepts }: WidgetPr
         </div>
       )}
       {mode === 'challenge' && i > QS.length && (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? 'All 5 right — stamp earned' : `${5 - misses} of 5 right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? '5 of 5 right — stamp earned: Clear the tracks' : `${Math.max(0, 5 - misses)} of 5 right — need all 5 for the stamp`}</div>
           <p class="small" style={{ margin: 0 }}>No stop line: 15–50 ft from the nearest rail. Single track ≥ 14 s, double track &gt; 15 s. No shifting on the tracks.</p>
           <button class="btn sm" style={{ alignSelf: 'flex-start' }} onClick={startChallenge}>Try again</button></div>
       )}

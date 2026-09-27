@@ -311,7 +311,7 @@ export default function EmergencyScene({ onEvidence, onChallenge, concepts }: Wi
             <button class="btn primary sm" onClick={next}>{i + 1 === total ? 'Finish' : 'Next'}</button></div>}
         </div>
       ) : (
-        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `All ${total} right — stamp earned` : `${total - misses} of ${total} right`}</div>
+        <div class={`feedback ${misses === 0 ? 'good' : 'bad'}`} role="status"><div class="verdict">{misses === 0 ? `${total} of ${total} right — stamp earned: First on scene` : `${Math.max(0, total - misses)} of ${total} right — need all ${total} for the stamp`}</div>
           <button class="btn sm" onClick={reset}>Try again</button></div>
       ))}
     </div>
