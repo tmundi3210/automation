@@ -136,7 +136,7 @@ for (const hash of ['today', 'path', 'lesson.CV-03', 'practice', 'notebook', 'pr
     await page.goto(URL + '#' + hash);
     await page.waitForTimeout(200);
     await noOverflow(page);
-    const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    const r = await new AxeBuilder({ page } as never).withTags(['wcag2a', 'wcag2aa']).analyze();
     const bad = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
     expect(bad.map((v) => `${v.id}: ${v.nodes.length} ${v.nodes[0]?.target}`)).toEqual([]);
   });
