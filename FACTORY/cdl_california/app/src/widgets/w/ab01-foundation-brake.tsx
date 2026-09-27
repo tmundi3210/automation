@@ -35,7 +35,7 @@ type Kind = 'scam' | 'wedge' | 'disc' | 'camlaster';
 const KINDS: { k: Kind; name: string; how: string; adj: string }[] = [
   { k: 'scam', name: 'S-cam', how: 'The most common foundation brake.', adj: 'Needs an outside slack adjuster.' },
   { k: 'wedge', name: 'Wedge', how: 'The chamber push rod drives a wedge directly between the ends of 2 brake shoes, spreading them against the drum. May have 1 or 2 brake chambers.', adj: 'May be self-adjusting or need manual adjustment.' },
-  { k: 'disc', name: 'Disc', how: 'Air works a brake chamber and slack adjuster, like an S-cam — but they turn a “power screw” that clamps the disc (rotor) between the pads of a caliper, like a big C-clamp.', adj: 'Less common than S-cam brakes.' },
+  { k: 'disc', name: 'Disc', how: 'Air works a brake chamber and slack adjuster, like an S-cam — but they turn a “power screw” that clamps the disc (rotor) between the pads of a caliper, like a big C-clamp.', adj: '' },
   { k: 'camlaster', name: 'CamLaster', how: 'A special cam slides the shoes down a sloped ramp so they touch the drum evenly.', adj: 'Built-in (internal) adjustment keeps it adjusted all the time — no outside slack adjuster.' },
 ];
 const segOn = { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' };
@@ -92,7 +92,7 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
       </> : <>
         <OtherBrake kind={kind} applied={applied} label={`${k.name} brake, ${applied ? 'applied' : 'released'}. ${k.how}`} />
         <div class="row"><button class="btn primary sm" aria-pressed={applied} onClick={() => setApplied(!applied)}>{applied ? 'Let pedal up' : 'Press brake pedal'}</button></div>
-        <div class="card tint small"><p><strong>{k.name}:</strong> {k.how} <strong>Adjustment:</strong> {k.adj} <span class="plate">p. 5-3</span></p>
+        <div class="card tint small"><p><strong>{k.name}:</strong> {k.how}{k.adj && <> <strong>Adjustment:</strong> {k.adj}</>} <span class="plate">p. 5-3</span></p>
           <p class="muted">Wedge and disc brakes are less common than S-cam brakes.</p></div>
       </>}
     </div>
@@ -161,7 +161,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
       <div class="stack">
         <span class="small muted num">Part 2 of 3 · part {i + 1} of {IDS.length}</span>
         <strong>What is the part in the dashed ring?</strong>
-        <SCam stage={pick !== null ? 5 : 0} outAdj={false} labels={false} mark={it.id} hi={pick !== null ? it.id : null} reduced={reducedMotion} label="S-cam brake without labels; one part is circled." />
+        <SCam stage={0} outAdj={false} labels={pick !== null} mark={it.id} hi={pick !== null ? it.id : null} reduced={reducedMotion} label="S-cam brake without labels; one part is circled." />
         <div role="group" aria-label="Part names" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>{it.opts.map((o, c) => (
           <button class="btn sm" disabled={pick !== null} aria-pressed={pick === c} style={btnStyle(c, a)} onClick={() => { setPick(c); ev(c === a); }}>{NAME(o)}{pick !== null && c === a ? ' ✓' : pick === c ? ' ✗' : ''}</button>
         ))}</div>

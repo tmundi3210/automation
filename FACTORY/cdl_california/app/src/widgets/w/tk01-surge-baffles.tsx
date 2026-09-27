@@ -193,7 +193,7 @@ function Explore({ motion }: { motion: boolean }) {
 /* ---------- Challenge: 8 scenarios */
 interface Q { text: string; s: Scene; ev?: Ev; opts: string[]; ans: number; why: string; page: string; bad?: { s?: Partial<Scene>; ev: Ev }; good?: { s?: Partial<Scene>; ev: Ev } }
 const B: Scene = { tank: 'smooth', fill: 70, liquid: 'fuel', pattern: 'even', ice: false };
-const QS: Q[] = [
+const RAW: Q[] = [
   { text: 'You will haul milk. Which kind of tank will it usually be?', s: { ...B, liquid: 'milk' }, opts: ['Smooth bore (unbaffled)', 'Baffled, to control surge', 'Any tank, as long as it has baffles for safety'], ans: 0, why: 'Smooth bore tanks usually haul food products like milk. Sanitation rules forbid baffles because they make the inside hard to clean.', page: '8-2', bad: { s: { tank: 'baffle', liquid: 'milk' }, ev: 'brake' } },
   { text: 'Smooth bore tank, partly full, coming to a red light. How do you stop?', s: B, opts: ['Keep steady pressure on the brakes and don’t let off too soon', 'Ease off the brakes just before you stop for a smooth stop', 'Brake late and hard'], ans: 0, why: 'Keep steady brake pressure and don’t release too soon: the wave hits the front and pushes the truck forward. Brake far ahead of the stop.', page: '8-3', bad: { ev: 'early' }, good: { ev: 'brake' } },
   { text: 'You are stopped on an icy road with a partly filled tank. Can surge still move you?', s: { ...B, ice: true }, opts: ['Yes: the wave can shove the stopped truck out into the intersection', 'No: once you’re stopped, surge can’t move the truck', 'Only if the tank is full'], ans: 0, why: 'On a slippery road the surge wave can push a stopped truck out into an intersection.', page: '8-2', good: { ev: 'brake' }, bad: { ev: 'brake' } },
@@ -203,6 +203,9 @@ const QS: Q[] = [
   { text: 'Bulkhead tank. You load only the rear compartment. What must you watch?', s: { ...B, tank: 'bulk', pattern: 'rear', fill: 90 }, opts: ['Nothing: bulkheads keep each load separate', 'Weight distribution: not too much weight on the front or rear', 'Side-to-side surge from the baffle holes'], ans: 1, why: 'Bulkheads divide the tank into smaller tanks. When loading and unloading, watch weight distribution: don’t put too much weight on the front or rear.', page: '8-2', good: { s: { pattern: 'even' }, ev: 'brake' } },
   { text: 'An off-ramp curve has a posted speed sign. How do you take it in a tanker?', s: B, opts: ['At the posted speed: that is what the sign is for', 'Slow down before the curve, well below the posted speed, then accelerate slightly through it', 'Brake hard in the middle of the curve'], ans: 1, why: 'Tests show tankers can turn over at the posted curve speed. Slow down before the curve and accelerate slightly through it.', page: '8-3', bad: { ev: 'curveFast' }, good: { ev: 'curveSlow' } },
 ];
+/** Rotate options so the right answer is not always in the same slot. */
+const ROT = [0, 2, 1, 1, 0, 2, 1, 2];
+const QS: Q[] = RAW.map((q, i) => { const n = q.opts.length, k = ROT[i] % n; return { ...q, opts: q.opts.map((_, j) => q.opts[(j + k) % n]), ans: (q.ans - k + n) % n }; });
 
 function Challenge({ onEvidence, onChallenge, concepts, motion }: WidgetProps & { motion: boolean }) {
   const [i, setI] = useState(0);

@@ -8,7 +8,7 @@ export const meta: WidgetMeta = {
   stamp: { id: 'examiners-eye', name: 'Examiner’s eye', rule: 'Score all 6 replayed test attempts exactly as the examiner would, with no mistakes.' },
 };
 
-const H: Record<string, number> = { straight: 92, off: 64, par: 50, alley: 104 };
+const H: Record<string, number> = { straight: 92, off: 64, par: 54, alley: 108 };
 const pressed = (on: boolean) => (on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {});
 const TAG: Record<Ev, [string, string]> = { enc: ['ENCROACHMENT', 'var(--red)'], pull: ['PULL-UP', 'var(--amber)'], stop: ['STOP — not a pull-up', 'var(--ink-2)'], look: ['LOOK', 'var(--blue)'], lookBad: ['LOOK — not secured', 'var(--red)'], fwd: ['Forward: part of the exercise', 'var(--ink-2)'] };
 
@@ -32,7 +32,7 @@ function courseArt(base: string) {
   const cones: [number, number][] = [], lines: string[] = [];
   const lbl: [number, number, string][] = [];
   if (base === 'straight') { for (let x = 60; x <= 180; x += 12) cones.push([x, 40], [x, 60]); lbl.push([120, 33, '2 rows of cones'], [120, 74, '← cab · trailer backs this way →']); }
-  if (base === 'off') { [120, 190].forEach((x) => [10, 30, 50].forEach((y) => cones.push([x, y]))); lines.push('M120 10 H190 M120 30 H190 M120 50 H190'); lbl.push([120, 60, 'first set of cones'], [8, 60, 'outer boundary'], [165, 8, 'lane B'], [165, 46, 'lane A']); }
+  if (base === 'off') { [120, 190].forEach((x) => [10, 30, 50].forEach((y) => cones.push([x, y]))); lines.push('M120 10 H190 M120 30 H190 M120 50 H190'); lbl.push([120, 58, 'first set of cones'], [8, 58, 'outer boundary'], [176, 20, 'lane B'], [176, 40, 'lane A']); }
   if (base === 'par') { [[90, 12], [90, 26], [160, 12], [160, 26], [113, 12], [137, 12]].forEach((c) => cones.push(c as [number, number])); lbl.push([125, 21, 'space'], [100, 48, 'drive past, then back in']); }
   if (base === 'alley') { for (let y = 45; y <= 93; y += 12) cones.push([88, y], [112, y]); lines.push('M88 95 H112'); lbl.push([100, 7, 'outer boundary'], [100, 102, 'back of alley'], [128, 90, '3 ft']); }
   return { cones, lines, lbl };
@@ -56,7 +56,7 @@ function Course({ ex, frames, k, rm }: { ex: Ex; frames: Frame[]; k: number; rm:
         <Rig p={f.p} rm={rm} />
       </g>
       {hit.map(([x, y]) => <g><circle cx={x} cy={my(y)} r="3.4" fill="var(--red)" stroke="var(--surface)" stroke-width="0.8" /><text x={x} y={my(y) + 2.4} text-anchor="middle" font-size="6.5" font-weight="700" fill="var(--on-red)">✕</text></g>)}
-      {lbl.map(([x, y, t]) => <text x={x} y={my(y) + (e.mirror ? 4 : 0)} text-anchor={x < 20 ? 'start' : 'middle'} font-size="7" fill="var(--ink)" stroke="var(--surface-2)" stroke-width="2" paint-order="stroke">{t}</text>)}
+      {lbl.map(([x, y, t]) => <text x={x} y={my(y)} dominant-baseline="middle" text-anchor={x < 20 ? 'start' : 'middle'} font-size="7" fill="var(--ink)" stroke="var(--surface-2)" stroke-width="2" paint-order="stroke">{t}</text>)}
     </svg>
   );
 }
@@ -137,7 +137,7 @@ function Challenge({ onEvidence, onChallenge, concepts, reducedMotion }: WidgetP
     ['Encroachments', c.enc === t.enc, `${t.enc}. Each time any part of the vehicle (trailer corner, mirror…) touches or crosses a line or cone is 1 error.`],
     ['Pull-ups', c.pull === t.pull, `${t.pull}. Only stop-and-pull-forward counts. A stop without changing direction is not one, and the forward drive the exercise itself calls for is not a correction.`],
     ['Looks', c.looks === t.looks, `${t.looks}. Opening the door or leaving the seat each count as a look.`],
-    ['Within the look limit', c.within === within, `${within ? 'Yes' : 'No'}: ${e.name} allows ${e.looks} look${e.looks > 1 ? 's' : ''}${e.looks === 1 ? ' (straight line backing allows only 1)' : ' at most'}.`],
+    ['Within the look limit', c.within === within, `${within ? 'Yes' : 'No'}: ${e.looks === 1 ? 'straight line backing allows only 1 look' : `${e.name} allows at most 2 looks`}.`],
     ['Final position', c.final === run.final.ok, `${run.final.ok ? 'Met' : 'Not met'}: ${run.final.why}`],
     ['Automatic-failure risk', c.auto === t.unsafe, t.unsafe ? 'Yes: getting out without Neutral and the parking brake(s) set may be an automatic failure — the truck could roll.' : 'None: every look was taken with the truck secured and a safe exit (or there were no looks).'],
   ];
@@ -170,7 +170,7 @@ export default function BackingCourse(props: WidgetProps) {
   const [mode, setMode] = useState<'explore' | 'challenge'>('explore');
   return (
     <div class="stack">
-      <div class="tabs" role="tablist"><button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Watch the exercises</button><button role="tab" aria-selected={mode === 'challenge'} onClick={() => setMode('challenge')}>Score 6 attempts</button></div>
+      <div class="tabs" role="tablist"><button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Watch runs</button><button role="tab" aria-selected={mode === 'challenge'} onClick={() => setMode('challenge')}>Score 6 runs</button></div>
       {mode === 'explore' ? <Explore rm={props.reducedMotion} /> : <Challenge {...props} />}
     </div>
   );

@@ -17,7 +17,7 @@ export const SPOTS: Spot[] = [
   { id: 'bridge', n: 2, name: 'Wide shoulder by the bridge', x: 92, y: 88, road: 12, d: { bridge: 150, tunnel: 1100, building: 500, crowd: 520, fire: 900 }, prop: 'public', propName: 'public road shoulder' },
   { id: 'diner', n: 3, name: 'Diner parking lot', x: 118, y: 132, road: 120, d: { bridge: 480, tunnel: 800, building: 50, crowd: 60, fire: 700 }, prop: 'private', propName: 'private lot (owner not told of the danger)' },
   { id: 'fuel', n: 4, name: 'Fuel island', x: 250, y: 132, road: 90, d: { bridge: 900, tunnel: 450, building: 60, crowd: 350, fire: 400 }, prop: 'private', propName: 'fuel station' },
-  { id: 'pullout', n: 5, name: 'Gravel pullout near a brush fire', x: 272, y: 94, road: 40, d: { bridge: 1000, tunnel: 450, building: 380, crowd: 500, fire: 200 }, prop: 'public', propName: 'public pullout' },
+  { id: 'pullout', n: 5, name: 'Gravel pullout near a brush fire', x: 256, y: 96, road: 40, d: { bridge: 1000, tunnel: 450, building: 380, crowd: 500, fire: 200 }, prop: 'public', propName: 'public pullout' },
   { id: 'turnout', n: 6, name: 'Roadside turnout', x: 190, y: 106, road: 60, d: { bridge: 600, tunnel: 700, building: 350, crowd: 360, fire: 450 }, prop: 'public', propName: 'public turnout' },
   { id: 'shipper', n: 7, name: "Shipper's yard", x: 114, y: 222, road: 400, d: { bridge: 700, tunnel: 1200, building: 350, crowd: 900, fire: 1000 }, prop: 'shipper', propName: "shipper's property" },
   { id: 'haven', n: 8, name: 'Safe haven', x: 300, y: 222, road: 300, d: { bridge: 1300, tunnel: 500, building: 400, crowd: 800, fire: 600 }, prop: 'haven', propName: 'safe haven approved by local authorities' },

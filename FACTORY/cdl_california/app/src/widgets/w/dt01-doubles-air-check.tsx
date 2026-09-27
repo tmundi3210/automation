@@ -186,7 +186,7 @@ type Q =
   | { kind: 'mc'; r?: Rig; after?: Rig; text: string; opts: string[]; ans: number; why: string; order?: boolean };
 const T = (r: Rig, k: string[], extra: Partial<Rig> = {}): Rig => { const o = { ...r.open }; k.forEach((x) => (o[x] = !o[x])); return { ...r, open: o, ...extra }; };
 const READY = { parked: true, pressure: true, knobIn: true, handbrake: true };
-const QS: Q[] = [
+const RAW: Q[] = [
   { kind: 'tap', r: T(specRig(2, READY), ['0e', '1e']), text: 'Double, pressure normal, red knob in. You open the emergency shut-off at the rear of trailer 2: silence. Which valve is the problem? (Valve positions are hidden: reason it out.)', key: '0e', why: 'Air flows front to back. If none reaches the rear of the last trailer, a shut-off ahead of it in that line is closed: the emergency valve at the rear of trailer 1. It must be OPEN.' },
   { kind: 'tap', r: T(specRig(2, READY), ['0s', '1s']), text: 'Double. The emergency line hisses at the back. You close it, keep the trailer handbrake on, and open the service shut-off at the rear of trailer 2: silence. Which valve?', key: '0s', why: 'The emergency line proves the system is charged; the service line stops at the closed service shut-off at the rear of trailer 1. Front trailers’ valves must be OPEN.' },
   { kind: 'tap', r: T(specRig(3, READY), ['1e', '2e']), text: 'Triple (not legal in CA, but on the test). Emergency line is silent at the rear of trailer 3. Trailer 2’s brakes have air; trailer 3’s do not. Which valve?', key: '1e', why: 'Air got through trailer 1 to trailer 2, so it stops at the rear of trailer 2, the middle trailer. On a triple, all front trailers’ rear valves are OPEN.' },
@@ -195,6 +195,9 @@ const QS: Q[] = [
   { kind: 'mc', r: T(specRig(2, { ...READY, knobIn: false }), ['1e']), after: T(specRig(2, READY), ['1e']), text: 'Double, pressure normal, trailer handbrake on. You open the emergency shut-off at the rear: silence. All valves are set right. What do you do?', opts: ['Push in the red “trailer air supply” knob', 'Open the valves at the rear of the last trailer and drive', 'Replace the compressor', 'Open the dolly air tank drain'], ans: 0, why: 'Pushing in the red trailer air supply knob supplies air to the emergency (supply) lines. Without it there is nothing to hear.' },
   { kind: 'mc', order: true, text: 'You are coupling a double: one trailer is loaded heavy, the other is light. Which one goes right behind the tractor?', opts: ['The heavier trailer', 'The lighter trailer', 'It does not matter'], ans: 0, why: 'Put the heavier trailer first, right behind the tractor, and the lighter one in the rear: it gives the safest handling.' },
 ];
+/** Rotate multiple-choice options so the right answer is not always first. */
+const ROT = [0, 0, 0, 0, 2, 1, 1];
+const QS: Q[] = RAW.map((q, i) => { if (q.kind !== 'mc') return q; const n = q.opts.length, k = ROT[i] % n; return { ...q, opts: q.opts.map((_, j) => q.opts[(j + k) % n]), ans: (q.ans - k + n) % n }; });
 
 function Challenge({ onEvidence, onChallenge, concepts, motion }: WidgetProps & { motion: boolean }) {
   const [i, setI] = useState(0);
@@ -232,7 +235,7 @@ function Challenge({ onEvidence, onChallenge, concepts, motion }: WidgetProps & 
     const shown = pick !== null && q.after ? q.after : q.r;
     body = <>
       {shown && <Schematic r={shown} motion={motion} />}
-      {q.order && <Schematic r={specRig(2)} order heavyFirst={pick !== 1} motion={false} />}
+      {q.order && pick !== null && <Schematic r={specRig(2)} order heavyFirst={pick === null || q.opts[pick as number] !== 'The lighter trailer'} motion={false} />}
       <div class="stack" role="group" aria-label="Choose an answer" style={{ gap: '6px' }}>{q.opts.map((o, j) => <button key={j} class="btn sm" disabled={pick !== null} style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick === j && j !== q.ans ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : pick !== null && j === q.ans ? pressed(true) : {}) }} onClick={() => answer(j, j === q.ans)}>{o}</button>)}</div>
     </>;
   }
@@ -243,7 +246,7 @@ function Challenge({ onEvidence, onChallenge, concepts, motion }: WidgetProps & 
       <strong>{q.text}</strong>
       {body}
       {pick !== null && <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">
-        <div class="verdict">{ok ? 'Right — air all the way back' : q.kind === 'tap' ? `It was the ${valveName(q.key, q.r.n)}` : q.kind === 'set' ? 'Not yet: the valves are set wrong' : `Answer: ${q.opts[q.ans]}`}</div>
+        <div class="verdict">{ok ? (q.kind === 'mc' && q.order ? 'Right' : 'Right — air all the way back') : q.kind === 'tap' ? `It was the ${valveName(q.key, q.r.n)}` : q.kind === 'set' ? 'Not yet: the valves are set wrong' : `Answer: ${q.opts[q.ans]}`}</div>
         <p class="small">{!ok && q.kind === 'tap' ? 'With that valve left closed, no air reaches the trailers behind it, so their brakes will not work. ' : ''}{!ok && q.kind === 'set' ? 'Open valves at the last trailer let air escape; closed valves up front stop air from reaching the rear brakes. ' : ''}{q.why} <span class="plate">{cite}</span></p>
         <button class="btn primary sm" onClick={next}>{i + 1 === QS.length ? 'Finish' : 'Next setup'}</button>
       </div>}

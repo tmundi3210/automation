@@ -35,14 +35,14 @@ function MapSvg({ s, hot }: { s: State; hot: Feat[] }) {
       <line x1="0" x2={W} y1="50" y2="50" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 7" />
       <text x="120" y="45" {...t}>traveled part of the road</text>
       <rect x="30" y="26" width="38" height="4" fill="var(--ink)" /><rect x="30" y="70" width="38" height="4" fill="var(--ink)" /><text x="72" y="22" {...t}>bridge</text>
-      <path d="M318 0 H360 V100 H318 Z" fill="var(--ok)" opacity=".45" /><path d="M318 70 V38 a10 10 0 0 1 10 -10 H360 V70 Z" fill="#2a332d" /><text x="339" y="92" text-anchor="middle" {...t}>tunnel</text>
+      <path d="M318 0 H360 V100 H318 Z" fill="var(--ok)" opacity=".45" /><path d="M318 70 V38 a10 10 0 0 1 10 -10 H360 V70 Z" fill="#2a332d" /><text x="339" y="18" text-anchor="middle" {...t}>tunnel</text>
       <rect x="98" y="150" width="58" height="36" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="127" y="172" text-anchor="middle" {...t}>diner</text>
       {[166, 176, 186].map((x) => <g><circle cx={x} cy="158" r="3.5" fill="var(--ink)" /><rect x={x - 3} y="163" width="6" height="12" rx="2" fill="var(--ink)" /></g>)}<text x="200" y="198" text-anchor="middle" font-size="13" fill="var(--ink)">people</text>
       <rect x="228" y="118" width="50" height="8" fill="var(--ink-2)" /><rect x="244" y="142" width="8" height="10" fill="var(--blue)" /><text x="253" y="166" text-anchor="middle" {...t}>fuel</text>
       <rect x="284" y="140" width="36" height="24" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.2" /><text x="302" y="180" text-anchor="middle" font-size="13" fill="var(--ink)">store</text>
       <path d="M313 122 q-10 -8 -4 -20 q2 8 6 4 q-2 -8 6 -12 q-2 10 6 12 q4 10 -6 16 Z" fill="var(--red)" stroke="var(--ink)" stroke-width="1" /><text x="334" y="138" text-anchor="middle" font-size="13" fill="var(--ink)">fire</text>
       <rect x="20" y="200" width="56" height="40" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="1.5" /><text x="48" y="225" text-anchor="middle" font-size="13" fill="var(--ink)">shipper</text>
-      <rect x="258" y="202" width="96" height="42" rx="4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4" /><text x="306" y="238" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">SAFE HAVEN</text>
+      <rect x="258" y="202" width="96" height="42" rx="4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4" /><text x="306" y="198" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">SAFE HAVEN</text>
       {(Object.keys(FEAT_XY) as Feat[]).map(hl)}
       <Truck x={sp.x} y={sp.y} load={s.load} />
       {s.dev === 'flare' && <g>{[-50, -40].map((dx) => <circle cx={sp.x + dx} cy={sp.y + 4} r="3" fill="var(--red)" stroke="var(--amber)" stroke-width="2" />)}</g>}
