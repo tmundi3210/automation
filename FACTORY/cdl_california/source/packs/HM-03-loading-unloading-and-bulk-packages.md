@@ -250,7 +250,7 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
 - **Trap:** Compressed gas cylinders may always be laid flat to keep them from tipping. → **Correct:** keep them **upright** in racks or boxes; lay one down only if it is **designed with the relief valve in the vapor space**. (p. 9-13)
 - **Trap:** A small POISON package can ride in the sleeper berth. → **Correct:** **never** in the **cab or sleeper**, and never with food. (p. 9-13)
 - **Trap:** Toothpaste counts as food, so it can't ride with poison. → **Correct:** **mouthwash, toothpaste and skin creams are not foodstuffs**. (p. 9-14)
-- **Trap:** The total transport index in one vehicle may be up to 100. → **Correct:** it **must not exceed 50**. (p. 9-13)
+- **Trap:** You may load as many radioactive packages together as fit in the cargo space. → **Correct:** the **total transport index** in one vehicle **must not exceed 50**. (p. 9-13)
 - **Trap:** A portable tank stays on the vehicle while it is filled. → **Correct:** that is a **cargo tank**; a portable tank is filled or emptied **off** the vehicle. (p. 9-15)
 - **Trap:** The person watching a cargo tank being loaded can be anywhere on the property. → **Correct:** within **25 ft**, alert, with a **clear view**, and able and authorized to move the tank. (p. 9-15)
 - **Trap:** You can leave a valve open for a short move across the yard. → **Correct:** close **all manholes and valves** before moving, **no matter how small the amount or how short the distance**. (p. 9-15)
@@ -368,15 +368,15 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
 12. A compressed gas cylinder may be loaded lying down only if:
     a) It is designed so the relief valve is in the vapor space
     b) It is less than half full
-    c) The trip is under 100 miles
+    c) The cylinder is empty
 13. Where may you NEVER put a package labeled POISON?
     a) In a closed van trailer
     b) In the driver's sleeper berth
     c) In a vehicle carrying skin creams
 14. The total transport index of all radioactive packages in one vehicle must not exceed:
-    a) 10
+    a) 20
     b) 50
-    c) 100
+    c) 40
 15. You already have silver cyanide on board. The shipper offers you battery acid. You should:
     a) Load it, but place it at the front of the trailer
     b) Load it if both are under 1,001 pounds
@@ -390,7 +390,7 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
     b) Class 9 miscellaneous HazMat
     c) Empty cargo tanks
 18. What is a cargo tank?
-    a) Any drum that holds more than 55 gallons
+    a) Any container that holds 119 gallons or less
     b) A tank loaded and unloaded while it is off the vehicle
     c) Bulk packaging permanently attached to a vehicle
 19. How is a portable tank loaded or unloaded?
@@ -417,7 +417,7 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
     a) Unhook the hose, then turn off the engine
     b) Leave the engine on while you couple the trailer
     c) Turn off the engine, then unhook the hose
-25. A cargo tank has only a small amount of HazMat left, and you are moving it 50 feet across the yard. The manholes and valves:
+25. A cargo tank has only a small amount of HazMat left, and you are moving it a short distance across the yard. The manholes and valves:
     a) Must be closed first
     b) May stay open because the amount is small
     c) May stay open because the distance is short
