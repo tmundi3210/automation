@@ -45,14 +45,14 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 
 ### 4.3.3 Common bus accidents (p. 4-4)
 - **Bus accidents often happen at intersections.** Be careful **even when a signal or stop sign controls the other traffic**. *Why:* other drivers may not obey it.
-- **School and mass transit buses** sometimes **scrape off mirrors or hit passing vehicles** when **pulling out from a bus stop**.
+- When **leaving a bus stop**, **school and transit buses** can **clip their mirrors or strike passing cars**.
 - Remember how much **clearance** your bus needs, and watch for **poles and tree limbs** at stops.
 - Know the size of the **gap** your bus needs to speed up and merge with traffic. **Wait for the gap to open** before you leave the stop.
 - **Never assume other drivers will brake to make room** when you signal or start to pull out.
 
 ### 4.3.4 Speed on curves and using your mirrors (p. 4-4)
 - Deadly bus crashes on curves come from **too much speed**, often when **rain or snow** has made the road slippery.
-- Every banked curve has a safe **"design speed"**. In good weather, the **posted speed is safe for cars but may be too fast for many buses**.
+- Each banked curve is built for a safe **"design speed"**. Even in good weather, the **posted speed is set for cars** and can be **too fast for many buses**.
 - Going too fast:
   - with **good traction**, the bus may **roll over**;
   - with **poor traction**, it may **slide off** the curve.
@@ -89,12 +89,12 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 - **Inspect your bus at the end of each shift.**
 - If you work for an **interstate carrier**, you must fill out a **written inspection report for each bus** you drove.
   - The report must **name each bus** and **list any defect** that would **affect safety or cause a breakdown**.
-  - **If there are no defects, the report must say so.**
+  - **If there are no defects, the report should say so.**
 - Riders sometimes damage safety parts such as **handholds, seats, emergency exits, and windows**. Report this damage at the end of your shift. *Why:* mechanics can fix it **before the bus goes out again**.
 - **Mass transit drivers** should also check that **passenger signaling devices** and **brake-door interlocks** work properly.
 
 ### 4.5 Prohibited practices (p. 4-6)
-1. **Fueling:** avoid fueling with riders on board **unless absolutely necessary**. **Never refuel in a closed building with riders on board.** *Why:* fuel fumes can build up indoors and catch fire.
+1. **Fueling:** fuel with riders aboard **only if you truly must**, and **never inside a closed building while riders are aboard**. *Why:* fuel fumes can build up indoors and catch fire.
 2. **Distractions:** **do not talk with riders**, or do anything else that distracts you, **while driving**.
 3. **Towing or pushing:** **do not tow or push a disabled bus with riders aboard**, **unless getting off would be unsafe**. Then tow or push it **only to the nearest safe spot** to let the riders off. Follow your employer's rules for towing or pushing disabled buses.
 
@@ -123,7 +123,7 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 | No stop needed (slow + check) | tracks along the road in business/residence district, **streetcar** crossings, **peace officer or flagman**, **green** signal, **"exempt"** or **"abandoned"** | 4-5 |
 | Drawbridge stop | **at least 50 feet** before the draw (no signal light or attendant) | 4-5 |
 | Drawbridge — no stop needed | **green light**, or an **attendant/traffic officer** controls traffic | 4-5 |
-| After-trip inspection | **end of each shift**; interstate: **written report for each bus**; "no defects" must be stated | 4-5 |
+| After-trip inspection | **end of each shift**; interstate: **written report for each bus**; "no defects" should be stated | 4-5 |
 | Refueling | never **in a closed building** with riders aboard | 4-6 |
 | Towing/pushing a disabled bus | riders aboard only if getting off is unsafe; only to the **nearest safe spot** | 4-6 |
 | Brake-door interlock | **rear door open** → brakes on, throttle at **idle**; releases when rear door closes | 4-6 |
@@ -132,11 +132,11 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 ## Exam traps
 - **Trap:** Wait to explain the no-smoking and no-drinking rules until someone breaks them. → **Correct:** explain them **at the start of the trip** to avoid trouble later. (p. 4-4)
 - **Trap:** Put a disruptive rider off the bus right away, wherever you are. → **Correct:** **never** where it is unsafe for them; the **next scheduled stop** or a **well-lit place with other people** may be safer. (p. 4-4)
-- **Trap:** If the cross traffic has a stop sign, you can go through the intersection without extra care. → **Correct:** bus accidents often happen at **intersections** — use caution **even if** a signal or stop sign controls the other traffic. (p. 4-4)
+- **Trap:** If the cross traffic has a stop sign, you can go through the intersection without extra care. → **Correct:** many bus crashes occur at **intersections**, so stay careful **even when** cross traffic faces a signal or stop sign. (p. 4-4)
 - **Trap:** Signal and start to pull out; other drivers will make room. → **Correct:** **never assume** they will brake; **wait for the gap** to open. (p. 4-4)
 - **Trap:** The posted speed on a curve is always safe for a bus. → **Correct:** it is safe for **cars** but may be **too fast for many buses**. (p. 4-4)
 - **Trap:** With good traction a speeding bus will just slide on a curve. → **Correct:** good traction → it may **roll over**; poor traction → it may **slide off**. (p. 4-4)
-- **Trap:** Objects in a convex mirror are closer than they look, so you can relax. → **Correct:** convex mirrors make things look **smaller and farther away** than they are — they are really **closer**. (p. 4-4)
+- **Trap:** Objects in a convex mirror are as far away as they look. → **Correct:** convex mirrors make things look **smaller and farther away** than they are — they are really **closer**. (p. 4-4)
 - **Trap:** At a railroad crossing, stop at least 50 feet back. → **Correct:** stop **between 15 and 50 feet**. "At least 50 feet" is the **drawbridge** rule. (p. 4-5)
 - **Trap:** Keep the forward door shut at railroad crossings. → **Correct:** **open** the forward door if it helps you **see or hear** a train. (p. 4-5)
 - **Trap:** You must stop at every crossing, even with a green signal or a flagman. → **Correct:** at a **green** signal, a **peace officer or flagman**, **streetcar** crossings, tracks along the road in a business/residence district, and **"exempt"/"abandoned"** crossings, you **slow down and check** instead of stopping. (p. 4-5)
@@ -191,7 +191,7 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 | 24 | When may you cross a drawbridge without stopping? | Green light, or an attendant/traffic officer controls traffic |
 | 25 | When do you do an after-trip inspection? | At the end of each shift |
 | 26 | Interstate after-trip report — what must it contain? | Each bus, and any defect affecting safety or causing a breakdown (or say "no defects") |
-| 27 | Four parts riders often damage? | Handholds, seats, emergency exits, windows |
+| 27 | Four safety-related parts riders sometimes damage? | Handholds, seats, emergency exits, windows |
 | 28 | What must mass transit drivers also check after a trip? | Passenger signaling devices and brake-door interlocks |
 | 29 | Where must you never refuel with riders on board? | In a closed building |
 | 30 | When may you tow or push a disabled bus with riders aboard? | Only if getting off would be unsafe — and only to the nearest safe spot |
@@ -225,7 +225,7 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
    b) Wait for a gap big enough to speed up and merge
    c) Pull out slowly so traffic has time to react
 7. A curve has a posted speed. For a bus, that speed:
-   a) may be too fast, because it is safe for cars
+   a) may be too fast; it is set for cars, not buses
    b) is always safe in good weather
    c) is the minimum speed you should drive
 8. You take a curve too fast on a dry road with good traction. What may happen?
@@ -294,7 +294,7 @@ Once the bus is loaded and moving, you are responsible for the riders as well as
 2. c — Wait for riders to sit down or brace themselves before starting, and start smoothly. (p. 4-4)
 3. b — Never let a disruptive rider off where it is unsafe for them; the next scheduled stop or a well-lit area with people may be safer. (p. 4-4)
 4. a — Bus accidents often happen at intersections, even where signals or stop signs control other traffic. (p. 4-4)
-5. c — School and transit buses sometimes scrape off mirrors or hit passing vehicles when pulling out from a stop. (p. 4-4)
+5. c — Pulling out of a stop, school and transit buses can clip mirrors or strike passing cars. (p. 4-4)
 6. b — Know the gap you need and wait for it; never assume other drivers will brake for you. (p. 4-4)
 7. a — The posted speed is safe for cars but may be too fast for many buses. (p. 4-4)
 8. b — With good traction a speeding bus may roll over; sliding off is what happens with poor traction. (p. 4-4)

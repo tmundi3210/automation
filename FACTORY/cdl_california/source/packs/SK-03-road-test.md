@@ -106,7 +106,7 @@ You pull over **as if you were going to get out and check something** on the veh
 - Slow down, brake smoothly, shift as needed.
 - **Look and listen** for trains; check traffic in all directions.
 - On a multi-lane road, stay in the **right-most lane**.
-- **Don't stop, change gears, pass another vehicle, or change lanes** while **any part** of the vehicle is **in the crossing**.
+- While **any part** of the vehicle is **in the crossing**: **no stopping, no gear changes, no passing, no lane changes**.
 
 **Extra steps — bus, school bus, or vehicle with placards** (at every crossing unless it is **exempt**) (p. 13-3):
 1. Turn on the **4-way flashers** as you approach.
@@ -267,7 +267,7 @@ _This handbook section has no review box — see Flashcards and Practice test._
     c) Only after the curve, when you can see ahead
 11. You drive a vehicle with placards. How far from the nearest rail must you stop at a railroad crossing?
     a) As close to the nearest rail as you safely can, to see better
-    b) At least 50 feet back, to stay well clear
+    b) More than 50 feet back, to stay well clear
     c) No less than 15 feet and no more than 50 feet
 12. Which is NOT allowed while any part of your vehicle is in a railroad crossing?
     a) Keeping both hands on the wheel
@@ -321,7 +321,7 @@ _This handbook section has no review box — see Flashcards and Practice test._
 8. c — Once stopped: cancel the signal, turn on the 4-way flashers, set the parking brake, shift to Neutral or Park, and take your feet off the pedals. (p. 13-3)
 9. b — Release the parking brake and pull straight ahead; do not turn the wheel before the vehicle moves, and turn the flashers off first. (p. 13-3)
 10. b — Slow down before the curve so no braking or shifting is needed in it. (p. 13-3)
-11. c — Buses, school buses and placarded vehicles stop within 50 feet but not less than 15 feet from the nearest rail. (p. 13-3)
+11. c — Buses, school buses and placarded vehicles stop 15 to 50 feet from the nearest rail. (p. 13-3)
 12. b — Don't stop, change gears, pass or change lanes while any part of the vehicle is in the crossing; both hands stay on the wheel. (p. 13-3)
 13. a — Flashers go on while approaching and off after the vehicle crosses the tracks. (p. 13-3)
 14. b — After a bridge you may be asked the posted weight limit; clearance is asked after an overpass. (p. 13-4)

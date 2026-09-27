@@ -17,7 +17,7 @@ This lesson is about the **bus itself and the people who ride it**. A bus carrie
 - **"P" endorsement** = the passenger mark added to your CDL. You need it to drive a bus or other vehicle built to carry a lot of people.
 - **CLP** = commercial learner permit, the permit you hold while you learn, before you have your CDL.
 - **Farm labor vehicle** = a vehicle used to carry farm workers.
-- **Paratransit vehicle** = a small public bus or van that gives door-to-door rides, often to riders with disabilities.
+- **General public paratransit vehicle** = a bus or van that gives flexible or door-to-door rides to the general public.
 - **Defect** = something broken or not working right on the vehicle.
 - **Recapped / regrooved tire** = a used tire that has had new tread glued on (recapped) or new grooves cut into the old tread (regrooved).
 - **Circuit breaker** = a switch that cuts off electric power when there is a problem and can be reset. A **fuse** does the same job but must be replaced once it blows.
@@ -33,8 +33,8 @@ This lesson is about the **bus itself and the people who ride it**. A bus carrie
 ### 4 Who needs the "P" endorsement (p. 4-1) [CA]
 - You need a CDL with a **"P" endorsement** to drive a vehicle **designed to transport more than 10 persons, including the driver**.
 - **[CA]** California's list of passenger transportation vehicles includes (but is not limited to) a **bus**, a **farm labor vehicle**, and a **general public paratransit vehicle**, when it is designed, used, or maintained to carry **more than 10 passengers including the driver** — whether it is for hire, for profit, or run by a **nonprofit** group.
-- **15-passenger restriction:** if you take your driving test in a **van** designed, used, or maintained to carry **15 persons or less, including the driver**, your license is **restricted** to a **15-passenger-or-less small-size bus**. *Why:* you showed your skill only in a small vehicle, so you are licensed only for that size.
-- **Tests you must pass:** a knowledge test on **Sections 2 and 4** of the handbook. If the bus has **air brakes**, also a knowledge test on **Section 5**. You must also pass the **skills tests** for your vehicle class.
+- **15-passenger restriction:** if your driving test is taken in a **van** built or used for **15 people or fewer (counting the driver)**, your license is **restricted** to a **15-passenger-or-less small-size bus**. *Why:* you showed your skill only in a small vehicle, so you are licensed only for that size.
+- **Tests you must pass:** written tests covering **Sections 2 and 4**; add the **Section 5** (air brakes) test if your bus has air brakes; then pass the **skills tests** for your license class.
 - **CLP holders:** a CLP holder with a "P" and/or "S" (school bus) endorsement **may not carry passengers**. The only people allowed on board are **federal/state auditors and inspectors, test examiners, other trainees, and the CDL holder riding along** with the learner.
 
 *Worked example:* a van is built for 10 persons including the driver. That is **not more than 10**, so the "P" rule in this section is not triggered. A bus built for 12 persons including the driver **is** more than 10, so you need the "P" endorsement.
@@ -115,7 +115,7 @@ This lesson is about the **bus itself and the people who ride it**. A bus carrie
 - **more than 100 pounds of solid Class 6 poisons**;
 - **explosives in the space where people ride** — except small-arms ammunition;
 - **labeled radioactive materials in the space where people ride**;
-- **more than 500 pounds total** of allowed HazMat, **and no more than 100 pounds of any 1 class**.
+- allowed HazMat weighing **over 500 lb in all**, or **over 100 lb of any single class**.
 
 *Worked example:* a load has 90 lb of one allowed class and 90 lb of another. Each class is under 100 lb and the total (180 lb) is under 500 lb, so the weight limits are met. If one class were 120 lb, it would break the **100 lb per class** rule, even though the total is under 500 lb.
 
@@ -141,7 +141,7 @@ This lesson is about the **bus itself and the people who ride it**. A bus carrie
   3. the **next departure time**;
   4. the **bus number**.
 - **Remind riders to take their carry-ons** when they get off.
-- If the aisle is **lower than the seats**, remind riders of the **step-down**. It is best to tell them **before** the bus comes to a **complete stop**.
+- If the aisle is **lower than the seats**, warn riders about the **step-down**, ideally **before** the bus has fully stopped.
 - **Charter bus drivers** should **not let riders on until departure time**. *Why:* it helps **prevent theft or vandalism** of the bus.
 - **Loading and unloading (4.2.5):** make sure riders are **safely on the bus before you close the door(s) and pull away**. Give them **time to sit down or brace themselves** before you leave. **Start and stop as smoothly as possible** so no one gets hurt.
 
@@ -198,7 +198,7 @@ This lesson is about the **bus itself and the people who ride it**. A bus carrie
 → Each **handhold and railing**; the **floor covering**; **signaling devices**, including the **restroom emergency buzzer** if there is a restroom; **emergency exit handles**; that **all seats are securely fastened**; that **emergency exits** open easily, are correctly marked and their buzzers work; that the **"Emergency Exit" sign** is clearly visible and any **red emergency door light** works; and that **aisles and stairwells are clear**. (p. 4-2)
 
 **TYK 4 #2** What are some HazMat you can transport by bus?
-→ **Small-arms ammunition labeled ORM-D**, **emergency hospital supplies**, and **drugs**. You may also carry **small amounts of other HazMat** if the shipper cannot send them any other way. A rider's medically prescribed oxygen in a personal-use container is also allowed. (p. 4-3)
+→ **Small-arms ammunition labeled ORM-D**, **emergency hospital supplies**, and **drugs**. Small quantities of other HazMat are also allowed, but only when the shipper has no other way to ship them. A rider's medically prescribed oxygen in a personal-use container is also allowed. (p. 4-3)
 
 **TYK 4 #3** What are some HazMat you cannot transport by bus?
 → **Division 2.3 poison gas**, **liquid Class 6 poison**, **tear gas**, **irritating material**; **more than 100 lb of solid Class 6 poisons**; **explosives** in the space where people ride (except small-arms ammunition); **labeled radioactive materials** in the space where people ride; and **more than 500 lb total** of allowed HazMat or **more than 100 lb of any one class**. Also, do not let riders carry on car batteries or gasoline. (p. 4-3)

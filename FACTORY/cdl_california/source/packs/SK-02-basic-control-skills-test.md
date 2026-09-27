@@ -44,7 +44,7 @@ The examiner scores **4 things**:
 
 **Encroachments.** Each time any part of your vehicle **touches or crosses** a boundary line or cone, it counts as **one error**. (p. 12-1)
 
-**Pull-ups.** When you **stop and pull forward** to clear an encroachment or get a better position, that is a pull-up. (p. 12-1)
+**Pull-ups.** A pull-up is when you **stop and drive forward** to fix an encroachment or to line up better. (p. 12-1)
 - Just **stopping** — without changing direction — is **not** a pull-up.
 - Your **first (initial) pull-ups are not penalized**, but **too many** pull-ups count as errors.
 - *Why:* real drivers pull up to fix a bad angle; the test allows some, but it rewards getting it right with few corrections.
@@ -64,13 +64,13 @@ You may be allowed to **stop safely and get out** to check where your vehicle is
 - *Why:* in real life, "almost in the dock" or "half in the space" is not parked.
 
 ### 12.2.1 Straight line backing (pp. 12-2–12-3)
-- Back the vehicle in a **straight line** between **2 rows of cones** without touching or crossing the boundaries. (p. 12-2)
+- Back straight down a lane marked by **2 rows of cones**, never touching or crossing its edges. (p. 12-2)
 - Figure 12.1 shows a tractor-trailer sitting between two long rows of cones, with an arrow pointing straight back down the lane. (p. 12-3)
 - Only **1 look** is allowed on this exercise. (p. 12-1)
 
 ### 12.2.2–12.2.3 Offset back right and left (pp. 12-2–12-3)
 - **Offset back/right:** the space is to your **right rear**. **Offset back/left:** the space is to your **left rear**. (p. 12-2)
-- How it goes: you drive **straight forward toward the outer boundary**. From there, you **back into the other lane** until the **front of your vehicle has passed the first set of cones** — without hitting any lines or cones. (p. 12-2)
+- How it goes: you drive **straight forward toward the outer boundary**. From there, you **back into the neighboring lane** and keep going until the **front of the vehicle is past the first set of cones** — without hitting any lines or cones. (p. 12-2)
 - Figures 12.2 and 12.3 show two side-by-side lanes of cones. The vehicle starts in one lane, pulls straight ahead toward a dashed outer line, then backs on a curve into the neighboring lane. (p. 12-3)
 - Tip from the backing rules: back **slowly** and, when you can, turn toward the **driver's side** so you can see; backing toward the right side is harder because you cannot see as well. (p. 2-10)
 
@@ -82,7 +82,7 @@ You may be allowed to **stop safely and get out** to check where your vehicle is
 | Must not cross | Front, side or rear boundaries (cones) | Same |
 | Finished when | Your **entire vehicle** is **completely inside** the space | Same |
 (p. 12-2)
-- Figures 12.4 and 12.5 show a tractor-trailer fully inside a box of cones next to a row of other parking spaces — one on the left side, one on the right. (p. 12-4)
+- Figures 12.4 and 12.5 show a tractor-trailer parked fully inside a box outlined by cones, with a striped area just beyond one end of the space. (p. 12-4)
 
 ### 12.2.6 Alley dock (pp. 12-2, 12-4)
 - You **sight-side back** into an "alley" (a lane at a right angle). (p. 12-2)

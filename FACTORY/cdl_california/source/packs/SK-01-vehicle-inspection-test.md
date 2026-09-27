@@ -98,14 +98,14 @@ These are where people fail. **Several mistakes here fail the whole inspection.*
   | **Applied leakage** (1-minute hold) | Air at cut-out (120–140 psi), engine off, parking brake (and tractor protection valve) released, foot brake fully on and held **1 minute** after the gauge settles. Maximum loss: **3 psi** single vehicle, **4 psi** combination of 2, **6 psi** combination of 3 or more (**3 psi** if the towed units have no air brakes). Say how much it lost and the limit for your vehicle. |
   | **Low air warning** | Key on; fan off air by pumping the foot brake. The buzzer/light/flag must come on **before the pressure drops below 55 psi** (or the maker's level). Say when it came on and the limit. |
   | **Spring brake test** | Keep fanning the air down. The parking brake knob (and tractor protection valve on a tractor-trailer) should **pop out**, normally at **20–45 psi**. Say the pressure where it happened. |
-- **Service brake check:** pull forward at **5 mph**, apply the service brake and stop. The vehicle should **stop** and **not pull to either side**. (p. 11-4)
+- **Service brake check:** roll ahead at about **5 mph** and press the service brake to stop. The vehicle should **stop** and **not pull to either side**. (p. 11-4)
 
 > Note: the handbook also describes a rate-of-air-buildup check in Section 5 (p. 5-9), but it is not one of the asterisk items. It is taught in the Air Brakes lessons.
 
 ### 11.3.1–11.3.3 Outside: steering, suspension and brakes (p. 11-5)
 - **Steering box and hoses:** box mounted securely, not leaking, **no missing nuts or bolts**; no power steering fluid leaks or hose damage.
 - **Steering linkage:** the links, arms and rods from the box to the wheel are not worn or cracked; joints and sockets not worn or loose; **no missing nuts, bolts or cotter keys**. (A cotter key is a small split pin that keeps a nut from backing off.)
-- **Springs:** look for missing, shifted, cracked or broken **leaf springs**. If **1/4 or more** are missing or broken, the vehicle is **"out of service"**. Also check coil springs, torsion bars, torque arms and **air ride** parts (damage and leaks).
+- **Springs:** check the **leaf springs** for leaves that are gone, out of place, cracked or broken. When **1/4 or more** of the leaves are gone or broken, the vehicle is **"out of service"**. Also check coil springs, torsion bars, torque arms and **air ride** parts (damage and leaks).
   - *Worked example:* a spring pack has 12 leaves. 1/4 of 12 = 3. If 3 or more are broken or missing, the vehicle is out of service.
 - **Mounts:** cracked or broken spring hangers, missing or damaged bushings, broken/loose/missing bolts and **u-bolts** — check where they attach to the **frame and axle**.
 - **Shock absorbers:** secure and not leaking.
@@ -360,7 +360,7 @@ _This handbook section has no review box — see Flashcards and Practice test._
 7. a — Air brake checks done wrong fail the entire vehicle inspection, not just a part of it. (p. 11-4)
 8. c — A combination of 2 vehicles may lose 4 psi; 3 psi is for a single vehicle and 6 psi for 3 or more. (p. 5-8)
 9. a — Low air warnings must activate before pressure drops below 55 psi; 20 psi is in the spring brake range. (p. 5-8)
-10. b — Governor cut-out is about 120–140 psi; 20–45 psi is where spring brakes come on, and 85–100 psi is part of the air buildup check. (p. 11-3)
+10. b — Governor cut-out is about 120–140 psi; 20–45 psi is where spring brakes come on, and 85–100 psi is part of the air buildup check. (pp. 11-3, 5-9)
 11. c — 1/4 or more missing or broken leaf springs puts the vehicle out of service. (p. 11-5)
 12. a — A manual slack adjuster's pushrod should not move more than 1 inch by hand with brakes released. (p. 11-5)
 13. b — Clearance lights are red on the rear and amber everywhere else. (p. 11-3)
