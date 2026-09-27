@@ -8,33 +8,35 @@ export const meta: WidgetMeta = {
   stamp: { id: 'parts-namer', name: 'Parts namer', rule: 'Name all 8 highlighted rig parts with no mistakes.' },
 };
 
-const W = 600, H = 340;
+const W = 600, H = 352;
 const INK = 'var(--ink)';
+/** Tire rubber: dark in both themes; a light --ink-2 rim keeps it visible on the dark background. */
+const TIRE = '#262b28';
 
 /** Stroke for a part: amber + thick when it is the focused one. */
 function sk(sel: PartId | null, id: PartId, w = 2) {
   return sel === id ? { stroke: 'var(--amber)', 'stroke-width': w + 2.5 } : { stroke: INK, 'stroke-width': w };
 }
-function Wheel({ x, y, r = 24, s }: { x: number; y: number; r?: number; s?: object }) {
-  return <g><circle cx={x} cy={y} r={r} fill="var(--ink)" {...(s || { stroke: INK, 'stroke-width': 2 })} /><circle cx={x} cy={y} r={r * 0.5} fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="2" /><circle cx={x} cy={y} r={r * 0.16} fill="var(--ink-2)" /></g>;
+function Wheel({ x, y, r = 24, on = false }: { x: number; y: number; r?: number; on?: boolean }) {
+  return <g><circle cx={x} cy={y} r={r} fill={TIRE} stroke={on ? 'var(--amber)' : 'var(--ink-2)'} stroke-width={on ? 4.5 : 2} /><circle cx={x} cy={y} r={r * 0.5} fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="2" /><circle cx={x} cy={y} r={r * 0.16} fill="var(--ink-2)" /></g>;
 }
 
 function RigView({ sel }: { sel: PartId | null }) {
   const s = (id: PartId, w?: number) => sk(sel, id, w);
   return (
     <g>
-      <rect x="0" y="300" width={W} height="40" fill="var(--surface-2)" />
+      <rect x="0" y="300" width={W} height={H - 300} fill="var(--surface-2)" />
       <line x1="0" y1="300" x2={W} y2="300" stroke="var(--ink-2)" stroke-width="2" />
       {/* converter dolly inset */}
       <g>
         <rect x="6" y="6" width="156" height="96" rx="8" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="5 4" />
-        <text x="14" y="28" font-size="21" font-weight="700" fill="var(--ink-2)" font-family="var(--display)">Dolly</text>
+        <text x="14" y="31" font-size="24" font-weight="700" fill="var(--ink)" font-family="var(--display)">Dolly</text>
         <line x1="22" y1="72" x2="74" y2="72" {...s('dolly', 3)} />
         <circle cx="18" cy="72" r="6" fill="var(--surface)" {...s('dolly')} />
         <rect x="72" y="62" width="72" height="12" rx="2" fill="var(--ink-2)" {...s('dolly')} />
         <rect x="90" y="54" width="42" height="8" rx="2" fill="var(--surface-2)" {...s('dolly')} />
         <rect x="80" y="75" width="26" height="9" rx="4" fill="var(--surface-2)" {...s('dolly', 1.5)} />
-        <Wheel x={122} y={86} r={13} s={s('dolly')} />
+        <Wheel x={122} y={86} r={13} on={sel === 'dolly'} />
       </g>
       {/* trailer */}
       <rect x="205" y="62" width="392" height="156" rx="4" fill="var(--surface)" stroke={INK} stroke-width="2" />
@@ -53,7 +55,7 @@ function RigView({ sel }: { sel: PartId | null }) {
       <rect x="408" y="232" width="60" height="18" rx="9" fill="var(--surface-2)" {...s('tanks')} />
       <line x1="468" y1="241" x2="472" y2="241" stroke={INK} stroke-width="2" />
       <rect x="470" y="231" width="14" height="12" rx="2" fill="var(--surface-2)" {...s('relay')} />
-      <Wheel x={505} y={276} s={s('tires')} /><Wheel x={553} y={276} s={s('tires')} />
+      <Wheel x={505} y={276} on={sel === 'tires'} /><Wheel x={553} y={276} on={sel === 'tires'} />
       <rect x="521" y="234" width="17" height="16" rx="4" fill="var(--surface-2)" {...s('spring')} />
       <line x1="529" y1="250" x2="529" y2="258" stroke={INK} stroke-width="2" />
       <rect x="584" y="254" width="8" height="42" rx="2" fill="var(--ink-2)" {...s('tires', 1.5)} />
@@ -72,7 +74,7 @@ function RigView({ sel }: { sel: PartId | null }) {
       <path d="M178 170 C 192 208 200 208 205 190" fill="none" stroke="var(--blue)" stroke-width="3.5" />
       <rect x="232" y="228" width="66" height="8" rx="2" fill="var(--ink-2)" stroke={INK} stroke-width="1.5" />
       <rect x="248" y="236" width="36" height="7" fill="var(--ink-2)" />
-      <Wheel x={70} y={276} s={s('tires')} /><Wheel x={242} y={276} s={s('tires')} /><Wheel x={292} y={276} s={s('tires')} />
+      <Wheel x={70} y={276} on={sel === 'tires'} /><Wheel x={242} y={276} on={sel === 'tires'} /><Wheel x={292} y={276} on={sel === 'tires'} />
       <rect x="318" y="254" width="7" height="42" rx="2" fill="var(--ink-2)" {...s('tires', 1.5)} />
     </g>
   );
@@ -84,7 +86,7 @@ function CloseView({ sel }: { sel: PartId | null }) {
   return (
     <g>
       <rect x="0" y="0" width={W} height={H} fill="var(--bg)" />
-      <circle cx="470" cy="420" r="128" fill="var(--ink)" /><circle cx="470" cy="420" r="56" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="3" />
+      <circle cx="470" cy="432" r="128" fill={TIRE} stroke="var(--ink-2)" stroke-width="3" /><circle cx="470" cy="432" r="56" fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="3" />
       {/* cab back wall + frame */}
       <rect x="-4" y="-4" width="116" height="266" fill="var(--accent)" stroke={INK} stroke-width="2" />
       <rect x="18" y="26" width="64" height="40" rx="5" fill="var(--blue-soft)" stroke={INK} stroke-width="2" />
@@ -125,16 +127,19 @@ function CloseView({ sel }: { sel: PartId | null }) {
   );
 }
 
+/** Where the "zoom to coupling" pill sits on the rig view (clear of the dolly badge at 390 px). */
+const ZX = 390, ZY = 37;
+
 function Diagram({ view, sel, focus, badges, onPick, onZoom, reducedMotion }: { view: View; sel: PartId | null; focus: PartId | null; badges: boolean; onPick?: (id: PartId) => void; onZoom?: () => void; reducedMotion: boolean }) {
   const parts = PARTS.filter((p) => p.view === view);
   const f = focus ? PART[focus] : null;
   const label = view === 'rig' ? 'Side view of a tractor-semitrailer (left side) with a converter dolly inset' : 'Close-up of the coupling: back of cab, air lines, glad hands, fifth wheel cut away to show jaws and kingpin';
   return (
-    <div style={{ position: 'relative', maxWidth: '640px', width: '100%', margin: '0 auto' }}>
+    <div style={{ position: 'relative', maxWidth: '560px', width: '100%', margin: '0 auto' }}>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={label + (f ? `. Highlighted: ${badges ? f.name : 'a part'}.` : '')} style={{ borderRadius: '8px', background: 'var(--bg)' }}>
         {view === 'rig' ? <RigView sel={focus} /> : <CloseView sel={focus} />}
         {badges && parts.map((p) => <g><line x1={p.b[0]} y1={p.b[1]} x2={p.t[0]} y2={p.t[1]} stroke={sel === p.id ? 'var(--amber)' : 'var(--ink-2)'} stroke-width={sel === p.id ? 3 : 1.5} stroke-dasharray={sel === p.id ? '' : '4 3'} /><circle cx={p.t[0]} cy={p.t[1]} r="4" fill={sel === p.id ? 'var(--amber)' : 'var(--ink-2)'} /></g>)}
-        {badges && view === 'rig' && <line x1="290" y1="96" x2="266" y2="226" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 3" />}
+        {badges && view === 'rig' && <line x1={ZX} y1={ZY + 18} x2="266" y2="226" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 3" />}
         {f && <circle cx={f.t[0]} cy={f.t[1]} r="30" fill="none" stroke="var(--amber)" stroke-width="4" stroke-dasharray="8 5">
           {!reducedMotion && <animate attributeName="r" values="26;34;26" dur="1.6s" repeatCount="indefinite" />}
         </circle>}
@@ -142,10 +147,10 @@ function Diagram({ view, sel, focus, badges, onPick, onZoom, reducedMotion }: { 
       {badges && parts.map((p) => {
         const i = PARTS.indexOf(p) + 1, on = sel === p.id;
         return <button type="button" aria-label={`${i}. ${p.name}`} aria-pressed={on} title={p.name} onClick={() => onPick?.(p.id)}
-          style={{ position: 'absolute', left: `${(p.b[0] / W) * 100}%`, top: `${(p.b[1] / H) * 100}%`, transform: 'translate(-50%,-50%)', width: '30px', height: '30px', borderRadius: '50%', padding: 0, cursor: 'pointer', font: '700 .8rem/1 var(--body)', border: `2px solid ${on ? 'var(--accent)' : 'var(--ink)'}`, background: on ? 'var(--accent)' : 'var(--surface)', color: on ? 'var(--accent-ink)' : 'var(--ink)', boxShadow: 'var(--shadow)' }}>{i}</button>;
+          style={{ position: 'absolute', left: `${(p.b[0] / W) * 100}%`, top: `${(p.b[1] / H) * 100}%`, transform: 'translate(-50%,-50%)', width: '36px', height: '36px', borderRadius: '50%', padding: 0, cursor: 'pointer', font: '700 .9rem/1 var(--body)', border: `2px solid ${on ? 'var(--accent)' : 'var(--ink)'}`, background: on ? 'var(--accent)' : 'var(--surface)', color: on ? 'var(--accent-ink)' : 'var(--ink)', boxShadow: 'var(--shadow)' }}>{i}</button>;
       })}
       {badges && view === 'rig' && <button type="button" aria-label="Zoom in on the coupling: fifth wheel, kingpin, air lines" title="Zoom in on the coupling" onClick={onZoom}
-        style={{ position: 'absolute', left: `${(290 / W) * 100}%`, top: `${(96 / H) * 100}%`, transform: 'translate(-50%,-50%)', height: '30px', padding: '0 10px', borderRadius: '15px', cursor: 'pointer', font: '700 .78rem/1 var(--body)', border: '2px solid var(--blue)', background: 'var(--blue-soft)', color: 'var(--ink)', whiteSpace: 'nowrap', boxShadow: 'var(--shadow)' }}>⊕ Coupling</button>}
+        style={{ position: 'absolute', left: `${(ZX / W) * 100}%`, top: `${(ZY / H) * 100}%`, transform: 'translate(-50%,-50%)', height: '36px', padding: '0 12px', borderRadius: '18px', cursor: 'pointer', font: '700 .85rem/1 var(--body)', border: '2px solid var(--blue)', background: 'var(--blue-soft)', color: 'var(--ink)', whiteSpace: 'nowrap', boxShadow: 'var(--shadow)' }}>⊕ Coupling</button>}
     </div>
   );
 }

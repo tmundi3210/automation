@@ -26,32 +26,36 @@ export function check(log: Cell[], h: number, sys: Sys): string | null {
   return null;
 }
 
-const CW = 15, W = CW * 24;
+const CW = 15, W = CW * 24, FS = 14; // 14 font units in a 360-wide viewBox = 11.4 px on a 294 px phone column
+/** Stop-time label: "7 p.m.", "midnight", "noon". */
+const stopAt = (h: number) => { const hh = ((h % 24) + 24) % 24; return hh === 0 ? 'midnight' : hh === 12 ? 'noon' : `${hh % 12} ${hh < 12 ? 'a.m.' : 'p.m.'}`; };
+/** A cross drawn with lines (shape, so an illegal hour is not shown by color alone). */
+const Cross = ({ x, y }: { x: number; y: number }) => <path d={`M${x + 3} ${y + 3} l${CW - 6} 12 M${x + CW - 3} ${y + 3} l${-(CW - 6)} 12`} stroke="var(--surface)" stroke-width={2} />;
 export function Lanes({ start, log, pick }: { start: number; log: Cell[]; pick?: number }) {
   const rows: Sys[] = ['fed', 'ca'];
+  const H = pick !== undefined ? 196 : 178;
   return (
-    <svg viewBox={`0 0 ${W} 150`} width="100%" role="img" style={{ display: 'block' }}
-      aria-label={`On duty at ${clock(start)}. Federal: no driving after ${clock(start + 14)}. California: no driving after ${clock(start + 16)}.`}>
-      {Array.from({ length: 24 }, (_, h) => <rect x={h * CW} y={0} width={CW} height={128} fill={h % 2 ? 'var(--surface)' : 'var(--surface-2)'} />)}
-      <text x={2} y={12} font-size={12} font-weight={700} fill="var(--ink)">Your log</text>
-      {log.map((c, h) => <g><rect x={h * CW + 1} y={17} width={CW - 2} height={18} rx={2} fill={c === 'D' ? 'var(--ink)' : 'var(--surface)'} stroke="var(--ink-2)" stroke-width={0.8} />
-        <text x={h * CW + CW / 2} y={30} font-size={11} font-weight={700} text-anchor="middle" fill={c === 'D' ? 'var(--surface)' : 'var(--ink-2)'}>{c === 'D' ? 'D' : '·'}</text></g>)}
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" style={{ display: 'block', maxWidth: '430px' }}
+      aria-label={`On duty at ${clock(start)}. Federal: no driving after ${clock(start + 14)}. California: no driving after ${clock(start + 16)}.${log.some((c) => c === 'D') ? ` Illegal driving hours: federal ${log.filter((_, h) => check(log, h, 'fed')).length}, California ${log.filter((_, h) => check(log, h, 'ca')).length}.` : ''}`}>
+      {Array.from({ length: 24 }, (_, h) => <rect x={h * CW} y={0} width={CW} height={150} fill={h % 2 ? 'var(--surface)' : 'var(--surface-2)'} />)}
+      <text x={2} y={15} font-size={FS} font-weight={700} fill="var(--ink)">Your log <tspan font-weight={400} fill="var(--ink-2)">(dark = driving)</tspan></text>
+      {log.map((c, h) => <rect x={h * CW + 1} y={21} width={CW - 2} height={18} rx={2} fill={c === 'D' ? 'var(--ink)' : 'var(--surface)'} stroke="var(--ink-2)" stroke-width={0.8} />)}
       {rows.map((s, i) => {
-        const r = RULES[s], top = 42 + i * 43;
+        const r = RULES[s], top = 46 + i * 52, x = r.window * CW;
         return (
           <g>
-            <text x={2} y={top + 11} font-size={12} font-weight={700} fill="var(--ink)">{s === 'fed' ? 'Federal 11 / 14' : 'California 12 / 16'}</text>
-            <rect x={0} y={top + 16} width={r.window * CW} height={14} fill={r.color} opacity={0.3} />
-            <rect x={r.window * CW} y={top + 16} width={W - r.window * CW} height={14} fill="var(--red-soft)" />
-            <line x1={r.window * CW} x2={r.window * CW} y1={top + 2} y2={top + 36} stroke="var(--red)" stroke-width={2.5} />
-            <text x={r.window * CW + (s === 'fed' ? 4 : -4)} y={top + 11} font-size={11} font-weight={700} text-anchor={s === 'fed' ? 'start' : 'end'} fill="var(--red)">stop {clock(start + r.window).replace(':00', '')}</text>
-            {log.map((_, h) => check(log, h, s) ? <g><rect x={h * CW + 1} y={top + 16} width={CW - 2} height={14} fill="var(--red)" /><text x={h * CW + CW / 2} y={top + 27} font-size={11} font-weight={700} text-anchor="middle" fill="var(--surface)">✗</text></g>
-              : log[h] === 'D' ? <text x={h * CW + CW / 2} y={top + 27} font-size={11} font-weight={700} text-anchor="middle" fill="var(--ink)">✓</text> : null)}
+            <text x={2} y={top + 15} font-size={FS} font-weight={700} fill="var(--ink)">{s === 'fed' ? 'Federal 11 / 14' : 'California 12 / 16'}</text>
+            <text x={x + 4} y={top + 15} font-size={FS} font-weight={700} fill="var(--red)">stop {stopAt(start + r.window)}</text>
+            <rect x={0} y={top + 21} width={x} height={18} fill={r.color} opacity={0.25} />
+            <rect x={x} y={top + 21} width={W - x} height={18} fill="var(--red-soft)" />
+            {log.map((_, h) => check(log, h, s) ? <g><rect x={h * CW + 1} y={top + 21} width={CW - 2} height={18} fill="var(--red)" /><Cross x={h * CW} y={top + 22} /></g>
+              : log[h] === 'D' ? <rect x={h * CW + 3} y={top + 25} width={CW - 6} height={10} rx={2} fill={r.color} /> : null)}
+            <line x1={x} x2={x} y1={top + 2} y2={top + 44} stroke="var(--red)" stroke-width={2.5} />
           </g>
         );
       })}
-      {pick !== undefined && <g><line x1={pick * CW} x2={pick * CW} y1={40} y2={128} stroke="var(--amber)" stroke-width={2.5} stroke-dasharray="4 3" /><text x={Math.min(pick * CW + 3, W - 70)} y={140} font-size={11} font-weight={700} fill="var(--amber-ink)">your pick</text></g>}
-      {[0, 4, 8, 12, 16, 20].map((h) => <text x={h * CW + 1} y={pick !== undefined ? 150 : 142} font-size={11} fill="var(--ink-2)">{short(start + h)}</text>)}
+      {pick !== undefined && <g><line x1={pick * CW} x2={pick * CW} y1={44} y2={150} stroke="var(--amber)" stroke-width={2.5} stroke-dasharray="4 3" /><text x={Math.min(Math.max(pick * CW - 36, 0), W - 76)} y={190} font-size={FS} font-weight={700} fill="var(--amber-ink)">your pick</text></g>}
+      {[0, 4, 8, 12, 16, 20].map((h) => <g><line x1={h * CW} x2={h * CW} y1={150} y2={156} stroke="var(--ink-2)" /><text x={h * CW + 1} y={170} font-size={FS} fill="var(--ink-2)">{short(start + h)}</text></g>)}
     </svg>
   );
 }
@@ -66,11 +70,13 @@ function Weekly() {
   const sum8 = restart ? 0 : days.reduce((a, b) => a + b, 0), sum7 = restart ? 0 : days.slice(1).reduce((a, b) => a + b, 0);
   const fed = every ? { lim: 70, used: sum8, per: '8 days' } : { lim: 60, used: sum7, per: '7 days' };
   const ca = { lim: farm ? 112 : 80, used: sum8, per: '8 days in a row' };
-  const bar = (label: string, x: { lim: number; used: number; per: string }, color: string, y: number) => {
+  /** HTML label (wraps on phones) over a 0–120 h bar with the limit as a red line. */
+  const bar = (label: string, x: { lim: number; used: number; per: string }, color: string) => {
     const s = 280 / 120, over = x.used >= x.lim;
-    return <g><text x={0} y={y} font-size={12} font-weight={700} fill="var(--ink)">{label}: {x.used} of {x.lim} h in {x.per} · {over ? 'NO DRIVING' : `${x.lim - x.used} h left`}</text>
-      <rect x={0} y={y + 5} width={280} height={12} fill="var(--surface-2)" /><rect x={0} y={y + 5} width={Math.min(x.used, 120) * s} height={12} fill={over ? 'var(--red)' : color} />
-      <line x1={x.lim * s} x2={x.lim * s} y1={y + 1} y2={y + 21} stroke="var(--red)" stroke-width={2} /></g>;
+    return <div class="stack" style={{ gap: '2px' }}>
+      <span class="small num"><strong>{label}:</strong> {x.used} of {x.lim} h in {x.per} · <strong style={{ color: over ? 'var(--red)' : 'inherit' }}>{over ? '✕ NO DRIVING' : `${x.lim - x.used} h left`}</strong></span>
+      <svg viewBox="0 0 284 22" width="100%" aria-hidden="true" style={{ display: 'block', maxWidth: '430px' }}><rect x={0} y={5} width={280} height={12} fill="var(--surface-2)" /><rect x={0} y={5} width={Math.min(x.used, 120) * s} height={12} fill={over ? 'var(--red)' : color} />
+        <line x1={x.lim * s} x2={x.lim * s} y1={0} y2={22} stroke="var(--red)" stroke-width={2.5} /></svg></div>;
   };
   return (
     <div class="card flat stack">
@@ -79,11 +85,11 @@ function Weekly() {
         <div class="field" style={{ gap: '2px' }}><label class="small" for={`dc-d${i}`}>{i === 7 ? 'Today' : `Day ${i + 1}`}</label>
           <input id={`dc-d${i}`} type="number" inputMode="numeric" min={0} max={24} value={v} style={{ minWidth: 0, width: '100%' }} onInput={(e) => { const n = [...days]; n[i] = Math.min(24, Math.max(0, +(e.target as HTMLInputElement).value || 0)); setDays(n); }} /></div>))}</div>
       <div class="row">
-        <label class="toggle"><input type="checkbox" checked={every} onChange={(e) => setEvery((e.target as HTMLInputElement).checked)} />Carrier runs trucks every day (federal 70/8)</label>
-        <label class="toggle"><input type="checkbox" checked={farm} onChange={(e) => setFarm((e.target as HTMLInputElement).checked)} />Hauling farm products (CA 112)</label>
-        <label class="toggle"><input type="checkbox" checked={restart} onChange={(e) => setRestart((e.target as HTMLInputElement).checked)} />Just had 34+ hours off in a row</label>
+        <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={every} onChange={(e) => setEvery((e.target as HTMLInputElement).checked)} />Carrier runs trucks every day (federal 70/8)</label>
+        <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={farm} onChange={(e) => setFarm((e.target as HTMLInputElement).checked)} />Hauling farm products (CA 112)</label>
+        <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={restart} onChange={(e) => setRestart((e.target as HTMLInputElement).checked)} />Just had 34+ hours off in a row</label>
       </div>
-      <svg viewBox="0 0 290 78" width="100%" role="img" aria-label={`Federal ${fed.used} of ${fed.lim} hours; California ${ca.used} of ${ca.lim} hours`}>{bar('Federal', fed, 'var(--blue)', 13)}{bar('California', ca, 'var(--accent)', 53)}</svg>
+      {bar('Federal', fed, 'var(--blue)')}{bar('California', ca, 'var(--accent)')}
       <p class="small">Federal: no driving after <strong>60 hours on duty in 7 days</strong>, or <strong>70 in 8 days</strong> if the carrier runs trucks every day; a <strong>34+ hour</strong> break restarts the period. <span class="ca-tag">CA</span> No driving after <strong>80 hours on duty in any 8 days in a row</strong> (farm products <strong>112</strong>); for truck drivers an 8-day period may end when a 34+ hour off-duty period begins. <span class="plate">p. 1-27</span></p>
     </div>
   );
@@ -98,14 +104,15 @@ function Explore() {
   return (
     <div class="stack">
       <div class="field"><label for="dc-start">Come on duty (after 10 hours off in a row): <strong>{clock(start)}</strong></label>
-        <input id="dc-start" type="range" min={0} max={23} value={start} onInput={(e) => setStart(+(e.target as HTMLInputElement).value)} /></div>
+        <input id="dc-start" type="range" min={0} max={23} value={start} aria-valuetext={clock(start)} onInput={(e) => setStart(+(e.target as HTMLInputElement).value)} /></div>
       <div class="stack" style={{ gap: '4px' }}>
         <span style={{ fontWeight: 700 }}>Tap an hour to switch Driving ↔ On duty (not driving)</span>
-        {[0, 12].map((o) => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)' }} role="group" aria-label={`Hours ${o + 1} to ${o + 12} after coming on duty`}>
-          {log.slice(o, o + 12).map((c, k) => { const h = o + k; return (
-            <button class="btn sm" aria-pressed={c === 'D'} aria-label={`${clock(start + h)} hour: ${c === 'D' ? 'Driving' : 'On duty, not driving'}`} style={{ padding: 0, minWidth: 0, borderRadius: '4px', flexDirection: 'column', gap: 0, fontSize: '.7rem', ...(c === 'D' ? { background: 'var(--ink)', color: 'var(--surface)', borderColor: 'var(--ink)' } : {}) }}
-              onClick={() => { const n = [...log]; n[h] = c === 'D' ? 'N' : 'D'; setLog(n); }}><span>{short(start + h)}</span><span style={{ fontWeight: 700 }}>{c === 'D' ? 'D' : 'on'}</span></button>); })}
-        </div>)}
+        <span class="small muted">D = driving · on = on duty, not driving. 24 hours from when you come on duty.</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(max(44px, calc(100% / 12 - 4px)), 1fr))', gap: '4px' }} role="group" aria-label="24 hours after coming on duty">
+          {log.map((c, h) => (
+            <button class="btn sm num" aria-pressed={c === 'D'} aria-label={`${clock(start + h)} hour: ${c === 'D' ? 'Driving' : 'On duty, not driving'}`} style={{ padding: '2px 0', minWidth: 0, minHeight: '40px', flexDirection: 'column', gap: 0, fontSize: '.75rem', lineHeight: 1.3, ...(c === 'D' ? { background: 'var(--ink)', color: 'var(--surface)', borderColor: 'var(--ink)' } : {}) }}
+              onClick={() => { const n = [...log]; n[h] = c === 'D' ? 'N' : 'D'; setLog(n); }}><span>{short(start + h)}</span><span style={{ fontWeight: 700, fontSize: '.85rem' }}>{c === 'D' ? 'D' : 'on'}</span></button>))}
+        </div>
         <div class="row"><button class="btn sm" onClick={() => setLog(Array(24).fill('N'))}>Clear driving</button><button class="btn sm" onClick={() => setLog(Array.from({ length: 24 }, (_, h) => (h >= 1 && h <= 15 ? 'D' : 'N')))}>Drive 15 hours straight</button></div>
       </div>
       <Lanes start={start} log={log} />
@@ -153,9 +160,9 @@ export default function DutyClock({ onEvidence, onChallenge, concepts }: WidgetP
           <div class="stack" role="group" aria-label="Choices">{q.choices.map((ch) => (
             <button class={`btn ${pick && ch === q.answer ? 'primary' : ''}`} style={{ justifyContent: 'flex-start', ...(pick && ch === pick && ch !== q.answer ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}) }} disabled={!!pick}
               onClick={() => { setPick(ch); const ok = ch === q.answer; if (!ok) setMisses(misses + 1); onEvidence({ concepts, ok }); }}>{pick && ch === q.answer ? '✓ ' : pick && ch === pick ? '✗ ' : ''}{ch}</button>))}</div>
+          {pick && q.start !== undefined && q.log && <Lanes start={q.start} log={q.log} pick={q.picks ? q.picks[pick] : undefined} />}
           {pick && <div class={`feedback ${pick === q.answer ? 'good' : 'bad'}`} role="status"><div class="verdict">{pick === q.answer ? 'Right' : `No: ${q.answer}`}</div>
             {pick !== q.answer && q.picks && <p class="small">Your pick (amber line) {q.picks[pick] > q.picks[q.answer] ? 'would have you driving past the red stop line: illegal.' : 'would park you hours before the rule does.'}</p>}
-            {q.start !== undefined && q.log && <Lanes start={q.start} log={q.log} pick={q.picks ? q.picks[pick] : undefined} />}
             <p class="small">{q.why} <span class="plate">p. {q.page}</span></p>
             <button class="btn primary sm" onClick={() => { if (i + 1 === QS.length && misses === 0) onChallenge?.(); setPick(null); setI(i + 1); }}>{i + 1 === QS.length ? 'Finish' : 'Next check'}</button></div>}
         </div>

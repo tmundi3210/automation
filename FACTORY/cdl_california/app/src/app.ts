@@ -4,7 +4,7 @@ import contentJson from './content/content.json';
 import type { Content } from './content/types';
 import type { AppState } from './engine/model';
 import { emptyState } from './engine/model';
-import { save } from './store/store';
+import { save, flush } from './store/store';
 
 export const C = contentJson as unknown as Content;
 export const now = () => Date.now();
@@ -16,6 +16,8 @@ export const ready = signal(false);
 export function S(): AppState { void version.value; return state; }
 export function peek(): AppState { return state; }
 export function replaceState(s: AppState) { state = s; version.value++; applyPrefs(); }
+/** Adopt a restored/erased state and persist it immediately as the newest copy (so a reload keeps it). */
+export function adoptState(s: AppState) { s.updatedAt = now(); state = s; version.value++; applyPrefs(); save(s); void flush(s); }
 export function mutate(fn: (s: AppState) => void) {
   fn(state);
   state.updatedAt = now();
@@ -48,9 +50,31 @@ export function routeFromHash(): Route | null {
 function mutateQuiet(fn: (s: AppState) => void) { fn(state); save(state); }
 
 // ---------- practice sessions are passed by reference (not in the URL)
-export interface SessionSpec { title: string; ids: string[]; mode: 'learn' | 'practice' | 'review' | 'fix' | 'cards'; lesson?: string; back: Route; shuffleOptions?: boolean; onFinish?: (score: number, total: number) => void }
+export interface SessionSpec { title: string; ids: string[]; mode: 'learn' | 'practice' | 'review' | 'fix' | 'cards'; lesson?: string; back: Route; shuffleOptions?: boolean; testLesson?: string }
 export const session = signal<SessionSpec | null>(null);
-export function startSession(spec: SessionSpec) { session.value = spec; go('session'); }
+export function startSession(spec: SessionSpec) {
+  session.value = spec;
+  mutate((s) => { s.sessionRun = { ...spec, back: { ...spec.back }, i: 0, results: [] }; });
+  go('session');
+}
+/** Reopen an unfinished session after a reload. */
+export function restoreSession() {
+  const r = state.sessionRun;
+  if (!r) return;
+  session.value = { title: r.title, ids: r.ids, mode: r.mode, lesson: r.lesson, back: r.back as Route, shuffleOptions: r.shuffleOptions, testLesson: r.testLesson };
+  route.value = { name: 'session' };
+}
+/** Lesson practice test result: best score, and the lesson is complete at 90 %+. */
+export function finishLessonTest(id: string, score: number, total: number) {
+  const pct = total ? score / total : 0;
+  mutate((st) => {
+    const lp = st.lessons[id] ?? { conceptsSeen: {} };
+    lp.practiceLast = { score, total, t: now() };
+    lp.practiceBest = Math.max(lp.practiceBest ?? 0, pct);
+    if (pct >= 0.9 && !lp.completed) lp.completed = now();
+    st.lessons[id] = lp;
+  });
+}
 
 // ---------- toasts
 export const toast = signal<string | null>(null);
@@ -69,3 +93,6 @@ export function applyPrefs() {
 
 export const lessonById = (id: string) => C.lessons.find((l) => l.id === id)!;
 export const conceptMastery = computed(() => { void version.value; return state.bkt; });
+
+// ---------- tap-to-define glossary popover
+export const glossOpen = signal<number | null>(null);

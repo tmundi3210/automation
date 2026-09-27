@@ -27,12 +27,12 @@ export function OnboardingScreen() {
   };
   const choices: [Cls, string, string][] = [
     ['A', 'Class A', 'Tractor-trailers and other combinations where the towed unit is over 10,000 lb.'],
-    ['B', 'Class B', 'One heavy truck or bus (over 26,000 lb), or a 3-axle vehicle over 6,000 lb, or a bus for more than 10 people.'],
-    ['C', 'Class C', 'A smaller vehicle that hauls placarded HazMat or carries passengers.'],
+    ['B', 'Class B', 'One vehicle of 26,001 lb or more (alone or towing under 10,001 lb), a 3-axle vehicle over 6,000 lb [CA], or a vehicle carrying more than 10 people for pay or a nonprofit.'],
+    ['C', 'Class C', 'A vehicle under the Class A and B limits that carries HazMat needing placards.'],
   ];
   return (
     <div class="page" style={{ maxWidth: '640px' }}>
-      <div class="row small muted num" aria-label={`Step ${step + 1} of 4`}>{[0, 1, 2, 3].map((k) => <span style={{ flex: 1, height: '5px', borderRadius: '9px', background: k <= step ? 'var(--accent)' : 'var(--surface-2)' }} />)}</div>
+      <div class="row small muted num" role="img" aria-label={`Step ${step + 1} of 4`}>{[0, 1, 2, 3].map((k) => <span style={{ flex: 1, height: '5px', borderRadius: '9px', background: k <= step ? 'var(--accent)' : 'var(--surface-2)' }} />)}</div>
       {step === 0 && (
         <section class="stack-lg">
           <div class="stack"><span class="eyebrow">California CDL · written tests</span><h1>Pass your CDL knowledge tests, and understand what you learn.</h1></div>
@@ -65,7 +65,7 @@ export function OnboardingScreen() {
       {step === 2 && (
         <section class="stack-lg">
           <div class="stack"><span class="eyebrow">Step 2 of 3</span><h1>What have you passed?</h1></div>
-          <label class="choice" style={{ cursor: 'pointer' }}><input type="checkbox" checked={ab} onChange={(e) => setAb((e.target as HTMLInputElement).checked)} style={{ width: '22px', height: '22px', accentColor: 'var(--accent)' }} /><span><span class="t">I already passed the Air Brakes test</span><br /><span class="small muted">This version teaches General Knowledge{cls === 'A' ? ' and Combination Vehicles' : ''}. Air Brakes lessons are planned for later. Combination lesson CV-02 builds on air brakes.</span></span></label>
+          <label class="choice" style={{ cursor: 'pointer' }}><input type="checkbox" checked={ab} onChange={(e) => setAb((e.target as HTMLInputElement).checked)} style={{ width: '22px', height: '22px', accentColor: 'var(--accent)' }} /><span><span class="t">I already passed the Air Brakes test</span><br /><span class="small muted">Leave this unticked if you have not taken it. This version teaches General Knowledge{cls === 'A' ? ' and Combination Vehicles' : ''}; Air Brakes lessons are planned for later (until then, study Section 5 of the handbook). Combination lesson CV-02 builds on air brakes.</span></span></label>
           <div class="row"><button class="btn" onClick={() => setStep(1)}>Back</button><button class="btn primary" style={{ flex: 1 }} onClick={() => setStep(3)}>Next</button></div>
         </section>
       )}

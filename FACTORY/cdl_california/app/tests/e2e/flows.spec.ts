@@ -10,7 +10,7 @@ const DAY = 86400_000;
 async function onboard(page: Page, cls: 'A' | 'B' = 'A') {
   await page.goto(URL);
   await page.getByRole('button', { name: 'Get started' }).click();
-  await page.locator('button.choice', { hasText: `Class ${cls}` }).click();
+  await page.locator('button.choice').filter({ has: page.locator('.t', { hasText: new RegExp(`^Class ${cls}$`) }) }).click();
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByRole('button', { name: 'Build my plan' }).click();
@@ -114,6 +114,42 @@ test('resume code: erase then restore gives the same progress', async ({ page })
   await expect(page.getByText('Progress restored.')).toBeVisible();
   await page.goto(URL + '#progress');
   await expect(page.locator('.stat .v').nth(2)).toHaveText('3');
+  // regression (evaluator 2): the restored progress must survive a reload
+  await page.reload();
+  await page.goto(URL + '#progress');
+  await expect(page.locator('.stat .v').nth(2)).toHaveText('3');
+});
+
+test('unfinished practice test resumes after reload', async ({ page }) => {
+  await onboard(page);
+  await page.goto(URL + '#lesson.GK-02');
+  await page.getByRole('tab', { name: 'Practice test' }).click();
+  await page.getByRole('button', { name: 'Start' }).click();
+  for (let i = 0; i < 3; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: 'Continue' }).click(); }
+  await expect(page.getByText('4 of 15')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('4 of 15')).toBeVisible();
+});
+
+test('unfinished mock resumes after reload', async ({ page }) => {
+  await onboard(page);
+  await page.goto(URL + '#practice');
+  await page.getByRole('button', { name: 'Start GK mock' }).click();
+  await page.getByRole('button', { name: 'Begin' }).click();
+  for (let i = 0; i < 3; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: /Next question/ }).click(); }
+  await page.reload();
+  await page.goto(URL + '#practice');
+  await page.getByRole('button', { name: /Resume GK mock \(3\/50\)/ }).click();
+  await expect(page.getByText(/^4$/).first()).toBeVisible();
+});
+
+test('glossary term in lesson text opens a definition', async ({ page }) => {
+  await onboard(page);
+  await page.goto(URL + '#lesson.GK-01');
+  await page.locator('button.gl').first().click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('sandboxed frame without storage still runs and warns', async ({ page }) => {
@@ -123,7 +159,7 @@ test('sandboxed frame without storage still runs and warns', async ({ page }) =>
   await page.goto('file://' + harness);
   const f = page.frameLocator('#f');
   await f.getByRole('button', { name: 'Get started' }).click();
-  await f.locator('button.choice', { hasText: 'Class A' }).click();
+  await f.locator('button.choice').first().click();
   await f.getByRole('button', { name: 'Next' }).click();
   await f.getByRole('button', { name: 'Next' }).click();
   await f.getByRole('button', { name: 'Build my plan' }).click();

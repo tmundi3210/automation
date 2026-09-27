@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { go, mutate, now, peek, replaceState, S, say } from '../app';
+import { adoptState, go, mutate, now, peek, S, say } from '../app';
 import { dayKey, emptyState, testsForClass } from '../engine/model';
 import type { Cls } from '../engine/model';
 import { makeResumeCode, readResumeCode, exportFile, importFile } from '../store/resume';
@@ -39,7 +39,7 @@ export function SettingsScreen() {
         <h2>License and tests</h2>
         <div class="field"><label for="cls">License class</label>
           <select id="cls" value={p.cls ?? ''} onChange={(e) => setCls((e.target as HTMLSelectElement).value as Cls)}>
-            <option value="" disabled>Choose…</option><option value="A">Class A (tractor-trailer and other combinations)</option><option value="B">Class B (single heavy truck or bus)</option><option value="C">Class C (smaller vehicle with HazMat, passengers or tank)</option>
+            <option value="" disabled>Choose…</option><option value="A">Class A (tractor-trailer and other combinations)</option><option value="B">Class B (single heavy truck or bus)</option><option value="C">Class C (smaller vehicle carrying placarded HazMat)</option>
           </select>
           <span class="small muted">{p.cls === 'A' ? 'Tests in this app: General Knowledge + Combination Vehicles.' : p.cls ? 'Tests in this app: General Knowledge. Your class also needs endorsement tests this version does not cover yet.' : 'Not sure? The first lesson has a class finder.'}</span>
         </div>
@@ -47,6 +47,8 @@ export function SettingsScreen() {
           <div class="field"><label for={`d-${t}`}>{t === 'GK' ? 'General Knowledge' : 'Combination Vehicles'} test date</label>
             <input id={`d-${t}`} type="date" min={dayKey(now())} value={p.examDates[t] ?? ''} onChange={(e) => mutate((st) => { const v = (e.target as HTMLInputElement).value; if (v) st.profile.examDates[t] = v; else delete st.profile.examDates[t]; })} /></div>
         ))}
+        <label class="toggle"><input type="checkbox" checked={p.airBrakesPassed} onChange={(e) => mutate((st) => { st.profile.airBrakesPassed = (e.target as HTMLInputElement).checked; })} /> I already passed the Air Brakes test</label>
+        {!p.airBrakesPassed && p.cls === 'A' && <p class="small card info">Air Brakes (25 questions, pass 20) is needed if your truck has air brakes. This version does not teach it yet: study Section 5 of the California Commercial Driver Handbook.</p>}
         <div class="field"><label for="mpd">Minutes a day</label>
           <input id="mpd" type="number" min={10} max={240} step={5} value={p.minutesPerDay} onChange={(e) => mutate((st) => { st.profile.minutesPerDay = Math.max(10, Math.min(240, +(e.target as HTMLInputElement).value || 45)); })} /></div>
         <fieldset class="field" style={{ border: 0, padding: 0, margin: 0 }}><legend style={{ fontWeight: 700, marginBottom: '6px' }}>Days off (no new lessons)</legend>
@@ -71,10 +73,10 @@ export function SettingsScreen() {
         )}
         <div class="field"><label for="rp">Restore from a resume code</label>
           <textarea id="rp" value={paste} onInput={(e) => setPaste((e.target as HTMLTextAreaElement).value)} placeholder="Paste a code that starts with CDLWS1." />
-          <button class="btn sm" style={{ alignSelf: 'flex-start' }} disabled={!paste.trim()} onClick={() => { try { const st = readResumeCode(paste, now()); replaceState(st); void flush(st); setPaste(''); setMsg('Progress restored.'); } catch (e) { setMsg((e as Error).message); } }}>Restore</button>
+          <button class="btn sm" style={{ alignSelf: 'flex-start' }} disabled={!paste.trim()} onClick={() => { try { const st = readResumeCode(paste, now()); adoptState(st); setPaste(''); setMsg('Progress restored.'); } catch (e) { setMsg((e as Error).message); } }}>Restore</button>
         </div>
         <div class="field"><label for="rf">Restore from a progress file</label>
-          <input id="rf" type="file" accept=".json,application/json" onChange={async (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return; try { const st = importFile(await f.text(), now()); replaceState(st); void flush(st); setMsg('Progress restored.'); } catch (er) { setMsg((er as Error).message); } }} />
+          <input id="rf" type="file" accept=".json,application/json" onChange={async (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return; try { const st = importFile(await f.text(), now()); adoptState(st); setMsg('Progress restored.'); } catch (er) { setMsg((er as Error).message); } }} />
         </div>
         {msg && <p role="status" class="small"><strong>{msg}</strong></p>}
       </section>
@@ -90,7 +92,7 @@ export function SettingsScreen() {
         <h2>Start over</h2>
         {!confirmReset ? <button class="btn" onClick={() => setConfirmReset(true)}>Erase my progress…</button> : (
           <div class="card warn stack"><strong>Erase all progress on this device?</strong><p class="small">This cannot be undone. Make a resume code first if you might want it back.</p>
-            <div class="row"><button class="btn" onClick={() => setConfirmReset(false)}>Keep my progress</button><button class="btn primary" style={{ background: 'var(--red)', borderColor: 'var(--red)', color: '#fff' }} onClick={async () => { await wipeLocal(); const st = emptyState(now()); replaceState(st); void flush(st); setConfirmReset(false); say('Progress erased.'); go('onboarding'); }}>Erase everything</button></div></div>
+            <div class="row"><button class="btn" onClick={() => setConfirmReset(false)}>Keep my progress</button><button class="btn primary" style={{ background: 'var(--red)', borderColor: 'var(--red)', color: '#fff' }} onClick={async () => { await wipeLocal(); adoptState(emptyState(now())); setConfirmReset(false); say('Progress erased.'); go('onboarding'); }}>Erase everything</button></div></div>
         )}
       </section>
     </div>

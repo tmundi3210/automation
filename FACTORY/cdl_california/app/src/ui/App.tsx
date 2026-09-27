@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
-import { C, go, route, S, toast } from '../app';
+import { C, glossOpen, go, route, S, toast } from '../app';
+import { Html } from './bits';
 import type { RouteName } from '../app';
 import { today } from '../engine/plan';
 import { readiness } from '../engine/readiness';
@@ -28,10 +29,17 @@ export function App() {
   const r = route.value;
   const [sync, setSync] = useState(getStatus());
   useEffect(() => onStatus(setSync), []);
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => { const b = (e.target as HTMLElement).closest?.('button.gl') as HTMLElement | null; if (b) { e.preventDefault(); glossOpen.value = Number(b.dataset.g); } };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') glossOpen.value = null; };
+    document.addEventListener('click', onClick); document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('click', onClick); document.removeEventListener('keydown', onKey); };
+  }, []);
+  const g = glossOpen.value !== null ? C.glossary[glossOpen.value] : null;
   if (r.name === 'widget') return <main id="main" style={{ paddingBlock: '16px' }}><div class="page"><WidgetPreview id={r.param ?? ''} /></div></main>;
   const onboarding = !s.profile.onboarded || r.name === 'onboarding';
   const q = onboarding ? null : today(s, C, Date.now());
-  const openFix = q ? q.fixes.length : 0;
+  const openFix = q ? new Set(q.fixes.map((r) => r.concept)).size : 0;
   const chip = !onboarding ? (() => {
     const t = s.profile.tests[0] as TestId;
     const rd = readiness(s, C, t, Date.now(), 400);
@@ -72,7 +80,7 @@ export function App() {
           <div class="tabbar-in">
             {TABS.map(([name, label, icon, owns]) => (
               <button class="tab" aria-current={owns.includes(r.name) ? 'page' : undefined} onClick={() => go(name)}>
-                <Icon name={icon} />{label}{name === 'notebook' && openFix > 0 && <span class="badge num">{openFix}</span>}
+                <Icon name={icon} />{label}{name === 'notebook' && openFix > 0 && <span class="badge num" aria-label={`${openFix} topics to fix`}>{openFix > 9 ? '9+' : openFix}</span>}
               </button>
             ))}
           </div>
@@ -80,6 +88,13 @@ export function App() {
       )}
       <main id="main" tabIndex={-1}>{screen}</main>
       {toast.value && <div class="toast" role="status">{toast.value}</div>}
+      {g && (
+        <div class="gloss-sheet" role="dialog" aria-label={`Definition: ${g.term}`}>
+          <div class="spread"><strong>{g.term}</strong><button class="btn sm ghost" onClick={() => (glossOpen.value = null)} aria-label="Close definition" autoFocus>Close</button></div>
+          <Html class="small" html={g.defHtml} />
+          <button class="linkbtn small" style={{ alignSelf: 'flex-start' }} onClick={() => { glossOpen.value = null; go('glossary'); }}>Open the glossary</button>
+        </div>
+      )}
     </div>
   );
 }

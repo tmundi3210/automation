@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { C, go, mutate, now, session, S } from '../app';
+import { C, finishLessonTest, go, mutate, now, session, S } from '../app';
 import type { SessionSpec } from '../app';
 import { recordAnswer, surface, examCapDays } from '../engine/learner';
 import { CAUSE_HELP, CAUSE_LABEL } from '../engine/model';
@@ -16,15 +16,25 @@ export function SessionScreen() {
 }
 
 function Runner({ spec }: { spec: SessionSpec }) {
-  const [i, setI] = useState(0);
-  const [results, setResults] = useState<Result[]>([]);
+  const saved = S().sessionRun;
+  const resume = saved && saved.title === spec.title && saved.ids.join() === spec.ids.join() ? saved : null;
+  const [i, setI] = useState(resume ? resume.i : 0);
+  const [results, setResults] = useState<Result[]>(resume ? resume.results : []);
   const done = i >= spec.ids.length;
-  const back = () => { const b = spec.back; go(b.name, b.param, b.sub); };
-  useEffect(() => { if (done && spec.onFinish) spec.onFinish(results.filter((r) => r.ok).length, results.length); }, [done]);
+  const back = () => { mutate((st) => { st.sessionRun = undefined; }); const b = spec.back; go(b.name, b.param, b.sub); };
+  useEffect(() => {
+    if (!done) return;
+    if (spec.testLesson) finishLessonTest(spec.testLesson, results.filter((r) => r.ok).length, results.length);
+    mutate((st) => { st.sessionRun = undefined; });
+  }, [done]);
   if (done) return <Summary spec={spec} results={results} onBack={back} />;
   const id = spec.ids[i];
   const s = surface(C, id)!;
-  const next = (r: Result) => { setResults([...results, r]); setI(i + 1); };
+  const next = (r: Result) => {
+    const nr = [...results, r];
+    setResults(nr); setI(i + 1);
+    mutate((st) => { if (st.sessionRun) { st.sessionRun.i = i + 1; st.sessionRun.results = nr; } });
+  };
   return (
     <div class="page">
       <div class="spread">
@@ -59,6 +69,7 @@ function ItemQ({ id, spec, onNext }: { id: string; spec: SessionSpec; onNext: (r
   const [chosen, setChosen] = useState<number | null>(null);
   const [guessed, setGuessed] = useState(false);
   const [cause, setCause] = useState<Cause | undefined>();
+  const [showAll, setShowAll] = useState(false);
   const t0 = useRef(now());
   const answered = chosen !== null;
   const ok = chosen === it.key;
@@ -86,7 +97,7 @@ function ItemQ({ id, spec, onNext }: { id: string; spec: SessionSpec; onNext: (r
               <button class={`opt ${cls}`} disabled={answered} onClick={() => answer(k)} aria-label={`${it.polarity === 'tf' ? '' : LETTERS[pos] + ') '}${it.optionsText[k]}${answered && k === it.key ? ' — correct answer' : ''}${answered && k === chosen && !ok ? ' — your answer' : ''}`}>
                 <span class="letter" aria-hidden="true">{it.polarity === 'tf' ? (k === 0 ? 'T' : 'F') : LETTERS[pos]}</span>
                 <Html tag="span" html={it.options[k]} />
-                {answered && k === chosen && !ok && tag && TAG_NOTE[tag] && <span class="note">{TAG_NOTE[tag]}</span>}
+                {answered && k !== it.key && (k === chosen || showAll) && (it.notes?.[k] ? <Html tag="span" class="note" html={it.notes[k]!} /> : k === chosen && tag && TAG_NOTE[tag] ? <span class="note">{TAG_NOTE[tag]}</span> : null)}
               </button>
             );
           })}
@@ -99,6 +110,7 @@ function ItemQ({ id, spec, onNext }: { id: string; spec: SessionSpec; onNext: (r
         <div class={`feedback ${ok && !guessed ? 'good' : 'bad'}`} role="status" aria-live="polite">
           <div class="verdict">{ok ? (guessed ? 'Right — but it was a guess' : 'Correct') : 'Not quite'}</div>
           <Html class="prose" html={it.explanation} />
+          {it.notes && it.polarity !== 'tf' && !showAll && <button class="linkbtn small" style={{ alignSelf: 'flex-start' }} onClick={() => setShowAll(true)}>Why the other choices are wrong</button>}
           <div class="row small"><Pages pages={it.pages} />{it.concepts[0] && <button class="linkbtn" onClick={() => go('lesson', it.lesson, it.concepts[0])}>Re-read this in {it.lesson}</button>}</div>
           {cause && (
             <div class="card flat" style={{ padding: '10px 12px' }}>

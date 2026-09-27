@@ -36,14 +36,19 @@ export function kuIndex(c: Content): Map<string, string[]> {
 // ---------- diagnosis (deterministic MVP causes: T, W, N, E4, else U)
 export function diagnose(state: AppState, item: Item, chosen: number | undefined, now: number): Cause {
   const tag = chosen !== undefined ? item.tags[chosen] : null;
+  const chosenText = chosen !== undefined ? item.optionsText[chosen] ?? '' : '';
+  const hasDigit = /\d/.test(chosenText);
+  // 0) a trap duel (true/false on the trap statement): fell for the trap itself
+  if (item.origin === 'derived-trap') return 'M';
+  // 1) the stem itself flips the wording (NOT / EXCEPT / true-false)
+  if (item.polarity === 'neg' || item.polarity === 'tf') return 'T';
+  // 2) picked the federal / car-handbook / website value
   if (tag === 'alt_source') return 'W';
-  if (item.polarity === 'neg' || item.polarity === 'tf' || tag === 'trap_named') {
-    // trap wording unless the learner is also failing the positive form of this concept
-    const pos = state.attempts.filter((a) => a.ok !== undefined && a.concepts?.some((x) => item.concepts.includes(x)) && a.ev === 'mcq').slice(-6);
-    const posOk = pos.filter((a) => a.ok).length;
-    if (item.polarity !== 'tf' || !pos.length || posOk / pos.length >= 0.5) return 'T';
-  }
-  if (tag === 'neighbor_number' || tag === 'sibling_rule_number' || tag === 'round_number' || tag === 'unit_match' || item.numeric) return 'N';
+  // 3) picked the famous wrong idea for this rule
+  if (tag === 'trap_named') return 'M';
+  // 4) picked a different number (only when the chosen option really is a number)
+  if (hasDigit && (tag === 'neighbor_number' || tag === 'sibling_rule_number' || tag === 'round_number' || tag === 'unit_match' || !tag)) return 'N';
+  // 5) knew it before, but it faded
   const card = state.cards[item.ku];
   const hadSuccess = state.attempts.some((a) => a.ku === item.ku && a.ok);
   if (card && hadSuccess && retrievability(card, now) < 0.8) return 'E4';
@@ -182,13 +187,15 @@ export function examCapDays(state: AppState, test: TestId, now: number): number 
   return Math.max(1, daysBetween(dayKey(now), d));
 }
 
-/** Evidence from an interactive widget check (untimed). Writes BKT only (weight 0.5); never FSRS; explore/timed modes must not call this. */
+/**
+ * Evidence from an untimed widget CHALLENGE answer (practice evidence, not a game reward): weak BKT update
+ * (weight 0.2, guess 1/3 — about ±0.04 per answer), no learning transition, never FSRS.
+ * Explore and timed interactions must not call this (tested in tests/e2e/widgets.spec.ts).
+ */
 export function recordCheck(state: AppState, concepts: string[], ok: boolean, now: number) {
-  const today = dayKey(now);
   for (const cid of concepts) {
     const b = state.bkt[cid] ?? { p: BKT.L0, n: 0 };
     b.p = bktEvidence(b.p, ok, 'check');
-    if (ok && b.lastDayGain !== today) { b.p = bktTransition(b.p, 0.5); b.lastDayGain = today; }
     b.n += 1; b.lastT = now;
     state.bkt[cid] = b;
   }

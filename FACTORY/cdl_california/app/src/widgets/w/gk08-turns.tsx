@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { WidgetMeta, WidgetProps } from '../registry';
 import { BUTTON, JUG, CAR, JUG_OPEN, JUG_HIT, startIdx, endIdx, leftTurn, firstHit, type Box, type Frame, type P } from './gk08-turns.sim';
 
@@ -26,6 +26,15 @@ function Body({ a, b, w, fill, over = 0 }: { a: P; b: P; w: number; fill: string
 function Rig({ fr }: { fr: Frame }) {
   return <g aria-hidden="true"><Body a={fr.h} b={fr.r} w={18} fill="var(--surface)" over={14} /><Body a={fr.f} b={fr.h} w={18} fill="var(--accent)" /></g>;
 }
+/** The whole planned path, drawn faintly so the turn reads before any scrubbing. */
+function Ghost({ frames }: { frames: Frame[] }) {
+  return (
+    <g aria-hidden="true" opacity="0.45">
+      <polyline points={pts(frames.map((x) => x.f))} fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="3 5" />
+      <polyline points={pts(frames.map((x) => x.r))} fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="3 5" />
+    </g>
+  );
+}
 function Trace({ frames, i }: { frames: Frame[]; i: number }) {
   const s = frames.slice(0, i + 1);
   return (
@@ -40,7 +49,7 @@ const Car = ({ x, y, w = 22, h = 40, fill = 'var(--blue)' }: { x: number; y: num
   <rect x={x} y={y} width={w} height={h} rx="6" fill={fill} stroke="var(--ink)" stroke-width="1.5" />;
 const Crash = ({ x, y }: { x: number; y: number }) => (
   <g><polygon points={`${x},${y - 18} ${x + 6},${y - 6} ${x + 18},${y - 8} ${x + 9},${y + 2} ${x + 14},${y + 14} ${x},${y + 7} ${x - 14},${y + 14} ${x - 9},${y + 2} ${x - 18},${y - 8} ${x - 6},${y - 6}`} fill="var(--red)" stroke="var(--ink)" stroke-width="1" />
-    <text x={x + 22} y={y + 5} font-size="14" font-weight="700" fill="var(--red)">CRASH</text></g>
+    <text x={x + 22} y={y + 5} font-size="14" font-weight="700" fill="var(--red)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">CRASH</text></g>
 );
 
 function RightRoads() {
@@ -58,7 +67,7 @@ function RightScene({ k, p, label, choices, oncoming }: { k: Kind | null; p: num
   const i = k ? at(k, p) : 0;
   const hit = k === 'jug' && i >= JUG_HIT;
   return (
-    <svg viewBox="0 20 360 320" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '520px' }}>
+    <svg viewBox="0 20 360 320" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }}>
       <RightRoads />
       {choices && ([['jug', 'A'], ['button', 'B']] as const).map(([c, l]) => {
         const s = FR[c].slice(FR[c].findIndex((x) => x.f[1] <= 335), endIdx(FR[c]));
@@ -67,6 +76,7 @@ function RightScene({ k, p, label, choices, oncoming }: { k: Kind | null; p: num
           <circle cx={lp[0] + (c === 'jug' ? -16 : 0)} cy={lp[1] - (c === 'jug' ? 0 : 16)} r="11" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5" />
           <text x={lp[0] + (c === 'jug' ? -16 : 0)} y={lp[1] - (c === 'jug' ? 0 : 16) + 5} text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">{l}</text></g>;
       })}
+      {k && <Ghost frames={FR[k].slice(RANGE[k][0], RANGE[k][1] + 1)} />}
       {frames && <Trace frames={frames} i={i} />}
       {k === 'jug' && i >= JUG_OPEN && <Car {...CAR} />}
       {oncoming && <Car x={250} y={119} w={40} h={22} fill="var(--amber)" />}
@@ -84,7 +94,7 @@ function LeftScene({ lane, start, label, choices }: { lane: Lane | null; start: 
   const hit = fr ? firstHit(fr, car) : -1;
   const show = fr ? (hit >= 0 ? hit : fr.findIndex((x) => x.f[0] <= 70)) : 0;
   return (
-    <svg viewBox="0 20 360 320" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '520px' }}>
+    <svg viewBox="0 20 360 320" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }}>
       <g aria-hidden="true">
         <rect x="0" y="20" width="360" height="320" fill="var(--surface-2)" />
         {[[-100, -100, 160, 140], [220, -100, 400, 140], [-100, 200, 160, 300], [220, 200, 400, 300]].map(([x, y, w, h]) => <rect x={x} y={y} width={w} height={h} rx="24" fill="var(--accent-soft)" stroke="var(--ink-2)" stroke-width="2" />)}
@@ -104,7 +114,7 @@ function LeftScene({ lane, start, label, choices }: { lane: Lane | null; start: 
       {fr && <Trace frames={fr} i={show} />}
       {fr && <Car {...car} fill={lane === 'inside' ? 'var(--amber)' : 'var(--blue)'} />}
       {fr && <Rig fr={fr[show]} />}
-      <g aria-hidden="true"><circle cx="140" cy="120" r="5" fill="var(--accent)" stroke="var(--ink)" /><text x="136" y="112" text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">center</text></g>
+      <g aria-hidden="true"><circle cx="140" cy="120" r="5" fill="var(--accent)" stroke="var(--ink)" /><text x="134" y="112" text-anchor="end" font-size="14" font-weight="700" fill="var(--ink)" stroke="var(--surface-2)" stroke-width="3" paint-order="stroke">center</text></g>
       {hit >= 0 && <Crash x={car.x + 11} y={car.y + 10} />}
       {fr && <text x={lane === 'right' ? 232 : 110} y={start === 'soon' ? 220 : 130} font-size="16" font-weight="700" text-anchor={lane === 'right' ? 'start' : 'end'} fill={start === 'soon' ? 'var(--red)' : 'var(--ok)'}>{start === 'soon' ? '✗ too soon' : '✓'}</text>}
     </svg>
@@ -115,26 +125,32 @@ const Legend = () => (
   <p class="small muted" aria-hidden="true">
     <span style={{ borderTop: '2px dashed var(--ink)', display: 'inline-block', width: '22px', verticalAlign: 'middle' }} /> front wheels ·{' '}
     <span style={{ borderTop: '3px solid var(--red)', display: 'inline-block', width: '22px', verticalAlign: 'middle' }} /> trailer rear wheels ·{' '}
-    <span style={{ background: 'var(--amber)', opacity: 0.4, display: 'inline-block', width: '14px', height: '12px', verticalAlign: 'middle' }} /> swept path
+    <span style={{ background: 'var(--amber)', opacity: 0.4, display: 'inline-block', width: '14px', height: '12px', verticalAlign: 'middle' }} /> swept path ·{' '}
+    <span style={{ borderTop: '2px dotted var(--ink-2)', display: 'inline-block', width: '22px', verticalAlign: 'middle' }} /> whole planned path
   </p>
 );
-const seg = (on: boolean) => on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {};
+const seg = (on: boolean) => ({ width: '100%', paddingInline: '6px', lineHeight: 1.2, ...(on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}) });
+/** Segmented control: equal columns, so the buttons never wrap raggedly on a phone. */
+const cols = (n: number) => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: '6px' });
 
 function Explore({ reducedMotion }: { reducedMotion: boolean }) {
   const [view, setView] = useState<Kind | 'left'>('button');
-  const [p, setP] = useState(0);
+  const [p, setP] = useState(100); // start with the finished button hook on screen: the whole path reads at first glance
   const [play, setPlay] = useState(false);
+  const [run, setRun] = useState(0);
+  const pr = useRef(p); pr.current = p;
   const [lane, setLane] = useState<Lane>('right');
   const [start, setStart] = useState<Start>('center');
   useEffect(() => {
     if (!play) return;
     if (reducedMotion) { setP(100); setPlay(false); return; }
-    let raf = 0; let v = p;
+    let raf = 0; let v = pr.current >= 100 ? 0 : pr.current;
     const step = () => { v = Math.min(100, v + 0.6); setP(v); if (v < 100) raf = requestAnimationFrame(step); else setPlay(false); };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [play]);
-  const pick = (v: Kind | 'left') => { setView(v); setP(0); setPlay(false); };
+  }, [play, run]);
+  // Picking a right turn plays it through once (instantly when reduced motion is on).
+  const pick = (v: Kind | 'left') => { setView(v); if (v === 'left') { setPlay(false); return; } setP(0); pr.current = 0; setPlay(true); setRun(run + 1); };
   const k = view === 'left' ? null : view;
   const i = k ? at(k, p) : 0;
   const msg = k === 'button'
@@ -148,7 +164,7 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
       : '';
   return (
     <div class="stack">
-      <div class="row" role="group" aria-label="Choose a turn">
+      <div role="group" aria-label="Choose a turn" style={cols(3)}>
         <button class="btn sm" aria-pressed={view === 'button'} style={seg(view === 'button')} onClick={() => pick('button')}>✓ Button hook</button>
         <button class="btn sm" aria-pressed={view === 'jug'} style={seg(view === 'jug')} onClick={() => pick('jug')}>✗ Jug handle</button>
         <button class="btn sm" aria-pressed={view === 'left'} style={seg(view === 'left')} onClick={() => pick('left')}>Left turns</button>
@@ -168,10 +184,12 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
         <p class="small muted">Off-tracking: the rear wheels follow a shorter path than the front wheels, cutting inside the turn. Longer rigs off-track more. <span class="plate">p. 6-3</span></p>
       </>}
       {view === 'left' && <>
-        <div class="row" role="group" aria-label="When to start turning"><span class="small"><strong>Start turning:</strong></span>
+        <span class="small" id="tn-start"><strong>Start the left turn:</strong></span>
+        <div role="group" aria-labelledby="tn-start" style={cols(2)}>
           <button class="btn sm" aria-pressed={start === 'soon'} style={seg(start === 'soon')} onClick={() => setStart('soon')}>At the stop line</button>
           <button class="btn sm" aria-pressed={start === 'center'} style={seg(start === 'center')} onClick={() => setStart('center')}>At the center</button></div>
-        <div class="row" role="group" aria-label="Which left-turn lane"><span class="small"><strong>Two left-turn lanes:</strong></span>
+        <span class="small" id="tn-lane"><strong>Two left-turn lanes — use:</strong></span>
+        <div role="group" aria-labelledby="tn-lane" style={cols(2)}>
           <button class="btn sm" aria-pressed={lane === 'inside'} style={seg(lane === 'inside')} onClick={() => setLane('inside')}>Inside (left) lane</button>
           <button class="btn sm" aria-pressed={lane === 'right'} style={seg(lane === 'right')} onClick={() => setLane('right')}>Right-hand lane</button></div>
         <LeftScene lane={lane} start={start} label={`Left turn from the ${lane === 'right' ? 'right-hand' : 'inside'} lane, starting ${start === 'soon' ? 'at the stop line (too soon)' : 'at the center of the intersection'}.`} />
@@ -221,9 +239,9 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
       <span class="small muted num">Scenario {i + 1} of {SC.length}</span>
       <strong>{sc.q}</strong>
       {vis}
-      <div class="row" role="group" aria-label="Answers">{sc.opts.map((o, c) => (
+      <div role="group" aria-label="Answers" style={sc.opts.every((o) => o.length <= 14) ? cols(2) : { display: 'grid', gap: '6px' }}>{sc.opts.map((o, c) => (
         <button class="btn sm" disabled={pick !== null} aria-pressed={pick === c}
-          style={pick !== null && c === sc.a ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}}
+          style={{ justifyContent: 'flex-start', textAlign: 'left', ...(pick !== null && c === sc.a ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
           onClick={() => answer(c)}>{o}{pick !== null && c === sc.a ? ' ✓' : pick === c ? ' ✗' : ''}</button>
       ))}</div>
       {pick !== null && <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">

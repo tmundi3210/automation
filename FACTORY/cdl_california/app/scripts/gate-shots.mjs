@@ -17,7 +17,7 @@ async function ctxFor(vp, scheme) {
 async function onboard(page) {
   await page.goto(URL);
   await page.getByRole('button', { name: 'Get started' }).click();
-  await page.locator('button.choice', { hasText: 'Class A' }).click();
+  await page.locator('button.choice').first().click();
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByRole('button', { name: /Use \d+ minutes/ }).click().catch(() => {});

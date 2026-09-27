@@ -34,7 +34,8 @@ export function TodayScreen() {
   const nlStarted = nl ? !!s.lessons[nl.id]?.opened : false;
   // next best step (one primary action)
   let step: { title: string; why: string; cta: string; run: () => void };
-  if (q.reviews.length >= 5) step = { title: `Review ${Math.min(40, q.reviews.length)} cards that are due`, why: 'Reviewing right before you forget is what makes facts stick. It takes about ' + Math.max(2, Math.round(Math.min(40, q.reviews.length) * 0.35)) + ' minutes.', cta: 'Start review', run: () => startSession({ title: 'Due review', ids: reviewIds, mode: 'review', back: { name: 'today' }, shuffleOptions: true }) };
+  const behind = plan.feasibility === 'tight' || plan.feasibility === 'no-go';
+  if (q.reviews.length >= (behind && nl ? 25 : 5)) step = { title: `Review ${Math.min(40, q.reviews.length)} cards that are due`, why: 'Reviewing right before you forget is what makes facts stick. It takes about ' + Math.max(2, Math.round(Math.min(40, q.reviews.length) * 0.35)) + ' minutes.', cta: 'Start review', run: () => startSession({ title: 'Due review', ids: reviewIds, mode: 'review', back: { name: 'today' }, shuffleOptions: true }) };
   else if (q.fixes.length) { const r = q.fixes[0]; step = { title: `Fix: ${C.concepts[r.concept].title}`, why: `${CAUSE_LABEL[r.cause]}. ${CAUSE_HELP[r.cause]}`, cta: 'Start fix drill', run: () => fixDrill(r.concept, r.lesson) }; }
   else if (nl) step = { title: `${nlStarted ? 'Continue' : 'Start'} ${nl.id}: ${nl.title}`, why: `About ${nl.minutes} minutes. Learn it, try the interactive parts, then take the practice test.`, cta: nlStarted ? 'Continue lesson' : 'Start lesson', run: () => go('lesson', nl.id) };
   else step = { title: 'Take a full mock test', why: 'All lessons are done. Mock tests use the real format and show how ready you are.', cta: 'Open mock tests', run: () => go('practice') };
@@ -52,7 +53,7 @@ export function TodayScreen() {
         <button class="btn primary" onClick={step.run}>{step.cta}</button>
       </section>
       <section class="card stack" aria-label="This week">
-        <div class="spread"><h3>This week</h3><span class="small muted num">Today: {q.pct}% of {q.plannedMin} min</span></div>
+        <div class="spread"><h3>This week</h3><span class="small muted num">Today: {q.pct}% of today's {q.plannedMin}-min plan</span></div>
         <Calendar start={weekStart} days={7} examDay={exam} nowT={t} />
         <p class="small muted">Each box fills as you study (5% steps). A tick means that day's plan is done. Rest days never break anything.</p>
       </section>
@@ -181,7 +182,8 @@ export function PracticeScreen() {
                 <strong>{f.name}</strong>
                 <span class="small muted">{f.n} questions · pass {f.pass}{!s.profile.tests.includes(tid) ? ' · not needed for your class' : ''}</span>
                 {last && <span class="small">Last: <strong class="num">{last.score}/{last.total}</strong> {last.pass ? '(pass)' : '(not yet)'}</span>}
-                <button class="btn primary" onClick={() => go('mock', tid)}>Start {tid} mock</button>
+                {s.mockRun?.test === tid ? <button class="btn primary" onClick={() => go('mock', tid)}>Resume {tid} mock ({s.mockRun.ids.length - s.mockRun.queue.length}/{s.mockRun.ids.length})</button>
+                  : <button class="btn primary" onClick={() => go('mock', tid)}>Start {tid} mock</button>}
               </div>
             );
           })}
@@ -203,38 +205,38 @@ export function NotebookScreen() {
   const t = now();
   const rows = openRows(s, C, t);
   const resolved = Object.values(s.notebook).filter((r) => r.status === 'resolved');
-  const byCause = rows.reduce((m, r) => { (m[r.cause] ??= []).push(r); return m; }, {} as Record<Cause, typeof rows>);
+  // one entry per concept (a concept can have several causes); ordered by the highest-priority row
+  const byConcept: { concept: string; lesson: string; rows: typeof rows }[] = [];
+  for (const r of rows) { const g = byConcept.find((x) => x.concept === r.concept); if (g) g.rows.push(r); else byConcept.push({ concept: r.concept, lesson: r.lesson, rows: [r] }); }
+  const top = byConcept.slice(0, 3), rest = byConcept.slice(3);
+  const Entry = ({ g }: { g: (typeof byConcept)[number] }) => {
+    const c = C.concepts[g.concept];
+    const misses = g.rows.reduce((a, r) => a + r.misses, 0);
+    const proof = Math.max(...g.rows.map((r) => new Set(r.probes.filter((p) => p.ok).map((p) => dayKey(p.t))).size));
+    return (
+      <div class="li" style={{ cursor: 'default', gridTemplateColumns: 'auto 1fr', alignItems: 'start' }}>
+        <Shield id={g.lesson} />
+        <div class="stack" style={{ gap: '6px' }}>
+          <span class="li-title">{c.title}</span>
+          <div class="row">{g.rows.map((r) => <span class="chip" style={{ background: 'var(--amber-soft)', color: 'var(--amber-ink)' }} title={CAUSE_HELP[r.cause]}>{CAUSE_LABEL[r.cause]}</span>)}</div>
+          <span class="small muted">Missed {misses}× · {proof > 0 ? `right on ${proof} of 2 days needed` : 'get it right on 2 different days to clear it'}</span>
+          <p class="small">{CAUSE_HELP[g.rows[0].cause]}</p>
+          <div class="row">
+            <button class="btn sm primary" onClick={() => fixDrill(g.concept, g.lesson)}>Fix drill</button>
+            <button class="btn sm" onClick={() => go('lesson', g.lesson, g.concept)}>Re-read</button>
+            <button class="btn sm ghost" onClick={() => mutate((st) => { for (const r of g.rows) { const x = st.notebook[r.key]; x.status = 'snoozed'; x.snoozeUntil = now() + 86400_000; } })}>Later</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
   return (
     <div class="page">
       <header class="stack" style={{ gap: '6px' }}><span class="eyebrow">Mistake list</span><h1>What to fix</h1>
-        <p class="muted">Every miss is sorted by why it happened, so you fix the cause, not just the question. A mistake is cleared after you get it right on two different days.</p></header>
-      {!rows.length && <div class="card tint"><strong>No open mistakes.</strong> <span class="muted">Misses from practice and mock tests show up here with a fix drill.</span></div>}
-      {(Object.keys(byCause) as Cause[]).map((cause) => (
-        <section class="card stack" aria-label={CAUSE_LABEL[cause]}>
-          <div class="row"><span class="diamond" aria-hidden="true" /><h2 style={{ fontSize: '1.3rem' }}>{CAUSE_LABEL[cause]}</h2><span class="chip" style={{ background: 'var(--amber-soft)', color: 'var(--amber-ink)' }}>{byCause[cause].length}</span></div>
-          <p class="small muted">{CAUSE_HELP[cause]}</p>
-          <div class="list">
-            {byCause[cause].map((r) => {
-              const c = C.concepts[r.concept];
-              const probes = new Set(r.probes.filter((p) => p.ok).map((p) => dayKey(p.t))).size;
-              return (
-                <div class="li" style={{ cursor: 'default', gridTemplateColumns: 'auto 1fr', alignItems: 'start' }}>
-                  <Shield id={r.lesson} />
-                  <div class="stack" style={{ gap: '6px' }}>
-                    <span class="li-title">{c.title}</span>
-                    <span class="small muted">Missed {r.misses}× · {r.status === 'probing' ? `proof ${probes}/2 days` : 'open'}</span>
-                    <div class="row">
-                      <button class="btn sm primary" onClick={() => fixDrill(r.concept, r.lesson)}>Fix drill</button>
-                      <button class="btn sm" onClick={() => go('lesson', r.lesson, r.concept)}>Re-read</button>
-                      <button class="btn sm ghost" onClick={() => mutate((st) => { const x = st.notebook[r.key]; x.status = 'snoozed'; x.snoozeUntil = now() + 86400_000; })}>Snooze 1 day</button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+        <p class="muted">Each topic you missed, with the reason you missed it. Fix the top three first. A topic clears after you get it right on two different days.</p></header>
+      {!byConcept.length && <div class="card tint"><strong>No open mistakes.</strong> <span class="muted">Misses from practice and mock tests show up here with a fix drill.</span></div>}
+      {top.length > 0 && <section class="card stack" aria-label="Fix these first"><h2 style={{ fontSize: '1.3rem' }}>Fix these first</h2><div class="list">{top.map((g) => <Entry g={g} />)}</div></section>}
+      {rest.length > 0 && <details class="card deep"><summary>{rest.length} more topic{rest.length === 1 ? '' : 's'} to fix</summary><div class="list">{rest.map((g) => <Entry g={g} />)}</div></details>}
       {resolved.length > 0 && <p class="small muted">{resolved.length} mistake{resolved.length === 1 ? '' : 's'} fixed so far.</p>}
     </div>
   );

@@ -99,7 +99,7 @@ function parseLesson(file: string, md: string) {
   const pre = chunks[0].trim();
   const conceptBlocks: { heading: string; body: string }[] = [];
   if (pre) conceptBlocks.push({ heading: 'Start here', body: pre });
-  for (const c of chunks.slice(1)) { const nl = c.indexOf('\n'); conceptBlocks.push({ heading: c.slice(0, nl).trim(), body: c.slice(nl + 1).trim() }); }
+  for (const c of chunks.slice(1)) { const nl = c.indexOf('\n'); const body = c.slice(nl + 1).trim(); if (body) conceptBlocks.push({ heading: c.slice(0, nl).trim(), body }); } // empty section headers are skipped
   conceptBlocks.forEach((b, i) => {
     const ca = /\[CA\]/.test(b.heading);
     let h = b.heading.replace(/\s*\[CA\]\s*/g, ' ').trim();
@@ -109,21 +109,69 @@ function parseLesson(file: string, md: string) {
     const section = secM ? secM[1] : null;
     const title = (secM ? secM[2] : h).replace(/^—\s*/, '').replace(/\s+—\s*$/, '').trim();
     const bodyPages = pages.length ? pages : citePages(b.body).slice(0, 3);
-    // core = bullets / sentences carrying bold facts, excluding beyond-handbook notes, max 6
+    // core = key points. If the body has bold pseudo-headings ("**Tires** (p. 2-2)."), take the first bold fact under
+    // each so every sub-topic is represented; otherwise the first bullets carrying bold facts. Never beyond-handbook notes.
     const core: string[] = [];
-    for (const line of b.body.split('\n')) {
-      if (core.length >= 6) break;
-      if (/beyond the handbook/i.test(line)) continue;
-      const m = line.match(/^- (.*\*\*.+\*\*.*)$/);
-      if (m) core.push(inline(stripTrailingCite(m[1])));
+    const lines = b.body.split('\n');
+    const isPseudo = (l: string) => /^\*\*[^*]{2,60}\*\*\s*(\([^)]*\))?\s*[.:]?\s*$/.test(l.trim()) || /^\*\*[^*]{2,60}\*\*\s*\(p{1,2}\.[^)]*\)[.:]/.test(l.trim());
+    const pseudoIdx = lines.map((l, k) => (isPseudo(l) ? k : -1)).filter((k) => k >= 0);
+    const factLine = (l: string) => { const m = l.match(/^\s{0,2}- (.*\*\*.+\*\*.*)$/); return m && !/beyond the handbook/i.test(l) ? m[1] : null; };
+    if (pseudoIdx.length >= 2) {
+      for (let q = 0; q < pseudoIdx.length && core.length < 9; q++) {
+        const from = pseudoIdx[q], to = pseudoIdx[q + 1] ?? lines.length;
+        const head = lines[from].trim().match(/^\*\*([^*]+)\*\*/)![1].replace(/[.:]$/, '');
+        const inline_ = lines[from].trim().replace(/^\*\*[^*]+\*\*\s*(\([^)]*\))?\s*[.:]?\s*/, '');
+        const fact = lines.slice(from + 1, to).map(factLine).find(Boolean) || (/\*\*/.test(inline_) ? inline_ : null) || lines.slice(from + 1, to).find((l) => /^- /.test(l))?.slice(2) || inline_;
+        if (fact) core.push(`<strong>${inline(stripTrailingCite(head).replace(/\s*\(pp?\.[^)]*\)\s*$/, ''))}:</strong> ${inline(stripTrailingCite(fact.replace(/^\*\*[^*]+\*\*\s*[—:-]\s*/, '')))}`);
+      }
+    }
+    if (core.length < 2) {
+      lines.forEach((line, k) => {
+        if (core.length >= 6) return;
+        const f = factLine(line) ?? (/^- [a-z]/.test(line) ? line.slice(2) : null);
+        if (!f || line.startsWith('  ')) return;
+        // a bullet that continues a sentence ("between two places…") needs its lead-in line ("Interstate means:")
+        const firstOfGroup = !/^\s*- /.test(lines[k - 1] ?? '');
+        if (/^[a-z]/.test(f) || firstOfGroup) {
+          let j = k - 1; while (j >= 0 && (/^\s*- /.test(lines[j]) || !lines[j].trim())) j--;
+          const leadLine = j >= 0 ? lines[j].trim() : '';
+          const li = inline(stripTrailingCite(leadLine));
+          if (leadLine.endsWith(':') && !core.includes(li)) core.push(li);
+        }
+        core.push(inline(stripTrailingCite(f)));
+      });
     }
     if (!core.length) {
-      const firstPara = b.body.split('\n').find((l) => l.trim() && !/^(\||>|```|\*\*[^*]+\*\*\s*$)/.test(l));
+      const firstPara = lines.find((l) => l.trim() && !/^(\||>|```|\*\*[^*]+\*\*\s*$)/.test(l));
       if (firstPara) core.push(inline(stripTrailingCite(firstPara.replace(/^- /, ''))));
+    }
+    // lead-in sentence (e.g. "A road test is required to:") so the bullets never start mid-thought
+    const lead = lines.find((l) => l.trim());
+    if (lead && pseudoIdx.length < 2 && !/^(\s*[-*]|\s*\d+[.)]|\||>|```|#|\*\*[^*]+\*\*\s*$|Why:|\*Why)/.test(lead) && !/beyond the handbook/i.test(lead)) {
+      const li = inline(stripTrailingCite(lead.length > 260 ? lead.slice(0, lead.lastIndexOf(' ', 250)) + '…' : lead));
+      if (!core.includes(li)) core.unshift(li);
+    }
+    // key table / numbered step list, when bullets alone would miss the substance
+    let coreExtra: string | undefined;
+    const tables = lines.filter((l, k) => /^\s*\|/.test(l) && isTableSep(lines[k + 1] ?? '')).length;
+    const tRows = lines.filter((l) => /^\s*\|/.test(l)).length;
+    if (pseudoIdx.length < 2 && (core.length <= 3 || (tables === 1 && tRows <= 10))) {
+      const tStart = lines.findIndex((l, k) => /^\s*\|/.test(l) && isTableSep(lines[k + 1] ?? ''));
+      const olStart = lines.findIndex((l) => /^\d+\. /.test(l));
+      if (tStart >= 0) { let e = tStart; while (e < lines.length && /^\s*\|/.test(lines[e])) e++; coreExtra = render(lines.slice(tStart, e).join('\n')); }
+      else if (olStart >= 0) {
+        const steps: string[] = []; for (let k = olStart; k < lines.length && steps.length < 20; k++) { const m = lines[k].match(/^\d+\. (.*)$/); if (m) steps.push(m[1]); else if (lines[k].trim() && !/^\s/.test(lines[k])) break; }
+        if (steps.length >= 3) coreExtra = '<ol class="steps">' + steps.map((x) => `<li>${inline(stripTrailingCite(x.split(/(?<=[.!?])\s+(?=[A-Z(])/)[0]))}</li>`).join('') + '</ol>';
+      }
+      if (coreExtra) { for (let k = core.length - 1; k >= 0; k--) if (/^\d+\. /.test(core[k].replace(/<[^>]+>/g, ''))) core.splice(k, 1); }
+    }
+    if (!core.length && !coreExtra) {
+      const para = lines.find((l) => l.trim() && !/^(\||>|```|#)/.test(l) && !/beyond the handbook/i.test(l));
+      if (para) core.push(inline(stripTrailingCite(para.replace(/^\s*[-*] /, ''))));
     }
     const cid = `${id}.c${String(i + 1).padStart(2, '0')}`;
     const C: Concept = {
-      id: cid, lesson: id, title, section, pages: bodyPages, ca: ca || /\[CA\]/.test(b.body.split('\n')[0] || ''), core,
+      id: cid, lesson: id, title, section, pages: bodyPages, ca: ca || /\[CA\]/.test(b.body.split('\n')[0] || ''), core, coreExtra,
       html: render(b.body), hasBeyond: /beyond the handbook/i.test(b.body), hasConflict: /handbook vs other|handbook conflict/i.test(b.body),
     };
     all.concepts[cid] = C; L.conceptIds.push(cid);
@@ -217,6 +265,8 @@ function parseLesson(file: string, md: string) {
     const stemText = plain(q.stem);
     const polarity = /\b(NOT|EXCEPT)\b/.test(q.stem) ? 'neg' : /^true or false/i.test(stemText) ? 'tf' : 'pos';
     const qid = `${lid(id)}-q${String(q.n).padStart(2, '0')}-${fnv(q.stem)}`;
+    // make explanations shuffle-safe: "(b)" → the option's own words
+    key.expl = key.expl.replace(/\(([abc])\)/g, (_m, l: string) => `“${plain(q.opts['abc'.indexOf(l)] ?? l)}”`);
     const it: Item = {
       id: qid, lesson: id, test, origin: 'pack', stem: inline(q.stem), stemText, options: q.opts.map(inline), optionsText: q.opts.map(plain), key: key.k,
       explanation: inline(stripTrailingCite(key.expl)), pages: key.pages, polarity, numeric: q.opts.every((o) => /\d/.test(o)),
@@ -236,16 +286,34 @@ function parseLesson(file: string, md: string) {
 // ---------- concept mapping by page overlap (enrichment may refine); flashcards by keyword overlap
 const STOP = new Set('the a an of to in on at for and or is are be by with what when which how your you it its as that this from do does must can may if than more less not no into after before each every one two three'.split(' '));
 const words = (s: string) => new Set(norm(s).split(' ').filter((w) => w.length > 2 && !STOP.has(w)));
-function byPages(lesson: string, pages: string[]): string[] {
+const conceptWords = new Map<string, { title: Set<string>; body: Set<string> }>();
+function cw(cid: string) {
+  let w = conceptWords.get(cid);
+  if (!w) { const c = all.concepts[cid]; w = { title: words(c.title), body: words(c.core.join(' ') + ' ' + c.html.replace(/<[^>]+>/g, ' ')) }; conceptWords.set(cid, w); }
+  return w;
+}
+/** Best-matching concept(s) in a lesson: page overlap + keyword overlap with the concept's title and body. */
+function bestConcepts(lesson: string, pages: string[], text: string, n = 1): string[] {
   const L = all.lessons.find((l) => l.id === lesson)!;
-  const c = L.conceptIds.map((id) => all.concepts[id]).filter((x) => x.pages.some((p) => pages.includes(p)));
-  c.sort((a, b) => a.pages.length - b.pages.length);
-  return c.slice(0, 2).map((x) => x.id);
+  const tw = words(text);
+  const scored = L.conceptIds.map((cid) => {
+    const c = all.concepts[cid];
+    const w = cw(cid);
+    let sc = c.pages.some((p) => pages.includes(p)) ? 3 : 0;
+    for (const x of tw) { if (w.title.has(x)) sc += 2; else if (w.body.has(x)) sc += 1; }
+    if (/^(start here|key words)/i.test(c.title)) sc -= 3;
+    return { cid, sc, span: c.pages.length || 9 };
+  }).sort((a, b) => b.sc - a.sc || a.span - b.span);
+  return scored.slice(0, n).filter((x) => x.sc > 0).map((x) => x.cid);
+}
+function byPages(lesson: string, pages: string[], text = ''): string[] {
+  const r = bestConcepts(lesson, pages, text, 1);
+  return r.length ? r : [all.lessons.find((l) => l.id === lesson)!.conceptIds[0]];
 }
 function mapFacts() {
-  for (const n of Object.values(all.numbers)) (n as NumberFact & { concepts?: string[] }).concepts = byPages(n.lesson, n.pages);
-  for (const t of Object.values(all.traps)) (t as Trap & { concepts?: string[] }).concepts = byPages(t.lesson, t.pages);
-  for (const t of Object.values(all.tyk)) (t as Tyk & { concepts?: string[] }).concepts = byPages(t.lesson, t.pages);
+  for (const n of Object.values(all.numbers)) n.concepts = byPages(n.lesson, n.pages, n.item + ' ' + n.value);
+  for (const t of Object.values(all.traps)) t.concepts = byPages(t.lesson, t.pages, t.trap + ' ' + t.correct);
+  for (const t of Object.values(all.tyk)) t.concepts = byPages(t.lesson, t.pages, plain(t.q) + ' ' + t.a);
   for (const f of Object.values(all.flash)) {
     const L = all.lessons.find((l) => l.id === f.lesson)!;
     const fw = words(f.q + ' ' + f.a);
@@ -262,12 +330,7 @@ function mapFacts() {
 
 // ---------- item → concept mapping by page overlap (enrichment may refine)
 function mapConcepts() {
-  for (const it of Object.values(all.items)) {
-    const L = all.lessons.find((l) => l.id === it.lesson)!;
-    const cands = L.conceptIds.map((c) => all.concepts[c]).filter((c) => c.pages.some((p) => it.pages.includes(p)));
-    cands.sort((a, b) => a.pages.length - b.pages.length);
-    it.concepts = (cands.length ? cands.slice(0, 2) : [all.concepts[L.conceptIds[Math.min(1, L.conceptIds.length - 1)]]]).map((c) => c.id);
-  }
+  for (const it of Object.values(all.items)) it.concepts = byPages(it.lesson, it.pages, it.stemText + ' ' + it.optionsText[it.key] + ' ' + plain(it.explanation));
 }
 
 // ---------- deterministic derived items
@@ -325,9 +388,24 @@ function mergeEnrichment() {
       if (rejected.has(id)) { dropped.push(`enrich ${f}: ${id} rejected by independent verifier`); continue; }
       all.items[id] = {
         id, lesson, test: L.test, origin: 'derived-number', stem: inline(n.stem), stemText: plain(n.stem), options: n.options.map(inline), optionsText: n.options.map(plain),
-        key: n.key, explanation: inline(n.explanation), pages: nf.pages, polarity: /\b(NOT|EXCEPT)\b/.test(n.stem) ? 'neg' : 'pos', numeric: true, tags: n.tags,
+        key: n.key, explanation: inline(n.explanation), pages: nf.pages, polarity: /\b(NOT|EXCEPT)\b/.test(n.stem) ? 'neg' : 'pos', numeric: n.options.every((o) => /\d/.test(o)), tags: n.tags,
         concepts: nf.concepts.length ? nf.concepts : [L.conceptIds[0]], ku: nf.id, heldOut: rnd() < 0.5,
       };
+    }
+  }
+}
+
+// ---------- per-option "why this is wrong" notes (enrich/notes/<LESSON>.json)
+function mergeNotes() {
+  let files: string[] = [];
+  try { files = readdirSync(join(ENRICH, 'notes')).filter((f: string) => /^(GK|CV)-\d\d\.json$/.test(f)); } catch { return; }
+  for (const f of files) {
+    const N = JSON.parse(readFileSync(join(ENRICH, 'notes', f), 'utf8')) as Record<string, (string | null)[]>;
+    for (const [iid, notes] of Object.entries(N)) {
+      const it = all.items[iid];
+      if (!it) continue; // item was dropped/rejected
+      if (notes.length !== it.options.length || notes[it.key] !== null || notes.some((n, k) => k !== it.key && (!n || /\b(option|answer)\s+[abc]\b|\([abc]\)/i.test(n)))) { dropped.push(`notes ${f}: bad notes for ${iid}`); continue; }
+      it.notes = notes.map((n) => (n ? inline(n) : null));
     }
   }
 }
@@ -356,6 +434,8 @@ mapConcepts();
 mapFacts();
 deriveItems();
 mergeEnrichment();
+mergeNotes();
+mapConcepts(); // re-map every item (incl. derived) by page + keyword overlap
 const derivedNumbers = Object.values(all.items).filter((i) => i.origin === 'derived-number').length;
 const sh = parseStartHere(readFileSync(join(SRC, '00-START-HERE.md'), 'utf8'));
 
@@ -378,6 +458,36 @@ const expect: Record<string, number> = { lessons: 18, practice: 338, options: 10
 for (const [k, v] of Object.entries(expect)) if ((counts as Record<string, number>)[k] !== v) problems.push(`TOTAL ${k}: expected ${v}, got ${(counts as Record<string, number>)[k]}`);
 if (sh.handbookWay.length !== 9) problems.push(`handbookWay rows ${sh.handbookWay.length} != 9`);
 if (sh.mostMissed.length !== 50) problems.push(`mostMissed ${sh.mostMissed.length} != 50`);
+
+// ---------- tap-to-define: first use of each glossary term in a concept becomes a button (text nodes only)
+function linkGlossary() {
+  const SKIP = new Set(['cdl', 'cmv', 'clp']);
+  const terms = all.glossary.map((g, i) => ({ i, bare: g.term.replace(/\s*\([^)]*\)\s*/g, '').replace(/["“”]/g, '').trim() }))
+    .filter((t) => t.bare.length >= 3 && !SKIP.has(t.bare.toLowerCase()))
+    .sort((a, b) => b.bare.length - a.bare.length);
+  for (const c of Object.values(all.concepts)) {
+    const used = new Set<number>();
+    const wrap = (html: string) => html.split(/(<[^>]+>)/).map((seg, k, arr) => {
+      if (seg.startsWith('<')) return seg;
+      const inButton = arr.slice(0, k).reverse().find((x) => /^<\/?button/.test(x));
+      if (inButton && !inButton.startsWith('</')) return seg;
+      for (const t of terms) {
+        if (used.has(t.i)) continue;
+        const re = new RegExp(`(^|[^A-Za-z0-9])(${t.bare.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?=[^A-Za-z0-9]|$)`, /^[A-Z0-9]+$/.test(t.bare) ? '' : 'i');
+        const m = seg.match(re);
+        if (m && m.index !== undefined) {
+          used.add(t.i);
+          const at = m.index + m[1].length;
+          seg = seg.slice(0, at) + `<button type="button" class="gl" data-g="${t.i}">${m[2]}</button>` + seg.slice(at + m[2].length);
+        }
+      }
+      return seg;
+    }).join('');
+    c.html = wrap(c.html);
+    c.core = c.core.map(wrap);
+  }
+}
+linkGlossary();
 
 const content: Content = { version: fnv(JSON.stringify(counts) + files.join()), handbook: 'DL 650 California Commercial Driver Handbook (R12-2019)', ...all, ...sh, counts };
 mkdirSync(dirname(OUT), { recursive: true });

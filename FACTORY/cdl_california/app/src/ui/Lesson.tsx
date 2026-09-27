@@ -91,10 +91,11 @@ function ConceptCard({ c, n, seen, children }: { c: Concept; n: number; seen: bo
   return (
     <article class="card concept" id={`c-${c.id}`} aria-labelledby={`h-${c.id}`}>
       <div class="concept-head">
-        <h3 id={`h-${c.id}`}><span class="muted num" style={{ fontSize: '.9em' }}>{c.section ?? n}</span> {c.title} {c.ca && <span class="ca-tag" title="California-specific rule">CA</span>}</h3>
+        <h3 id={`h-${c.id}`}>{c.section && <span class="muted num" style={{ fontSize: '.9em' }}>{c.section} </span>}{c.title} {c.ca && <span class="ca-tag" title="California-specific rule">CA</span>}</h3>
         <div class="row small">{bnd !== 'new' && <span class="chip" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>{bnd}</span>}<Pages pages={c.pages} /></div>
       </div>
       <ul class="core">{c.core.map((h) => <Html tag="li" html={h} />)}</ul>
+      {c.coreExtra && <Html class="prose" html={c.coreExtra} />}
       {children}
       <details class="deep" onToggle={(e) => { if ((e.target as HTMLDetailsElement).open && !seen) markSeen(); }}>
         <summary>Dive deeper</summary>
@@ -178,19 +179,7 @@ function CardsTab({ id }: { id: string }) {
 
 export function startTest(id: string) {
   const L = lessonById(id);
-  startSession({
-    title: `${id} practice test`, ids: L.itemIds, mode: 'practice', lesson: id, back: { name: 'lesson', param: id },
-    onFinish: (score, total) => {
-      const pct = total ? score / total : 0;
-      mutate((st) => {
-        const lp = st.lessons[id] ?? { conceptsSeen: {} };
-        lp.practiceLast = { score, total, t: now() };
-        lp.practiceBest = Math.max(lp.practiceBest ?? 0, pct);
-        if (pct >= 0.9 && !lp.completed) lp.completed = now();
-        st.lessons[id] = lp;
-      });
-    },
-  });
+  startSession({ title: `${id} practice test`, ids: L.itemIds, mode: 'practice', lesson: id, back: { name: 'lesson', param: id }, testLesson: id });
 }
 
 function TestTab({ id }: { id: string }) {

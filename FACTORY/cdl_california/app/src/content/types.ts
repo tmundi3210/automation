@@ -28,6 +28,7 @@ export interface Concept {
   pages: string[];
   ca: boolean;
   core: string[];        // html bullets: key points for the quick view
+  coreExtra?: string;    // html: the key table or step list, when the bullets alone would miss it
   html: string;          // full rendered body (deep dive)
   hasBeyond: boolean;
   hasConflict: boolean;
@@ -65,6 +66,7 @@ export interface Item {
   polarity: Polarity;
   numeric: boolean;
   tags: (DistractorTag | null)[]; // per option (null for key)
+  notes?: (string | null)[];       // per option: why this wrong option is wrong (null for key)
   concepts: string[];
   ku: string;
   heldOut?: boolean;

@@ -23,7 +23,7 @@ function Gap({ len, sec, tail, slick, need, label, ask }: { len: number; sec: nu
   const carX = ask ? 290 : x0 + per * sec + (more ? 26 : 0);
   const short = need != null && sec < need;
   return (
-    <svg viewBox="0 0 320 112" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '560px' }}>
+    <svg viewBox="0 0 320 112" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '400px', marginInline: 'auto' }}>
       <rect x="0" y="32" width="320" height="42" fill="var(--surface-2)" stroke="none" />
       <line x1="0" y1="53" x2="320" y2="53" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="10 8" />
       <rect x={carX - 2} y="32" width="4" height="42" fill="var(--amber)" stroke="none" />
@@ -74,8 +74,8 @@ function Explore() {
         {mph > 40 && <p class="small muted">One extra second in total — not one per 10 mph. {len} ft at 70 mph is still {sec} s.</p>}
       </div>
       <div class="row">
-        <label class="toggle"><input type="checkbox" checked={tail} onChange={(e) => setTail((e.target as HTMLInputElement).checked)} />Tailgater behind you</label>
-        <label class="toggle"><input type="checkbox" checked={slick} onChange={(e) => setSlick((e.target as HTMLInputElement).checked)} />Slippery road</label>
+        <label class="toggle" style={{ minHeight: '44px' }}><input type="checkbox" checked={tail} onChange={(e) => setTail((e.target as HTMLInputElement).checked)} />Tailgater behind you</label>
+        <label class="toggle" style={{ minHeight: '44px' }}><input type="checkbox" checked={slick} onChange={(e) => setSlick((e.target as HTMLInputElement).checked)} />Slippery road</label>
       </div>
       {tail && <div class="card warn small"><strong>Tailgated? Increase YOUR following distance</strong> (the “+” box). Then you won’t need to brake or swerve suddenly, and the tailgater can pass more easily. Signal early, slow very gradually, don’t speed up, no taillight or brake-light tricks. <span class="plate">p. 2-19</span> <span class="plate">p. 2-20</span></div>}
       {slick && <div class="card warn small"><strong>Slippery road:</strong> you need more space than the rule gives, because it takes longer to stop. <span class="plate">p. 2-19</span></div>}
@@ -132,7 +132,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
       {it ? <>
         <strong>{it.note}: {it.len}-ft rig at {it.mph} mph. How many seconds of following distance?</strong>
         <Gap len={it.len} sec={pick ?? 0} ask={pick === null} need={pick !== null ? truth : undefined} label={pick === null ? `${it.len}-foot rig at ${it.mph} mph.` : `Your gap ${pick} seconds; needed ${truth} seconds.`} />
-        <div class="row" role="group" aria-label="Seconds">{CHOICES.map((c) => (
+        <div role="group" aria-label="Seconds" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(62px, 1fr))', gap: '6px' }}>{CHOICES.map((c) => (
           <button class="btn sm num" disabled={pick !== null} aria-pressed={pick === c} style={btnStyle(c)} onClick={() => answer(c)}>{c} s{pick !== null && c === truth ? ' ✓' : pick === c ? ' ✗' : ''}</button>
         ))}</div>
       </> : <>

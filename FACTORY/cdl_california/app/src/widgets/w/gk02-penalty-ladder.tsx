@@ -53,42 +53,44 @@ export function outcome(drops: Drop[], d: Drop): Outcome {
   }
 }
 
-const LANE = 52;
+const LANE = 60, AX = 24, FS = 14; // font units: 14 in a 360-wide viewBox stays >= 11 px on a 294 px phone column
+/** Timeline of drops. HazMat/passenger drops are drawn as a placard diamond (shape, not only color). */
 export function Timeline({ drops, kinds, reveal = true, ghost }: { drops: Drop[]; kinds: Kind[]; reveal?: boolean; ghost?: { kind: Kind; days: number } }) {
-  const H = kinds.length * LANE + 22;
+  const H = kinds.length * LANE + AX;
   const cx = (d: Drop) => (d.year - Y0) * COL + COL / 2 + (drops.filter((x) => x.kind === d.kind && x.year === d.year && x.id < d.id).length * 7);
-  const desc = drops.length ? drops.map((d) => `${d.year} ${KINDS[d.kind].short}${reveal ? ': ' + outcome(drops, d).text : ''}`).join('; ') : 'empty';
+  const desc = drops.length ? drops.map((d) => `${d.year} ${KINDS[d.kind].short}${d.hz ? ' (HazMat)' : ''}${reveal ? ': ' + outcome(drops, d).text : ''}`).join('; ') : 'empty';
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Timeline 2015 to 2026: ${desc}`} style={{ display: 'block' }}>
-      {YEARS.map((y, i) => <rect x={i * COL} y={0} width={COL} height={H - 22} fill={i % 2 ? 'var(--surface)' : 'var(--surface-2)'} />)}
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Timeline 2015 to 2026: ${desc}`} style={{ display: 'block', maxWidth: '420px' }}>
+      {YEARS.map((y, i) => <rect x={i * COL} y={0} width={COL} height={H - AX} fill={i % 2 ? 'var(--surface)' : 'var(--surface-2)'} />)}
       {kinds.map((k, li) => {
         const top = li * LANE, info = KINDS[k];
         const mine = drops.filter((d) => d.kind === k).sort((a, b) => a.year - b.year || a.id - b.id);
         const last = mine[mine.length - 1];
         const wStart = last && info.window ? Math.max(Y0, last.year - info.window + 1) : 0;
+        const hasLife = reveal && mine.some((d) => outcome(drops, d).days === LIFE);
         return (
           <g>
             <line x1={0} x2={W} y1={top} y2={top} stroke="var(--line)" stroke-width={1} />
-            {reveal && last && info.window && <rect x={(wStart - Y0) * COL + 1} y={top + 17} width={(last.year - wStart + 1) * COL - 2} height={20} rx={4} fill="none" stroke={info.color} stroke-width={1.5} stroke-dasharray="4 3" />}
-            <text x={4} y={top + 13} font-size={12} font-weight={700} fill="var(--ink)">{info.short}{reveal && last && info.window ? ` · ${info.window}-yr window` : ''}</text>
+            {reveal && last && info.window && <rect x={(wStart - Y0) * COL + 1} y={top + 20} width={(last.year - wStart + 1) * COL - 2} height={24} rx={4} fill="none" stroke={info.color} stroke-width={1.5} stroke-dasharray="4 3" />}
+            <text x={4} y={top + 16} font-size={FS} font-weight={700} fill="var(--ink)">{info.short}{reveal && last && info.window ? ` · ${info.window}-yr window` : ''}</text>
+            {hasLife && <text x={W - 4} y={top + 16} font-size={FS} font-weight={700} text-anchor="end" fill="var(--red)">LIFE →</text>}
             {mine.map((d) => {
-              const o = outcome(drops, d), x = cx(d);
+              const o = outcome(drops, d), x = cx(d), cy = top + 32;
               const len = o.days === LIFE ? W - x : Math.max(2, (o.days / Y) * COL);
               return (
                 <g>
-                  {reveal && o.days > 0 && <rect x={x} y={top + 38} width={Math.min(len, W - x)} height={6} fill={o.disq ? 'var(--red)' : 'var(--amber)'} />}
-                  {reveal && o.days === LIFE && <text x={W - 4} y={top + 36} font-size={11} font-weight={700} text-anchor="end" fill="var(--red)">LIFE →</text>}
-                  <circle cx={x} cy={top + 27} r={9} fill={info.color} stroke="var(--surface)" stroke-width={1.5} />
-                  <text x={x} y={top + 31} font-size={11} font-weight={700} text-anchor="middle" fill="var(--surface)">{reveal ? countFor(drops, d) : '•'}</text>
-                  {d.hz && <text x={x + 10} y={top + 22} font-size={11} font-weight={700} fill="var(--red)">H</text>}
+                  {reveal && o.days > 0 && <rect x={x} y={top + 47} width={Math.min(len, W - x)} height={6} fill={o.disq ? 'var(--red)' : 'var(--amber)'} />}
+                  {d.hz ? <rect x={x - 9} y={cy - 9} width={18} height={18} transform={`rotate(45 ${x} ${cy})`} fill={info.color} stroke="var(--red)" stroke-width={2} />
+                    : <circle cx={x} cy={cy} r={11} fill={info.color} stroke="var(--surface)" stroke-width={1.5} />}
+                  <text x={x} y={cy + 5} font-size={FS} font-weight={700} text-anchor="middle" fill="var(--surface)">{reveal ? countFor(drops, d) : '•'}</text>
                 </g>
               );
             })}
-            {ghost && ghost.kind === k && last && ghost.days > 0 && <rect x={cx(last)} y={top + 45} width={Math.min(ghost.days === LIFE ? W : (ghost.days / Y) * COL, W - cx(last))} height={6} fill="none" stroke="var(--ink-2)" stroke-dasharray="3 2" />}
+            {ghost && ghost.kind === k && last && ghost.days > 0 && <rect x={cx(last)} y={top + 54} width={Math.min(ghost.days === LIFE ? W : (ghost.days / Y) * COL, W - cx(last))} height={5} fill="none" stroke="var(--ink-2)" stroke-dasharray="3 2" />}
           </g>
         );
       })}
-      {YEARS.map((y, i) => <text x={i * COL + COL / 2} y={H - 7} font-size={11} text-anchor="middle" fill="var(--ink-2)">’{String(y).slice(2)}</text>)}
+      {YEARS.map((y, i) => <text x={i * COL + COL / 2} y={H - 7} font-size={FS} text-anchor="middle" fill="var(--ink-2)">’{String(y).slice(2)}</text>)}
     </svg>
   );
 }
@@ -116,25 +118,26 @@ function Explore() {
   const sorted = [...drops].sort((a, b) => a.year - b.year || a.id - b.id);
   const latest = drops.reduce<Drop | null>((m, x) => (!m || x.year > m.year || (x.year === m.year && x.id > m.id) ? x : m), null);
   const lo = latest && outcome(drops, latest);
+  const shown = KIND_ORDER.filter((k) => k === kind || drops.some((x) => x.kind === k));
   return (
     <div class="stack">
       <div class="field"><span style={{ fontWeight: 700 }}>1. Pick a violation</span>
         <div class="row" role="group" aria-label="Violation type">{KIND_ORDER.map((k) => <button class="btn sm" aria-pressed={kind === k} style={pressed(kind === k)} title={KINDS[k].label} onClick={() => setKind(k)}>{KINDS[k].short}{k === 'phone' && <span class="ca-tag">CA</span>}</button>)}</div>
         <span class="small muted">{KINDS[kind].label}.</span>
-        {KINDS[kind].hzLabel && <label class="toggle"><input type="checkbox" checked={hz} onChange={(e) => setHz((e.target as HTMLInputElement).checked)} />{KINDS[kind].hzLabel}</label>}
+        {KINDS[kind].hzLabel && <label class="toggle" style={{ minHeight: '36px' }}><input type="checkbox" checked={hz} onChange={(e) => setHz((e.target as HTMLInputElement).checked)} />{KINDS[kind].hzLabel}</label>}
       </div>
-      <div class="stack" style={{ gap: '4px' }}>
+      <div class="stack" style={{ gap: '6px', maxWidth: '420px', width: '100%' }}>
         <span style={{ fontWeight: 700 }}>2. Tap a year to drop it</span>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${NY}, 1fr)` }} role="group" aria-label="Conviction year">
-          {YEARS.map((y) => <button class="btn sm" style={{ padding: '0', minWidth: 0, borderRadius: '4px', fontSize: '.78rem' }} aria-label={`Drop ${KINDS[kind].short} in ${y}`} onClick={() => add(y)}>’{String(y).slice(2)}</button>)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '4px' }} role="group" aria-label="Conviction year">
+          {YEARS.map((y) => <button class="btn sm num" style={{ padding: '0', minWidth: 0, fontSize: '.85rem' }} aria-label={`Drop ${KINDS[kind].short} in ${y}`} onClick={() => add(y)}>{y}</button>)}
         </div>
-        <Timeline drops={drops} kinds={KIND_ORDER} />
-        <span class="small muted">Circle number = which violation it is inside its window (dashed box). Bar = time out of the truck (1 column = 1 year; red = CDL disqualified, amber = out of service). Drops are dated mid-year.</span>
+        <Timeline drops={drops} kinds={shown} />
+        <span class="small muted">Number = which violation it is inside its window (dashed box); a diamond marks HazMat or 16+ passengers. Bar = time out of the truck (1 column = 1 year; red = CDL disqualified, amber = out of service). Drops are dated mid-year. Lanes appear for the violation you picked and any on the record.</span>
       </div>
       {lo && latest && <div class={`card ${lo.disq ? 'warn' : 'tint'}`} role="status" aria-live="polite"><div class="eyebrow">Latest: {latest.year} · {KINDS[latest.kind].short}</div>
         <div style={{ font: '700 1.4rem/1.1 var(--display)' }}>{lo.text}</div><p class="small">{lo.why} <span class="plate">p. {lo.page}</span></p></div>}
       {sorted.length > 0 && <ul class="list" style={{ margin: 0, padding: 0, listStyle: 'none' }}>{sorted.map((x) => (
-        <li style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 0' }}><span class="small" style={{ flex: 1, minWidth: 0 }}><strong class="num">{x.year}</strong> {KINDS[x.kind].short}{x.hz ? ' (H)' : ''} → {outcome(drops, x).text}</span>
+        <li style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '2px 0' }}><span class="small" style={{ flex: 1, minWidth: 0 }}><strong class="num">{x.year}</strong> {KINDS[x.kind].short}{x.hz ? ` (◆ ${KINDS[x.kind].hzLabel})` : ''} → {outcome(drops, x).text}</span>
           <button class="btn sm ghost" style={{ flex: 'none' }} aria-label={`Remove ${x.year} ${KINDS[x.kind].short}`} onClick={() => setDrops(drops.filter((z) => z.id !== x.id))}>Remove</button></li>))}</ul>}
       <div class="row"><button class="btn sm" onClick={() => setDrops([])}>Clear strip</button></div>
     </div>

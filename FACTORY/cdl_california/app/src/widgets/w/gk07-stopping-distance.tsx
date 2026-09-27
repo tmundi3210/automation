@@ -20,22 +20,25 @@ const PARTS = [
   { key: 'R', name: 'Reaction', color: 'var(--amber)', time: '¾ s to 1 s', what: 'brain knows → foot presses the brake' },
   { key: 'B', name: 'Braking', color: 'var(--red)', time: '—', what: 'brakes working → truck stops (dry road, good brakes)' },
 ];
-const X0 = 58, K = 320 / 450;
-const U = (298 - 62) / 16; // ratio bars: one unit = braking distance at 20 mph (no feet given) // road scale: 450 ft of road = 320 viewBox units, same at every speed
+const X0 = 50, K = 300 / 450; // road scale: 450 ft of road = 300 viewBox units, same at every speed
+const U = (298 - 62) / 16; // ratio bars: one unit = braking distance at 20 mph (no feet given)
+/** Segmented control: equal columns so the options never wrap raggedly on a phone. */
+const segRow = (n: number) => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: '6px' });
+const segOn = { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' };
 const fx = (ft: number) => X0 + ft * K;
 
 function Road({ mph, empty, marks, pick, label, hide }: { mph: number; empty?: boolean; marks?: number[]; pick?: number | null; label: string; hide?: boolean }) {
   const d = FIG_2_11[mph];
   const segs = [0, d[0], d[0] + d[1], d[3]];
   return (
-    <svg viewBox="0 0 400 138" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '680px' }}>
-      <rect x="0" y="36" width="400" height="58" fill="var(--surface-2)" stroke="none" />
-      <line x1="0" y1="36" x2="400" y2="36" stroke="var(--ink-2)" stroke-width="1.5" />
-      <line x1="0" y1="94" x2="400" y2="94" stroke="var(--ink-2)" stroke-width="1.5" />
+    <svg viewBox="0 0 360 138" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '460px', marginInline: 'auto' }}>
+      <rect x="0" y="36" width="360" height="58" fill="var(--surface-2)" stroke="none" />
+      <line x1="0" y1="36" x2="360" y2="36" stroke="var(--ink-2)" stroke-width="1.5" />
+      <line x1="0" y1="94" x2="360" y2="94" stroke="var(--ink-2)" stroke-width="1.5" />
       <g aria-hidden="true">
-        <rect x="8" y="50" width="34" height="30" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5" />
-        <rect x="42" y="54" width="14" height="22" rx="3" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
-        <rect x="51" y="57" width="4" height="16" fill="var(--surface)" stroke="none" />
+        <rect x="3" y="50" width="33" height="30" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5" />
+        <rect x="36" y="54" width="14" height="22" rx="3" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5" />
+        <rect x="45" y="57" width="4" height="16" fill="var(--surface)" stroke="none" />
       </g>
       {!hide && PARTS.map((p, i) => {
         const w = (segs[i + 1] - segs[i]) * K;
@@ -47,20 +50,20 @@ function Road({ mph, empty, marks, pick, label, hide }: { mph: number; empty?: b
         );
       })}
       {empty && <g>
-        <rect x={fx(d[3])} y="54" width={Math.min(36, 392 - fx(d[3]))} height="22" fill="var(--red-soft)" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4 3" />
-        <text x={Math.min(fx(d[3]) + 18, 380)} y="70" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">+?</text>
+        <rect x={fx(d[3])} y="54" width={Math.min(36, 356 - fx(d[3]))} height="22" fill="var(--red-soft)" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4 3" />
+        <text x={Math.min(fx(d[3]) + 14, 342)} y="70" text-anchor="middle" font-size="14" font-weight="700" fill="var(--red)">+?</text>
       </g>}
       {!hide && <g><line x1={fx(d[3])} y1="42" x2={fx(d[3])} y2="88" stroke="var(--ink)" stroke-width="2.5" />
-      <text x={Math.min(fx(d[3]), 330)} y="28" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">{`Stops: ${d[3]} ft`}</text></g>}
+      <text x={Math.min(fx(d[3]), 300)} y="28" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">{`Stops: ${d[3]} ft`}</text></g>}
       {pick != null && <g>
         <line x1={fx(pick)} y1="36" x2={fx(pick)} y2="94" stroke={pick === d[3] ? 'var(--ok)' : 'var(--red)'} stroke-width="3" stroke-dasharray="5 3" />
-        <text x={Math.max(Math.min(fx(pick), 370), 30)} y="14" text-anchor="middle" font-size="14" fill={pick === d[3] ? 'var(--ok)' : 'var(--red)'}>{pick === d[3] ? '✓ your line' : '✗ your line'}</text>
+        <text x={Math.max(Math.min(fx(pick), 316), 44)} y="14" text-anchor="middle" font-size="14" fill={pick === d[3] ? 'var(--ok)' : 'var(--red)'}>{pick === d[3] ? '✓ your line' : '✗ your line'}</text>
       </g>}
       {[0, 100, 200, 300, 400].map((t) => (
         <g key={t} aria-hidden="true"><line x1={fx(t)} y1="94" x2={fx(t)} y2="102" stroke="var(--ink-2)" stroke-width="1" /><text x={fx(t)} y="117" text-anchor="middle" font-size="14" fill="var(--ink-2)">{t}</text></g>
       ))}
       <text x={fx(450)} y="117" text-anchor="end" font-size="14" fill="var(--ink-2)">ft</text>
-      {marks && marks.map((m, i) => <g key={m}><line x1={fx(m)} y1="36" x2={fx(m)} y2="94" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 3" /><text x={fx(m)} y="134" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">{String.fromCharCode(65 + i)}</text></g>)}
+      {marks && marks.map((m, i) => <g key={m}><line x1={fx(m)} y1="36" x2={fx(m)} y2="94" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 3" /><text x={fx(m)} y="134" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent)">{String.fromCharCode(65 + i)}</text></g>)}
     </svg>
   );
 }
@@ -98,14 +101,14 @@ function Explore() {
           : <p>Perception + reaction: <strong class="num">{d[0] + d[1]} ft</strong> at full speed before the brakes work. Braking: <strong class="num">{d[2]} ft</strong>. <span class="plate">p. 2-16</span></p>}
         <p class="muted">25 → 55 mph: perception and reaction a little more than double; braking grows more than 4 times (47 → 216 ft). At 60 mph the handbook says you need more than a football field.</p>
       </div>
-      <label class="toggle"><input type="checkbox" checked={empty} onChange={(e) => setEmpty((e.target as HTMLInputElement).checked)} />Truck is empty</label>
+      <label class="toggle" style={{ minHeight: '44px' }}><input type="checkbox" checked={empty} onChange={(e) => setEmpty((e.target as HTMLInputElement).checked)} />Truck is empty</label>
       {empty && <div class="card warn small"><strong>Empty trucks need LONGER to stop.</strong> Brakes, tires, springs and shocks are built to work best fully loaded; empty, the tires have less traction. The handbook gives no feet for this, so the extra is shown as “+?”. <span class="plate">p. 2-16</span></div>}
       <div class="card flat stack">
         <div class="eyebrow">Double the speed → 4× the braking</div>
-        <div class="row" role="group" aria-label="Compare speed with 20 mph">{RATIO.map(([s]) => (
-          <button class="btn sm" aria-pressed={rel === s} style={rel === s ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => setRel(s)}>{s} mph</button>
+        <div role="group" aria-label="Compare speed with 20 mph" style={segRow(4)}>{RATIO.map(([s]) => (
+          <button class="btn sm" aria-pressed={rel === s} style={{ paddingInline: '4px', ...(rel === s ? segOn : {}) }} onClick={() => setRel(s)}>{s} mph</button>
         ))}</div>
-        <svg viewBox="0 0 300 64" width="100%" role="img" aria-label={`Braking distance and impact at ${rel} mph are ${relF} times those at 20 mph.`} style={{ maxWidth: '520px' }}>
+        <svg viewBox="0 0 300 64" width="100%" role="img" aria-label={`Braking distance and impact at ${rel} mph are ${relF} times those at 20 mph.`} style={{ maxWidth: '360px' }}>
           <text x="0" y="21" font-size="14" fill="var(--ink)">20 mph</text>
           <rect x="62" y="8" width={U} height="18" fill="var(--red)" stroke="var(--ink)" stroke-width="1" />
           <text x={68 + U} y="22" font-size="14" font-weight="700" fill="var(--ink)">×1</text>
@@ -153,9 +156,9 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
       <strong>{q.q}</strong>
       {q.place && <Road mph={55} hide={pick === null} marks={q.place} pick={pick !== null ? q.place[pick] : null} label={pick === null ? 'Road with candidate stop lines A to D.' : `Truck stops at 419 feet; your line is at ${q.place[pick]} feet.`} />}
       {q.place && pick === null && <p class="small muted">Only the scale is shown until you answer. Letters mark the choices.</p>}
-      <div class="row" role="group" aria-label="Answers">{q.opts.map((o, c) => (
+      <div role="group" aria-label="Answers" style={q.place ? segRow(2) : { display: 'grid', gap: '6px' }}>{q.opts.map((o, c) => (
         <button class="btn sm" disabled={pick !== null} aria-pressed={pick === c}
-          style={pick !== null && c === q.a ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)' } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)' } : {}}
+          style={{ justifyContent: q.place ? 'center' : 'flex-start', textAlign: 'left', ...(pick !== null && c === q.a ? { borderColor: 'var(--ok)', background: 'var(--ok-soft)', opacity: 1 } : pick === c ? { borderColor: 'var(--red)', background: 'var(--red-soft)', opacity: 1 } : {}) }}
           onClick={() => answer(c)}>{q.place ? `${String.fromCharCode(65 + c)} · ` : ''}{o}{pick !== null && c === q.a ? ' ✓' : pick === c ? ' ✗' : ''}</button>
       ))}</div>
       {pick !== null && <div class={`feedback ${ok ? 'good' : 'bad'}`} role="status">

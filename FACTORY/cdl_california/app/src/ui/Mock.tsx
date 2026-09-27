@@ -9,14 +9,16 @@ import { Back, Html, Pages, Shield } from './bits';
 /** DMV-style knowledge test rehearsal: 3 choices, immediate right/wrong, skip returns at the end, no timer. */
 export function MockScreen({ test }: { test: TestId }) {
   const f = TEST_FORMAT[test];
+  const saved = useMemo(() => { const r = S().mockRun; return r && r.test === test && r.queue.length ? r : null; }, [test]);
   const seed = useMemo(() => Math.floor(now() / 1000), []);
-  const ids = useMemo(() => buildMock(S(), C, test, seed), [test]);
-  const seenBefore = useMemo(() => { const seen = new Set(S().attempts.map((a) => a.id)); return ids.filter((i) => seen.has(i)).length; }, [ids]);
-  const predicted = useMemo(() => readiness(S(), C, test, now(), 800).low, [test]);
-  const [queue, setQueue] = useState<string[]>(ids);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const ids = useMemo(() => saved ? saved.ids : buildMock(S(), C, test, seed), [test]);
+  const seenBefore = useMemo(() => { if (saved) return saved.seenBefore; const seen = new Set(S().attempts.map((a) => a.id)); return ids.filter((i) => seen.has(i)).length; }, [ids]);
+  const predicted = useMemo(() => saved ? saved.predicted : readiness(S(), C, test, now(), 800).low, [test]);
+  const [queue, setQueue] = useState<string[]>(saved ? saved.queue : ids);
+  const [answers, setAnswers] = useState<Record<string, number>>(saved ? saved.answers : {});
   const [chosen, setChosen] = useState<number | null>(null);
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(!!saved);
+  const persist = (q: string[], a: Record<string, number>) => mutate((st) => { st.mockRun = q.length ? { test, ids, queue: q, answers: a, seenBefore, predicted, started: st.mockRun?.started ?? now() } : undefined; });
   const t0 = useRef(now());
   const done = queue.length === 0;
   const answeredIds = Object.keys(answers);
@@ -36,8 +38,9 @@ export function MockScreen({ test }: { test: TestId }) {
           <li>Not sure? <strong>Skip</strong>. Skipped questions come back at the end.</li>
           <li>No time limit. On the real test, phones, notes or help from anyone mean an automatic fail.</li>
         </ul>
+        {(() => { const ls = C.lessons.filter((l) => l.test === test); const studied = ls.filter((l) => S().lessons[l.id]?.opened).length; return studied < ls.length / 2 ? <p class="card warn small">You have opened {studied} of the {ls.length} {test === 'GK' ? 'General Knowledge' : 'Combination'} lessons, so expect a low score. That's fine — a mock now shows where to start, and every miss goes to your mistake list.</p> : null; })()}
         <p class="small muted">{ids.length - seenBefore} of {ids.length} questions are ones you have not answered yet. Questions come from every lesson in proportion to the handbook.</p>
-        <button class="btn primary" onClick={() => { setStarted(true); t0.current = now(); }}>Begin</button>
+        <button class="btn primary" onClick={() => { setStarted(true); t0.current = now(); persist(queue, answers); }}>Begin</button>
       </div>
     </div>
   );
@@ -80,20 +83,22 @@ export function MockScreen({ test }: { test: TestId }) {
     t0.current = now();
     const rest = queue.slice(1);
     setQueue(rest);
+    persist(rest, nextAnswers);
     if (!rest.length) {
       const items = Object.keys(nextAnswers).map((q) => ({ id: q, ok: nextAnswers[q] === C.items[q].key }));
       const score = items.filter((x) => x.ok).length;
       mutate((st) => { st.mocks.push({ t: now(), test, score, total: f.n, pass: score >= f.pass, unseenShare: (ids.length - seenBefore) / ids.length, predicted, items }); });
     }
   };
-  const skip = () => { setQueue([...queue.slice(1), id]); t0.current = now(); };
+  const skip = () => { const q = [...queue.slice(1), id]; setQueue(q); persist(q, answers); t0.current = now(); };
   const remaining = queue.length;
   return (
     <div class="page">
       <div class="spread">
         <span class="eyebrow">{f.name} mock</span>
-        <span class="small num"><strong>{f.n - remaining + 1}</strong> of {f.n} · <span style={{ color: 'var(--red)' }}>{wrong} wrong</span> (max {maxWrong})</span>
+        <span class="small num"><strong>{f.n - remaining + 1}</strong> of {f.n} · <span style={{ color: wrong > maxWrong ? 'var(--red)' : 'var(--ink-2)', fontWeight: 700 }}>{wrong} wrong</span> (you can miss {maxWrong})</span>
       </div>
+      {wrong > maxWrong && <div class="card warn small" role="status"><strong>You can no longer pass this mock</strong> — more than {maxWrong} wrong. On the real test that would be a fail. Keep going for practice; every miss goes to your mistake list.</div>}
       <div class="progressbar" aria-hidden="true"><span style={{ width: `${((f.n - remaining) / f.n) * 100}%` }} /></div>
       <div class="card stack">
         <Html class="q-stem" html={it.stem} />

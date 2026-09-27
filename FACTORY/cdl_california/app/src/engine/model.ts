@@ -2,16 +2,18 @@
 import type { TestId } from '../content/types';
 
 export type Cls = 'A' | 'B' | 'C';
-export type Cause = 'T' | 'W' | 'N' | 'E4' | 'U';
+export type Cause = 'T' | 'M' | 'W' | 'N' | 'E4' | 'U';
 export const CAUSE_LABEL: Record<Cause, string> = {
   T: 'Trap wording',
+  M: 'Known trap',
   W: 'Wrong source',
   N: 'Number mix-up',
   E4: 'Faded memory',
   U: 'Not learned yet',
 };
 export const CAUSE_HELP: Record<Cause, string> = {
-  T: 'You knew the rule but the question flipped it (NOT, EXCEPT, true/false). Read every stem twice and find the flip word.',
+  T: 'The question flipped the wording (NOT, EXCEPT, true or false) and caught you. Read every question twice and find the flip word.',
+  M: 'You picked the wrong idea this rule is famous for. Read the trap card for this topic: it shows the wrong idea next to the handbook answer.',
   W: 'You picked an answer from federal rules, the car handbook or a website. The DMV test follows the CA commercial handbook.',
   N: 'You mixed up a number with a neighbouring number. Drill the number family side by side.',
   E4: 'You had this right before, but it faded. A quick review brings it back.',
@@ -19,8 +21,8 @@ export const CAUSE_HELP: Record<Cause, string> = {
 };
 
 export type EvidenceClass = 'mcq' | 'tf' | 'typed' | 'self' | 'check' | 'mock';
-export const EVIDENCE_WEIGHT: Record<EvidenceClass, number> = { mcq: 0.3, tf: 0.2, typed: 1, self: 0.25, check: 0.5, mock: 0.3 };
-export const GUESS_RATE: Record<EvidenceClass, number> = { mcq: 1 / 3, tf: 0.5, typed: 0.05, self: 0.3, check: 0.2, mock: 1 / 3 };
+export const EVIDENCE_WEIGHT: Record<EvidenceClass, number> = { mcq: 0.3, tf: 0.2, typed: 1, self: 0.25, check: 0.2, mock: 0.3 };
+export const GUESS_RATE: Record<EvidenceClass, number> = { mcq: 1 / 3, tf: 0.5, typed: 0.05, self: 0.3, check: 1 / 3, mock: 1 / 3 };
 
 export interface Profile {
   cls: Cls | null;
@@ -74,6 +76,10 @@ export interface AppState {
   stamps: Record<string, number>;
   widgets: Record<string, { done: number; best?: number }>;
   cursor: { route: string; param?: string; scroll?: number };
+  /** An unfinished practice session (survives reload). */
+  sessionRun?: { title: string; ids: string[]; mode: 'learn' | 'practice' | 'review' | 'fix' | 'cards'; lesson?: string; back: { name: string; param?: string; sub?: string }; shuffleOptions?: boolean; testLesson?: string; i: number; results: { id: string; ok: boolean; cause?: Cause }[] };
+  /** An unfinished mock test (survives reload). */
+  mockRun?: { test: TestId; ids: string[]; queue: string[]; answers: Record<string, number>; seenBefore: number; predicted: number; started: number };
   prefs: { textSize: 0 | 1 | 2; theme: 'system' | 'light' | 'dark'; reducedMotion: boolean };
   updatedAt: number;
 }
@@ -83,7 +89,7 @@ export const ATTEMPT_CAP = 2500;
 export function emptyState(now: number): AppState {
   return {
     schema: 1,
-    profile: { cls: null, airBrakesPassed: true, tests: ['GK', 'CV'], examDates: {}, minutesPerDay: 45, offDays: [], onboarded: false, createdAt: now },
+    profile: { cls: null, airBrakesPassed: false, tests: ['GK', 'CV'], examDates: {}, minutesPerDay: 45, offDays: [], onboarded: false, createdAt: now },
     cards: {}, bkt: {}, attempts: [], notebook: {}, lessons: {}, days: {}, mocks: [], stamps: {}, widgets: {},
     cursor: { route: 'today' }, prefs: { textSize: 0, theme: 'system', reducedMotion: false }, updatedAt: now,
   };

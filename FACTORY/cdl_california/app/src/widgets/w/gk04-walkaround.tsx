@@ -49,7 +49,7 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
       <div class="card flat stack">
         <strong>Tool: tread depth gauge</strong>
         <div class="row" role="group" aria-label="Which tire"><button class="btn sm" aria-pressed={front} style={front ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => setFront(true)}>Front tire</button><button class="btn sm" aria-pressed={!front} style={!front ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {}} onClick={() => setFront(false)}>Any other tire</button></div>
-        <div class="field"><label for="wk-tread">Tread in a major groove: <strong class="num">{tread}/32 inch</strong></label><input id="wk-tread" type="range" min={0} max={10} value={tread} onInput={(e) => setTread(+(e.target as HTMLInputElement).value)} /></div>
+        <div class="field"><label for="wk-tread">Tread in a major groove: <strong class="num">{tread}/32 inch</strong></label><input id="wk-tread" type="range" min={0} max={10} value={tread} aria-valuetext={`${tread}/32 inch`} onInput={(e) => setTread(+(e.target as HTMLInputElement).value)} /></div>
         <Tread v={tread} min={front ? 4 : 2} />
         <p class="small">Front tires need at least <strong>4/32 inch</strong> in every major groove (they steer, so they need the most grip); all other tires <strong>2/32 inch</strong>. <span class="plate">p. 2-2</span></p>
       </div>
@@ -87,7 +87,7 @@ export default function Walkaround({ onEvidence, onChallenge, concepts, reducedM
           <span class="small muted num">Item {i + 1} of {HUNT.length}</span>
           <strong>{h.text}</strong>
           {h.slider ? (<>
-            <div class="field"><label for="wk-hunt">Gauge setting: <strong class="num">{gauge}{h.slider.unit}</strong></label><input id="wk-hunt" type="range" min={h.slider.min} max={h.slider.max} value={gauge} disabled={!!pick} onInput={(e) => setGauge(+(e.target as HTMLInputElement).value)} /></div>
+            <div class="field"><label for="wk-hunt">Gauge setting: <strong class="num">{gauge}{h.slider.unit}</strong></label><input id="wk-hunt" type="range" min={h.slider.min} max={h.slider.max} value={gauge} aria-valuetext={`${gauge}/32 inch`} disabled={!!pick} onInput={(e) => setGauge(+(e.target as HTMLInputElement).value)} /></div>
             <Tread v={pick ? +pick : gauge} min={pick ? 4 : -1} verdict={pick ? (right ? '✓ ' + h.verdict : `✗ ${pick}/32 ≠ 4/32`) : ' '} />
             <div class="row"><button class="btn primary sm" disabled={!!pick} onClick={() => answer(String(gauge))}>Check this setting</button></div>
           </>) : (<>

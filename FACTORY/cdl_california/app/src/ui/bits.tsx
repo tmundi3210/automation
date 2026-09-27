@@ -8,9 +8,11 @@ export function Html({ html, class: cls, tag = 'div' }: { html: string; class?: 
   return <T class={cls} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
+const pageKey = (p: string) => { const [a, b] = p.split('-').map(Number); return a * 1000 + b; };
 export function Pages({ pages }: { pages: string[] }) {
   if (!pages.length) return null;
-  const txt = pages.length > 2 ? `${pages[0]} – ${pages[pages.length - 1]}` : pages.join(', ');
+  const sorted = [...new Set(pages)].sort((x, y) => pageKey(x) - pageKey(y));
+  const txt = sorted.length > 2 ? `${sorted[0]} – ${sorted[sorted.length - 1]}` : sorted.join(', ');
   return <span class="plate" title="Page in the CA Commercial Driver Handbook (DL 650)">p. {txt}</span>;
 }
 
