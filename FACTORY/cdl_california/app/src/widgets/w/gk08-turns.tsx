@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { WidgetMeta, WidgetProps } from '../registry';
-import { BUTTON, JUG, CAR, JUG_OPEN, JUG_HIT, startIdx, endIdx, leftTurn, type Frame, type P } from './gk08-turns.sim';
+import { BUTTON, JUG, CAR, JUG_OPEN, JUG_HIT, startIdx, endIdx, leftTurn, firstHit, type Box, type Frame, type P } from './gk08-turns.sim';
+
+/** Left-turn scene: a car turning beside you in the inside lane (on your left), or in the right-hand lane when you start from the inside. */
+const CAR_LEFT: Box = { x: 150, y: 160, w: 22, h: 40 };
+const CAR_RIGHT: Box = { x: 188, y: 130, w: 22, h: 40 };
 
 export const meta: WidgetMeta = {
   id: 'gk08-turns', title: 'Turning a rig: button hook vs jug handle', lesson: 'GK-08', anchor: /^space for turns$/i,
@@ -26,7 +30,7 @@ function Trace({ frames, i }: { frames: Frame[]; i: number }) {
   const s = frames.slice(0, i + 1);
   return (
     <g aria-hidden="true">
-      <polygon points={pts([...s.map((x) => x.f), ...s.map((x) => x.r).reverse()])} fill="var(--amber-soft)" stroke="none" opacity="0.8" />
+      <polygon points={pts([...s.map((x) => x.f), ...s.map((x) => x.r).reverse()])} fill="var(--amber)" stroke="none" opacity="0.28" />
       <polyline points={pts(s.map((x) => x.f))} fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 4" />
       <polyline points={pts(s.map((x) => x.r))} fill="none" stroke="var(--red)" stroke-width="3" />
     </g>
@@ -57,7 +61,7 @@ function RightScene({ k, p, label, choices, oncoming }: { k: Kind | null; p: num
     <svg viewBox="0 20 360 320" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '520px' }}>
       <RightRoads />
       {choices && ([['jug', 'A'], ['button', 'B']] as const).map(([c, l]) => {
-        const s = FR[c].slice(RANGE[c][0], endIdx(FR[c]));
+        const s = FR[c].slice(FR[c].findIndex((x) => x.f[1] <= 335), endIdx(FR[c]));
         const lp = s[Math.round(s.length * (c === 'jug' ? 0.12 : 0.62))].f;
         return <g key={c}><polyline points={pts(s.map((x) => x.f))} fill="none" stroke={c === 'jug' ? 'var(--blue)' : 'var(--ink)'} stroke-width="3" stroke-dasharray={c === 'jug' ? '2 5' : '8 4'} stroke-linecap="round" />
           <circle cx={lp[0] + (c === 'jug' ? -16 : 0)} cy={lp[1] - (c === 'jug' ? 0 : 16)} r="11" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5" />
@@ -76,7 +80,9 @@ type Lane = 'inside' | 'right';
 type Start = 'soon' | 'center';
 function LeftScene({ lane, start, label, choices }: { lane: Lane | null; start: Start | null; label: string; choices?: 'start' | 'lane' }) {
   const fr = lane && start ? leftTurn(lane, start) : null;
-  const show = fr ? fr.findIndex((x) => x.f[0] <= 70) : 0;
+  const car = lane === 'inside' ? CAR_RIGHT : CAR_LEFT;
+  const hit = fr ? firstHit(fr, car) : -1;
+  const show = fr ? (hit >= 0 ? hit : fr.findIndex((x) => x.f[0] <= 70)) : 0;
   return (
     <svg viewBox="0 20 360 320" width="100%" role="img" aria-label={label} style={{ display: 'block', maxWidth: '520px' }}>
       <g aria-hidden="true">
@@ -86,7 +92,6 @@ function LeftScene({ lane, start, label, choices }: { lane: Lane | null; start: 
         <path d="M100 206 V340 M180 206 V340 M0 80 H60 M0 160 H60 M220 80 H360 M220 160 H360" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="8 8" fill="none" />
         <line x1="140" y1="206" x2="220" y2="206" stroke="var(--ink-2)" stroke-width="3" />
         <text x="160" y="232" text-anchor="middle" font-size="20" fill="var(--ink-2)">↰</text><text x="200" y="232" text-anchor="middle" font-size="20" fill="var(--ink-2)">↰</text>
-        <circle cx="140" cy="120" r="5" fill="var(--accent)" stroke="var(--ink)" /><text x="148" y="140" font-size="12" fill="var(--ink)">center</text>
       </g>
       {choices === 'start' && ([['soon', 'A'], ['center', 'B']] as const).map(([s, l]) => {
         const f = leftTurn('right', s).map((x) => x.f).filter((q) => q[0] > 30 && q[1] < 330);
@@ -97,9 +102,10 @@ function LeftScene({ lane, start, label, choices }: { lane: Lane | null; start: 
       {choices === 'lane' && <g><Body a={[160, 250]} b={[160, 330]} w={18} fill="var(--surface)" /><Body a={[200, 250]} b={[200, 330]} w={18} fill="var(--surface)" />
         <text x="160" y="296" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">A</text><text x="200" y="296" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">B</text></g>}
       {fr && <Trace frames={fr} i={show} />}
-      {fr && lane === 'inside' && <><Car x={188} y={150} fill="var(--amber)" /><Crash x={196} y={150} /></>}
-      {fr && lane === 'right' && <Car x={149} y={214} />}
+      {fr && <Car {...car} fill={lane === 'inside' ? 'var(--amber)' : 'var(--blue)'} />}
       {fr && <Rig fr={fr[show]} />}
+      <g aria-hidden="true"><circle cx="140" cy="120" r="5" fill="var(--accent)" stroke="var(--ink)" /><text x="136" y="112" text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">center</text></g>
+      {hit >= 0 && <Crash x={car.x + 11} y={car.y + 10} />}
       {fr && <text x={lane === 'right' ? 232 : 110} y={start === 'soon' ? 220 : 130} font-size="16" font-weight="700" text-anchor={lane === 'right' ? 'start' : 'end'} fill={start === 'soon' ? 'var(--red)' : 'var(--ok)'}>{start === 'soon' ? '✗ too soon' : '✓'}</text>}
     </svg>
   );
@@ -109,7 +115,7 @@ const Legend = () => (
   <p class="small muted" aria-hidden="true">
     <span style={{ borderTop: '2px dashed var(--ink)', display: 'inline-block', width: '22px', verticalAlign: 'middle' }} /> front wheels ·{' '}
     <span style={{ borderTop: '3px solid var(--red)', display: 'inline-block', width: '22px', verticalAlign: 'middle' }} /> trailer rear wheels ·{' '}
-    <span style={{ background: 'var(--amber-soft)', display: 'inline-block', width: '14px', height: '12px', verticalAlign: 'middle' }} /> swept path
+    <span style={{ background: 'var(--amber)', opacity: 0.4, display: 'inline-block', width: '14px', height: '12px', verticalAlign: 'middle' }} /> swept path
   </p>
 );
 const seg = (on: boolean) => on ? { background: 'var(--accent)', color: 'var(--accent-ink)', borderColor: 'var(--accent)' } : {};
@@ -170,7 +176,7 @@ function Explore({ reducedMotion }: { reducedMotion: boolean }) {
           <button class="btn sm" aria-pressed={lane === 'right'} style={seg(lane === 'right')} onClick={() => setLane('right')}>Right-hand lane</button></div>
         <LeftScene lane={lane} start={start} label={`Left turn from the ${lane === 'right' ? 'right-hand' : 'inside'} lane, starting ${start === 'soon' ? 'at the stop line (too soon)' : 'at the center of the intersection'}.`} />
         <Legend />
-        <div class={`feedback ${start === 'center' ? 'good' : 'bad'}`} role="status"><p class="small">{start === 'center' ? '✓ Reach the center of the intersection before you turn.' : '✗ Turning too soon: off-tracking can make the left side of your vehicle hit another vehicle.'} <span class="plate">p. 2-20</span></p></div>
+        <div class={`feedback ${start === 'center' ? 'good' : 'bad'}`} role="status"><p class="small">{start === 'center' ? '✓ Reach the center of the intersection before you turn.' : '✗ Turning too soon: off-tracking makes the left side of your trailer cut in and hit the vehicle on your left.'} <span class="plate">p. 2-20</span></p></div>
         <div class={`feedback ${lane === 'right' ? 'good' : 'bad'}`} role="status"><p class="small">{lane === 'right' ? '✓ Right-hand lane: drivers on your left are easier to see.' : '✗ From the inside lane you may have to swing right to finish the turn — into the traffic in the other lane.'} <span class="plate">p. 2-21</span> <span class="plate">Fig. 2.14</span></p></div>
       </>}
     </div>

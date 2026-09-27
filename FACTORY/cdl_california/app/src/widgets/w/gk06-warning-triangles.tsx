@@ -115,12 +115,12 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
   const base = <rect width="360" height="200" fill="var(--accent-soft)" />;
   let body: JSX.Element;
   if (sc.id === 'div') body = (<g>
-    <rect y="8" width="360" height="18" fill="var(--accent-soft)" stroke="var(--ink-2)" stroke-dasharray="2 3" /><text x="180" y="21" text-anchor="middle" {...txt} font-size="12">Median</text>
+    <rect y="8" width="360" height="18" fill="var(--accent-soft)" stroke="var(--ink-2)" stroke-dasharray="2 3" /><text x="180" y="21" text-anchor="middle" {...txt} font-size="13">Median</text>
     <rect y="30" width="360" height="90" fill="var(--surface)" /><line x1="0" x2="360" y1="75" y2="75" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="10 8" />
     <rect y="120" width="360" height="26" fill="var(--surface-2)" /><line x1="0" x2="360" y1="120" y2="120" stroke="var(--ink-2)" stroke-width="2" />
     <Car x={40} y={52} dir={1} /><Car x={120} y={98} dir={1} /><text x="64" y="57" {...txt}>traffic →</text>
     <Truck x={240} y={123} w={60} flash={flash} rm={rm} />
-    <text x="8" y="190" {...txt} font-size="12">◄ distances behind the truck</text>
+    <text x="8" y="190" {...txt} font-size="13">◄ distances behind the truck</text>
   </g>);
   else if (sc.id === 'two') body = (<g>
     <rect y="20" width="360" height="20" fill="var(--surface-2)" /><rect y="40" width="360" height="90" fill="var(--surface)" /><rect y="130" width="360" height="24" fill="var(--surface-2)" />
@@ -129,7 +129,7 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
     <Car x={320} y={62} dir={-1} /><text x="296" y="67" text-anchor="end" {...txt}>← traffic</text>
     <Car x={30} y={108} dir={1} /><text x="54" y="113" {...txt}>traffic →</text>
     <Truck x={170} y={132} w={60} flash={flash} rm={rm} />
-    <text x="8" y="192" {...txt} font-size="12">◄ behind</text><text x="352" y="192" text-anchor="end" {...txt} font-size="12">ahead ►</text>
+    <text x="8" y="192" {...txt} font-size="13">◄ behind</text><text x="352" y="192" text-anchor="end" {...txt} font-size="13">ahead ►</text>
   </g>);
   else body = (<g>
     <path d="M85 8 h92 v66 h-92 z" fill="var(--ok)" opacity=".35" />
@@ -138,15 +138,15 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
     <path d="M40 -10 V50 C40 118 80 118 150 118 H370" fill="none" stroke="var(--surface)" stroke-width="70" />
     <path d="M40 -10 V50 C40 118 80 118 150 118 H370" fill="none" stroke="var(--amber)" stroke-width="3" stroke-dasharray="12 8" />
     <line x1="22" y1="4" x2="240" y2="150" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4 4" /><text x="92" y="46" font-size="18" font-weight="700" fill="var(--red)">✕</text>
-    <text x="186" y="30" {...txt} font-size="12">Trees hide the</text><text x="186" y="44" {...txt} font-size="12">truck until the bend</text>
-    <text x="292" y="98" text-anchor="end" {...txt} font-size="12">← traffic</text>
+    <text x="186" y="30" {...txt} font-size="13">Trees hide the</text><text x="186" y="44" {...txt} font-size="13">truck until the bend</text>
+    <text x="292" y="98" text-anchor="end" {...txt} font-size="13">← traffic</text>
     <text x="22" y="92" text-anchor="middle" font-size="16" font-weight="700" fill="var(--blue)">↓</text><text x="160" y="143" font-size="16" font-weight="700" fill="var(--blue)">→</text>
     <Truck x={240} y={146} w={56} flash={flash} rm={rm} />
   </g>);
   return (
     <svg viewBox="0 0 360 200" width="100%" role="img" aria-label={`${sc.name}, top view. Your truck is stopped at the roadside. ${sc.tag}. Marked spots show distances from the truck.`}>
       {base}{body}
-      {sc.slots.map((s) => <text x={s.lx ?? s.x} y={s.ly ?? (sc.id === 'div' ? 164 : 172)} text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">{s.label}</text>)}
+      {sc.slots.map((s) => <text x={s.lx ?? s.x} y={s.ly ?? (sc.id === 'div' ? 164 : 172)} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{s.label}</text>)}
     </svg>
   );
 }

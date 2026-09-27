@@ -9,7 +9,7 @@ export const meta: WidgetMeta = {
 
 type Cond = 'night' | 'fog' | 'winter' | 'heat';
 const COND: { id: Cond; label: string }[] = [{ id: 'night', label: 'Night' }, { id: 'fog', label: 'Fog' }, { id: 'winter', label: 'Winter' }, { id: 'heat', label: 'Hot weather' }];
-const T = { 'font-size': 12, fill: 'var(--ink)' } as const;
+const T = { 'font-size': 13, fill: 'var(--ink)' } as const;
 
 /** Handbook dimming rule (p. 2-31): dim within 500 ft of oncoming AND of a vehicle you follow. */
 export const mustDim = (distFt: number) => distFt <= 500;
@@ -29,8 +29,8 @@ export function NightVis({ kind, d, high }: { kind: 'oncoming' | 'following'; d:
       {high && <path d={`M ${px(350)} 72 L ${px(500)} 70 L ${px(500)} 116 L ${px(350)} 112 Z`} fill="var(--amber)" fill-opacity="0.2" />}
       <Truck x={10} y={80} />
       <line x1={px(500)} y1="24" x2={px(500)} y2="120" stroke="#e6ece7" stroke-width="1" stroke-dasharray="3 3" />
-      <text x={px(500)} y="136" text-anchor="middle" font-size="12" fill="#e6ece7">500 ft</text>
-      <line x1={px(250)} y1="24" x2={px(250)} y2="120" stroke="#e6ece7" stroke-width="0.8" stroke-dasharray="2 4" /><text x={px(250)} y="136" text-anchor="middle" font-size="12" fill="#e6ece7">250 ft</text><text x="8" y="16" font-size="12" fill="#e6ece7">{high ? 'High beams: see ≈ 350–500 ft' : 'Low beams: see ≈ 250 ft'}</text>
+      <text x={px(500)} y="136" text-anchor="middle" font-size="13" fill="#e6ece7">500 ft</text>
+      <line x1={px(250)} y1="24" x2={px(250)} y2="120" stroke="#e6ece7" stroke-width="0.8" stroke-dasharray="2 4" /><text x={px(250)} y="136" text-anchor="middle" font-size="13" fill="#e6ece7">250 ft</text><text x="8" y="16" font-size="13" fill="#e6ece7">{high ? 'High beams: see ≈ 350–500 ft' : 'Low beams: see ≈ 250 ft'}</text>
       <g><rect x={ox} y={oy} width="30" height="16" rx="3" fill="#cfd8d2" stroke="#101813" />
         {kind === 'oncoming' ? <><circle cx={ox} cy={oy + 3} r="2.5" fill="#fff" /><circle cx={ox} cy={oy + 13} r="2.5" fill="#fff" /></> : <><rect x={ox + 28} y={oy + 1} width="3" height="4" fill="var(--red)" /><rect x={ox + 28} y={oy + 11} width="3" height="4" fill="var(--red)" /></>}</g>
       {glare && <g><circle cx={ox + 8} cy={oy + 8} r="16" fill="var(--amber)" fill-opacity="0.6" /><text x={ox + 40} y={oy + 13} font-size="13" font-weight="700" fill="#f2c230">GLARE</text></g>}
@@ -47,7 +47,7 @@ export function FogVis({ high, flashers }: { high: boolean; flashers: boolean })
       <Truck x={8} y={86} />
       {flashers && <><circle cx="8" cy="88" r="4" fill="var(--amber)" /><circle cx="8" cy="102" r="4" fill="var(--amber)" /><circle cx="66" cy="88" r="3" fill="var(--amber)" /></>}
       {[0, 1, 2].map((i) => <ellipse cx={110 + i * 90} cy={40 + (i % 2) * 30} rx="80" ry="22" fill="var(--surface)" fill-opacity="0.75" />)}
-      {high && <><path d="M 130 80 L 72 90" stroke="var(--amber)" stroke-width="3" marker-end="url(#g10a)" /><text x="140" y="116" font-size="12" font-weight="700" fill="var(--red)">Light bounces back — glare</text></>}
+      {high && <><path d="M 130 80 L 72 90" stroke="var(--amber)" stroke-width="3" marker-end="url(#g10a)" /><text x="140" y="116" font-size="13" font-weight="700" fill="var(--red)">Light bounces back — glare</text></>}
       <text x="220" y="112" {...T}>{high ? '' : 'Reflectors show the curve'}</text>
       <defs><marker id="g10a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--amber)" /></marker></defs>
     </svg>

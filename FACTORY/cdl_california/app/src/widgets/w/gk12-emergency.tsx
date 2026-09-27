@@ -39,7 +39,7 @@ function Scene({ id, path, ok }: { id: SceneId; path?: string; ok?: boolean }) {
     skid: 'Your rear drive wheels have locked under braking; the rear is sliding out.',
   };
   return (
-    <svg viewBox="0 0 360 230" width="100%" role="img" aria-label={`Top view. ${desc[id]}${p ? ` Your path ends: ${p.tag}.` : ''}`}>
+    <svg viewBox="0 0 360 230" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Top view. ${desc[id]}${p ? ` Your path ends: ${p.tag}.` : ''}`}>
       <rect x="0" y="0" width="360" height="230" fill="var(--surface-2)" />
       <rect x="110" y="0" width="140" height="230" fill="var(--surface)" stroke="var(--ink-2)" />
       <rect x="250" y="0" width="50" height="230" fill="var(--amber-soft)" stroke="var(--ink-2)" />
@@ -48,7 +48,7 @@ function Scene({ id, path, ok }: { id: SceneId; path?: string; ok?: boolean }) {
       <text x="116" y="224" font-size="13" fill="var(--ink-2)">oncoming</text>
       <text x="304" y="224" font-size="13" fill="var(--ink-2)">off road</text>
       <text x="275" y="16" font-size="13" fill="var(--ink-2)" text-anchor="middle">shoulder</text>
-      {id === 'obstacle' && <g><rect x="200" y="46" width="30" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="176" y="40" font-size="13" fill="var(--ink)">stalled car</text></g>}
+      {id === 'obstacle' && <g><rect x="200" y="46" width="30" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="234" y="40" font-size="13" fill="var(--ink)" text-anchor="end">stalled car</text></g>}
       {id === 'oncoming' && <g><rect x="198" y="40" width="26" height="40" rx="6" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" /><path d="M200 38 L186 12" stroke="var(--red)" stroke-width="2" fill="none" /><text x="116" y="30" font-size="13" fill="var(--red)">drifted in ↓</text></g>}
       {id === 'abs' && <g><rect x="190" y="58" width="44" height="24" rx="5" fill="var(--amber)" stroke="var(--ink)" /><text x="238" y="54" font-size="13" fill="var(--ink)">pulls out</text></g>}
       {id === 'blowout' && <text x="150" y="176" font-size="15" font-weight="700" fill="var(--red)">BANG!</text>}

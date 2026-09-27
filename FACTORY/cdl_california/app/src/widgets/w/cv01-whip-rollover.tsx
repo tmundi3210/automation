@@ -59,7 +59,7 @@ function LaneChange({ rig, t }: { rig: Rig; t: number }) {
   const last = units.length - 1;
   const offRoad = units[last].ry < 36;
   return (
-    <svg viewBox="0 0 360 200" width="100%" role="img" aria-label={`Top view: ${rig.short} in a quick lane change. The sideways swing grows from the tractor to the last trailer, which swings ${rig.ra} times as much.`}>
+    <svg viewBox="0 0 360 200" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Top view: ${rig.short} in a quick lane change. The sideways swing grows from the tractor to the last trailer, which swings ${rig.ra} times as much.`}>
       <rect x="0" y="0" width="360" height="200" fill="var(--surface-2)" />
       <rect x="0" y="30" width="360" height="120" fill="var(--surface)" stroke="var(--line)" />
       <line x1="0" x2="360" y1="90" y2="90" stroke="var(--amber)" stroke-width="2" stroke-dasharray="14 10" />
@@ -89,7 +89,7 @@ function LaneChange({ rig, t }: { rig: Rig; t: number }) {
 
 function RankBars({ sel }: { sel: string }) {
   return (
-    <svg viewBox="0 0 360 96" width="100%" role="img" aria-label="Rearward amplification from Figure 6.1: tractor-semitrailer 1.0, conventional double 2.0, triples 3.5.">
+    <svg viewBox="0 0 360 96" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label="Rearward amplification from Figure 6.1: tractor-semitrailer 1.0, conventional double 2.0, triples 3.5.">
       {RIGS.map((r, i) => {
         const y = 6 + i * 30, w = (r.ra / 3.5) * 150;
         return (
@@ -113,7 +113,7 @@ function RollView({ l }: { l: Load }) {
   const cgY = !l.loaded ? 96 : l.high ? 58 : 108;
   const cgX = 180 + (l.loaded && l.side ? 22 : 0);
   return (
-    <svg viewBox="0 0 360 170" width="100%" role="img" aria-label={`Rear view of the trailer in a turn. Center of gravity ${l.loaded ? (l.high ? 'high' : 'low') : 'empty'}${l.side ? ', load to one side' : ''}. ${tip ? 'Wheels lifting: rollover.' : 'Trailer stays upright.'}`}>
+    <svg viewBox="0 0 360 170" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Rear view of the trailer in a turn. Center of gravity ${l.loaded ? (l.high ? 'high' : 'low') : 'empty'}${l.side ? ', load to one side' : ''}. ${tip ? 'Wheels lifting: rollover.' : 'Trailer stays upright.'}`}>
       <rect x="0" y="0" width="360" height="170" fill="var(--surface-2)" />
       <rect x="0" y="146" width="360" height="24" fill="var(--ink-2)" opacity=".35" />
       <text x="354" y="20" font-size="13" text-anchor="end" fill="var(--ink-2)">← turning this way</text>

@@ -18,7 +18,7 @@ function Scene({ a, mirror }: { a: number; mirror: boolean }) {
   const rx = hx - Math.sin(rad) * tl, ry = hy + Math.cos(rad) * tl;
   const label = s < 3 ? 'Trailer straight behind you' : s >= 45 ? 'Jackknife: rig folded into a V' : out ? 'Trailer has left your lane' : 'Trailer swinging out';
   return (
-    <svg viewBox="0 0 360 220" width="100%" role="img" aria-label={`${mirror ? 'Left mirror and top view' : 'Top view (mirror not checked)'}: ${label}.`}>
+    <svg viewBox="0 0 360 220" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`${mirror ? 'Left mirror and top view' : 'Top view (mirror not checked)'}: ${label}.`}>
       <rect x="0" y="0" width="360" height="220" fill="var(--surface-2)" />
       {/* mirror */}
       <g>

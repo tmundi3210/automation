@@ -31,7 +31,7 @@ function RoadView({ surf, on, footOff }: { surf: Surf; on: boolean; footOff: boo
     </g>
   );
   return (
-    <svg viewBox="0 0 360 190" width="100%" role="img" aria-label={`Side view on a ${surf} road. ${state}.`}>
+    <svg viewBox="0 0 360 190" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Side view on a ${surf} road. ${state}.`}>
       <rect x="0" y="0" width="360" height="190" fill="var(--surface-2)" />
       <rect x="0" y="143" width="360" height="47" fill={road} stroke="var(--ink)" stroke-width="1" />
       {surf === 'wet' && [30, 110, 190, 270, 330].map((x) => <ellipse cx={x} cy="160" rx="16" ry="3" fill="var(--surface)" opacity=".6" />)}
@@ -56,7 +56,7 @@ function HillView({ gear, when }: { gear: Gear | null; when: 'before' | 'during'
   const good = gear === 'lower' && when === 'before';
   const heat = gear === null ? 0 : good ? 0.25 : gear === 'lower' ? 0.5 : gear === 'same' ? 0.8 : 1;
   return (
-    <svg viewBox="0 0 360 180" width="100%" role="img" aria-label={`Hill profile. ${gear ? (good ? 'Lower gear chosen before the grade: speed held without hard braking.' : 'Hard braking needed: brakes heat up and can lose braking power.') : 'Choose a gear.'}`}>
+    <svg viewBox="0 0 360 180" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label={`Hill profile. ${gear ? (good ? 'Lower gear chosen before the grade: speed held without hard braking.' : 'Hard braking needed: brakes heat up and can lose braking power.') : 'Choose a gear.'}`}>
       <rect x="0" y="0" width="360" height="180" fill="var(--surface-2)" />
       <path d="M 0 150 L 120 60 L 170 60 L 360 150 L 360 180 L 0 180 Z" fill="var(--surface)" stroke="var(--ink)" stroke-width="2" />
       <text x="36" y="160" font-size="13" fill="var(--ink)">climb</text>
@@ -179,7 +179,7 @@ export default function RetardersGears(props: WidgetProps) {
           <div class="row" role="group" aria-label="Transmission"><button class="btn sm" aria-pressed={!auto} style={seg(!auto)} onClick={() => setAuto(false)}>Manual</button><button class="btn sm" aria-pressed={auto} style={seg(auto)} onClick={() => setAuto(true)}>Automatic</button></div>
           <p class="small">You climbed this hill in a low gear. The downgrade on the other side is just as long. {auto ? 'Which range do you select?' : 'Which gear do you pick for the way down?'}</p>
           <div class="stack" role="group" aria-label="Gear choice" style={{ gap: '8px' }}>
-            {(['higher', 'same', 'lower'] as Gear[]).map((g) => <button class="btn" aria-pressed={gear === g} style={{ justifyContent: 'flex-start', ...seg(gear === g) }} onClick={() => setGear(g)}>
+            {(['higher', 'same', 'lower'] as Gear[]).map((g) => <button class="btn" aria-pressed={gear === g} style={{ justifyContent: 'flex-start', textAlign: 'left', ...seg(gear === g) }} onClick={() => setGear(g)}>
               {auto ? { higher: 'A high range (let it upshift)', same: 'Leave it in drive — it will pick', lower: 'A low range, for engine braking' }[g] : { higher: 'A higher gear than the climbing gear', same: 'The same gear I climbed in', lower: 'Usually a lower gear than the climbing gear' }[g]}</button>)}
           </div>
           <div class="row" role="group" aria-label="When to shift"><button class="btn sm" aria-pressed={when === 'before'} style={seg(when === 'before')} onClick={() => setWhen('before')}>Shift before starting down</button><button class="btn sm" aria-pressed={when === 'during'} style={seg(when === 'during')} onClick={() => setWhen('during')}>Shift partway down</button></div>

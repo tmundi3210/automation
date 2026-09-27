@@ -8,7 +8,7 @@ export const meta: WidgetMeta = {
 };
 
 const P = ({ p }: { p: string }) => <span class="plate">p. {p}</span>;
-const T = { 'font-size': 12, fill: 'var(--ink)' } as const;
+const T = { 'font-size': 13, fill: 'var(--ink)' } as const;
 
 // ---- Part A: accident steps (p. 2-44) ----
 export const STEPS = [
@@ -85,7 +85,7 @@ export function FireVis({ size, station }: { size: number; station?: boolean }) 
       <rect x="40" y="44" width="150" height="46" rx="2" fill="var(--surface-2)" stroke="var(--ink)" /><rect x="192" y="54" width="40" height="36" rx="3" fill="var(--accent)" stroke="var(--ink)" />
       {[70, 170, 216].map((x) => <circle cx={x} cy="92" r="9" fill="var(--ink-2)" stroke="var(--ink)" />)}
       <g transform={`translate(212 54) scale(${f}) translate(-212 -54)`}><path d="M 200 54 C 196 38 206 32 206 20 C 214 30 222 30 218 12 C 232 26 230 42 224 54 Z" fill="var(--amber)" stroke="var(--red)" stroke-width="2" /></g>
-      {station && <><rect x="254" y="50" width="18" height="40" fill="var(--blue-soft)" stroke="var(--ink)" /><text x="263" y="44" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">FUEL</text></>}</g>
+      {station && <><rect x="254" y="50" width="18" height="40" fill="var(--blue-soft)" stroke="var(--ink)" /><text x="263" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">FUEL</text></>}</g>
       <text x="8" y="16" font-size="13" font-weight="700" fill={size === 0 ? 'var(--ok)' : 'var(--red)'}>{size === 0 ? '✓ Kept small' : `✗ Fire growing (${size} mistake${size > 1 ? 's' : ''})`}</text>
     </svg>
   );
@@ -93,14 +93,14 @@ export function FireVis({ size, station }: { size: number; station?: boolean }) 
 export function MatchVis({ fire, agent, ok }: { fire: Fire; agent: Agent; ok: boolean }) {
   const res = ok ? 'Fire out' : agent === 'water' ? (fire === 'elec' ? 'Shock!' : 'Flames spread') : 'Still burning';
   return (
-    <svg viewBox="0 0 240 64" width="100%" style={{ maxWidth: '360px' }} role="img" aria-label={`${AGENT_L[agent]} on ${FIRE_L[fire]}: ${res}.`}>
-      <rect x="0" y="0" width="240" height="64" fill="var(--surface)" />
+    <svg viewBox="0 0 300 64" width="100%" style={{ maxWidth: '420px' }} role="img" aria-label={`${AGENT_L[agent]} on ${FIRE_L[fire]}: ${res}.`}>
+      <rect x="0" y="0" width="300" height="64" fill="var(--surface)" />
       <rect x="14" y="16" width="16" height="36" rx="5" fill="var(--red)" stroke="var(--ink)" /><path d="M 30 22 L 52 18" stroke="var(--ink)" stroke-width="3" />
       <path d="M 56 20 Q 80 26 96 34" fill="none" stroke={agent === 'water' ? 'var(--blue)' : 'var(--ink-2)'} stroke-width="3" stroke-dasharray="3 3" />
       {!ok && agent === 'water' && fire !== 'elec' ? [0, 1, 2].map((i) => <path d={`M ${100 + i * 26} 56 C ${96 + i * 26} 44 ${108 + i * 26} 40 ${106 + i * 26} 28 C ${116 + i * 26} 40 ${120 + i * 26} 46 ${116 + i * 26} 56 Z`} fill="var(--amber)" stroke="var(--red)" />)
         : <path d={ok ? 'M 100 56 L 124 56 L 118 52 L 106 52 Z' : 'M 100 56 C 96 40 110 36 108 18 C 122 34 128 42 122 56 Z'} fill={ok ? 'var(--ink-2)' : 'var(--amber)'} stroke={ok ? 'var(--ink)' : 'var(--red)'} />}
       {!ok && agent === 'water' && fire === 'elec' && <path d="M 150 10 L 140 32 L 150 32 L 138 56" fill="none" stroke="var(--amber)" stroke-width="3" />}
-      <text x="236" y="38" text-anchor="end" font-size="13" font-weight="700" fill={ok ? 'var(--ok)' : 'var(--red)'}>{ok ? '✓ ' : '✗ '}{res}</text>
+      <text x="296" y="38" text-anchor="end" font-size="13" font-weight="700" fill={ok ? 'var(--ok)' : 'var(--red)'}>{ok ? '✓ ' : '✗ '}{res}</text>
     </svg>
   );
 }

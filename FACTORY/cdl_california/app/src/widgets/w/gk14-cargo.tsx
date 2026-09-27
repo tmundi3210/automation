@@ -8,7 +8,7 @@ export const meta: WidgetMeta = {
 };
 
 const P = ({ p }: { p: string }) => <span class="plate">p. {p}</span>;
-const T = { 'font-size': 12, fill: 'var(--ink)' } as const;
+const T = { 'font-size': 13, fill: 'var(--ink)' } as const;
 const fmt = (n: number) => n.toLocaleString('en-US');
 
 /** p. 3-3: at least 1 tie-down per 10 ft of cargo, never fewer than 2. A leftover part of 10 ft gets one more (lesson: “the safe choice”). */
@@ -42,10 +42,10 @@ export function TimelineVis({ brk, missFirst }: { brk: number | null; missFirst?
     <svg viewBox="0 0 360 96" width="100%" style={{ maxWidth: '560px' }} role="img" aria-label={`Trip timeline, 500 miles. Cargo checks at ${checks.join(', ')} miles${brk !== null ? ` and after the break at mile ${brk}` : ''}.${missFirst ? ' The 50-mile check is skipped: straps that loosened as the cargo settled are not caught.' : ''}`}>
       <rect x="0" y="0" width="360" height="96" fill="var(--surface)" />
       <line x1={X(0)} y1="50" x2={X(500)} y2="50" stroke="var(--ink-2)" stroke-width="4" stroke-linecap="round" />
-      {checks.map((m, i) => <g><circle cx={X(m)} cy="50" r="8" fill="var(--accent)" stroke="var(--ink)" /><text x={X(m)} y="54" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-ink)">✓</text>
+      {checks.map((m, i) => <g><circle cx={X(m)} cy="50" r="8" fill="var(--accent)" stroke="var(--ink)" /><text x={X(m)} y="54" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">✓</text>
         <text x={X(m)} y={i % 2 ? 80 : 30} text-anchor="middle" {...T}>{m === 0 ? 'Pre-trip' : m === 50 ? '≤ 50 mi' : `+150 mi`}</text></g>)}
-      {brk !== null && <g><rect x={X(brk) - 8} y="42" width="16" height="16" rx="3" fill="var(--blue)" stroke="var(--ink)" /><text x={X(brk)} y="54" text-anchor="middle" font-size="11" font-weight="700" fill="var(--surface)">B</text><text x={X(brk)} y="92" text-anchor="middle" {...T}>break → check</text></g>}
-      {missFirst && <g><circle cx={X(50)} cy="50" r="9" fill="var(--red)" /><text x={X(50)} y="55" text-anchor="middle" font-size="13" font-weight="700" fill="var(--surface)">!</text><text x={X(50)} y="30" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">loose strap missed</text></g>}
+      {brk !== null && <g><rect x={X(brk) - 8} y="42" width="16" height="16" rx="3" fill="var(--blue)" stroke="var(--ink)" /><text x={X(brk)} y="54" text-anchor="middle" font-size="12" font-weight="700" fill="var(--surface)">B</text><text x={X(brk)} y="92" text-anchor="middle" {...T}>break → check</text></g>}
+      {missFirst && <g><circle cx={X(50)} cy="50" r="9" fill="var(--red)" /><text x={X(50)} y="55" text-anchor="middle" font-size="13" font-weight="700" fill="var(--surface)">!</text><text x={X(50)} y="30" text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">loose strap missed</text></g>}
     </svg>
   );
 }
@@ -141,7 +141,7 @@ export default function Cargo({ onEvidence, onChallenge, concepts }: WidgetProps
   };
   return (
     <div class="stack">
-      <div class="tabs" role="tablist">{([['calc', 'Tie-downs'], ['time', 'Re-checks'], ['bridge', 'Bridge formula'], ['x', 'Challenge']] as const).map(([k, l]) => <button role="tab" aria-selected={tab === k} onClick={() => { setTab(k); if (k === 'x') reset(); }}>{l}</button>)}</div>
+      <div class="tabs" role="tablist">{([['calc', 'Straps'], ['time', 'Re-check'], ['bridge', 'Bridge'], ['x', 'Challenge']] as const).map(([k, l]) => <button role="tab" aria-selected={tab === k} onClick={() => { setTab(k); if (k === 'x') reset(); }}>{l}</button>)}</div>
       {tab === 'calc' && <Calc />}{tab === 'time' && <Schedule />}{tab === 'bridge' && <Bridge />}
       {tab === 'x' && (q ? (
         <div class="stack">

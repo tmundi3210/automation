@@ -22,7 +22,7 @@ export function tick(s: Sim): Sim {
 const start = (safe: number, gear: Gear): Sim => ({ t: 0, v: safe - 4, brake: false, heat: 0, gear, hist: [{ t: 0, v: safe - 4, b: false }] });
 
 function Chart({ s, safe }: { s: Sim; safe: number }) {
-  const W = 360, H = 190, L = 34, R = 350, T = 12, B = 150, span = 40;
+  const W = 360, H = 202, L = 34, R = 350, T = 12, B = 150, span = 40;
   const t0 = Math.max(0, s.t - span);
   const lo = safe - 15, hi = safe + 15;
   const X = (t: number) => L + ((t - t0) / span) * (R - L);
@@ -33,20 +33,20 @@ function Chart({ s, safe }: { s: Sim; safe: number }) {
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Speed over time. Safe speed ${safe} mph, 5 below is ${safe - 5} mph. Now ${s.v.toFixed(1)} mph at ${s.t} seconds, brakes ${s.brake ? 'on' : 'off'}.`}>
       <rect width={W} height={H} fill="var(--surface)" />
       <rect x={L} y={Y(safe)} width={R - L} height={Y(safe - 5) - Y(safe)} fill="var(--ok)" opacity=".14" />
-      {[lo, lo + 10, lo + 20, hi].map((v) => <g><line x1={L} x2={R} y1={Y(v)} y2={Y(v)} stroke="var(--line)" /><text x={L - 4} y={Y(v) + 4} text-anchor="end" font-size="11" fill="var(--ink-2)">{v}</text></g>)}
+      {[lo, lo + 10, lo + 20, hi].map((v) => <g><line x1={L} x2={R} y1={Y(v)} y2={Y(v)} stroke="var(--line)" /><text x={L - 4} y={Y(v) + 4} text-anchor="end" font-size="13" fill="var(--ink-2)">{v}</text></g>)}
       <line x1={L} x2={R} y1={Y(safe)} y2={Y(safe)} stroke="var(--amber)" stroke-width="2.5" stroke-dasharray="7 4" />
       <line x1={L} x2={R} y1={Y(safe - 5)} y2={Y(safe - 5)} stroke="var(--ok)" stroke-width="2.5" stroke-dasharray="3 3" />
-      <text x={R - 2} y={Y(safe) - 5} text-anchor="end" font-size="12" font-weight="700" fill="var(--ink)">safe {safe} mph — brake here</text>
-      <text x={R - 2} y={Y(safe - 5) + 15} text-anchor="end" font-size="12" font-weight="700" fill="var(--ink)">{safe - 5} mph — release</text>
+      <text x={R - 2} y={Y(safe) - 5} text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">safe {safe} mph — brake here</text>
+      <text x={R - 2} y={Y(safe - 5) + 15} text-anchor="end" font-size="13" font-weight="700" fill="var(--ink)">{safe - 5} mph — release</text>
       {pts.slice(1).map((p, i) => p.b && <rect x={X(pts[i].t)} y={B + 2} width={X(p.t) - X(pts[i].t)} height={8} fill="var(--red)" />)}
       <polyline points={pts.map((p) => `${X(p.t)},${Y(p.v)}`).join(' ')} fill="none" stroke="var(--blue)" stroke-width="3" stroke-linejoin="round" />
       <circle cx={X(s.t)} cy={Y(s.v)} r="5" fill={s.v > safe + 0.01 ? 'var(--red)' : 'var(--blue)'} stroke="var(--ink)" />
-      <text x={L} y={B + 22} font-size="11" fill="var(--ink-2)"><tspan fill="var(--red)" font-weight="700">■</tspan> brakes on · time →</text>
-      <text x={L} y={H - 6} font-size="12" font-weight="700" fill="var(--ink)">Brake heat</text>
+      <text x={L} y={B + 24} font-size="13" fill="var(--ink-2)"><tspan fill="var(--red)" font-weight="700">■</tspan> brakes on · time →</text>
+      <text x={L} y={H - 6} font-size="13" font-weight="700" fill="var(--ink)">Brake heat</text>
       <rect x={110} y={H - 17} width={150} height={12} rx={3} fill="var(--surface-2)" stroke="var(--ink-2)" />
       <rect x={110} y={H - 17} width={heatW} height={12} rx={3} fill={s.heat > 60 ? 'var(--red)' : 'var(--amber)'} />
       <line x1={110 + 75} x2={110 + 75} y1={H - 20} y2={H - 2} stroke="var(--ink)" stroke-width="1.5" />
-      <text x={266} y={H - 6} font-size="12" font-weight="700" fill={s.heat > 60 ? 'var(--red)' : 'var(--ink-2)'}>{s.heat > 60 ? 'FADING' : 'ok'}</text>
+      <text x={266} y={H - 6} font-size="13" font-weight="700" fill={s.heat > 60 ? 'var(--red)' : 'var(--ink-2)'}>{s.heat > 60 ? 'FADING' : 'ok'}</text>
     </svg>
   );
 }

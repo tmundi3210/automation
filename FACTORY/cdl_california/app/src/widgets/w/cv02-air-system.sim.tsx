@@ -80,7 +80,7 @@ function Valve({ x, y, open }: { x: number; y: number; open: boolean }) {
 const brakeText = (u: UnitOut, spring: boolean) => u.noBrakes ? 'NO BRAKES — wheels free' : u.emerg ? (spring ? 'Spring brakes ON' : 'Emergency brakes ON (tank air)') : u.service ? 'Service brakes APPLIED' : 'Brakes released';
 
 function UnitDraw({ y, u, s, o, idx, motion }: { y: number; u: UnitOut; s: AirState; o: AirOut; idx: number; motion: boolean }) {
-  const name = s.doubles ? (idx === 0 ? 'TRAILER 1' : 'CONVERTER DOLLY + TRAILER 2') : 'TRAILER';
+  const name = s.doubles ? (idx === 0 ? 'TRAILER 1' : 'DOLLY + TRAILER 2') : 'TRAILER';
   const bad = u.noBrakes, on = u.emerg || u.service;
   const isLast = idx === o.units.length - 1;
   return (
@@ -164,7 +164,7 @@ export function AirDiagram({ s, motion }: { s: AirState; motion: boolean }) {
 
       {s.emBreak && <T x="20" y="232" font-size="12.5" font-weight="700" fill="var(--red)">✕ red line broken</T>}
       {s.svcBreak && <T x="340" y="232" text-anchor="end" font-size="12.5" font-weight="700" fill="var(--blue)">✕ blue line apart{o.leakingSvc ? ' — air rushing out' : ''}</T>}
-      {s.crossed && <g><rect x="112" y="214" width="110" height="18" rx="4" fill="var(--surface)" stroke="var(--red)" /><T x="167" y="227" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--red)">✕ LINES CROSSED</T></g>}
+      {s.crossed && <g><rect x="107" y="216" width="120" height="19" rx="4" fill="var(--surface)" stroke="var(--red)" /><T x="167" y="230" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--red)">✕ LINES CROSSED</T></g>}
       {/* inside trailer: supply to tank, signal to relay */}
       <Line d={`M90 ${tY - 2} V${tY + 32}`} on={s.crossed ? u1.signal : u1.supply} color={s.crossed ? 'var(--blue)' : 'var(--red)'} motion={motion} />
       <Line d={`M244 ${tY - 2} V${tY + 36}`} on={s.crossed ? u1.supply || o.redT : u1.signal} color={s.crossed ? 'var(--red)' : 'var(--blue)'} motion={motion} />

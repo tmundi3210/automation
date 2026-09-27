@@ -72,6 +72,7 @@ const all: Omit<Content, 'version' | 'handbook' | 'counts' | 'handbookWay' | 'mo
   lessons: [], concepts: {}, numbers: {}, traps: {}, tyk: {}, flash: {}, items: {}, glossary: [],
 };
 const problems: string[] = [];
+const dropped: string[] = []; // enrichment items rejected by the gate (logged, excluded)
 
 function parseLesson(file: string, md: string) {
   md = md.replace(/\r/g, '').replace(/−/g, '-');
@@ -295,6 +296,8 @@ interface EnrichFile {
   distractorTags?: Record<string, (DistractorTag | null)[]>;
 }
 function mergeEnrichment() {
+  let rejected = new Set<string>();
+  try { rejected = new Set((JSON.parse(readFileSync(join(ENRICH, 'rejected.json'), 'utf8')) as { id: string }[]).map((r) => r.id)); } catch { /* none yet */ }
   let files: string[] = [];
   try { files = readdirSync(ENRICH).filter((f: string) => /^(GK|CV)-\d\d\.json$/.test(f)); } catch { return; }
   let seed = 11;
@@ -305,20 +308,21 @@ function mergeEnrichment() {
     const L = all.lessons.find((l) => l.id === lesson)!;
     for (const [iid, tags] of Object.entries(E.distractorTags ?? {})) {
       const it = all.items[iid];
-      if (!it) { problems.push(`enrich ${f}: unknown item ${iid}`); continue; }
-      if (tags.length !== it.options.length || tags[it.key] !== null || tags.some((t, k) => k !== it.key && !t)) { problems.push(`enrich ${f}: bad tags for ${iid}`); continue; }
+      if (!it) { dropped.push(`enrich ${f}: unknown item ${iid}`); continue; }
+      if (tags.length !== it.options.length || tags[it.key] !== null || tags.some((t, k) => k !== it.key && !t)) { dropped.push(`enrich ${f}: bad tags for ${iid}`); continue; }
       it.tags = tags;
     }
     for (const n of E.numberItems ?? []) {
       if (n.verified === false) continue;
       const nf = all.numbers[n.numberId];
-      if (!nf) { problems.push(`enrich ${f}: unknown number ${n.numberId}`); continue; }
+      if (!nf) { dropped.push(`enrich ${f}: unknown number ${n.numberId}`); continue; }
       const bad = n.options.length !== 3 || n.key < 0 || n.key > 2 || new Set(n.options.map(norm)).size !== 3 || n.tags.length !== 3 || n.tags[n.key] !== null;
-      if (bad) { problems.push(`enrich ${f}: malformed number item ${n.numberId}`); continue; }
+      if (bad) { dropped.push(`enrich ${f}: malformed number item ${n.numberId}`); continue; }
       const keyNums = (n.options[n.key].match(/\d[\d,./]*/g) || []).map((x) => x.replace(/,/g, ''));
       const factNums = (nf.value.match(/\d[\d,./]*/g) || []).map((x) => x.replace(/,/g, ''));
-      if (keyNums.length && !keyNums.every((x) => factNums.includes(x))) { problems.push(`enrich ${f}: key of ${n.numberId} not in fact value (${n.options[n.key]} vs ${nf.value})`); continue; }
+      if (keyNums.length && !keyNums.every((x) => factNums.includes(x))) { dropped.push(`enrich ${f}: key of ${n.numberId} not in fact value (${n.options[n.key]} vs ${nf.value})`); continue; }
       const id = `${lid(lesson)}-dn-${fnv(n.numberId + n.stem)}`;
+      if (rejected.has(id)) { dropped.push(`enrich ${f}: ${id} rejected by independent verifier`); continue; }
       all.items[id] = {
         id, lesson, test: L.test, origin: 'derived-number', stem: inline(n.stem), stemText: plain(n.stem), options: n.options.map(inline), optionsText: n.options.map(plain),
         key: n.key, explanation: inline(n.explanation), pages: nf.pages, polarity: /\b(NOT|EXCEPT)\b/.test(n.stem) ? 'neg' : 'pos', numeric: true, tags: n.tags,
@@ -375,5 +379,6 @@ const content: Content = { version: fnv(JSON.stringify(counts) + files.join()), 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(content));
 console.log(JSON.stringify(counts));
+if (dropped.length) console.warn(`ENRICHMENT DROPPED (${dropped.length}):\n` + dropped.join('\n'));
 if (problems.length) { console.error('PARSE PROBLEMS:\n' + problems.join('\n')); process.exit(1); }
 console.log(`OK → ${OUT} (${(JSON.stringify(content).length / 1024).toFixed(0)} KB)`);

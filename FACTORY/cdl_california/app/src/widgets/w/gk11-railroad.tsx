@@ -37,19 +37,19 @@ function Scene({ d, double, crossed, flash }: { d: number; double: boolean; cros
       <rect y="72" width="360" height="48" fill="var(--surface)" /><line x1="0" x2="360" y1="72" y2="72" stroke="var(--ink-2)" stroke-width="2" /><line x1="0" x2="360" y1="120" y2="120" stroke="var(--ink-2)" stroke-width="2" />
       <rect x={ftX(50)} y="72" width={35 * PX} height="48" fill="var(--ok)" opacity=".22" />
       <line x1={ftX(50)} x2={ftX(50)} y1="66" y2="126" stroke="var(--ok)" stroke-width="2" stroke-dasharray="4 3" /><line x1={ftX(15)} x2={ftX(15)} y1="66" y2="126" stroke="var(--ok)" stroke-width="2" stroke-dasharray="4 3" />
-      <text x={ftX(32.5)} y="62" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">stop zone</text>
-      <text x={ftX(50)} y="138" text-anchor="middle" font-size="12" fill="var(--ink)">50 ft</text><text x={ftX(15)} y="138" text-anchor="middle" font-size="12" fill="var(--ink)">15 ft</text>
+      <text x={ftX(32.5)} y="62" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">stop zone</text>
+      <text x={ftX(50)} y="138" text-anchor="middle" font-size="13" fill="var(--ink)">50 ft</text><text x={ftX(15)} y="138" text-anchor="middle" font-size="13" fill="var(--ink)">15 ft</text>
       {[...Array(12)].map((_, i) => <rect x={RAIL - 5} y={i * 15 - 2} width={22} height={5} fill="var(--ink-2)" opacity=".6" />)}
       {double && [...Array(12)].map((_, i) => <rect x={RAIL + 25} y={i * 15 - 2} width={22} height={5} fill="var(--ink-2)" opacity=".6" />)}
       {rails.map((x) => <line x1={x} x2={x} y1="0" y2="170" stroke="var(--ink)" stroke-width="2.5" />)}
-      <text x={RAIL - 4} y="165" text-anchor="end" font-size="12" fill="var(--ink)">nearest rail →</text>
+      <text x={RAIL - 4} y="165" text-anchor="end" font-size="13" fill="var(--ink)">nearest rail →</text>
       <g transform="translate(222 22)" aria-hidden="true">
         <line x1="0" y1="0" x2="0" y2="44" stroke="var(--ink)" stroke-width="2" />
         <line x1="-13" y1="-8" x2="13" y2="8" stroke="var(--ink)" stroke-width="7" /><line x1="-13" y1="-8" x2="13" y2="8" stroke="var(--surface)" stroke-width="4.5" />
         <line x1="-13" y1="8" x2="13" y2="-8" stroke="var(--ink)" stroke-width="7" /><line x1="-13" y1="8" x2="13" y2="-8" stroke="var(--surface)" stroke-width="4.5" />
-        {double && <g><rect x="-10" y="13" width="20" height="13" fill="var(--surface)" stroke="var(--ink)" /><text x="0" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">2</text></g>}
+        {double && <g><rect x="-10" y="12" width="20" height="15" fill="var(--surface)" stroke="var(--ink)" /><text x="0" y="24" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">2</text></g>}
       </g>
-      {crossed === 'stall' && <g><rect x={RAIL - 4} y="0" width={double ? 50 : 20} height="30" rx="3" fill="var(--red)" /><text x={RAIL + (double ? 52 : 22)} y="20" font-size="12" font-weight="700" fill="var(--red)">↓ train</text></g>}
+      {crossed === 'stall' && <g><rect x={RAIL - 4} y="0" width={double ? 50 : 20} height="30" rx="3" fill="var(--red)" /><text x={RAIL + (double ? 52 : 22)} y="20" font-size="13" font-weight="700" fill="var(--red)">↓ train</text></g>}
       <Truck front={front} stalled={crossed === 'stall'} />
       {flash && crossed === null && [[front - 64, 84], [front - 64, 108], [front, 85], [front, 107]].map(([x, y]) => <circle cx={x} cy={y} r="3.5" fill="var(--amber)" stroke="var(--ink)" stroke-width=".8" />)}
       {crossed === null && <text x={Math.max(34, front - 32)} y="150" text-anchor="middle" font-size="13" font-weight="700" fill={v.ok ? 'var(--ok)' : 'var(--red)'}>{v.ok ? '✓' : '✕'} {d} ft</text>}

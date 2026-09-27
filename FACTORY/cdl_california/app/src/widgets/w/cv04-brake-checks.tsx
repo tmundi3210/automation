@@ -165,6 +165,7 @@ function Challenge({ onEvidence, onChallenge, concepts }: WidgetProps) {
             {!ok && <p class="small"><strong>Consequence:</strong> you did “{T.steps[seq[firstBad]].text}” before “{T.steps[firstBad].text}” — {T.steps[firstBad].skip ?? ''} <span class="plate">p. 6-17</span></p>}
             <ol class="small" style={{ margin: 0, paddingLeft: '1.3em' }}>{T.steps.map((s) => <li>{s.text}</li>)}</ol>
             <p class="small">Pass result: {T.pass}</p>
+            <RigView r={rig(ok ? T.passRig : T.failRig)} motion={false} />
             <button class="btn primary sm" style={{ alignSelf: 'flex-start' }} onClick={next}>Next</button>
           </div>
         )}

@@ -58,7 +58,7 @@ export function Scene({ found, sel, plan, planOk }: { found: Set<string>; sel?: 
       <rect x="0" y="88" width="360" height="124" fill="var(--ink-2)" fill-opacity="0.28" />
       <rect x="248" y="0" width="40" height="88" fill="var(--ink-2)" fill-opacity="0.28" />
       <line x1="0" y1="150" x2="360" y2="150" stroke="var(--amber)" stroke-width="2" stroke-dasharray="10 6" />
-      <text x="8" y="60" font-size="12" fill="var(--ink-2)">Shops</text><text x="300" y="252" font-size="12" fill="var(--ink-2)">Houses</text>
+      <text x="8" y="60" font-size="13" fill="var(--ink-2)">Shops</text><text x="300" y="252" font-size="13" fill="var(--ink-2)">Houses</text>
       {/* empty parked car (decoy) */}
       <Car x={18} y={90} w={38} h={16} face="left" />
       {/* confused driver: luggage + backup lights (rear = right side, facing west) */}
@@ -78,7 +78,7 @@ export function Scene({ found, sel, plan, planOk }: { found: Set<string>; sel?: 
       {/* your truck */}
       <rect x="6" y="160" width="58" height="24" rx="2" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.2" />
       <rect x="66" y="162" width="18" height="20" rx="3" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.2" />
-      <text x="35" y="176" font-size="12" font-weight="700" text-anchor="middle" fill="var(--accent-ink)">YOU</text>
+      <text x="35" y="176" font-size="13" font-weight="700" text-anchor="middle" fill="var(--accent-ink)">YOU</text>
       {/* parked car with exhaust + brake lights + person */}
       <Car x={100} y={194} w={34} h={16} />
       <circle cx="110" cy="202" r="3" fill="var(--ink-2)" />
@@ -87,7 +87,7 @@ export function Scene({ found, sel, plan, planOk }: { found: Set<string>; sel?: 
       {/* rental truck: box, no rear windows */}
       <rect x="144" y="158" width="50" height="24" rx="2" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2" />
       <Car x={196} y={160} w={14} h={20} />
-      <text x="169" y="174" font-size="12" font-weight="700" text-anchor="middle" fill="var(--ink)">RENT</text>
+      <text x="169" y="174" font-size="13" font-weight="700" text-anchor="middle" fill="var(--ink)">RENT</text>
       {/* delivery van, door open, packages */}
       <Car x={222} y={192} w={40} h={18} />
       <rect x="232" y="210" width="12" height="6" fill="var(--surface)" stroke="var(--ink)" stroke-width="1" />

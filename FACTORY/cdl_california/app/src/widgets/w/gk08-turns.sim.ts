@@ -52,10 +52,10 @@ const TAIL_E: Seg = [[300, 170], [380, 170], [460, 170], [540, 170]];
 export const BUTTON = simulate(sample([[[120, 400], [120, 340], [120, 300], [120, 180]], [[120, 180], [120, 128], [180, 136], [210, 136]], [[210, 136], [250, 136], [260, 170], [300, 170]], TAIL_E]));
 export const JUG = simulate(sample([[[120, 400], [120, 360], [70, 350], [70, 310]], [[70, 310], [70, 230], [80, 140], [170, 144]], [[170, 144], [230, 170], [260, 170], [300, 170]], TAIL_E]));
 /** The car that slips into the gap on the right during the jug handle. */
-export const CAR: Box = { x: 111, y: 200, w: 22, h: 40 };
+export const CAR: Box = { x: 113, y: 218, w: 22, h: 40 };
 export const JUG_OPEN = JUG.findIndex((x) => x.f[1] < 200 && !bodyHits(x.h, x.r, CAR, 4));
 export const JUG_HIT = firstHit(JUG, CAR, JUG_OPEN + 1);
-export const startIdx = (fr: Frame[]) => fr.findIndex((x) => x.f[1] <= 330);
+export const startIdx = (fr: Frame[]) => fr.findIndex((x) => x.f[1] <= 250);
 export const endIdx = (fr: Frame[]) => fr.findIndex((x) => x.r[0] > 230);
 
 /** Left turn, north → west, on a wider road: NB inside lane x 140–180, right-hand lane x 180–220; WB lanes y 40–120. */
