@@ -42,7 +42,7 @@ function Controls({ s, set }: { s: AirState; set: (p: Partial<AirState>) => void
   return (
     <div class="stack">
       <div class="row" role="group" aria-label="Cab controls">
-        <button class="btn sm" style={{ borderColor: 'var(--red)' }} onClick={() => set({ knobIn: !s.knobIn })}>⯃ {s.knobIn ? 'Pull knob out' : 'Push knob in'}</button>
+        <button class="btn sm" style={{ borderColor: 'var(--red)' }} onClick={() => set({ knobIn: !s.knobIn })}>{s.knobIn ? 'Pull knob out' : 'Push knob in'}</button>
         {tb('Press brake pedal', 'pedal', 'Foot brake: works every brake on the rig')}
         {tb('Trailer hand valve', 'hand', 'Trolley valve / Johnson bar: trailer brakes only')}
       </div>

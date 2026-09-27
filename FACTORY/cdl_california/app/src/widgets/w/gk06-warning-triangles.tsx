@@ -23,7 +23,7 @@ const SCENES: Scene[] = [
     id: 'div', name: 'Divided or one-way highway', tag: 'Traffic comes from behind only', page: '2-14', fig: 'Figure 2.8',
     slots: [
       { id: 'b200', x: 48, y: 133, label: '200 ft' }, { id: 'b150', x: 94, y: 133, label: '150 ft' }, { id: 'b100', x: 140, y: 133, label: '100 ft' },
-      { id: 'b50', x: 186, y: 133, label: '50 ft' }, { id: 'b10', x: 226, y: 133, label: '10 ft' }, { id: 'a100', x: 334, y: 133, label: '100 ft ahead' },
+      { id: 'b50', x: 186, y: 133, label: '50 ft' }, { id: 'b10', x: 226, y: 133, label: '10 ft' }, { id: 'a100', x: 330, y: 133, label: '100 ft ahead', lx: 318 },
     ],
     need: [
       { ids: ['b10'], ok: '10 ft behind — marks where your truck is.', missing: 'Nothing at 10 ft behind: the triangle closest to the truck is missing.' },
@@ -59,7 +59,7 @@ const SCENES: Scene[] = [
   {
     id: 'curve', name: 'Curve hides the truck', tag: 'Drivers cannot see you within 500 ft', page: '2-15', fig: 'Figure 2.10',
     slots: [
-      { id: 'bc', x: 22, y: 26, label: '≈400 ft', ly: 52 }, { id: 'b100', x: 176, y: 150, label: '100 ft', ly: 180 },
+      { id: 'bc', x: 22, y: 26, label: '≈400 ft', ly: 54, lx: 38 }, { id: 'b100', x: 176, y: 150, label: '100 ft', ly: 180 },
       { id: 'r10', x: 226, y: 156, label: '10 ft', ly: 182 }, { id: 'f10', x: 310, y: 156, label: '10 ft', ly: 182 }, { id: 'a100', x: 346, y: 156, label: '100 ft', ly: 196, lx: 340 },
     ],
     need: [
@@ -120,6 +120,7 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
     <rect y="120" width="360" height="26" fill="var(--surface-2)" /><line x1="0" x2="360" y1="120" y2="120" stroke="var(--ink-2)" stroke-width="2" />
     <Car x={40} y={52} dir={1} /><Car x={120} y={98} dir={1} /><text x="64" y="57" {...txt}>traffic →</text>
     <Truck x={240} y={123} w={60} flash={flash} rm={rm} />
+    <text x="8" y="190" {...txt} font-size="12">◄ distances behind the truck</text>
   </g>);
   else if (sc.id === 'two') body = (<g>
     <rect y="20" width="360" height="20" fill="var(--surface-2)" /><rect y="40" width="360" height="90" fill="var(--surface)" /><rect y="130" width="360" height="24" fill="var(--surface-2)" />
@@ -128,6 +129,7 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
     <Car x={320} y={62} dir={-1} /><text x="296" y="67" text-anchor="end" {...txt}>← traffic</text>
     <Car x={30} y={108} dir={1} /><text x="54" y="113" {...txt}>traffic →</text>
     <Truck x={170} y={132} w={60} flash={flash} rm={rm} />
+    <text x="8" y="192" {...txt} font-size="12">◄ behind</text><text x="352" y="192" text-anchor="end" {...txt} font-size="12">ahead ►</text>
   </g>);
   else body = (<g>
     <path d="M85 8 h92 v66 h-92 z" fill="var(--ok)" opacity=".35" />
@@ -138,6 +140,7 @@ function SceneSvg({ sc, flash, rm }: { sc: Scene; flash: boolean; rm: boolean })
     <line x1="22" y1="4" x2="240" y2="150" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4 4" /><text x="92" y="46" font-size="18" font-weight="700" fill="var(--red)">✕</text>
     <text x="186" y="30" {...txt} font-size="12">Trees hide the</text><text x="186" y="44" {...txt} font-size="12">truck until the bend</text>
     <text x="292" y="98" text-anchor="end" {...txt} font-size="12">← traffic</text>
+    <text x="22" y="92" text-anchor="middle" font-size="16" font-weight="700" fill="var(--blue)">↓</text><text x="160" y="143" font-size="16" font-weight="700" fill="var(--blue)">→</text>
     <Truck x={240} y={146} w={56} flash={flash} rm={rm} />
   </g>);
   return (
@@ -168,7 +171,7 @@ function Road({ sc, placed, setPlaced, sel, setSel, flash, rm, locked, result, s
         <SceneSvg sc={sc} flash={flash} rm={rm} />
         <svg viewBox="0 0 360 200" width="100%" aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
           {ans.map((id) => { const s = sc.slots.find((x) => x.id === id)!; return <circle cx={s.x} cy={s.y} r={15} fill="none" stroke="var(--ok)" stroke-width="3" stroke-dasharray="4 3" />; })}
-          {placed.map((id) => { if (!id) return null; const s = sc.slots.find((x) => x.id === id)!; const bad = result?.items.find((i) => i.slot === id && !i.ok); return <g><T x={s.x} y={s.y} bad={!!bad} />{result && <text x={s.x + 10} y={s.y - 8} font-size="14" font-weight="700" fill={bad ? 'var(--red)' : 'var(--ok)'}>{bad ? '✕' : '✓'}</text>}</g>; })}
+          {placed.map((id) => { if (!id) return null; const s = sc.slots.find((x) => x.id === id)!; const bad = result?.items.find((i) => i.slot === id && !i.ok); return <g><T x={s.x} y={s.y} bad={!!bad} />{result && <text x={Math.min(s.x + 10, 346)} y={s.y - 8} font-size="14" font-weight="700" fill={bad ? 'var(--red)' : 'var(--ok)'}>{bad ? '✕' : '✓'}</text>}</g>; })}
         </svg>
         {sc.slots.map((s) => {
           const who = placed.indexOf(s.id);
