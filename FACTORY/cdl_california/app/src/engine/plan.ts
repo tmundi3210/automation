@@ -4,6 +4,7 @@ import type { AppState } from './model';
 import { addDays, dayKey, daysBetween, dayKeyToDate } from './model';
 import { dueSurfaces, kuIndex, lessonDone, nextLesson, openRows, type Surface } from './learner';
 import { mulberry32 } from './readiness';
+import { TESTS, isWritten } from '../content/tests';
 
 export const REVIEW_MIN_PER_CARD = 0.35; // ~20 s
 
@@ -17,8 +18,9 @@ export interface Plan { days: PlanDay[]; feasibility: 'go' | 'tight' | 'no-go' |
 export function buildPlan(state: AppState, c: Content, now: number): Plan {
   const tests = state.profile.tests;
   const today = dayKey(now);
-  const dates = tests.map((t) => state.profile.examDates[t]).filter(Boolean) as string[];
-  const remaining = c.lessons.filter((l) => tests.includes(l.test) && !lessonDone(state, l.id));
+  const dates = tests.filter(isWritten).map((t) => state.profile.examDates[t]).filter(Boolean) as string[];
+  // skills lessons come after the permit, so they are not part of the knowledge-test countdown
+  const remaining = c.lessons.filter((l) => tests.includes(l.test) && isWritten(l.test) && !lessonDone(state, l.id));
   const budget = state.profile.minutesPerDay;
   const dueNow = Object.values(state.cards).filter((x) => x.due <= now + 86400_000).length;
   if (!dates.length) {
@@ -61,8 +63,9 @@ export function buildPlan(state: AppState, c: Content, now: number): Plan {
       }
     }
     const left = daysBetween(d, exam);
-    if (!off && (left === 1 || left === 2)) { pd.mock = tests[left % tests.length]; pd.finalReview = true; }
-    if (!off && total >= 5 && daysBetween(today, d) === Math.round(total * 0.6)) pd.mock = tests[0];
+    const wr = tests.filter(isWritten);
+    if (!off && wr.length && (left === 1 || left === 2)) { pd.mock = wr[left % wr.length]; pd.finalReview = true; }
+    if (!off && wr.length && total >= 5 && daysBetween(today, d) === Math.round(total * 0.6)) pd.mock = wr[0];
     if (d === exam) { pd.reviewMin = 10; pd.lessons = []; pd.lessonMin = 0; }
     days.push(pd);
   }
@@ -127,7 +130,7 @@ export function activeDaysLast30(state: AppState, now: number): number {
 
 // ---------- mock exam builder: test-shaped, stratified by lesson, unseen items first
 export function buildMock(state: AppState, c: Content, test: TestId, seed: number): string[] {
-  const n = test === 'GK' ? 50 : 20;
+  const n = TESTS[test].n ?? 20;
   const items = Object.values(c.items).filter((i) => i.test === test && (i.origin === 'pack' || i.heldOut));
   const seen = new Set(state.attempts.map((a) => a.id));
   const byLesson = new Map<string, string[]>();

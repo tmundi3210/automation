@@ -1,3 +1,4 @@
+import { TESTS, testsFor } from '../../src/content/tests';
 import { describe, it, expect } from 'vitest';
 import content from '../../src/content/content.json';
 import type { Content } from '../../src/content/types';
@@ -14,13 +15,30 @@ const T0 = new Date(2026, 8, 28, 10).getTime();
 const DAY = 86400_000;
 
 describe('content golden counts', () => {
-  it('matches START-HERE totals', () => {
-    expect(C.counts.practice).toBe(338);
-    expect(C.counts.flashcards).toBe(657);
-    expect(C.counts.tyk).toBe(98);
-    expect(C.counts.numbers).toBe(486);
-    expect(C.counts.traps).toBe(264);
-    expect(C.lessons.length).toBe(18);
+  it('matches START-HERE totals (the 18 GK/CV lessons)', () => {
+    const core = (l: string) => /^(GK|CV)-/.test(l);
+    const packItems = Object.values(C.items).filter((i) => i.origin === 'pack' && core(i.lesson));
+    expect(packItems.length).toBe(338);
+    expect(Object.values(C.flash).filter((x) => core(x.lesson)).length).toBe(657);
+    expect(Object.values(C.tyk).filter((x) => core(x.lesson)).length).toBe(98);
+    expect(Object.values(C.numbers).filter((x) => core(x.lesson)).length).toBe(486);
+    expect(Object.values(C.traps).filter((x) => core(x.lesson)).length).toBe(264);
+    expect(C.lessons.filter((l) => core(l.id)).length).toBe(18);
+  });
+  it('every added pack lesson has enough material and a known test', () => {
+    for (const l of C.lessons.filter((x) => !/^(GK|CV)-/.test(x.id))) {
+      expect(TESTS[l.test]).toBeTruthy();
+      expect(l.id.slice(0, 2)).toBe(l.test);
+      expect(l.itemIds.length).toBeGreaterThanOrEqual(12);
+      expect(l.flashIds.length).toBeGreaterThanOrEqual(15);
+    }
+  });
+  it('tests follow class + endorsement choices', () => {
+    expect(testsFor({ cls: 'A', airBrakesPassed: true, skills: false })).toEqual(['GK', 'CV']);
+    expect(testsFor({ cls: 'A', airBrakesPassed: false })).toEqual(['GK', 'CV', 'AB', 'SK']);
+    expect(testsFor({ cls: 'B', airBrakesPassed: false, noAirBrakes: true, endorsements: ['S'], skills: false })).toEqual(['GK', 'PV', 'SB']);
+    expect(testsFor({ cls: 'C', airBrakesPassed: false, noAirBrakes: true, endorsements: ['H', 'N'] })).toEqual(['GK', 'TK', 'HM', 'SK']);
+    expect(testsFor({ cls: 'A', airBrakesPassed: true, endorsements: ['T'], skills: false })).toEqual(['GK', 'CV', 'DT']);
   });
   it('every pack item has 3 options, a key and a page', () => {
     for (const it of Object.values(C.items).filter((i) => i.origin === 'pack')) {

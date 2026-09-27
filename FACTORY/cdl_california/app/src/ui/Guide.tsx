@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { C, go, S } from '../app';
 import { Html, Shield } from './bits';
+import { ENDOS, TESTS } from '../content/tests';
 
 const VERIFIED = 'September 2026';
 
@@ -10,12 +11,14 @@ export function GuideScreen() {
   const steps: { t: string; d: string; lesson?: string }[] = [
     { t: 'Get a DOT medical exam', d: 'A certified medical examiner gives you a Medical Examination Report and a Medical Examiner’s Certificate. Bring both to the DMV; both must be dated within the last 2 years.', lesson: 'GK-01' },
     { t: 'Apply at the DMV and pass the knowledge tests', d: `Everyone takes General Knowledge (50 questions, pass 40).${cls === 'A' ? ' Class A also takes Combination Vehicles (20 questions, pass 16), and Air Brakes (25 questions, pass 20) if the truck has air brakes.' : ' Take Air Brakes (25 questions, pass 20) if your vehicle has air brakes.'} You get 3 tries per test on one application. (Question counts are the DMV test format; the handbook does not print them, so confirm when you book.)`, lesson: 'GK-01' },
-    ...(s.profile.airBrakesPassed ? [] : [{ t: 'Study Air Brakes (not taught in this app yet)', d: `${cls === 'A' ? 'Most Class A trucks have air brakes.' : 'Take this test if the vehicle you will drive or test in has air brakes.'} If you skip or fail the Air Brakes knowledge test you get restriction L (no air-brake CMV); testing in a vehicle with air-over-hydraulic brakes gives Z. Study Section 5 of the California Commercial Driver Handbook (DL 650).${cls === 'A' ? ' The Combination lessons here assume you know spring brakes, the air pressure gauge and the compressor from Section 5.' : ''}`, lesson: 'GK-01' }]),
-    ...(cls === 'A' ? [] : [{ t: 'Add the endorsement tests your vehicle needs (not taught here yet)', d: cls === 'C' ? 'A Class C CDL covers a smaller vehicle carrying placarded HazMat, so you need the H endorsement (knowledge test plus a TSA background check). A passenger vehicle built for 10 or more people including the driver needs P (knowledge and skills tests in a passenger vehicle); tank vehicles need N; tanks with placarded HazMat need X.' : 'Buses built for 10 or more people including the driver need P; school buses need S (Class A or B only); tank vehicles need N; placarded HazMat needs H (TSA background check). Each has its own knowledge test; P and S also need skills tests.', lesson: 'GK-01' }]),
+    ...(s.profile.airBrakesPassed ? [] : s.profile.noAirBrakes ? [{ t: 'Skipping Air Brakes', d: 'If you skip or fail the Air Brakes knowledge test your license gets restriction L (no air-brake CMV); testing in a vehicle with air-over-hydraulic brakes gives Z. The Air Brakes lessons stay open if you change your mind.', lesson: 'AB-01' }]
+      : [{ t: `Study Air Brakes (${TESTS.AB.n} questions, pass ${TESTS.AB.pass})`, d: `${cls === 'A' ? 'Most Class A trucks have air brakes, and the Combination lessons build on it.' : 'Take this test if the vehicle you will drive or test in has air brakes.'} Without it you get restriction L (no air-brake CMV).`, lesson: 'AB-01' }]),
+    ...ENDOS.filter((x) => s.profile.tests.includes(x.test)).map((x) => ({ t: `${TESTS[x.test].name} endorsement (${x.e})`, d: `${TESTS[x.test].blurb} Knowledge test: ${TESTS[x.test].n} questions, pass ${TESTS[x.test].pass}.${x.e === 'H' ? ' You also need a TSA background check and must be 21 or older.' : ''}${x.e === 'P' || x.e === 'S' ? ' Also needs a skills test in that kind of vehicle.' : ''}`, lesson: C.lessons.find((l) => l.test === x.test)?.id })),
+    ...(cls === 'C' && !(s.profile.endorsements ?? []).some((e) => e === 'H' || e === 'P' || e === 'N') ? [{ t: 'Pick your endorsement', d: 'A Class C CDL is for a smaller vehicle that needs an endorsement: placarded HazMat (H), passengers (P) or a tank (N). Add it in Settings to get its lessons.' }] : []),
     { t: 'Get your commercial learner’s permit (CLP)', d: 'Once you pass the knowledge tests you get a CLP (you need a regular Class C license first). It lasts 180 days, and a CDL holder must ride along whenever you drive.', lesson: 'GK-01' },
     { t: 'Wait at least 14 days', d: 'You must hold the CLP for at least 14 days before the skills test.', lesson: 'GK-01' },
     { t: 'Finish entry-level driver training (ELDT)', d: 'Federal rules require training from a school listed on the FMCSA Training Provider Registry before a first Class A or B skills test. This app is study help, not an ELDT provider.' },
-    { t: 'Pass the skills tests', d: 'Vehicle inspection, basic control (backing), and the road test, in the kind of vehicle you want to drive. Skills tests are given in English.', lesson: 'GK-01' },
+    { t: 'Pass the skills tests', d: 'Vehicle inspection, basic control (backing), and the road test, in the kind of vehicle you want to drive. Skills tests are given in English.', lesson: 'SK-01' },
   ];
   return (
     <div class="page">
@@ -23,7 +26,7 @@ export function GuideScreen() {
         <p class="muted">{cls ? `Your path for a Class ${cls} license in California.` : 'Pick your license class in Settings to tailor this page.'}</p></header>
       <section class="card stack" aria-label="Steps">
         <ol class="stack" style={{ margin: 0, paddingLeft: '1.2em' }}>
-          {steps.map((x) => <li><strong>{x.t}</strong><br /><span class="small">{x.d}</span>{x.lesson && <> <button class="linkbtn small" onClick={() => go('lesson', x.lesson)}>Details in {x.lesson}</button></>}</li>)}
+          {steps.map((x) => <li><strong>{x.t}</strong><br /><span class="small">{x.d}</span>{x.lesson && C.lessons.some((l) => l.id === x.lesson) && <> <button class="linkbtn small" onClick={() => go('lesson', x.lesson)}>Details in {x.lesson}</button></>}</li>)}
         </ol>
         <p class="small muted">Rules and fees change. Check the current steps and book appointments with the DMV at <a href="https://www.dmv.ca.gov" target="_blank" rel="noopener noreferrer">dmv.ca.gov</a> or 1-800-777-0133 (checked {VERIFIED}). Find a registered ELDT school at <a href="https://tpr.fmcsa.dot.gov" target="_blank" rel="noopener noreferrer">tpr.fmcsa.dot.gov</a>. Knowledge-test languages are changing under federal English-proficiency rules, so confirm the language when you book.</p>
       </section>

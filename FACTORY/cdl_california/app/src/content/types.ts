@@ -1,5 +1,5 @@
 // Content model shared by the build-time parser and the app.
-export type TestId = 'GK' | 'CV';
+export type TestId = 'GK' | 'CV' | 'AB' | 'DT' | 'TK' | 'PV' | 'SB' | 'HM' | 'SK';
 
 export interface Lesson {
   id: string;            // "GK-07"

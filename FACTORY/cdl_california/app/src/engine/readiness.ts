@@ -5,10 +5,9 @@ import type { Content, TestId } from '../content/types';
 import type { AppState } from './model';
 import { retrievability, BKT } from './srs';
 
-export const TEST_FORMAT: Record<TestId, { n: number; pass: number; name: string }> = {
-  GK: { n: 50, pass: 40, name: 'General Knowledge' },
-  CV: { n: 20, pass: 16, name: 'Combination Vehicles' },
-};
+import { TESTS } from '../content/tests';
+/** Written-test format (skills lessons have none: callers check isWritten first). */
+export const TEST_FORMAT = Object.fromEntries(Object.values(TESTS).map((t) => [t.id, { n: t.n ?? 0, pass: t.pass ?? 0, name: t.name }])) as Record<TestId, { n: number; pass: number; name: string }>;
 
 export function mulberry32(seed: number) {
   return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };

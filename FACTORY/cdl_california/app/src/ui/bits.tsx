@@ -17,7 +17,9 @@ export function Pages({ pages }: { pages: string[] }) {
 }
 
 export function Shield({ id, done }: { id: string; done?: boolean }) {
-  return <span class={`shield ${id.startsWith('CV') ? 'cv' : ''} ${done ? 'done' : ''}`} aria-label={`Lesson ${id}`}>{id}</span>;
+  const k = id.slice(0, 2);
+  const tone = ['CV', 'AB', 'DT', 'TK'].includes(k) ? 'cv' : ['PV', 'SB', 'HM'].includes(k) ? 'en' : k === 'SK' ? 'sk' : '';
+  return <span class={`shield ${tone} ${done ? 'done' : ''}`} aria-label={`Lesson ${id}`}>{id}</span>;
 }
 
 export function Ring({ p, label }: { p: number; label?: string }) {

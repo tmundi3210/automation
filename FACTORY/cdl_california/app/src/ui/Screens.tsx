@@ -9,11 +9,12 @@ import { startTest } from './Lesson';
 import type { TestId } from '../content/types';
 import { WIDGETS } from '../widgets/registry';
 import { planToIcs } from '../engine/ics';
+import { TESTS, TEST_ORDER, isWritten } from '../content/tests';
 
 const inArtifact = () => !!(globalThis as unknown as { claude?: unknown }).claude;
 function downloadIcs(text: string) { try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar' })); a.download = 'cdl-study-plan.ics'; document.body.appendChild(a); a.click(); a.remove(); } catch { /* */ } }
 
-const TNAME: Record<TestId, string> = { GK: 'General Knowledge', CV: 'Combination Vehicles' };
+const TNAME = (t: TestId) => TESTS[t].name;
 
 function lessonMastery(id: string) {
   const s = S(); const L = C.lessons.find((l) => l.id === id)!;
@@ -58,7 +59,7 @@ export function TodayScreen() {
         <p class="small muted">Each box fills as you study (5% steps). A tick means that day's plan is done. Rest days never break anything.</p>
       </section>
       <div class="grid2">
-        {s.profile.tests.map((tid) => <ReadinessCard test={tid} />)}
+        {s.profile.tests.filter(isWritten).map((tid) => <ReadinessCard test={tid} />)}
       </div>
       <section class="card stack" aria-label="Today's list">
         <h3>Today's list</h3>
@@ -103,7 +104,7 @@ export function ReadinessCard({ test }: { test: TestId }) {
       <span class="eyebrow">{f.name} · {f.n} questions, pass {f.pass}</span>
       <div class="spread"><span class={`band ${r.band}`} style={{ fontSize: '1.3rem', fontFamily: 'var(--display)' }}>{!S().attempts.some((a) => C.items[a.id]?.test === test) ? 'Not started' : label}</span>{S().attempts.some((a) => C.items[a.id]?.test === test) && <span class="num small muted">est. {pctRange(r.low, r.high)} chance to pass</span>}</div>
       <Bar p={r.studiedShare} label="Share of test topics studied" />
-      <p class="small muted">{r.studiedShare < 0.1 ? 'Study a few lessons and the app will estimate your chance of passing. ' : ''}Based on {Math.round(r.studiedShare * 100)}% of the {test === 'GK' ? 270 : 68} practice questions studied and {S().mocks.filter((m) => m.test === test).length} mock test{S().mocks.filter((m) => m.test === test).length === 1 ? '' : 's'}.{r.strongReady ? ' Strong ready: last two mock tests at 90%+.' : ' This is an estimate; mock tests make it more accurate.'}</p>
+      <p class="small muted">{r.studiedShare < 0.1 ? 'Study a few lessons and the app will estimate your chance of passing. ' : ''}Based on {Math.round(r.studiedShare * 100)}% of the {C.lessons.filter((l) => l.test === test).reduce((a, l) => a + l.itemIds.length, 0)} practice questions studied and {S().mocks.filter((m) => m.test === test).length} mock test{S().mocks.filter((m) => m.test === test).length === 1 ? '' : 's'}.{r.strongReady ? ' Strong ready: last two mock tests at 90%+.' : ' This is an estimate; mock tests make it more accurate.'}</p>
     </section>
   );
 }
@@ -119,19 +120,21 @@ function examAt(test: TestId) {
 // ------------------------------------------------------------------ Path
 export function PathScreen() {
   const s = S();
-  const groups: TestId[] = ['GK', 'CV'];
+  const mine = TEST_ORDER.filter((t) => s.profile.tests.includes(t));
+  const other = TEST_ORDER.filter((t) => !s.profile.tests.includes(t) && C.lessons.some((l) => l.test === t));
   return (
     <div class="page">
       <header class="stack" style={{ gap: '6px' }}><span class="eyebrow">Your route</span><h1>Lessons</h1>
-        <p class="muted">Go in order: GK-01 to GK-14, then CV-01 to CV-04. Each lesson follows the handbook pages it names.</p></header>
-      {groups.map((g) => {
+        <p class="muted">Go in order, top to bottom: General Knowledge first, then each test your license needs. Each lesson follows the handbook pages it names.</p></header>
+      {[...mine, ...other].map((g, gi) => {
         const inPath = s.profile.tests.includes(g);
         const ls = C.lessons.filter((l) => l.test === g);
         const done = ls.filter((l) => lessonDone(s, l.id)).length;
         return (
-          <section class="card stack" aria-label={TNAME[g]}>
-            <div class="spread"><h2>{TNAME[g]}</h2><span class="small muted num">{done}/{ls.length} done</span></div>
-            {!inPath && <p class="small card warn">Your class ({s.profile.cls ?? 'not set'}) does not need this test. You can still study it.</p>}
+          <>{gi === mine.length && <h2 style={{ marginTop: '8px' }}>Other tests you can study</h2>}<section class="card stack" aria-label={TNAME(g)}>
+            <div class="spread"><h2>{TNAME(g)}</h2><span class="small muted num">{done}/{ls.length} done</span></div>
+            <p class="small muted">{TESTS[g].blurb} {TESTS[g].n ? `${TESTS[g].n} questions, pass ${TESTS[g].pass}.` : 'Driving tests; no written test.'} Handbook section {TESTS[g].sections}.</p>
+            {!inPath && <p class="small card warn">Not in your plan. You can still study it, or add it in Settings.</p>}
             <div class="list">
               {ls.map((l) => {
                 const lp = s.lessons[l.id];
@@ -145,7 +148,7 @@ export function PathScreen() {
                 );
               })}
             </div>
-          </section>
+          </section></>
         );
       })}
     </div>
@@ -176,16 +179,16 @@ export function PracticeScreen() {
         <h2>Mock tests</h2>
         <p>Like the DMV touchscreen test: 3 choices, you see right away if you are wrong, you can skip and come back, and there is no time limit. Pass mark is 80%.</p>
         <div class="grid2">
-          {(['GK', 'CV'] as TestId[]).map((tid) => {
+          {[...TEST_ORDER.filter((t) => isWritten(t) && s.profile.tests.includes(t)), ...TEST_ORDER.filter((t) => isWritten(t) && !s.profile.tests.includes(t) && C.lessons.some((l) => l.test === t))].map((tid) => {
             const f = TEST_FORMAT[tid];
             const last = s.mocks.filter((m) => m.test === tid).slice(-1)[0];
             return (
               <div class="card flat stack">
                 <strong>{f.name}</strong>
-                <span class="small muted">{f.n} questions · pass {f.pass}{!s.profile.tests.includes(tid) ? ' · not needed for your class' : ''}</span>
+                <span class="small muted">{f.n} questions · pass {f.pass}{!s.profile.tests.includes(tid) ? ' · not in your plan' : ''}</span>
                 {last && <span class="small">Last: <strong class="num">{last.score}/{last.total}</strong> {last.pass ? '(pass)' : '(not yet)'}</span>}
-                {s.mockRun?.test === tid ? <button class="btn primary" onClick={() => go('mock', tid)}>Resume {tid} mock ({s.mockRun.ids.length - s.mockRun.queue.length}/{s.mockRun.ids.length})</button>
-                  : <button class="btn primary" onClick={() => go('mock', tid)}>Start {tid} mock</button>}
+                {s.mockRun?.test === tid ? <button class="btn primary" onClick={() => go('mock', tid)}>Resume {TESTS[tid].short} mock ({s.mockRun.ids.length - s.mockRun.queue.length}/{s.mockRun.ids.length})</button>
+                  : <button class="btn primary" onClick={() => go('mock', tid)}>Start {TESTS[tid].short} mock</button>}
               </div>
             );
           })}
@@ -269,7 +272,7 @@ export function ProgressScreen() {
         <div class="card stat"><span class="eyebrow">Days active, last 30</span><span class="v">{activeDaysLast30(s, t)}</span></div>
         <div class="card stat"><span class="eyebrow">Questions answered</span><span class="v">{s.attempts.length}</span></div>
       </div>
-      <div class="grid2">{s.profile.tests.map((tid) => <ReadinessCard test={tid} />)}</div>
+      <div class="grid2">{s.profile.tests.filter(isWritten).map((tid) => <ReadinessCard test={tid} />)}</div>
       <section class="card stack" aria-label="Month">
         <h3>{new Date(t).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h3>
         <Calendar start={monthStart} days={dim} examDay={plan.examDay} nowT={t} />

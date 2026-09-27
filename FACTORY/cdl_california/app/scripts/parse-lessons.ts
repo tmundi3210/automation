@@ -9,6 +9,10 @@ import type { Content, Lesson, Concept, NumberFact, Trap, Tyk, Flashcard, Item, 
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = join(HERE, '../../source/lessons');
+// Added packs (Air Brakes, endorsements, skills) written from DL 650 in the same lesson grammar; the user's lessons above stay verbatim.
+const PACKS = join(HERE, '../../source/packs');
+/** LESSON_ONLY=AB-01 parses one lesson, prints its counts and problems, and writes nothing (authoring check). */
+const ONLY = process.env.LESSON_ONLY || '';
 const OUT = join(HERE, '../src/content/content.json');
 const ENRICH = join(HERE, '../../enrich');
 
@@ -76,7 +80,7 @@ const dropped: string[] = []; // enrichment items rejected by the gate (logged, 
 
 function parseLesson(file: string, md: string) {
   md = md.replace(/\r/g, '').replace(/−/g, '-');
-  const h1 = md.match(/^# ((GK|CV)-(\d\d)) · (.+)$/m);
+  const h1 = md.match(/^# ((GK|CV|AB|DT|TK|PV|HM|SB|SK)-(\d\d)) · (.+)$/m);
   if (!h1) throw new Error(`${file}: no H1`);
   const id = h1[1];
   const test = h1[2] as TestId;
@@ -287,7 +291,9 @@ function parseLesson(file: string, md: string) {
   // ---- golden check
   const g = GOLDEN[id];
   const got: [number, number, number, number, number] = [L.itemIds.length, L.flashIds.length, L.tykIds.length, L.numberIds.length, L.trapIds.length];
-  if (!g || g.join() !== got.join()) problems.push(`${id}: golden ${g} != parsed ${got} [practice,flash,tyk,numbers,traps]`);
+  if (ONLY) console.log(`${id}: [practice,flash,tyk,numbers,traps] = ${got.join(',')} · concepts ${L.conceptIds.length} · ${L.conceptIds.map((c) => `${c}=${all.concepts[c].title}`).join(' | ')}`);
+  else if (id.startsWith('GK') || id.startsWith('CV')) { if (!g || g.join() !== got.join()) problems.push(`${id}: golden ${g} != parsed ${got} [practice,flash,tyk,numbers,traps]`); }
+  else if (L.itemIds.length < 12 || L.flashIds.length < 15 || L.trapIds.length < 5 || L.numberIds.length < 8) problems.push(`${id}: pack lesson too thin ${got}`);
   all.lessons.push(L);
 }
 
@@ -347,6 +353,7 @@ function mergeSummaries() {
   try { files = readdirSync(join(ENRICH, 'summaries')).filter((f) => f.endsWith('.json')); } catch { return; }
   let n = 0;
   for (const f of files) {
+    if (ONLY && !f.startsWith(ONLY)) continue;
     const S = JSON.parse(readFileSync(join(ENRICH, 'summaries', f), 'utf8')) as Record<string, string[]>;
     for (const [cid, bullets] of Object.entries(S)) {
       const c = all.concepts[cid];
@@ -391,10 +398,11 @@ function mergeEnrichment() {
   let rejected = new Set<string>();
   try { rejected = new Set((JSON.parse(readFileSync(join(ENRICH, 'rejected.json'), 'utf8')) as { id: string }[]).map((r) => r.id)); } catch { /* none yet */ }
   let files: string[] = [];
-  try { files = readdirSync(ENRICH).filter((f: string) => /^(GK|CV)-\d\d\.json$/.test(f)); } catch { return; }
+  try { files = readdirSync(ENRICH).filter((f: string) => /^(GK|CV|AB|DT|TK|PV|HM|SB|SK)-\d\d\.json$/.test(f)); } catch { return; }
   let seed = 11;
   const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
   for (const f of files.sort()) {
+    if (ONLY && !f.startsWith(ONLY)) continue;
     const lesson = f.replace('.json', '');
     const E = JSON.parse(readFileSync(join(ENRICH, f), 'utf8')) as EnrichFile;
     const L = all.lessons.find((l) => l.id === lesson)!;
@@ -437,7 +445,7 @@ function positionSafe(it: Item) {
 // ---------- per-option "why this is wrong" notes (enrich/notes/<LESSON>.json)
 function mergeNotes() {
   let files: string[] = [];
-  try { files = readdirSync(join(ENRICH, 'notes')).filter((f: string) => /^(GK|CV)-\d\d\.json$/.test(f)); } catch { return; }
+  try { files = readdirSync(join(ENRICH, 'notes')).filter((f: string) => /^(GK|CV|AB|DT|TK|PV|HM|SB|SK)-\d\d\.json$/.test(f)); } catch { return; }
   for (const f of files) {
     const N = JSON.parse(readFileSync(join(ENRICH, 'notes', f), 'utf8')) as Record<string, (string | null)[]>;
     for (const [iid, notes] of Object.entries(N)) {
@@ -467,10 +475,15 @@ function parseStartHere(md: string) {
 }
 
 // ---------- main
-const files = readdirSync(SRC).filter((f: string) => /^(GK|CV)-\d\d.*\.md$/.test(f)).sort((a: string, b: string) => (a.startsWith('GK') === b.startsWith('GK') ? a.localeCompare(b) : a.startsWith('GK') ? -1 : 1));
+const ORDER = ['GK', 'CV', 'AB', 'DT', 'TK', 'PV', 'SB', 'HM', 'SK'];
+const rank = (f: string) => ORDER.indexOf(f.slice(0, 2)) * 100 + +f.slice(3, 5);
+let packFiles: string[] = [];
+try { packFiles = readdirSync(PACKS).filter((f: string) => /^(AB|DT|TK|PV|HM|SB|SK)-\d\d.*\.md$/.test(f)); } catch { /* no packs yet */ }
+const srcOf = new Map<string, string>([...readdirSync(SRC).filter((f: string) => /^(GK|CV)-\d\d.*\.md$/.test(f)).map((f: string) => [f, SRC] as [string, string]), ...packFiles.map((f) => [f, PACKS] as [string, string])]);
+const files = [...srcOf.keys()].filter((f) => !ONLY || f.startsWith(ONLY)).sort((a, b) => rank(a) - rank(b));
 // Source lessons are written for one learner who passed Air Brakes; neutralize that for everyone (lessons stay verbatim on disk).
 const TEXT_FIX: [string, string][] = [['Tip: you passed Air Brakes.', 'Tip, if you have passed Air Brakes:']];
-for (const f of files) { let md = readFileSync(join(SRC, f), 'utf8'); for (const [a, b] of TEXT_FIX) md = md.split(a).join(b); parseLesson(f, md); }
+for (const f of files) { let md = readFileSync(join(srcOf.get(f)!, f), 'utf8'); for (const [a, b] of TEXT_FIX) md = md.split(a).join(b); parseLesson(f, md); }
 mergeSummaries();
 mapConcepts();
 mapFacts();
@@ -509,8 +522,15 @@ const counts = {
   derivedNumber: derivedNumbers, derivedTrap: Object.keys(all.traps).length, heldOut: Object.values(all.items).filter((i) => i.heldOut).length,
   glossary: all.glossary.length, handbookWay: sh.handbookWay.length, mostMissed: sh.mostMissed.length,
 };
+// golden totals apply to the user's 18 GK/CV lessons only
+const core = (id: string) => /^(GK|CV)/.test(id);
+const coreCounts: Record<string, number> = {
+  lessons: all.lessons.filter((l) => core(l.id)).length, practice: pack.filter((i) => core(i.lesson)).length, options: pack.filter((i) => core(i.lesson)).reduce((s, i) => s + i.options.length, 0),
+  flashcards: Object.values(all.flash).filter((x) => core(x.lesson)).length, tyk: Object.values(all.tyk).filter((x) => core(x.lesson)).length,
+  numbers: Object.values(all.numbers).filter((x) => core(x.lesson)).length, traps: Object.values(all.traps).filter((x) => core(x.lesson)).length,
+};
 const expect: Record<string, number> = { lessons: 18, practice: 338, options: 1014, flashcards: 657, tyk: 98, numbers: 486, traps: 264 };
-for (const [k, v] of Object.entries(expect)) if ((counts as Record<string, number>)[k] !== v) problems.push(`TOTAL ${k}: expected ${v}, got ${(counts as Record<string, number>)[k]}`);
+if (!ONLY) for (const [k, v] of Object.entries(expect)) if (coreCounts[k] !== v) problems.push(`TOTAL ${k}: expected ${v}, got ${coreCounts[k]}`);
 if (sh.handbookWay.length !== 9) problems.push(`handbookWay rows ${sh.handbookWay.length} != 9`);
 if (sh.mostMissed.length !== 50) problems.push(`mostMissed ${sh.mostMissed.length} != 50`);
 
@@ -548,6 +568,7 @@ function linkGlossary() {
 }
 linkGlossary();
 
+if (ONLY) { if (problems.length) { console.error('PARSE PROBLEMS:\n' + problems.join('\n')); process.exit(1); } console.log('LESSON OK (nothing written)'); process.exit(0); }
 const content: Content = { version: fnv(JSON.stringify(counts) + files.join()), handbook: 'DL 650 California Commercial Driver Handbook (R12-2019)', ...all, ...sh, counts };
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(content));

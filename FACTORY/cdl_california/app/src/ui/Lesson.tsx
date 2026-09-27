@@ -1,3 +1,4 @@
+import { TESTS } from '../content/tests';
 import { useEffect, useState } from 'preact/hooks';
 import { C, go, lessonById, mutate, now, S, startSession, say } from '../app';
 import { recordCheck } from '../engine/learner';
@@ -27,7 +28,7 @@ export function LessonScreen({ id, focus }: { id: string; focus?: string }) {
     <div class="page">
       <Back onClick={() => go('path')} label="All lessons" />
       <header class="stack" style={{ gap: '10px' }}>
-        <div class="row"><Shield id={L.id} done={!!lp?.completed} /><span class="eyebrow">{L.test === 'GK' ? 'General Knowledge' : 'Combination Vehicles'} · {L.weight === 'High' ? 'High exam weight' : 'Medium exam weight'} · ~{L.minutes} min</span></div>
+        <div class="row"><Shield id={L.id} done={!!lp?.completed} /><span class="eyebrow">{TESTS[L.test].name} · {L.weight === 'High' ? 'High exam weight' : 'Medium exam weight'} · ~{L.minutes} min</span></div>
         <h1>{L.title}</h1>
         <div class="row small muted"><span>Handbook {L.handbook}</span><Pages pages={[L.pages[0], L.pages[1]]} /></div>
         <div class="row">

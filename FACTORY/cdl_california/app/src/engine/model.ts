@@ -1,5 +1,6 @@
 // Learner state model. Persisted (see store/). Keep JSON-plain.
 import type { TestId } from '../content/types';
+import { testsFor, type Endo } from '../content/tests';
 
 export type Cls = 'A' | 'B' | 'C';
 export type Cause = 'T' | 'M' | 'W' | 'N' | 'E4' | 'U';
@@ -27,6 +28,11 @@ export const GUESS_RATE: Record<EvidenceClass, number> = { mcq: 1 / 3, tf: 0.5, 
 export interface Profile {
   cls: Cls | null;
   airBrakesPassed: boolean;
+  /** vehicle has no air brakes → skip the Air Brakes test (license gets an L restriction) */
+  noAirBrakes?: boolean;
+  endorsements?: Endo[];
+  /** include the skills-test lessons (default on) */
+  skills?: boolean;
   tests: TestId[];
   examDates: Partial<Record<TestId, string>>; // yyyy-mm-dd
   minutesPerDay: number;
@@ -95,9 +101,9 @@ export function emptyState(now: number): AppState {
   };
 }
 
-export function testsForClass(cls: Cls | null): TestId[] {
-  if (cls === 'A') return ['GK', 'CV'];
-  return ['GK'];
+/** Tests for a class, keeping the learner's other choices (air brakes, endorsements, skills). */
+export function testsForClass(cls: Cls | null, p?: Partial<Profile>): TestId[] {
+  return testsFor({ cls, airBrakesPassed: p?.airBrakesPassed ?? false, noAirBrakes: p?.noAirBrakes, endorsements: p?.endorsements, skills: p?.skills });
 }
 
 /** Local-time day key with 03:00 rollover (late-night study counts for the previous day). */
