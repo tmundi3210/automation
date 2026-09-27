@@ -187,8 +187,8 @@ export function PracticeScreen() {
                 <strong>{f.name}</strong>
                 <span class="small muted">{f.n} questions · pass {f.pass}{!s.profile.tests.includes(tid) ? ' · not in your plan' : ''}</span>
                 {last && <span class="small">Last: <strong class="num">{last.score}/{last.total}</strong> {last.pass ? '(pass)' : '(not yet)'}</span>}
-                {s.mockRun?.test === tid ? <button class="btn primary" onClick={() => go('mock', tid)}>Resume {TESTS[tid].short} mock ({s.mockRun.ids.length - s.mockRun.queue.length}/{s.mockRun.ids.length})</button>
-                  : <button class="btn primary" onClick={() => go('mock', tid)}>Start {TESTS[tid].short} mock</button>}
+                {s.mockRun?.test === tid ? <button class="btn primary" onClick={() => go('mock', tid)}>Resume {TESTS[tid].name} mock ({s.mockRun.ids.length - s.mockRun.queue.length}/{s.mockRun.ids.length})</button>
+                  : <button class="btn primary" onClick={() => go('mock', tid)}>Start {TESTS[tid].name} mock</button>}
               </div>
             );
           })}

@@ -79,7 +79,7 @@ test('spaced review comes due after days pass; calendar fills', async ({ page })
 test('DMV-style mock: 50 questions, skip returns at end, result recorded', async ({ page }) => {
   await onboard(page);
   await page.goto(URL + '#practice');
-  await page.getByRole('button', { name: 'Start GK mock' }).click();
+  await page.getByRole('button', { name: 'Start General Knowledge mock' }).click();
   await page.getByRole('button', { name: 'Begin' }).click();
   await page.getByRole('button', { name: 'Skip for now' }).click();
   for (let i = 0; i < 50; i++) {
@@ -134,12 +134,12 @@ test('unfinished practice test resumes after reload', async ({ page }) => {
 test('unfinished mock resumes after reload', async ({ page }) => {
   await onboard(page);
   await page.goto(URL + '#practice');
-  await page.getByRole('button', { name: 'Start GK mock' }).click();
+  await page.getByRole('button', { name: 'Start General Knowledge mock' }).click();
   await page.getByRole('button', { name: 'Begin' }).click();
   for (let i = 0; i < 3; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: /Next question/ }).click(); }
   await page.reload();
   await page.goto(URL + '#practice');
-  await page.getByRole('button', { name: /Resume GK mock \(3\/50\)/ }).click();
+  await page.getByRole('button', { name: /Resume General Knowledge mock \(3\/50\)/ }).click();
   await expect(page.getByText(/^4$/).first()).toBeVisible();
 });
 
@@ -152,7 +152,7 @@ test('reopening the app (no URL hash) returns to an unfinished practice test and
   await page.goto('about:blank'); await page.goto(URL);
   await expect(page.getByText('3 of 15')).toBeVisible();
   await page.goto(URL + '#practice');
-  await page.getByRole('button', { name: 'Start GK mock' }).click();
+  await page.getByRole('button', { name: 'Start General Knowledge mock' }).click();
   await page.getByRole('button', { name: 'Begin' }).click();
   for (let i = 0; i < 2; i++) { await page.locator('.opt').first().click(); await page.getByRole('button', { name: /Next question/ }).click(); }
   await page.reload();
@@ -164,7 +164,7 @@ test('reopening the app (no URL hash) returns to an unfinished practice test and
 test('mock: an answer survives a reload before Next and is recorded once', async ({ page }) => {
   await onboard(page);
   await page.goto(URL + '#practice');
-  await page.getByRole('button', { name: 'Start GK mock' }).click();
+  await page.getByRole('button', { name: 'Start General Knowledge mock' }).click();
   await page.getByRole('button', { name: 'Begin' }).click();
   await page.locator('.opt').first().click();
   const n1 = await page.evaluate(() => JSON.parse(localStorage.getItem('cdlws.state.v1') || '{}').attempts?.length);

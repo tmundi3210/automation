@@ -43,7 +43,7 @@ You must **pass this test first**. If you fail it, the other two tests (basic co
 - A vehicle whose parts are **marked or labeled** (for example, stickers naming each part) **cannot be used** for the test. *Why:* you must know the parts yourself. (p. 11-1)
 - The **brake lights, emergency flashers, turn signals and horn** must be checked. If any of them **do not work**, the skills and road tests are **postponed**. (p. 11-1)
 - You may use the handbook's **inspection guide** (the memory aid page), but you **may not write notes** or instructions on it. (p. 11-1)
-- You get a **total of 3 attempts** to pass the vehicle inspection, basic control skills and road tests. (p. 11-1)
+- You get **3 tries in all** to pass the three skills tests (vehicle inspection, basic control skills and road test). (p. 11-1)
 - *Why do it the same way every time:* a fixed order helps you learn every step and makes you less likely to skip one under test pressure. (p. 11-1)
 
 ### 11.2.1 Walking up and the engine compartment (pp. 11-1–11-2)
@@ -92,12 +92,13 @@ These are where people fail. **Several mistakes here fail the whole inspection.*
 - **Parking brake check:** fasten your **seat belt**. With air at governor cut-out and the parking brake on (trailer brakes **released** on a combination), **gently** try to pull forward — the parking brake should hold. On a combination, also set only the **trailer parking brake** and gently pull against it. (p. 11-4)
 - **Hydraulic brake check:** **pump the pedal 3 times, then hold it down for 5 seconds.** The pedal should **not sink** during those 5 seconds. If there is a **reserve (backup) system**, turn the key off, press the pedal and **listen for the reserve pump motor**. Make sure the warning buzzer or light is **off**. **Not doing both parts of the hydraulic check is an automatic failure** of the inspection. (p. 11-4)
 - **Hydro-Boost check** (if equipped): engine off, parking brake released, press and release the pedal several times to use up the pressure. Hold the pedal with **light pressure (15–25 pounds)** and start the engine at idle. If it works, the pedal **gives a little and then holds**, and it takes less force to hold it. (p. 11-4)
-- **Air brake check** (air brakes only): do the checks marked with an **asterisk (*)** in Section 5. You must **do each one AND say the numbers**. Doing them wrong = **automatic failure of the entire vehicle inspection**. (p. 11-4) The asterisk checks are (pp. 5-8–5-9):
+- **Air brake check** (air brakes only): do the checks marked with an **asterisk (*)** in Section 5. You must **do each one AND say the numbers**. The order is up to you, as long as you do each check correctly. Doing them wrong = **automatic failure of the entire vehicle inspection**. (p. 11-4) The asterisk checks are (pp. 5-8–5-9):
   | Check | What you do and say |
   |---|---|
-  | **Applied leakage** (1-minute hold) | Air at cut-out (120–140 psi), engine off, parking brake (and tractor protection valve) released, foot brake fully on and held **1 minute** after the gauge settles. Maximum loss: **3 psi** single vehicle, **4 psi** combination of 2, **6 psi** combination of 3 or more (**3 psi** if the towed units have no air brakes). Say how much it lost and the limit for your vehicle. |
-  | **Low air warning** | Key on; fan off air by pumping the foot brake. The buzzer/light/flag must come on **before the pressure drops below 55 psi** (or the maker's level). Say when it came on and the limit. |
-  | **Spring brake test** | Keep fanning the air down. The parking brake knob (and tractor protection valve on a tractor-trailer) should **pop out**, normally at **20–45 psi**. Say the pressure where it happened. |
+  | **Applied leakage** (1-minute hold) | Air at cut-out (120–140 psi) — say when cut-out happened — then engine off, wheels chocked if needed, parking brake (and tractor protection valve) released, foot brake fully on and held **1 minute** after the gauge settles. Maximum loss: **3 psi** single vehicle, **4 psi** combination of 2, **6 psi** combination of 3 or more (**3 psi** if the towed units have no air brakes). Say how much it lost and the limit for your vehicle. |
+  | **Low air warning** | Key on; fan off air by pumping the foot brake. The buzzer/light/flag must come on **before the pressure drops below 55 psi** (or the maker's level). Say when it came on and the limit. On a **large bus** the warning often comes on at **80–85 psi**: say the **55–75 psi** range and tell the examiner your bus is built to warn at a higher pressure. **Farm labor vehicles** and **Type I school buses** must have **both a sound and a visible** warning. |
+  | **Spring brake test** | First **release the parking brake** (and the **tractor protection valve** on a combination), engine running or not, then keep fanning the air down. The parking brake knob (and tractor protection valve on a tractor-trailer) should **pop out**, normally at **20–45 psi**. Say the pressure where it happened. |
+- **Bus with an emergency park brake air tank (triple reservoir):** the parking brake knob **will not pop out**, so you prove the spring brakes work another way. When the air is down to about **20 psi**, take out the wheel chocks if needed, **leave the parking brake released**, and with the engine running put the bus in a **forward gear** and try to drive ahead. The spring brakes should **drag and keep the bus from moving easily**. If they don't, your **road test is postponed**. Only do this on **single vehicles** with a separate parking brake tank — **never on a combination**. (p. 5-9)
 - **Service brake check:** roll ahead at about **5 mph** and press the service brake to stop. The vehicle should **stop** and **not pull to either side**. (p. 11-4)
 
 > Note: the handbook also describes a rate-of-air-buildup check in Section 5 (p. 5-9), but it is not one of the asterisk items. It is taught in the Air Brakes lessons.
@@ -284,7 +285,7 @@ _This handbook section has no review box — see Flashcards and Practice test._
 4. What is the minimum tread depth on steering-axle tires?
    a) 4/32 inch
    b) 2/32 inch
-   c) 1/8 inch
+   c) 1/2 inch
 5. How must you check tire inflation to get credit?
    a) Kick the tire
    b) Strike the tire with a mallet

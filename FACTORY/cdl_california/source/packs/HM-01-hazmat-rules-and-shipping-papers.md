@@ -42,7 +42,7 @@
 
 ### 9 HazMat and the "H" endorsement (p. 9-1)
 - You need a **CDL with an "H" endorsement** before you drive a vehicle **of any size** used to haul HazMat (as defined in CFR, Title 49 §383.5). You must pass a knowledge test to get it.
-- **A CLP holder may not haul HazMat.** *Why:* a learner is not yet trained for the added risk.
+- **A CLP holder may not haul HazMat.**
 - The HazMat test is based on **federal** rules. Text marked "California" is a state rule that also applies in California, and it is strictly enforced.
 - The HazMat rules (HMR) are in **CFR, Title 49, Parts 171–180**.
 - The Hazardous Materials Table lists HazMat, but the list is **not complete**. Whether something is HazMat depends on its properties and on the **shipper's decision** that it meets a HazMat definition.
@@ -82,7 +82,7 @@ The rules have 3 goals:
 |---|---|
 | **Shipper** (9.2.1) | Sends products by truck, rail, ship or plane. Uses the rules to find each product's **ID number, proper shipping name, hazard class, packing group, correct packaging, labels, markings and placards**. **Packages, marks and labels** the materials; **prepares shipping papers**; gives **emergency response information**; **supplies placards**. **Certifies** on the shipping paper that the load was prepared by the rules (not needed when you pull cargo tanks supplied by you or your employer). |
 | **Carrier** (9.2.2) | Takes the load from the shipper to where it is going. **Before** moving it, checks that the shipper described, marked, labeled and prepared it correctly. **Refuses improper shipments.** |
-| **Driver** (9.2.3) | Makes sure the shipper identified, marked and labeled the HazMat properly. **Refuses leaking packages** and shipments. **Placards the vehicle when loading**, if needed. Hauls the load safely and **without delay**. Follows all special HazMat rules. Keeps shipping papers and emergency response information **in the proper place**. **Reports accidents and incidents** involving HazMat to the proper government agency when they happen while the driver is in control of the load. |
+| **Driver** (9.2.3) | Checks that the shipper named, marked and labeled the HazMat correctly. **Turns down leaking packages** and loads. **Puts on placards at loading** when needed. Delivers the load safely and **with no delays**. Obeys every special HazMat rule. Keeps the HazMat papers and emergency response information **where they belong**. **Reports any HazMat crash or incident** to the right government agency if it happens while the driver controls the load. they happen while the driver is in control of the load. |
 
 *Worked example:* a drum is dripping at the dock. The driver's job is to **refuse** it — not to tape it, and not to haul it and report it later.
 
@@ -153,7 +153,7 @@ Figure 9.4 shows one row of the table (Acetaldehyde ammonia: Class 9, UN1841, PG
 
 ### 9.3.3 RQ, inhalation hazard and marine pollutants (pp. 9-6–9-7)
 **Appendix A — Hazardous Substances and Reportable Quantities.** DOT and EPA want to know about spills of these substances.
-- **Column 3** of the list shows each product's **reportable quantity (RQ)**. Examples from Figure 9.5: phosgene **10 lb**, phosphine **100 lb**, phosphoric acid **5,000 lb**.
+- The list shows each product's **reportable quantity (RQ)** in pounds (kilograms). Examples from Figure 9.5: phosgene **10 lb**, phosphine **100 lb**, phosphoric acid **5,000 lb**.
 - When **1 package** holds the RQ **or more**, the shipper shows **"RQ"** on the **shipping paper and the package**. "RQ" may come **before or after** the basic description.
 - **You or your employer must report** any spill of these materials that reaches the RQ.
 
@@ -249,7 +249,7 @@ It can be on the shipping paper, on another paper that has the basic description
 | Column 7 numbers **1–6** | **Poison inhalation hazard** | 9-6 |
 | Column 8 | **3-part** packaging column | 9-6 |
 | Columns 9 and 10 | **Do not apply** to highway | 9-6 |
-| RQ | Shown in **Column 3** of Appendix A; mark "RQ" when **1 package** holds the RQ or more | 9-6 |
+| RQ | Listed in Appendix A (List of Hazardous Substances and Reportable Quantities); mark "RQ" when **1 package** holds the RQ or more | 9-6 |
 | Sample RQs (Figure 9.5) | Phosgene **10 lb**; phosphine **100 lb**; phosphoric acid **5,000 lb** | 9-6 |
 | Marine pollutant list (highway) | Containers of **119 gallons or more** | 9-7 |
 | Marine pollutant marking | **White triangle, fish with an "X"** — a marking, not a placard | 9-7 |

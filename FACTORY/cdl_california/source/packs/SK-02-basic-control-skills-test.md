@@ -11,7 +11,7 @@
 
 ## Learn it
 
-The basic control skills test is the **second** skills test. It happens on a practice area marked with **lines and cones**, not on the street. The examiner wants to see that you can **control the vehicle** at low speed and **judge where it is** compared with lines and objects around it. These same skills help you in real driving, like backing into a loading dock. (p. 12-1)
+The basic control skills test is the **second** skills test. It is done as a set of exercises marked with **boundary lines and cones**. The examiner wants to see that you can **control the vehicle** and **judge where it is** compared with lines and objects around it. These same skills help you in real driving, like backing into a loading dock. (p. 12-1)
 
 You must pass the vehicle inspection test before you take this one. (p. 11-11)
 
@@ -22,7 +22,7 @@ You must pass the vehicle inspection test before you take this one. (p. 11-11)
 - **Pull-up** = stopping and then driving forward to fix a position or clear an encroachment.
 - **Look** = getting out of the seat (or opening the door, or walking back on a bus) to see where your vehicle is.
 - **Final position** = where and how the examiner told you the vehicle must end up.
-- **Offset back** = backing out of one lane and into the lane next to it.
+- **Offset back** = pulling forward out of one lane, then backing into the lane next to it.
 - **Alley dock** = backing into a narrow space at a right angle, like backing up to a loading dock.
 - **Sight-side** = the side you can see from the driver's seat, which is the **driver's (left) side**. Backing toward it lets you watch the rear out your side window (p. 2-10).
 - **3 points of contact** = keeping three of your hands and feet on the vehicle at all times while you climb in or out.
@@ -264,7 +264,7 @@ _This handbook section has no review box — see Flashcards and Practice test._
 12. a — The rear must be within 3 feet of the back of the alley and the vehicle must be straight. (p. 12-2)
 13. b — Driver side parallel parking uses a space on your left. (p. 12-2)
 14. c — Conventional parallel parking uses a space on your right. (p. 12-2)
-15. a — You back until the front of your vehicle has passed the first set of cones. (p. 12-2)
+15. a — You keep backing until your vehicle's front end is past the first pair of cones. (p. 12-2)
 16. b — Backup cameras and self-parking cannot be used by themselves on a skills test. (p. 12-1)
 17. c — Refusing or not finishing an exercise as told may be an automatic failure. (p. 12-1)
 18. a — Missing the final position means a penalty and a possible failure. (p. 12-1)

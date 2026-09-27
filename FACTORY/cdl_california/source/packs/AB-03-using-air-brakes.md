@@ -109,7 +109,7 @@ Figure 5.6 (described) — distance in feet by speed:
 - **Controlled braking** works **only while enough air remains** in the tanks.
 - The **spring brakes** come on when pressure drops into **20–45 psi**.
   - A **heavily loaded** vehicle will take a **long distance** to stop, because **spring brakes don't work on all axles**.
-  - **Lightly loaded** vehicles, or vehicles on **slippery** roads, may **skid out of control** when the spring brakes come on.
+  - If the vehicle is **lightly loaded** or the road is **slippery**, the spring brakes coming on can send you into an **uncontrolled skid**.
 - **It is much safer to stop while you still have enough air to use the foot brake.**
 
 ### 5.4.8 Parking brakes (p. 5-13)
@@ -122,7 +122,7 @@ Figure 5.6 (described) — distance in feet by speed:
 | Brakes are **very hot** (for example, just after a steep grade) | The heat can **damage** them | **Chock the wheels** on a level surface; let the brakes **cool** first |
 | Brakes are **very wet** in **freezing** temperatures | They can **freeze** so the vehicle **cannot move** | **Chock the wheels** on a level surface. To dry wet brakes, **brake lightly while driving in a low gear** to heat and dry them |
 
-- **No automatic tank drains?** Drain the air tanks **at the end of each working day** to remove moisture and oil — otherwise the brakes could fail.
+- **No automatic tank drains?** Drain the air tanks **every working day, at the end of the day**, to clear out water and oil — left in, they can make the brakes fail.
 - **Never leave your vehicle unattended** without **setting the parking brakes or chocking the wheels**. It could **roll away** and cause injury and damage.
 
 ## Numbers & terms to memorize
@@ -130,7 +130,7 @@ Figure 5.6 (described) — distance in feet by speed:
 |---|---|---|
 | Clutch on a normal stop (manual) | Push in only when rpm is **close to idle** | 5-11 |
 | ABS on only 1 axle | **Still** gives more control — brake normally | 5-11 |
-| Full brake application with ABS allowed | Only if you **always** drive a straight truck or combination with working ABS on **all axles**, in an **emergency stop** | 5-11 |
+| Full brake application with ABS allowed | Only in an **emergency stop**, and only if every vehicle you drive (straight truck or combination) has working ABS on **all axles** | 5-11 |
 | Emergency stop methods | **2** — controlled braking and stab braking | 5-11 |
 | Stab braking: wheels start rolling after release | Can take **up to 1 second** | 5-11 |
 | Brake lag (air brakes) | **½ second or more** | 5-12 |
@@ -361,4 +361,4 @@ Figure 5.6 (described) — distance in feet by speed:
 - **Brake lag ½ second+**; stopping distance = **perception + reaction + brake lag + braking**. At **55 mph**: lag ≈ **32 ft**, total **over 450 ft**.
 - **Fade** = too much heat → less lining friction + expanded drums. Out-of-adjustment brakes make the others fade — **check adjustment often**.
 - **Downhill:** right low gear first; brakes are only a **supplement**. Brake to **5 mph below** safe speed (~**3 seconds**), release, repeat.
-- **Low air** → stop now (spring brakes at **20–45 psi** are unreliable). **Park** with parking brakes — **not** if brakes are very hot or wet-and-freezing (chock instead). Never leave the vehicle unattended without brakes or chocks.
+- **Low air** → stop now, while the foot brake still works (spring brakes come on at **20–45 psi**, but may take a long distance to stop or cause a skid). **Park** with parking brakes — **not** if brakes are very hot or wet-and-freezing (chock instead). Never leave the vehicle unattended without brakes or chocks.

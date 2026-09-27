@@ -60,9 +60,9 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 1. Park on **level ground** and **chock the wheels** so the vehicle cannot move.
 2. **Release the parking brakes** — *why:* so the slack adjusters can move.
 3. Wearing **gloves**, **pull hard** on each slack adjuster you can reach.
-4. If one moves **more than about 1 inch** where the push rod attaches to it, it **probably needs adjustment**. Adjust it or have it adjusted.
+4. If it moves **more than about 1 inch** at the point where the push rod connects, it **likely needs adjusting** — do it yourself or have a shop do it.
 
-*Why it matters:* too much brake slack makes a vehicle **very hard to stop**. **Out-of-adjustment brakes are the most common problem found in roadside inspections.**
+*Why it matters:* too much brake slack makes a vehicle **very hard to stop**. At roadside inspections, **brakes out of adjustment are the problem officers find most often.**
 
 **Automatic slack adjusters:**
 - **All vehicles built since 1994** have them.
@@ -160,7 +160,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 - More loss than this = a problem; **repair it before driving**.
 - *Memory hook:* **applied** limits are **1 psi higher** than static in every row (static 2/3/5, applied 3/4/6; towed units without air brakes: static 2, applied 3).
 
-**Parking brake test:** fasten your **seat belt**, **set the parking brake**, and **gently pull against it in a low gear** to make sure it holds.
+**Parking brake test:** with your **seat belt** on and the **parking brake set**, put the vehicle in a **low gear** and **pull gently** against the brake to confirm it holds.
 
 **Service brake test:** wait for **normal air pressure**, **release the parking brake**, move forward **slowly (about 5 mph)**, and **apply the brakes firmly** with the pedal. Note any **pulling to one side**, **unusual feel** or **delayed stopping**. *Why:* this can show problems you would otherwise find only when you need the brakes on the road.
 
@@ -251,7 +251,7 @@ Most heavy-duty vehicles use a **dual air brake system** for safety — two sepa
 | 15 | Vehicles built since what year have automatic slack adjusters? | 1994 |
 | 16 | Automatic slack adjuster is out of adjustment. What should you do? | Take it to a repair facility as soon as possible |
 | 17 | When is hand-adjusting an automatic slack adjuster OK? | Only as a temporary fix in an emergency |
-| 18 | Longest allowed crack in a brake drum? | Less than ½ the width of the friction area |
+| 18 | Longest allowed crack in a brake drum? | No longer than ½ the width of the friction area |
 | 19 | Minimum brake lining thickness? | ¼ inch |
 | 20 | Result of not demonstrating a ★ air brake check or stating its limits? | Automatic failure of the vehicle inspection |
 | 21 | Starting pressure for the applied leakage test? | Governor cut-out (120–140 psi or maker's level) |

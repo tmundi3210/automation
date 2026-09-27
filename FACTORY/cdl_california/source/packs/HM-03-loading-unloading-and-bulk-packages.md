@@ -12,7 +12,7 @@
 
 ## Learn it
 
-This lesson is about the moment HazMat goes onto or comes off your vehicle. Most HazMat accidents at a dock happen because a package is damaged, leaks, catches fire, or is loaded next to something it reacts with. Protect the containers: **don't use tools that could damage them**, and **don't use hooks**. (p. 9-11)
+This lesson is about the moment HazMat goes onto or comes off your vehicle. HazMat can hurt people when a package is damaged, leaks, catches fire, or is loaded next to something it reacts with. Protect the containers: **don't use tools that could damage them**, and **don't use hooks**. (p. 9-11)
 
 **Key words**
 - **HazMat** = hazardous materials: products that can hurt people, property or the environment while they are being moved.
@@ -52,9 +52,9 @@ This lesson is about the moment HazMat goes onto or comes off your vehicle. Most
 **Secure against movement.** Brace containers so they **cannot fall, slide or bounce**. Take extra care with containers that have **valves or other fittings**. All HazMat packages must be secured for the trip.
 
 **Hands off during the trip.**
-- After loading, **do not open any package** during your trip.
-- **Never transfer** HazMat from one package to another while in transit.
-- You **may empty a cargo tank**, but **do not empty any other package** while it is on the vehicle.
+- Once loaded, keep every package **closed** for the whole trip.
+- **Never move HazMat from one package into another** on the road.
+- A **cargo tank** may be emptied on the vehicle; **no other package** may be.
 
 ### 9.4.1 Cargo heaters and closed cargo space (p. 9-12)
 **Cargo heater rules** apply to **3** classes:
@@ -77,7 +77,7 @@ Memory hook: heaters = **1, 2.1, 3** (things that burn from heat); closed space 
 - **Turn the engine off** before loading or unloading **any** explosives. Then check the cargo space. You must:
   - **Disable cargo heaters**: disconnect their power and **drain heater fuel tanks**.
   - Make sure there are **no sharp points** — bolts, screws, nails, broken side panels or broken floorboards — that could damage cargo.
-  - For **Division 1.1, 1.2 or 1.3**, use a **floor lining**. The floor must be tight, and the liner must be **nonmetallic** or a **nonferrous metal** (no iron). *Why:* iron can make a spark.
+  - For **Division 1.1, 1.2 or 1.3**, use a **floor lining**. The floor must be tight, and the liner must be **nonmetallic** or a **nonferrous metal** (no iron).
 - **Never use hooks or other metal tools.** **Never drop, throw or roll** explosive packages. Protect them from other cargo that could damage them.
 - **Don't transfer** Division 1.1, 1.2 or 1.3 explosives from one vehicle to another **on a public road**, except in an **emergency**. For an emergency transfer, set out **red warning reflectors, flags or electric lanterns** to warn other drivers.
 - **Never transport damaged packages** of explosives. **Don't accept** a package with **any dampness or oily stain**.
@@ -105,8 +105,6 @@ Memory hook: heaters = **1, 2.1, 3** (things that burn from heat); closed space 
 - **Never load corrosive liquids next to or above:** Division **1.4** (Explosives C), Division **4.1** (Flammable Solids), Division **4.3** (Dangerous When Wet), **Class 5** (Oxidizers), Division **2.3 Zone B** (Poisonous Gases).
 - **Never load corrosive liquids with:** Division **1.1 or 1.2**, Division **1.2 or 1.3**, Division **1.5** (Blasting Agents), Division **2.3 Zone A** (Poisonous Gases), Division **4.2** (Spontaneously Combustible), Division **6.1, PGI, Zone A** (Poison Liquids).
 
-*Why:* a corrosive that leaks down onto these products can start a fire, an explosion or a toxic gas cloud.
-
 ### 9.4.1 Classes 2, 6 and 7 precautions (pp. 9-13, 9-22)
 **Class 2 (Compressed gases, including cryogenic liquids)** (p. 9-13)
 - If the vehicle has **no racks** for cylinders, the cargo floor must be **flat**.
@@ -126,18 +124,18 @@ Memory hook: heaters = **1, 2.1, 3** (things that burn from heat); closed space 
 
 The handbook's radioactive separation table (Table A, Figure 9.10) gives minimum distances in feet. Do not leave Yellow II or Yellow III packages near people, animals or film longer than it allows. (p. 9-22)
 
-| Total transport index | To people or cargo compartment partitions | To undeveloped film, 0–2 hrs | Over 12 hrs |
-|---|---|---|---|
-| None | 0 ft | 0 ft | 0 ft |
-| 0.1–1.0 | 1 ft | 1 ft | 5 ft |
-| 1.1–5.0 | 2 ft | 3 ft | 11 ft |
-| 5.1–10.0 | 3 ft | 4 ft | 15 ft |
-| 10.1–20.0 | 4 ft | 5 ft | 22 ft |
-| 20.1–30.0 | 5 ft | 7 ft | 29 ft |
-| 30.1–40.0 | 6 ft | 8 ft | 33 ft |
-| 40.1–50.0 | 6 ft | 9 ft | 36 ft |
+| Total transport index | To people or cargo compartment partitions | Film 0–2 hrs | Film 2–4 hrs | Film 4–8 hrs | Film 8–12 hrs | Film over 12 hrs |
+|---|---|---|---|---|---|---|
+| None | 0 ft | 0 ft | 0 ft | 0 ft | 0 ft | 0 ft |
+| 0.1–1.0 | 1 ft | 1 ft | 2 ft | 3 ft | 4 ft | 5 ft |
+| 1.1–5.0 | 2 ft | 3 ft | 4 ft | 6 ft | 8 ft | 11 ft |
+| 5.1–10.0 | 3 ft | 4 ft | 6 ft | 9 ft | 11 ft | 15 ft |
+| 10.1–20.0 | 4 ft | 5 ft | 8 ft | 12 ft | 16 ft | 22 ft |
+| 20.1–30.0 | 5 ft | 7 ft | 10 ft | 15 ft | 20 ft | 29 ft |
+| 30.1–40.0 | 6 ft | 8 ft | 11 ft | 17 ft | 22 ft | 33 ft |
+| 40.1–50.0 | (blank in handbook) | 9 ft | 12 ft | 19 ft | 24 ft | 36 ft |
 
-(The film distances grow with time; the table also has 2–4, 4–8 and 8–12 hour columns in between.)
+("Film" = distance to undeveloped film. The longer the packages sit near film, the farther away they must be.)
 
 ### 9.4.1 Mixed loads: the Do Not Load table (p. 9-14)
 Some products **cannot ride in the same cargo space**. Figure 9.9 (the **Do Not Load table**) gives examples; the full federal **Segregation Table** lists more.
@@ -159,7 +157,7 @@ Some products **cannot ride in the same cargo space**. Figure 9.9 (the **Do Not 
 - The **most common** cargo tanks: **MC306 for liquids** and **MC331 for gases**.
 
 ### 9.5.1 Markings (p. 9-15)
-- You must show the **ID number** of the HazMat on **portable tanks, cargo tanks and other bulk packaging** (such as **dump trucks**). ID numbers are in **Column 4** of the Hazardous Materials Table.
+- You must show the **ID number** of the HazMat on **portable tanks, cargo tanks and other bulk packaging** (such as **dump trucks**). Look up the ID number in **Column 4** of the Hazardous Materials Table.
 - The numbers are **black**, **100 mm (3.9 inches)** tall, on **orange panels**, on **placards**, or on a **white diamond-shaped background** if no placards are required.
 - **Specification cargo tanks** must show **retest date** markings.
 - **Portable tanks** must show:
@@ -182,7 +180,7 @@ The person in charge of loading or unloading a cargo tank must make sure a **qua
 
 There are **special attendance rules** for cargo tanks carrying **propane** and **anhydrous ammonia**.
 
-**Close all manholes and valves** before moving a tank of HazMat — **no matter how small the amount or how short the distance**. *Why:* open manholes and valves leak. It is **illegal** to move a cargo tank with **open valves or covers** unless it is **empty** under the federal definition (49 CFR §173.29).
+**Close all manholes and valves** before moving a tank of HazMat — **no matter how small the amount or how short the distance**. *Why:* open manholes and valves leak. Moving a cargo tank with any valve or cover open is **illegal** unless the tank is **empty** as defined in 49 CFR §173.29.
 
 ### 9.5.3–9.5.4 Flammable liquids and compressed gas (p. 9-15)
 **Flammable liquids (9.5.3)**
@@ -217,7 +215,7 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
 | POISON packages | never in the **cab or sleeper**, never with **food** | 9-13 |
 | Total transport index per vehicle | **not more than 50** | 9-13 |
 | Transport index 1.1 | not within **2 ft** of people or cargo-space walls | 9-13, 9-22 |
-| Transport index 40.1–50.0 | **6 ft** from people or partitions | 9-22 |
+| Transport index 30.1–40.0 | **6 ft** from people or partitions | 9-22 |
 | Not food (Do Not Load table) | **mouthwash, toothpaste, skin creams** | 9-14 |
 | Charged storage batteries | not with **Division 1.1** | 9-14 |
 | Cyanides (Div. 6.1) | not with **acids or corrosives** (could release hydrocyanic acid) | 9-14 |
@@ -381,10 +379,10 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
     a) Load it, but place it at the front of the trailer
     b) Load it if both are under 1,001 pounds
     c) Not load them in the same vehicle
-16. Division 6.1 poison may ride with which of these, according to the Do Not Load table?
-    a) Toothpaste
-    b) Animal feed that is not packed in an approved way
-    c) Bread for a grocery store
+16. According to the Do Not Load table, Division 6.1 poison may be loaded in the same vehicle with animal or human food only if:
+    a) The food is loaded at the front of the cargo space
+    b) The poison package is overpacked in an approved way
+    c) The poison package is stacked on top of the food
 17. Charged storage batteries must not be loaded in the same vehicle with:
     a) Division 1.1 explosives
     b) Class 9 miscellaneous HazMat
@@ -438,7 +436,7 @@ There are **special attendance rules** for cargo tanks carrying **propane** and 
 13. b — POISON packages never go in the cab or sleeper, or with food; skin creams are not food. (pp. 9-13–9-14)
 14. b — The total transport index in one vehicle must not exceed 50. (p. 9-13)
 15. c — Cyanides must not be loaded with acids or corrosives such as battery acid; weight doesn't matter. (p. 9-14)
-16. a — Toothpaste, mouthwash and skin creams are not foodstuffs; real food needs approved overpacking. (p. 9-14)
+16. b — Poison may ride with food only when the poison package is overpacked in an approved way; where the food or poison sits in the cargo space does not change the rule. (pp. 9-13–9-14)
 17. a — The Do Not Load table pairs charged storage batteries with Division 1.1. (p. 9-14)
 18. c — A cargo tank is permanently attached and stays on the vehicle; (b) describes a portable tank. (p. 9-15)
 19. a — Portable tanks are loaded or unloaded off the vehicle, then placed on it. (p. 9-15)

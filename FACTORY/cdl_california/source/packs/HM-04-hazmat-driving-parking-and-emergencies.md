@@ -5,14 +5,14 @@
 ## What you'll be able to answer
 - Where you may and may not park with Division 1.1, 1.2 or 1.3 explosives (the **5 ft** and **300 ft** rules), what a safe haven is, and who may watch the vehicle.
 - What the person attending a placarded vehicle must do, why flares are banned, and how route rules (including California's CHP routes) work.
-- The on-the-road rules: no smoking within **25 ft**, engine off to refuel, a **10 B:C** extinguisher, tire checks, where shipping papers go, chlorine gear, and stopping at railroad crossings.
+- The on-the-road rules: the **25 ft** no-smoking rule (and which loads it covers), engine off to refuel, a **10 B:C** extinguisher, tire checks, where shipping papers go, chlorine gear, and stopping at railroad crossings.
 - What the Emergency Response Guidebook is, and your four jobs at an accident or incident.
 - What to do about fires, leaks and spills, and how to respond to each hazard class.
 - When the National Response Center must be called, what to tell them, and California's immediate spill reporting rule.
 
 ## Learn it
 
-A loaded HazMat vehicle is most dangerous when it is parked near people, passing near fire, or in a crash. This lesson covers the driving and parking rules that keep you away from those situations, and what to do when something goes wrong anyway. (p. 9-16)
+This lesson covers the driving and parking rules that keep a loaded HazMat vehicle away from people and fire, and what to do when something goes wrong. (pp. 9-16–9-23)
 
 **Key words**
 - **Placarded vehicle** = a vehicle that must show HazMat warning placards because of what it carries.
@@ -21,7 +21,7 @@ A loaded HazMat vehicle is most dangerous when it is parked near people, passing
 - **Safe haven** = a place approved (usually by local authorities) for parking unattended vehicles loaded with explosives.
 - **Shipper** = the business that sends the HazMat. **Carrier** = the company or person that transports it. **Consignee** = the business or person it is delivered to.
 - **Route plan** = a written plan of the roads you will use; required for Division 1.1, 1.2 and 1.3 explosives.
-- **FMCSR** = Federal Motor Carrier Safety Regulations. Part 397 covers driving and parking HazMat.
+- **FMCSR** = Federal Motor Carrier Safety Regulations. Drivers hauling Division 1.1, 1.2 or 1.3 explosives must carry a copy of Part 397.
 - **CHP** = California Highway Patrol.
 - **10 B:C fire extinguisher** = the minimum Underwriters Laboratories (UL) rating for the fire extinguisher on a placarded power unit.
 - **ERG** = Emergency Response Guidebook, the DOT guide emergency crews use to protect themselves and the public from HazMat.
@@ -39,7 +39,7 @@ A loaded HazMat vehicle is most dangerous when it is parked near people, passing
   - an **open fire**.
 - Exception: **short stops needed to operate the vehicle**, such as **fueling**.
 - If you must park to do your job, keep it **brief**. **Don't park on private property** unless the owner **knows the danger**.
-- **Someone must always watch** the parked vehicle. You may let **someone else** watch it for you **only** if the vehicle is on the **shipper's**, **carrier's** or **consignee's** property.
+- The parked vehicle must be **watched at all times**. A person **other than you** may do the watching **only** on the **shipper's**, **carrier's** or **consignee's** property.
 - You may leave it **unattended** only in a **safe haven**. Local authorities usually decide which places are safe havens.
 
 *Why:* an explosion near a bridge, a crowd or a building would multiply the harm.
@@ -88,8 +88,8 @@ A loaded HazMat vehicle is most dangerous when it is parked near people, passing
 
 ### 9.6.6–9.6.9 No smoking, refueling, fire extinguisher and tires (p. 9-18)
 **No smoking (9.6.6)**
-- Don't smoke **within 25 feet** of a **placarded cargo tank** used for **Class 3** (flammable liquids) or **Division 2.1** (gases).
-- Don't smoke or carry a **lighted cigarette, cigar or pipe within 25 feet** of any vehicle containing **Class 1** (Explosives), **Class 3** (Flammable Liquids), **4.1** (Flammable Solids), **4.2** (Spontaneously Combustible) or **Class 5** (Oxidizers).
+- No smoking **closer than 25 ft** to a placarded **Class 3 or Division 2.1** cargo tank.
+- Within **25 ft** of any vehicle carrying HazMat of these kinds, no smoking and no **lit cigarette, cigar or pipe**: **Class 1** (Explosives), **Class 3** (Flammable Liquids), **4.1** (Flammable Solids), **4.2** (Spontaneously Combustible) or **Class 5** (Oxidizers).
 
 **Refuel with the engine off (9.6.7)**
 - **Turn off the engine** before fueling a vehicle containing HazMat.
@@ -100,8 +100,8 @@ A loaded HazMat vehicle is most dangerous when it is parked near people, passing
 
 **Check tires (9.6.9)**
 - Keep tires **properly inflated**.
-- **Examine each tire** at the **beginning of each trip** and **each time the vehicle is parked**.
-- The **only acceptable way** to check pressure is a **tire pressure gauge**. (Kicking or thumping a tire doesn't count.)
+- Look at **every tire** **when a trip starts** and **whenever you park**.
+- A **tire pressure gauge** is the **only accepted way** to check pressure. (Kicking or thumping a tire doesn't count.)
 - Don't drive on a **leaking or flat** tire except to the **nearest safe place** to fix it.
 - **Remove any overheated tire** and put it a **safe distance** from the vehicle. Don't drive until you **fix the cause** of the overheating.
 - The **parking and attending rules still apply** while you check, repair or replace tires.
@@ -129,7 +129,7 @@ A loaded HazMat vehicle is most dangerous when it is parked near people, passing
 - carries **any amount of chlorine**; or
 - has **cargo tanks used for HazMat**, whether **loaded or empty**.
 
-Stop **15 to 50 feet** before the **nearest rail**. Go only when you are sure **no train is coming** and you can **clear the tracks without stopping**. **Don't shift gears** while crossing.
+Stop **15 to 50 feet** before the **nearest rail**. Cross only once you know **no train is approaching** and you can get **all the way across without stopping**. **Don't shift gears** while crossing.
 
 ### 9.7.1–9.7.2 Emergency Response Guidebook and accidents (p. 9-19)
 **ERG (9.7.1).** DOT's **Emergency Response Guidebook** is for **firefighters, police and industry workers**. It is **indexed by proper shipping name and HazMat ID number**. Emergency crews look for these on the shipping paper — that is why the **shipping name, ID number, labels and placards must be correct**.
@@ -197,10 +197,8 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 **Be ready to give:** your **name**; the carrier's **name and address**; a **phone number** where you can be reached; the **date, time and location**; the extent of **injuries**; the **classification, name and quantity** of HazMat, if known; the **type of incident**, how the HazMat is involved, and whether there is a **continuing danger to life**. If a **reportable quantity** of a hazardous substance was involved, also the **shipper's name** and the **quantity discharged**.
 
 - Give your **employer** the same information.
-- Carriers must make **detailed written reports within 30 days** of an incident.
-- **CHEMTREC** (**1-800-424-9300**, Washington, DC, 24 hours) gives emergency crews **technical information** about HazMat. The National Response Center and CHEMTREC **talk to each other** — call either one and they will tell the other when appropriate.
-
-> Note: the handbook prints the CHEMTREC phone number right after the 30-day written-report sentence (p. 9-22), which makes it look as if the written report goes to CHEMTREC. The handbook then describes CHEMTREC as a technical-information line. For the test, remember: phone the **National Response Center** for the listed events; **written report within 30 days**; CHEMTREC = **technical information**.
+- Carriers must send **detailed written reports within 30 days** of an incident **to CHEMTREC** (**1-800-424-9300**).
+- **CHEMTREC** (the Chemical Transportation Emergency Center in Washington, DC) also runs a **24-hour toll-free line**. It was set up to give emergency crews **technical information** about the physical properties of HazMat. The National Response Center and CHEMTREC **talk to each other** — call either one and they will tell the other when appropriate. (p. 9-22)
 
 **[CA] California immediate spill reporting (p. 9-23).** A HazMat spill on a California highway must be reported **immediately** to the **CHP** office or **police department** with traffic jurisdiction.
 
@@ -220,7 +218,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 | [CA] For-hire explosives | CHP routes for **any amount** of Div. 1.1, 1.2, 1.3, 1.6 | 9-17 |
 | [CA] Services off a designated route | facility within **1/2 mile** of the exit or entry point | 9-18 |
 | [CA] Residence district | no unattended or **overnight** parking of a loaded vehicle | 9-17 |
-| No smoking | within **25 ft** | 9-18 |
+| No smoking | within **25 ft** of a placarded Class 3/Div. 2.1 cargo tank, or any vehicle with Class 1, 3, 4.1, 4.2 or 5 | 9-18 |
 | Refueling | **engine off**; someone always at the nozzle | 9-18 |
 | Fire extinguisher | UL rating **10 B:C or more**, on the power unit | 9-18 |
 | Tire checks | **start of each trip** and **each time parked**, with a **tire pressure gauge** | 9-18 |
@@ -238,7 +236,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 | NRC call: road closure | major artery closed **1 hour or more** | 9-22 |
 | NRC call: marine pollutant | more than **119 gallons** (liquid) or **882 lb** (solid) | 9-22 |
 | National Response Center | **1-800-424-8802** (24-hour, toll-free) | 9-22 |
-| Written incident report | within **30 days** | 9-22 |
+| Written incident report | within **30 days**, to **CHEMTREC** | 9-22 |
 | CHEMTREC | **1-800-424-9300**, technical info on HazMat | 9-22 |
 | [CA] Spill on a California highway | report **immediately** to CHP or police | 9-23 |
 
@@ -248,7 +246,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 - **Trap:** Resting in the sleeper berth counts as attending the vehicle. → **Correct:** you must be **awake, not in the sleeper**, or within **100 ft** with a clear view. (p. 9-16)
 - **Trap:** Flares are fine next to an empty gasoline tank. → **Correct:** never use flares near a Class 3 or Division 2.1 tank, **loaded or empty**; use triangles or red electric lights. (p. 9-16)
 - **Trap:** Your dispatcher is responsible for knowing route permits, so you don't need to check. → **Correct:** it is **your job as the driver** to find out about permits and routes before you start. (p. 9-16)
-- **Trap:** Smoking is fine 5 feet from a placarded tanker if you are outside. → **Correct:** no smoking within **25 ft**. (p. 9-18)
+- **Trap:** Smoking is fine 5 feet from a placarded gasoline (Class 3) cargo tank if you are outside. → **Correct:** no smoking within **25 ft** of a placarded Class 3 or Division 2.1 cargo tank. (p. 9-18)
 - **Trap:** You may leave the engine running while refueling a HazMat load if you stay at the pump. → **Correct:** **engine off**, and someone must be **at the nozzle** the whole time. (p. 9-18)
 - **Trap:** You can check tire pressure by kicking the tires. → **Correct:** the **only acceptable way** is a **tire pressure gauge**. (p. 9-18)
 - **Trap:** When you leave the cab, take the shipping papers with you. → **Correct:** leave them in the **driver's door pouch** or **on the driver's seat** so responders can find them. (At an accident scene, though, you keep them with you to hand over.) (pp. 9-18–9-19)
@@ -301,7 +299,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 | 12 | Who picks the route for placarded radioactive materials? | The carrier (the safest route) |
 | 13 | [CA] Who sets special routes for explosives and inhalation hazards? | CHP |
 | 14 | [CA] May you park a loaded HazMat vehicle overnight in a residence district? | No |
-| 15 | No-smoking distance from a placarded vehicle? | 25 feet |
+| 15 | No-smoking distance from a Class 3/2.1 placarded cargo tank, or a vehicle with Class 1, 3, 4.1, 4.2 or 5? | 25 feet |
 | 16 | Engine rule when fueling a HazMat vehicle? | Engine off; someone at the nozzle |
 | 17 | Fire extinguisher rating on a placarded power unit? | 10 B:C or more |
 | 18 | When must you examine HazMat vehicle tires? | At the start of each trip and each time you park |
@@ -325,7 +323,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 | 36 | What must happen before reusing a vehicle after a radioactive spill? | Cleaned and checked with a survey meter |
 | 37 | Property damage that triggers an NRC call? | More than $50,000 |
 | 38 | Evacuation time that triggers an NRC call? | Public evacuated more than 1 hour |
-| 39 | Deadline for the carrier's written incident report? | 30 days |
+| 39 | Carrier's detailed written incident report: when, and to whom? | Within 30 days, to CHEMTREC |
 | 40 | What does CHEMTREC provide? | Technical information about HazMat for emergency crews |
 | 41 | [CA] Who must be told immediately of a HazMat spill on a California highway? | CHP or the police department with traffic jurisdiction |
 
@@ -379,7 +377,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
     b) With a tire pressure gauge
     c) By looking at how the tire bulges
 13. When must you examine each tire on a placarded vehicle?
-    a) At the beginning of each trip and each time the vehicle is parked
+    a) When each trip starts and whenever you park
     b) Only at the end of each trip
     c) Only when a tire looks low
 14. You leave the cab to eat lunch. Where do the HazMat shipping papers go?
@@ -410,8 +408,8 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
     a) Drive to the nearest truck stop to call for help
     b) Park, secure the area, stay there, and send someone for help
     c) Try to repack the leaking container yourself
-21. Which is a safe way to find the source of a HazMat leak?
-    a) Use the shipping papers, labels or package location
+21. Which is a safe way to identify which HazMat is leaking?
+    a) Check the shipping papers, labels or package location
     b) Smell the air near each package
     c) Touch the packages to feel for wetness
 22. Your vehicle carrying explosives is in a crash. Before separating the vehicles, you must:
@@ -448,7 +446,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 10. a — Engine off, and someone must be at the nozzle controlling the flow. (p. 9-18)
 11. c — Placarded power units need a UL-rated 10 B:C or more extinguisher. (p. 9-18)
 12. b — A tire pressure gauge is the only acceptable way. (p. 9-18)
-13. a — Examine each tire at the beginning of each trip and each time the vehicle is parked. (p. 9-18)
+13. a — Look at every tire when a trip starts and every time you park; waiting for a tire to look low or for the trip to end is too late. (p. 9-18)
 14. c — Out of the vehicle, papers stay in the driver's door pouch or on the driver's seat where responders can find them. (p. 9-18)
 15. a — Chlorine cargo tank drivers need an approved gas mask and a dome-fitting leak kit. (p. 9-19)
 16. c — Placarded vehicles, any chlorine, and HazMat cargo tanks (loaded or empty) must stop; the unplacarded truck need not. (p. 9-19)
@@ -456,7 +454,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 18. b — The ERG is indexed by proper shipping name and HazMat ID number. (p. 9-19)
 19. c — Hot doors may mean a cargo fire; opening them lets in air and can make it flare up. (p. 9-20)
 20. b — Never drive on with HazMat leaking; park, secure, stay, and send someone with written details. (p. 9-20)
-21. a — Identify it from papers, labels or package location; never touch or smell HazMat. (p. 9-20)
+21. a — Use the shipping papers, labels or package location to tell which HazMat is leaking; never touch leaking material or smell it to identify it. (p. 9-20)
 22. a — Remove all explosives before separating vehicles and place them at least 200 feet away. (p. 9-21)
 23. c — A flat tire is not on the list; a death and a public evacuation of more than 1 hour must be reported. (p. 9-22)
 24. a — Carriers must make detailed written reports within 30 days. (p. 9-22)
@@ -467,7 +465,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 - Explosives (1.1–1.3): never park within **5 ft** of the road or within **300 ft** of bridges, tunnels, buildings, crowds or open fire. Unattended only in a **safe haven**; others may watch only on shipper, carrier or consignee property.
 - Attending: **in the vehicle, awake, not in the sleeper**, or within **100 ft** with a clear view. **No flares** near flammable tanks (even empty) or explosives.
 - Routes: **you** check permits; avoid crowds, tunnels, narrow streets; explosives need a **written route plan**. [CA] CHP sets routes for explosives, inhalation hazards and radioactive loads.
-- No smoking within **25 ft**. Refuel with **engine off** and someone at the nozzle. **10 B:C** extinguisher. Check tires at **each trip start and each stop** with a **gauge**.
+- No smoking within **25 ft** of a placarded Class 3/Div. 2.1 cargo tank or a vehicle with Class 1, 3, 4.1, 4.2 or 5. Refuel with **engine off** and someone at the nozzle. **10 B:C** extinguisher. Check tires at **the start of each trip and each time you park**, with a **gauge**.
 - Papers: within reach or in the **door pouch** while driving; **door pouch or driver's seat** when out. Chlorine: **gas mask + leak kit**.
 - Stop at crossings if **placarded, any chlorine, or HazMat cargo tank (even empty)**: **15–50 ft**, no shifting.
 - Emergencies: keep people **away and upwind**, give responders the papers, don't open hot doors, **never smell or touch**, **park-secure-stay**, explosives **200 ft** away.

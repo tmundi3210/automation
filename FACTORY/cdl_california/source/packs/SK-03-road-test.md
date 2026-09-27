@@ -78,7 +78,7 @@ The road test is one part of what the handbook calls the CDL **driving performan
 | Exiting | Traffic checks, signal, **slow down smoothly in the exit lane**; on the ramp keep slowing **inside the lane markings** with good spacing |
 
 ### 13.1.6 Stop/start (pp. 13-2–13-3)
-You pull over **as if you were going to get out and check something** on the vehicle. Check traffic in all directions and move to the **right-most lane or shoulder**. (p. 13-2)
+You pull over and stop the way you would if you needed to step out and inspect the truck. First look for traffic all around, then move into the **right-most lane or onto the shoulder**. (p. 13-2)
 
 **Preparing to stop:** check traffic, turn on the **right** signal, slow down smoothly, brake evenly, shift as needed, and come to a **full stop without coasting**. (p. 13-2)
 
@@ -152,7 +152,7 @@ These are scored for the **whole** drive:
 | Critical driving error | **automatic failure** | 13-1 |
 | Language warnings | **2** warnings; **3rd** offense same date = automatic failure | 13-1 |
 | Total attempts for the 3 skills tests | **3** | 13-1 |
-| Class B test vehicle | single vehicle, truck or bus with GVWR **26,001 lb or more** | 13-1 |
+| Class B test vehicle | a truck or bus, or another single vehicle with GVWR **26,001 lb or more** | 13-1 |
 | Unsafe coasting | out of gear for **more than the length of your vehicle** | 13-1 |
 | Safe gap when stopped behind a vehicle | you can **see its rear tires** | 13-1 |
 | Wheels while waiting to turn | **straight ahead** | 13-1 |
@@ -191,7 +191,7 @@ _This handbook section has no review box — see Flashcards and Practice test._
 | 2 | What does a critical driving error cause? | Automatic failure |
 | 3 | Three things you must do for the whole road test? | Wear your safety belt, obey all signs/signals/laws, finish without an accident or moving violation |
 | 4 | Route has no railroad crossing — what may happen? | You may be asked to simulate it by explaining and demonstrating |
-| 5 | Minimum GVWR of the vehicle for the Class B skills test? | 26,001 lb or more (single vehicle) |
+| 5 | Class B skills test: what vehicle must you test in? | A truck or bus, or another single vehicle with a GVWR of 26,001 lb or more |
 | 6 | What is unsafe coasting? | Being out of gear for more than the length of your vehicle |
 | 7 | Stopped behind another vehicle — how far back? | Where you can see its rear tires |
 | 8 | Where do your front wheels point while waiting to turn? | Straight ahead |
@@ -305,10 +305,10 @@ _This handbook section has no review box — see Flashcards and Practice test._
     a) Choosing a gear that doesn't rev or lug the engine
     b) Changing gears before a turn
     c) Shifting while in a turn or intersection
-21. To satisfy the skills test for a Class B CDL, you must test in a single vehicle with a GVWR of:
-    a) 26,001 lb or more
-    b) 10,001 lb or more
-    c) Any weight, if it is a bus
+21. To satisfy the Class B skills test, which vehicle may you test in (besides a truck or bus)?
+    a) Another single vehicle with a GVWR of 26,001 lb or more
+    b) Another single vehicle with a GVWR of 10,001 lb or more
+    c) Any passenger car towing a trailer
 
 ### Answer key
 1. b — You need no more than 30 errors and no critical driving errors; 3 is the number of attempts, not errors. (p. 13-1)
@@ -319,7 +319,7 @@ _This handbook section has no review box — see Flashcards and Practice test._
 6. c — Do not enter an intersection without enough space to clear it. (p. 13-2)
 7. a — You change lanes to the left and then back to the right. (p. 13-2)
 8. c — Once stopped: cancel the signal, turn on the 4-way flashers, set the parking brake, shift to Neutral or Park, and take your feet off the pedals. (p. 13-3)
-9. b — Release the parking brake and pull straight ahead; do not turn the wheel before the vehicle moves, and turn the flashers off first. (p. 13-3)
+9. b — Let off the parking brake and roll straight forward; only start steering once the vehicle is moving. The flashers go off before you pull out. (p. 13-3)
 10. b — Slow down before the curve so no braking or shifting is needed in it. (p. 13-3)
 11. c — Buses, school buses and placarded vehicles stop 15 to 50 feet from the nearest rail. (p. 13-3)
 12. b — Don't stop, change gears, pass or change lanes while any part of the vehicle is in the crossing; both hands stay on the wheel. (p. 13-3)

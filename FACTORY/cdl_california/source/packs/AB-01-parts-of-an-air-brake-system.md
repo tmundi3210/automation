@@ -160,7 +160,7 @@ Figure 5.2 (described): a drum brake showing the brake chamber, slack adjuster, 
   1. You use the **parking brake control**, which lets the air out of the spring brakes.
   2. A **leak** loses all the air — the springs then put the brakes on by themselves.
 - Tractor and straight truck spring brakes come **fully on** when pressure drops to **20–45 psi** (**typically 20–30 psi**).
-- **Don't wait** for that. When the **low-air warning light and buzzer first come on**, bring the vehicle to a **safe stop right away**, while you can still control the brakes.
+- **Don't wait** for that. As soon as the low-air light and buzzer come on, pull over and stop safely. Do it now, while the service brakes still work.
 - Spring brake power depends on **brake adjustment**. If the brakes are out of adjustment, **neither** the regular brakes **nor** the emergency/parking brakes will work right.
 
 ### 5.1.15 Parking brake controls (pp. 5-4–5-5)
@@ -176,7 +176,7 @@ Figure 5.2 (described): a drum brake showing the brake chamber, slack adjuster, 
 - **To park:** move the lever **as far as it will go** and hold it with the **locking device**.
 
 **Dual parking control valves (Figure 5.3):**
-- When main air pressure is lost, the spring brakes come on. Some vehicles, such as **buses**, have a **separate air tank** that can release the spring brakes so you can move in an emergency.
+- Losing main air pressure puts the spring brakes on. Some vehicles, **buses** for example, carry an extra **separate air tank** you can use to let the spring brakes off and move the vehicle in an emergency.
 - One valve is **push-pull**, for parking. The other is **spring-loaded in the "out" position**: **push and hold** it and air from the separate tank releases the spring brakes; let go and they come back on.
 - The separate tank has enough air to do this **only a few times**. **Plan carefully**, or you could be stuck in a dangerous spot.
 
@@ -188,7 +188,7 @@ Figure 5.3 (described): dash controls — **yellow** "Parking brakes, pull to ap
   - **Truck tractors** with air brakes built **on or after March 1, 1997**.
   - **Other** air-brake vehicles (trucks, buses, trailers, converter dollies) built **on or after March 1, 1998**.
   - Many older vehicles were given ABS **voluntarily**.
-- **How to tell:** check the **certification label** for the date of manufacture. On older towed units, look **under the vehicle** for the **ECU** and **wheel speed sensor wires** coming from the back of the brakes.
+- **How to tell:** check the **certification label** for the date of manufacture. On older towed units, check **underneath** for an **ECU** and for **wheel speed sensor wires** running out of the back of the brakes.
 - **Yellow ABS malfunction lamps:**
   - Tractors, trucks and buses: on the **instrument panel**.
   - Trailers: on the **left side**, **front or rear corner**.
@@ -428,7 +428,7 @@ Figure 5.3 (described): dash controls — **yellow** "Parking brakes, pull to ap
 16. a — Automatic limiting valves reduce front air except in very hard stops of 60 psi or more; the driver cannot control them. (p. 5-4)
 17. b — Spring brakes come fully on at 20–45 psi (typically 20–30). 55–75 is the warning range. (p. 5-4)
 18. c — Don't wait for the spring brakes; stop safely as soon as the warning first comes on. (p. 5-4)
-19. a — Pull the yellow diamond knob out to apply; push it in to release. The red 8-sided knob is the trailer air supply. (p. 5-4)
+19. a — Pull the yellow diamond knob out to apply; push it in to release. The red 8-sided knob is the trailer air supply control. (pp. 5-4, 6-5)
 20. b — Spring force plus air pressure together could damage the brakes. (p. 5-4)
 21. b — To park with a modulating valve, move the lever all the way and hold it with the locking device. (p. 5-4)
 22. a — The separate tank holds only enough air to release the spring brakes a few times, so plan your moves. (p. 5-4)

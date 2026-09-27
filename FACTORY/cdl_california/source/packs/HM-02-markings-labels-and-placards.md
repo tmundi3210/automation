@@ -41,7 +41,7 @@ In the last lesson you learned how the danger is written on the **shipping paper
   - the **required labels**.
 - When the HMR require it, the package also says **RQ**, **MARINE POLLUTANT**, **BIOHAZARD**, **HOT**, or **INHALATION HAZARD**.
 - Packages with **liquid containers** inside have **orientation arrows** pointing to the correct **upright** direction.
-- Labels **always reflect the hazard class** of the product. If a package needs **more than 1 label**, the labels must be **close together, near the proper shipping name**.
+- A label always matches the product's **hazard class**. When a package has **2 or more labels**, they are placed **side by side, next to the proper shipping name**.
 - **Your check:** compare the **shipping paper** with the **markings and labels**. Make sure the paper shows the correct basic description and that the packages carry the proper labels. *Why:* the driver is responsible for making sure the shipper identified, marked and labeled the HazMat properly (p. 9-3).
 - **Not familiar with the material?** Ask the shipper to **contact your office**.
 
@@ -126,11 +126,11 @@ Except for **bulk packaging**, Table 2 classes need placards **only if the total
 - you have **1,001 pounds or more** of **2 or more** Table 2 hazard classes that need **different** placards, **and**
 - you have **not** loaded **2,205 pounds or more** of any **one** Table 2 class **at any one place**. (If you have, use that material's **specific** placard.)
 
-The DANGEROUS placard is an **option, not a requirement**. You can always placard for each material.
+Using DANGEROUS placards is **your choice, never a must**. Placarding each material by its own class is always allowed.
 
 *Worked example:* you carry 600 lb of Class 3 flammable liquid and 500 lb of Class 8 corrosive, weights including packaging. Neither is 1,001 lb alone, but you **add them**: 600 + 500 = **1,100 lb**, which is 1,001 or more → **placards are required**. Use FLAMMABLE and CORROSIVE placards, **or** DANGEROUS placards (2 Table 2 classes, and less than 2,205 lb of either was loaded at one place).
 
-*Worked example:* 900 lb of Class 8 (package included) is your only HazMat. 900 is less than 1,001 → no placard is required for it.
+*Worked example:* 900 lb of Class 8 in non-bulk packages (package weight included) is your only HazMat. 900 is less than 1,001 → no placard is required for it. (In bulk packaging it would need placards.)
 
 ### 9.3.11 Special placard rules (p. 9-10)
 - **INHALATION HAZARD** on the paper or package → show **POISON GAS** or **POISON INHALATION** placards **in addition to** the class placards. The **1,000-pound exception does not apply**, so this is required for any amount.
