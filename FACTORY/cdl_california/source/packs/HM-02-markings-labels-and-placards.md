@@ -264,7 +264,7 @@ The DANGEROUS placard is an **option, not a requirement**. You can always placar
 8. When may you move a vehicle that is not properly placarded?
    a) To drive it to the nearest place that sells placards
    b) Only in an emergency, to protect life or property
-   c) When the trip is under 1,001 feet
+   c) When you are only moving it across the shipper's lot
 9. A placard must be at least how far from any other markings on the vehicle?
    a) 3 inches
    b) 9.84 inches

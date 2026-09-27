@@ -13,7 +13,7 @@
 
 The road test is the **third** and last skills test. You drive a route with many kinds of traffic while the examiner scores you. The examiner scores **specific maneuvers** (like a turn or a lane change) and also your **general driving behavior** the whole time. You follow the examiner's directions, which are given early enough for you to do them. You will **never be asked to drive unsafely**. (p. 13-1)
 
-The handbook calls this test the **driving performance evaluation (DPE)**. (p. 13-1)
+The road test is one part of what the handbook calls the CDL **driving performance evaluation (DPE)**. (p. 13-1)
 
 **Key words**
 - **Error** = a scored mistake on the road test.
@@ -34,19 +34,19 @@ The handbook calls this test the **driving performance evaluation (DPE)**. (p. 1
 - The whole time you must: **wear your safety belt**; **obey all traffic signs, signals and laws**; and finish **without an accident or a moving violation**. (p. 13-1)
 - If the route lacks a situation (for example, a railroad crossing), you may be asked to **simulate** it by **telling the examiner** what you would do. (pp. 13-1, 13-3)
 - You have **3 attempts in total** to pass the vehicle inspection, basic control skills and road tests. (p. 13-1)
-- **[CA]** To meet the Class B skills test rule, you must test in a truck or bus, or another **single vehicle** with a **GVWR of 26,001 lb or more**. (p. 13-1)
+- To meet the Class B skills test rule, you must test in a truck or bus, or another **single vehicle** with a **GVWR of 26,001 lb or more**. (p. 13-1)
 
 ### 13.1.1 Turns (pp. 13-1–13-2)
 **When told to turn:** check traffic **in all directions**, signal, and get into the right lane for the turn safely. (p. 13-1)
 
 **Approaching the turn:**
 - **Signal** to warn others. **Slow down smoothly** and change gears as needed to keep power.
-- **Do not coast unsafely.** *Unsafe coasting* = being out of gear for **more than the length of your vehicle**. *Why:* out of gear you have less control and no engine braking. (p. 13-1)
+- **Do not coast unsafely.** *Unsafe coasting* = being out of gear for **more than the length of your vehicle**. (p. 13-1)
 
 **If you must stop first:**
 - Stop **smoothly**, **without skidding**, and **fully**, **behind** the stop line, crosswalk or stop sign.
 - Behind another vehicle, stop where you can **see its rear tires** (a safe gap).
-- **Don't let the vehicle roll.** Keep the **front wheels pointed straight ahead**. *Why:* if you are hit from behind with your wheels turned, you could be pushed into oncoming traffic. (p. 13-1)
+- **Don't let the vehicle roll.** Keep the **front wheels pointed straight ahead**. (p. 13-1)
 
 **Making the turn:**
 - Check traffic **in all directions** again. Keep **both hands on the wheel**.
@@ -98,8 +98,6 @@ You pull over **as if you were going to get out and check something** on the veh
 4. When traffic allows, **release the parking brake** and **pull straight ahead**. **Don't turn the wheel before the vehicle moves.**
 5. Check traffic from all directions — **especially the left** — and steer and speed up smoothly into the lane when safe.
 6. **Cancel** the left signal once you are back in traffic.
-
-*Why take your feet off the pedals:* it shows the parking brake alone is holding the vehicle.
 
 ### 13.1.7–13.1.8 Curves and railroad crossings (p. 13-3)
 **Curves:** check traffic, **slow down before the curve** so you **don't need to brake or shift in it**, stay in your lane, and keep checking traffic. (p. 13-3)
@@ -268,8 +266,8 @@ _This handbook section has no review box — see Flashcards and Practice test._
     b) Before you enter it, so you don't brake or shift in the curve
     c) Only after the curve, when you can see ahead
 11. You drive a vehicle with placards. How far from the nearest rail must you stop at a railroad crossing?
-    a) No less than 10 feet and no more than 40 feet
-    b) No less than 20 feet and no more than 100 feet
+    a) As close to the nearest rail as you safely can, to see better
+    b) At least 50 feet back, to stay well clear
     c) No less than 15 feet and no more than 50 feet
 12. Which is NOT allowed while any part of your vehicle is in a railroad crossing?
     a) Keeping both hands on the wheel
