@@ -106,7 +106,7 @@ A loaded HazMat vehicle is most dangerous when it is parked near people, passing
 - **Remove any overheated tire** and put it a **safe distance** from the vehicle. Don't drive until you **fix the cause** of the overheating.
 - The **parking and attending rules still apply** while you check, repair or replace tires.
 
-> Handbook vs other sources: many practice tests say to check the tires of a placarded vehicle "every 2 hours or 100 miles." In this handbook, "every 2 hours or every 100 miles" is the very-hot-weather tire rule (p. 2-34). For HazMat, the handbook says **at the start of each trip and each time you park** (p. 9-18) — use that unless an exam option matches only the 2-hour wording.
+> Handbook vs other sources: many practice tests say to check the tires of a placarded vehicle "every 2 hours or 100 miles." In this handbook, "every 2 hours or every 100 miles" is the very-hot-weather tire rule (p. 2-34). For HazMat, the handbook says **at the start of each trip and each time you park** (p. 9-18) — use that for HazMat questions.
 
 ### 9.6.10–9.6.12 Shipping papers, chlorine and railroad crossings (pp. 9-18–9-19)
 **Where to keep shipping papers and emergency response information (9.6.10)**
@@ -248,7 +248,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 - **Trap:** Resting in the sleeper berth counts as attending the vehicle. → **Correct:** you must be **awake, not in the sleeper**, or within **100 ft** with a clear view. (p. 9-16)
 - **Trap:** Flares are fine next to an empty gasoline tank. → **Correct:** never use flares near a Class 3 or Division 2.1 tank, **loaded or empty**; use triangles or red electric lights. (p. 9-16)
 - **Trap:** Your dispatcher is responsible for knowing route permits, so you don't need to check. → **Correct:** it is **your job as the driver** to find out about permits and routes before you start. (p. 9-16)
-- **Trap:** Smoking is fine 10 feet from a placarded tanker if you are outside. → **Correct:** no smoking within **25 ft**. (p. 9-18)
+- **Trap:** Smoking is fine 5 feet from a placarded tanker if you are outside. → **Correct:** no smoking within **25 ft**. (p. 9-18)
 - **Trap:** You may leave the engine running while refueling a HazMat load if you stay at the pump. → **Correct:** **engine off**, and someone must be **at the nozzle** the whole time. (p. 9-18)
 - **Trap:** You can check tire pressure by kicking the tires. → **Correct:** the **only acceptable way** is a **tire pressure gauge**. (p. 9-18)
 - **Trap:** When you leave the cab, take the shipping papers with you. → **Correct:** leave them in the **driver's door pouch** or **on the driver's seat** so responders can find them. (At an accident scene, though, you keep them with you to hand over.) (pp. 9-18–9-19)
@@ -371,9 +371,9 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
     b) Leave the engine idling so the air pressure stays up
     c) Lock the nozzle open and walk around the vehicle
 11. The power unit of a placarded vehicle must have a fire extinguisher rated at least:
-    a) 5 B:C
-    b) 10 A:B
-    c) 10 B:C
+    a) Any rating, as long as you carry two
+    b) A water-type extinguisher only
+    c) 10 B:C or more
 12. How must you check tire pressure on a placarded vehicle?
     a) By kicking each tire
     b) With a tire pressure gauge
@@ -421,11 +421,11 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 23. Which of these events does NOT, by itself, require a call to the National Response Center?
     a) A person is killed
     b) The public is evacuated for more than 1 hour
-    c) Property damage of $10,000 with no injuries, spills or evacuation
+    c) A flat tire that delays you 30 minutes, with no spill
 24. Carriers must make a detailed written report of a HazMat incident within:
     a) 30 days
     b) 24 hours
-    c) 10 days
+    c) 1 hour
 25. [CA] A HazMat spill on a California highway must be reported:
     a) Within 30 days, in writing, to the DMV
     b) Immediately, to the CHP or the police department with traffic jurisdiction
@@ -458,7 +458,7 @@ You or your employer must phone the **National Response Center** (**1-800-424-88
 20. b — Never drive on with HazMat leaking; park, secure, stay, and send someone with written details. (p. 9-20)
 21. a — Identify it from papers, labels or package location; never touch or smell HazMat. (p. 9-20)
 22. a — Remove all explosives before separating vehicles and place them at least 200 feet away. (p. 9-21)
-23. c — The property-damage trigger is more than $50,000; deaths and evacuations over 1 hour must be reported. (p. 9-22)
+23. c — A flat tire is not on the list; a death and a public evacuation of more than 1 hour must be reported. (p. 9-22)
 24. a — Carriers must make detailed written reports within 30 days. (p. 9-22)
 25. b — California requires immediate reporting to the CHP or police with traffic jurisdiction. (p. 9-23)
 26. c — CHEMTREC provides technical information about HazMat's physical properties. (p. 9-22)
