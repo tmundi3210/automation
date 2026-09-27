@@ -453,6 +453,9 @@ const sh = parseStartHere(readFileSync(join(SRC, '00-START-HERE.md'), 'utf8'));
 // dedupe glossary by term (first wins)
 // dedupe by the bare term (ignoring a parenthetical expansion); keep the most informative entry; sort ignoring punctuation
 const gkey = (t: string) => norm(t.replace(/\([^)]*\)/g, ''));
+// not glossary terms: control labels and headings the key-word scan picks up
+const NOT_TERMS = new Set(['in', 'out', 'push in', 'pull out', 'defect', 'knowing when to shift down']);
+all.glossary = all.glossary.filter((g) => !NOT_TERMS.has(gkey(g.term)));
 const best = new Map<string, GlossaryEntry>();
 for (const g of all.glossary) { const k = gkey(g.term); const cur = best.get(k); if (!cur || g.term.length + g.defHtml.length > cur.term.length + cur.defHtml.length) best.set(k, g); }
 const sortKey = (t: string) => t.replace(/^[^A-Za-z0-9]+/, '').toLowerCase();
@@ -472,7 +475,8 @@ if (sh.mostMissed.length !== 50) problems.push(`mostMissed ${sh.mostMissed.lengt
 
 // ---------- tap-to-define: first use of each glossary term in a concept becomes a button (text nodes only)
 function linkGlossary() {
-  const SKIP = new Set(['cdl', 'cmv', 'clp']);
+  // too common to link everywhere (still listed in the glossary page)
+  const SKIP = new Set(['cdl', 'cmv', 'clp', 'emergency', 'hazard', 'conflict', 'tractor', 'texting', 'traction', 'conviction', 'restriction', 'endorsement']);
   const terms = all.glossary.map((g, i) => ({ i, bare: g.term.replace(/\s*\([^)]*\)\s*/g, '').replace(/["“”]/g, '').trim() }))
     .filter((t) => t.bare.length >= 3 && !SKIP.has(t.bare.toLowerCase()))
     .sort((a, b) => b.bare.length - a.bare.length);
@@ -482,17 +486,20 @@ function linkGlossary() {
       if (seg.startsWith('<')) return seg;
       const inButton = arr.slice(0, k).reverse().find((x) => /^<\/?button/.test(x));
       if (inButton && !inButton.startsWith('</')) return seg;
+      // placeholders keep one link from ever landing inside another
+      const tokens: string[] = [];
       for (const t of terms) {
         if (used.has(t.i)) continue;
-        const re = new RegExp(`(^|[^A-Za-z0-9])(${t.bare.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?=[^A-Za-z0-9]|$)`, /^[A-Z0-9]+$/.test(t.bare) ? '' : 'i');
+        const re = new RegExp(`(^|[^A-Za-z0-9\u0000])(${t.bare.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?=[^A-Za-z0-9\u0000]|$)`, /^[A-Z0-9]+$/.test(t.bare) ? '' : 'i');
         const m = seg.match(re);
         if (m && m.index !== undefined) {
           used.add(t.i);
           const at = m.index + m[1].length;
-          seg = seg.slice(0, at) + `<button type="button" class="gl" data-g="${t.i}">${m[2]}</button>` + seg.slice(at + m[2].length);
+          tokens.push(`<button type="button" class="gl" data-g="${t.i}">${m[2]}</button>`);
+          seg = seg.slice(0, at) + `\u0000${tokens.length - 1}\u0000` + seg.slice(at + m[2].length);
         }
       }
-      return seg;
+      return seg.replace(/\u0000(\d+)\u0000/g, (_m, n: string) => tokens[+n]);
     }).join('');
     used = new Set<number>(); c.core = c.core.map(wrap);   // quick view: first use of each term
     used = new Set<number>(); c.html = wrap(c.html);       // dive deeper: its own first uses
