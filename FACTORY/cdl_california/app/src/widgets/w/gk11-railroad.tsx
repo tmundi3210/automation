@@ -86,7 +86,7 @@ export default function Railroad({ onEvidence, onChallenge, concepts }: WidgetPr
   const slider = (lock: boolean) => (
     <div class="field">
       <label for="rr-d">Stop point: front bumper <span class="num">{d}</span> ft from the nearest rail</label>
-      <input id="rr-d" type="range" min={0} max={100} step={1} value={d} disabled={lock} onInput={(e) => { setD(+(e.target as HTMLInputElement).value); setCrossed(null); }} style={{ width: '100%', accentColor: 'var(--accent)' }} />
+      <input id="rr-d" type="range" min={0} max={100} step={1} value={100 - d} aria-valuetext={`${d} ft from the nearest rail`} disabled={lock} onInput={(e) => { setD(100 - +(e.target as HTMLInputElement).value); setCrossed(null); }} style={{ width: '100%', accentColor: 'var(--accent)' }} />
     </div>
   );
   const q = QS[i - 1];

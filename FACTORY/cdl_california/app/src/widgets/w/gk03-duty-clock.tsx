@@ -119,7 +119,13 @@ function Explore() {
       <div class="grid2">
         {(['fed', 'ca'] as Sys[]).map((s) => { const bad = s === 'fed' ? fedBad : caBad; const r = RULES[s]; return (
           <div class={`feedback ${bad.length ? 'bad' : 'good'}`} role="status" aria-live="polite"><div class="eyebrow">{r.name}{s === 'ca' && <span class="ca-tag">CA</span>}</div>
-            <div class="verdict">No driving after {clock(start + r.window)}</div>
+            {(() => {
+              // the earliest limit that binds: the on-duty window, or the hour the driving-hours limit is used up
+              let n = 0, used = -1; for (let h = 0; h < log.length && h < r.window; h++) if (log[h] === 'D' && ++n === r.drive) { used = h + 1; break; }
+              return used > 0 && used < r.window
+                ? <div class="verdict">No more driving after {clock(start + used)} <span class="small">({r.drive} driving hours used)</span></div>
+                : <div class="verdict">No driving after {clock(start + r.window)} <span class="small">({r.window}th hour on duty)</span></div>;
+            })()}
             <p class="small num">Driving: {Math.min(driven, 24)} h logged, max {r.drive}. {bad.length ? `${bad.length} illegal driving hour${bad.length > 1 ? 's' : ''}${firstBad(s)}.` : 'Every driving hour is legal.'}</p></div>); })}
       </div>
       <p class="small">Both systems: after the limit you may still do non-driving work, but you may not drive again until you have had <strong>10 hours off in a row</strong>. This log assumes you stay on duty all day, as in the handbook’s 5:00 a.m. example. <span class="plate">p. 1-27</span></p>

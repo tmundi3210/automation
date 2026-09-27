@@ -238,7 +238,7 @@ export default function WhipRollover(props: WidgetProps) {
               <input id="whip-t" type="range" min={0} max={100} value={Math.round(t * 100)} onInput={(e) => { setPlaying(false); setT(+(e.target as HTMLInputElement).value / 100); }} />
             </div>
           </div>
-          <p class="small"><strong>{rig.name}.</strong> The colored bars show how far past the new lane each unit’s rear swings. {rig.ra === 1
+          <p class="small"><strong>{rig.name}.</strong> The bars below compare rearward amplification: how many times more likely the last trailer is to roll over than the tractor. {rig.ra === 1
             ? 'At 1.0 this rig has the least crack-the-whip in Figure 6.1.'
             : `Rearward amplification ${rig.ra.toFixed(1)}: the last trailer is ${rig.ra.toFixed(1)} times as easy to roll over as the tractor. The swing grows through each unit — the tip of the whip.`} <span class="plate">p. 6-1, 6-2</span></p>
           <RankBars sel={rigId} />
