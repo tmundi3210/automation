@@ -16,20 +16,20 @@ A loaded HazMat vehicle is most dangerous when it is parked near people, passing
 
 **Key words**
 - **Placarded vehicle** = a vehicle that must show HazMat warning placards because of what it carries.
-- **Division 1.1, 1.2, 1.3** = the most powerful kinds of explosives (mass explosion, projection and mass fire hazards).
+- **Division 1.1, 1.2, 1.3** = the explosives divisions with mass explosion (1.1), projection (1.2) and mass fire (1.3) hazards.
 - **Traveled part of the road** = the lanes where traffic actually drives (not the shoulder beyond it).
 - **Safe haven** = a place approved (usually by local authorities) for parking unattended vehicles loaded with explosives.
 - **Shipper** = the business that sends the HazMat. **Carrier** = the company or person that transports it. **Consignee** = the business or person it is delivered to.
 - **Route plan** = a written plan of the roads you will use; required for Division 1.1, 1.2 and 1.3 explosives.
 - **FMCSR** = Federal Motor Carrier Safety Regulations. Part 397 covers driving and parking HazMat.
 - **CHP** = California Highway Patrol.
-- **10 B:C fire extinguisher** = an extinguisher rated by Underwriters Laboratories (UL) for burning liquids (B) and electrical fires (C).
+- **10 B:C fire extinguisher** = the minimum Underwriters Laboratories (UL) rating for the fire extinguisher on a placarded power unit.
 - **ERG** = Emergency Response Guidebook, the DOT guide emergency crews use to protect themselves and the public from HazMat.
 - **Upwind** = the side the wind is blowing from, so fumes blow away from you.
 - **Survey meter** = an instrument that measures radiation.
 - **National Response Center** = a federal center with a 24-hour toll-free line that helps coordinate responses to chemical hazards.
 - **CHEMTREC** = Chemical Transportation Emergency Center, a 24-hour line that gives emergency crews technical facts about HazMat.
-- **Reportable quantity (RQ)** = the amount of a hazardous substance that, if spilled, must be reported.
+- **Reportable quantity (RQ)** = an amount of a hazardous substance listed in the federal rules (Appendix A to 49 CFR §172.101). If that much is involved in an incident, extra details must be reported.
 
 ### 9.6.1 Parking with Division 1.1, 1.2 or 1.3 explosives (p. 9-16)
 - **Never park within 5 feet** of the **traveled part of the road**.
