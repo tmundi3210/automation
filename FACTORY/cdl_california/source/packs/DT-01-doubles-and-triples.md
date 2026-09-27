@@ -1,6 +1,6 @@
 # DT-01 · Doubles and triples
 
-> **Handbook:** Section 7.1–7.4, pages 7-1–7-5 · **Test:** Doubles and Triples · **Exam weight:** High · **Study time:** ~40 min
+> **Handbook:** Section 7.1–7.4, pages 7-1–7-6 · **Test:** Doubles and Triples · **Exam weight:** High · **Study time:** ~40 min
 
 ## What you'll be able to answer
 - Why doubles and triples tip over more easily, and which trailer is most likely to roll over.
@@ -12,7 +12,7 @@
 
 ## Learn it
 
-A **double** is a tractor pulling **2** trailers. A **triple** pulls **3**. They are less steady than other trucks, and more things can go wrong, so you must drive and inspect with extra care. You should also study Sections 2, 5, and 6 (General Knowledge, Air Brakes, Combination Vehicles). (p. 7-1)
+A **double** is a tractor pulling **2** trailers. A **triple** pulls **3**. They are less steady than other trucks, and more things can go wrong, so you must drive and inspect with extra care. You should also study Sections 2, 5, and 6 (Driving Safely, Air Brakes, Combination Vehicles). (p. 7-1)
 
 **[CA]** **Triples are not legal in California.** The handbook still covers them because many other states allow them, so triples questions can still be on the test. (p. 7-1)
 
@@ -43,7 +43,7 @@ Tractor ─ fifth wheel ─ LEAD trailer ─ pintle hook ◄ ring (pintle eye) �
 - A speed that is safe on a curve for a straight truck or a single-trailer rig **may be too fast** for doubles or triples. *Why:* doubles and triples are **less stable** than other trucks.
 
 ### 7.1.2 Crack-the-whip effect (p. 7-1)
-- When you steer quickly, each trailer swings harder than the one in front, like the tip of a whip.
+- When you make a quick lane change, the rear of the rig swings harder than the front ("rearward amplification"), like the tip of a whip. (p. 6-1)
 - Because of this, doubles and triples are **more likely to turn over** than other combinations.
 - The **last trailer** is the one **most likely to turn over**.
 - Fix: **steer gently**. (Crack-the-whip is explained in more detail in Section 6.1.2 — see CV-01.)
@@ -76,7 +76,7 @@ Tractor ─ fifth wheel ─ LEAD trailer ─ pintle hook ◄ ring (pintle eye) �
 
 **Step D — Connect the dolly to the rear trailer.** (p. 7-3)
 1. Make sure the rear trailer's **brakes are locked and/or wheels chocked**.
-2. Check trailer height: it must be **slightly lower than the center of the fifth wheel**, so the trailer gets **raised slightly** when the dolly is pushed under.
+2. Check trailer height: The trailer should sit **a little below the middle of the dolly's fifth wheel**, so the dolly lifts it **a bit** as you back under.
 3. **Back the dolly under** the rear trailer.
 4. Raise the landing gear **slightly** off the ground. *Why:* prevents damage if the trailer moves.
 5. **Test the coupling** by pulling against the pin of the second trailer.
@@ -85,7 +85,7 @@ Tractor ─ fifth wheel ─ LEAD trailer ─ pintle hook ◄ ring (pintle eye) �
 8. **Close** the dolly air tank **petcock**, and **close** the shut-off valves at the **rear of the second trailer** (service and emergency).
 9. **Open** the shut-off valves at the **rear of the first trailer** (and on the dolly, if it has them).
 10. Raise the landing gear **completely**.
-11. **Charge the trailer brakes** (push the "air supply" knob in). Then **check for air at the rear of the second trailer** by opening the emergency line shut-off. **No air = something is wrong, and the brakes will not work.**
+11. **Charge the trailer brakes** (push the "air supply" knob in). Then open the emergency line shut-off at the back of the second trailer to **make sure air comes out**. **No air = something is wrong, and the brakes will not work.**
 
 ### 7.2.2 Uncoupling double trailers (p. 7-3)
 **Uncouple the rear trailer:**
@@ -109,7 +109,7 @@ Tractor ─ fifth wheel ─ LEAD trailer ─ pintle hook ◄ ring (pintle eye) �
 **Never unlock the pintle hook while the dolly is still under the rear trailer.** *Why:* the dolly **tow bar may fly up**, which can **injure** someone, and it makes the dolly **very hard to recouple**. (p. 7-3)
 
 ### 7.2.3 [CA] Triple trailers (p. 7-4)
-- **Couple:** hook the tractor to the first trailer the normal tractor-semitrailer way. Then move the dolly into place and couple the **first trailer to the second** using the doubles method. The triple is now complete. (In other words, the back two trailers are put together as a double first.)
+- **Couple:** hook the tractor to the first trailer the normal tractor-semitrailer way. Then move the dolly into place and couple the **first trailer to the second** using the doubles method. The triple is now complete. Delete the parenthetical sentence.
 - **Uncouple:** take off the **third** trailer first — pull the dolly out, then unhitch the dolly, the doubles way. Then uncouple the rest like any double.
 - **[CA] Remember: operating triples is not allowed in California.**
 
@@ -144,11 +144,13 @@ First do the normal combination air brake checks from Section 6 (see CV-04). The
 2. Wait for air pressure to reach **normal**.
 3. **Push in the red "trailer air supply" knob.** This sends air to the **emergency (supply)** lines.
 4. Use the **trailer handbrake** to send air to the **service** line.
-5. Walk to the **back of the rig**. **Open the emergency line shut-off valve** at the rear of the **last** trailer. You should **hear air escaping** — the whole system is charged. **Close** it.
-6. **Open the service line valve** to check that service pressure goes through all the trailers (the trailer handbrake or brake pedal must be on for this). Then **close** it.
+5. Walk to the **back of the rig**. At the **last** trailer's rear, **open the emergency line shut-off valve**. You should **hear air escaping** — the whole system is charged. **Close** it.
+6. **Open the service line valve** to confirm service air reaches every trailer (the trailer handbrake or brake pedal must be on for this). Then **close** it.
 7. **No air from one or both lines?** Check that the shut-off valves on the trailers and dollies are **OPEN**.
 
 *Why:* you **must have air all the way to the back** for all the brakes to work.
+
+**Also on the doubles check (p. 7-6):** (a) **Tractor protection valve:** charge the system, shut the engine off, and step on and off the brake pedal to lower tank pressure. The trailer air supply knob should **pop out** (normal → emergency) at the maker's pressure, **usually 20–45 psi**. If it does not, a hose or trailer brake leak could drain all the tractor's air and set the emergency brakes, with possible loss of control. (b) **Trailer emergency brakes:** charge, check the trailer rolls freely, pull out the trailer air supply knob, then pull gently with the tractor — the trailer brakes should hold. (c) **Trailer service brakes:** normal pressure, release parking brakes, move slowly forward, apply the trailer brakes with the **hand control (trolley valve)** — you should feel them come on. Test with the hand valve, but in normal driving control them with the foot pedal.
 
 ## Numbers & terms to memorize
 | Item | Value / meaning | Page |
@@ -177,6 +179,7 @@ First do the normal combination air brake checks from Section 6 (see CV-04). The
 | Air flow check: which knob | Push in the **red** "trailer air supply" knob | 7-5 |
 | Air flow check: service line | Needs the **trailer handbrake** or brake pedal on | 7-5 |
 | No air at the back | Check shut-off valves are **OPEN** | 7-5 |
+| Tractor protection valve pops out (doubles check) | usually **20–45 psi** | 7-6 |
 
 ## Exam traps
 - **Trap:** The first trailer, right behind the tractor, is the one most likely to roll over. → **Correct:** The **last** trailer is most likely to turn over, because of the crack-the-whip effect. (p. 7-1)
@@ -184,7 +187,7 @@ First do the normal combination air brake checks from Section 6 (see CV-04). The
 - **Trap:** Put the lighter trailer up front so the tractor pulls less weight. → **Correct:** The **heavier** trailer goes **first**, right behind the tractor; the lighter one goes in the rear. (p. 7-2)
 - **Trap:** The rear trailer should sit a little higher than the fifth wheel so the dolly slides under easily. → **Correct:** It should be **slightly lower** than the center of the fifth wheel, so it is raised slightly when the dolly is pushed under. (p. 7-3)
 - **Trap:** When coupling, open the shut-off valves at the rear of the second (last) trailer. → **Correct:** **Close** the valves at the rear of the **last** trailer and **open** those at the rear of the **first** trailer. (p. 7-3)
-- **Trap:** You can unlock the pintle hook first, then pull the dolly out from under the rear trailer. → **Correct:** **Never** unlock the pintle hook with the dolly still under the rear trailer — the tow bar may fly up and hurt someone. (p. 7-3)
+- **Trap:** You can unlock the pintle hook first, then pull the dolly out from under the rear trailer. → **Correct:** **Never** unlock the pintle hook while the dolly is still under the rear trailer — the tow bar may fly up and hurt someone. (p. 7-3)
 - **Trap:** The converter dolly air tank drain valve should be left open. → **Correct:** It must be **CLOSED**. (Opening the petcock is how you *release* the dolly brakes while moving it by hand, before coupling.) (pp. 7-2, 7-5)
 - **Trap:** Locking jaws closed around the head of the kingpin are fine. → **Correct:** The jaws must be around the **shank**, not the head. (p. 7-4)
 - **Trap:** Triples are legal in California if you have the endorsement. → **Correct:** **[CA]** Triples are **not legal in California** at all. (pp. 7-1, 7-4)
@@ -194,7 +197,36 @@ First do the normal combination air brake checks from Section 6 (see CV-04). The
 - **Trap:** Doubles skid less on slippery roads because they have more axles. → **Correct:** The extra axles are **dead axles** your drive axles must pull, so **skids and loss of traction** are **more** likely. (p. 7-1)
 
 ## Handbook review questions — answered
-_This handbook section has no review box — see Flashcards and Practice test._
+**TYK 7 #1** What is a converter dolly?
+→ A coupling device with 1 or 2 axles and a fifth wheel that lets a semitrailer be coupled to the rear of a tractor-trailer, making a double. (p. 7-2)
+
+**TYK 7 #2** Do converter dollies have spring brakes?
+→ Some do. If the dolly has spring brakes, use the dolly parking brake control (and set them when you uncouple the dolly); if not, release its brakes by opening the air tank petcock, and chock its wheels. (pp. 7-2, 7-3)
+
+**TYK 7 #3** What 3 methods can you use to secure a second trailer before coupling?
+→ Its spring brakes (if it has them); if no spring brakes, connect the emergency line, charge the trailer air tank, and disconnect the line to set the emergency brakes; and chock the wheels. (p. 7-2)
+
+**TYK 7 #4** How do you check trailer height before coupling?
+→ It must be slightly lower than the center of the dolly's fifth wheel, so the trailer is raised slightly when the dolly goes under. (p. 7-3)
+
+**TYK 7 #5** What do you check in a visual check of the coupling?
+→ No space between upper and lower fifth wheel, and the locking jaws closed on the kingpin (around the shank, not the head). (pp. 7-3, 7-4)
+
+**TYK 7 #6** Why pull the dolly out from under a trailer before disconnecting it from the trailer in front?
+→ If you unlock the pintle hook while the dolly is under the rear trailer, the tow bar may fly up, possibly injuring someone, and recoupling becomes very hard. (p. 7-3)
+
+**TYK 7 #7** What do you check on the converter dolly? The pintle hook?
+→ Dolly: air tank drain valve closed, spare tire (if carried) secured, pintle eye in place in the pintle hook, safety chains secured, air lines supported and glad hands connected, light cords firmly in sockets. Pintle hook: latched, with the pintle eye in place. (p. 7-5)
+
+**TYK 7 #8** Shut-off valves at the rear of the last trailer? First trailer of doubles? Middle trailer of triples?
+→ Last trailer: CLOSED. First trailer of doubles: OPEN. Middle trailer of triples: OPEN (all front trailers open). (p. 7-5)
+
+**TYK 7 #9** How can you test that air flows to all trailers?
+→ Hold the rig, build normal pressure, push in the red trailer air supply knob, apply the trailer handbrake; at the rear of the last trailer open the emergency line shut-off (air should escape), close it, then open the service line valve, then close it. No air → check that shut-offs are OPEN. (p. 7-5)
+
+**TYK 7 #10** How do you know a converter dolly has anti-lock brakes?
+→ It has a yellow ABS lamp on the left side; dollies built on or after March 1, 1998 must have ABS. (p. 7-2)
+
 
 ## Flashcards
 | # | Question | Answer |

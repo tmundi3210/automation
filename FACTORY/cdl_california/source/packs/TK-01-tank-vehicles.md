@@ -12,7 +12,7 @@
 
 ## Learn it
 
-A **tank vehicle** (tanker) carries liquid or gas in a tank. Liquid moves and sits high, so a tanker handles very differently from a truck with boxes on it. You should also study Sections 2, 5, 6, and 9 (General Knowledge, Air Brakes, Combination Vehicles, Hazardous Materials). **Inspect the tanker before loading, unloading, or driving it** — to make sure it is safe to carry the load and safe to drive. (p. 8-1)
+A **tank vehicle** (tanker) carries liquid or gas in a tank. Liquid moves and sits high, so a tanker handles very differently from a truck with boxes on it. You should also study Sections 2, 5, 6, and 9 (Driving Safely, Air Brakes, Combination Vehicles, Hazardous Materials). **Inspect the tanker before loading, unloading, or driving it** — to make sure it is safe to carry the load and safe to drive. (p. 8-1)
 
 **Key words**
 - **N endorsement** = the tank vehicle endorsement on a CDL.
@@ -71,7 +71,7 @@ If your tanker has any of these, make sure it **works**:
 ### 8.2.1 High center of gravity (p. 8-2)
 - Hauling liquid takes special skill for **2 reasons**: the **high center of gravity** and the **movement of the liquid (surge)**.
 - High center of gravity = much of the load's weight rides **high above the road**. The vehicle is **top-heavy** and **easy to roll over**. Liquid tankers are **especially** easy to roll over.
-- Figure 8.1 compares a tanker with a car: the tanker's center of gravity is about **60–78 inches** high; the car's is about **18–24 inches**.
+- Figure 8.1 compares a tanker with a pickup truck: the tanker's center of gravity is about **60–78 inches** high; the pickup's is about **18–24 inches**. (Numbers row: '(pickup: 18–24 inches)')
 - **Tests show tankers can turn over at the speed limits posted for curves.** So take highway curves and on/off-ramp curves **well below** the posted speed.
 
 ### 8.2.2 Danger of surge (p. 8-2)
@@ -202,7 +202,7 @@ If your tanker has any of these, make sure it **works**:
 | 11 | Most important item to check on any tanker? | Leaks |
 | 12 | What happens if you haul in a leaking tank? | It's a crime — cited, stopped from driving, may pay cleanup |
 | 13 | What must be in the correct position before loading, unloading, or moving? | Intake, discharge, and cut-off valves |
-| 14 | Where do pipes and hoses most often leak? | Around joints |
+| 14 | Where should you look especially closely for leaks on pipes and hoses? | Around joints |
 | 15 | Manhole cover check? | Has gaskets and closes correctly |
 | 16 | Vent check? | Keep vents clear so they work |
 | 17 | Name the 4 special purpose items to check if equipped | Vapor recovery kits; grounding and bonding cables; emergency shutoff systems; built-in fire extinguisher |
@@ -334,7 +334,7 @@ If your tanker has any of these, make sure it **works**:
     a) A skills test in a tank vehicle only
     b) Both a knowledge test and a skills test
     c) The applicable knowledge tests only
-26. A tank vehicle trailer's drive or trailer wheels begin to skid. What may happen?
+26. You are pulling a tank trailer, and your tractor's drive wheels or the trailer wheels begin to skid. What may happen?
     a) The tank will start to leak
     b) The rig may jackknife
     c) The baffles will stop the skid
