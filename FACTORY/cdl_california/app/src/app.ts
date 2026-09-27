@@ -86,7 +86,9 @@ export function applyPrefs() {
   try {
     const r = document.documentElement;
     const p = state.prefs;
-    if (p.theme === 'system') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', p.theme);
+    // "system" leaves the host's own data-theme (the Artifact viewer stamps one) and only undoes our own override
+    if (p.theme === 'system') { if (r.dataset.themeByApp) { r.removeAttribute('data-theme'); delete r.dataset.themeByApp; } }
+    else { r.setAttribute('data-theme', p.theme); r.dataset.themeByApp = '1'; }
     r.setAttribute('data-size', String(p.textSize));
     if (p.reducedMotion) r.setAttribute('data-motion', 'reduce'); else r.removeAttribute('data-motion');
   } catch { /* */ }
