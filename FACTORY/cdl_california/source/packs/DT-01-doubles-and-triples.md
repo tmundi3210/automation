@@ -109,7 +109,7 @@ Tractor ─ fifth wheel ─ LEAD trailer ─ pintle hook ◄ ring (pintle eye) �
 **Never unlock the pintle hook while the dolly is still under the rear trailer.** *Why:* the dolly **tow bar may fly up**, which can **injure** someone, and it makes the dolly **very hard to recouple**. (p. 7-3)
 
 ### 7.2.3 [CA] Triple trailers (p. 7-4)
-- **Couple:** hook the tractor to the first trailer the normal tractor-semitrailer way. Then move the dolly into place and couple the **first trailer to the second** using the doubles method. The triple is now complete. Delete the parenthetical sentence.
+- **Couple:** hook the tractor to the first trailer the normal tractor-semitrailer way. Then move the dolly into place and couple the **first trailer to the second** using the doubles method. The triple is now complete.
 - **Uncouple:** take off the **third** trailer first — pull the dolly out, then unhitch the dolly, the doubles way. Then uncouple the rest like any double.
 - **[CA] Remember: operating triples is not allowed in California.**
 

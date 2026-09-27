@@ -90,7 +90,7 @@ Signs and devices (10.4.2):
 - **White stop line** — may be painted before the tracks. The **front of the school bus must stay behind** it while stopped. (p. 10-9)
 - **Crossbuck** — marks the crossing; you must **yield** to the train. If there is **no white line**, stop the bus **before the crossbuck**. With **more than one track**, a sign **under the crossbuck** shows how many. (p. 10-9)
 - **Flashing red lights** — when they start flashing, **stop**: a train is coming. Yield. With more than 1 track, make sure **all** tracks are clear. (p. 10-9)
-- **Gates** — stop when the lights start flashing and **before the gate comes down**. Stay stopped until the gates **go up** and the lights **stop flashing**. If the gate **stays down after the train passes**, **do not drive around it** — **call your dispatcher**. (p. 10-9)
+- **Gates** — stop when the lights start flashing and **before the gate comes down**. Stay stopped until the gates **go up** and the lights **stop flashing**. Gate still down after the train has gone by? Never go around it — call your dispatcher. (p. 10-9)
 
 ### 10.4.3 Recommended crossing procedures (pp. 10-9–10-10)
 Each state has its own school bus crossing laws; obey them. **In general, school buses stop at all crossings**, and the driver makes sure it is safe before crossing. A school bus has **no chance** in a crash with a train: a train is too big and heavy to stop quickly, and it has **no escape route**. (p. 10-9)
@@ -112,7 +112,7 @@ Each state has its own school bus crossing laws; obey them. **In general, school
 - **Check the crossing signals again** before going.
 - At a **multiple-track** crossing, stop **only before the first track**. When you are sure no train is coming on **any** track, cross **all** of them without stopping until you are completely clear.
 - Cross in a **low gear**. **Do not shift** while crossing.
-- If the **gate comes down after you have started across**, **drive through it**, even if you break the gate.
+- Gate drops once you are already crossing? Keep going and drive through it, even if the gate breaks.
 
 *Worked example:* no white line is painted. You stop 10 ft from the nearest rail → too close. You stop 60 ft back → too far. Anywhere from **15 to 50 ft**, before the crossbuck, with the best view, is right.
 

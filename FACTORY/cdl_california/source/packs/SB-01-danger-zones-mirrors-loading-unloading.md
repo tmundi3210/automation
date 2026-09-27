@@ -17,20 +17,20 @@ More students die **getting on and off** a school bus each year than die **ridin
 The handbook also says you must know California law and your own school district's rules well. (p. 10-1)
 
 - A **CLP** holder with a **P** (passenger) and/or **S** (school bus) endorsement may **not** drive a CMV with passengers. The only people allowed on board are federal/state auditors and inspectors, test examiners, other trainees, and the CDL holder who rides along. (p. 10-1)
-- **[CA]** Since **July 1, 2018**, a passenger on a bus that has seat belts must be buckled in, with some exceptions. Parents, guardians and chartering parties may **not** put a child who is **at least 8 but under 16 years old** on a bus unless the child is properly buckled. (p. 10-1)
+- **[CA]** Keep this bullet; make Numbers row, Flashcard 35 and Q24 consistent with it (see those items). Parents, guardians and chartering parties may **not** put a child who is **at least 8 but under 16 years old** on a bus unless the child is properly buckled. (p. 10-1)
 
 **Key words**
 - **CLP** = commercial learner's permit, the permit you drive on while learning, before you have your CDL.
 - **S endorsement** = the mark on a CDL that lets you drive a school bus. **P endorsement** = the mark for driving passenger vehicles.
 - **Danger zone** = the area on every side of the bus where a child is most likely to be hit, by another car or by the bus itself.
 - **Flat mirror** = an ordinary mirror; things look their true size and distance.
-- **Convex mirror** = a mirror that curves outward. It shows a wider area, but people and objects look smaller and farther away than they really are.
+- **Convex mirror** = a mirror that curves outward. It shows a wider area, but people and objects do not appear at their true size and distance.
 - **Crossview mirror** = a curved mirror on the front corner of the bus that shows the ground right in front of the bumper and beside the front wheels.
 - **Blind spot** = an area around the bus you cannot see, either directly or in a mirror.
 - **Alternating flashing amber lights** = yellow warning lights that flash **before** the stop to warn drivers that the bus is about to stop.
 - **Alternating flashing red lights** = red lights that flash **while** the bus is stopped for students; traffic must stop.
-- **Stop arm** (stop signal arm) = the STOP sign that swings out from the left side of the bus.
-- **Crossing control arm** = an arm on the front bumper that swings out so children must walk far enough in front of the bus to be seen.
+- **Stop arm** (stop signal arm) = the moveable STOP signal arm on the bus, extended when the red lights are on.
+- **Crossing control arm** = a moveable arm some buses have; follow state and local rules for using it.
 - **Service door** = the door students use to get on and off.
 - **Secure the bus** = make it safe to leave: stop it, set the brake, and take control of the key.
 - **Post-trip inspection** = the check you do when your route or trip is over.
@@ -52,7 +52,7 @@ The danger zones surround the whole bus. **Figure 10.1** (a drawing of the bus f
 ### 10.1.3 Outside flat mirrors (pp. 10-1–10-2)
 First, the general rule (10.1.2): **check every mirror before you drive** the bus so you have the biggest possible view. If a mirror is wrong, **get it adjusted**. *Why:* the mirrors are how you watch the danger zones for students, traffic and objects. (p. 10-1)
 
-- **Where:** at the left and right **front corners** of the bus, at the side or front of the windshield. (p. 10-2)
+- **Where:** on both front corners of the bus, beside or in front of the windshield. (p. 10-2)
 - **Used to:** watch traffic, check clearances, and check for students **along the sides and behind** the bus.
 - **Blind spots:** right **below and in front of** each mirror, and **directly behind the rear bumper**. The blind spot behind the bus runs **50 to 150 ft** back, and can reach **400 ft** on a long, wide bus.
 - **Adjust them so you can see:**
@@ -116,7 +116,7 @@ First, the general rule (10.1.2): **check every mirror before you drive** the bu
 3. Turn on the **alternating red lights** when traffic is a safe distance from the bus, and make sure the **stop arm is out**.
 4. Make a **final check that all traffic has stopped** before you fully open the door and signal students to come.
 
-*Worked example:* you are going to stop at a corner. About 200 ft (5–10 s) back, the amber lights go on. A little closer, between 100 and 300 ft (3–5 s) out, the right signal goes on. You stop 10 ft short of the waiting children, go to Park, set the brake, then switch to red lights.
+*Worked example:* you are going to stop at a corner. At least 200 ft (about 5–10 s) before the stop, the amber lights go on. About 100–300 ft (3–5 s) before you pull over, the right signal goes on. You stop with the bumper at least 10 ft from the waiting children, go to Park, set the parking brake, then turn on the red lights once traffic is a safe distance away and make sure the stop arm is out.
 
 ### 10.2.2 Loading procedures (p. 10-4)
 - Students wait at a set place, **facing the bus** as it comes.
@@ -126,7 +126,7 @@ First, the general rule (10.1.2): **check every mirror before you drive** the bu
 - Students board **slowly, in single file**, using the **handrail**. Turn on the **dome light** when loading in the dark.
 - **Do not move** until students are **seated and facing forward**.
 - Check all mirrors. Make sure **no one is running** to catch the bus.
-- **Can't account for a student?** **Secure the bus, take the key**, and check **around and under** the bus.
+- **A student is missing?** Secure the bus, take the key with you, and look all around the bus and underneath it.
 
 **Pull-away steps (on the route)** — when every student is accounted for:
 1. Close the door.
@@ -198,7 +198,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
 | Danger zone behind | **12 ft** behind the rear bumper | 10-1 |
 | Always-dangerous side | The **left** side (passing cars) | 10-1 |
 | [CA] Seat belt rule start date | **July 1, 2018** | 10-1 |
-| [CA] Child who must be buckled | At least **8** but under **16** years old | 10-1 |
+| [CA] Seat belts on a bus that has them | **Every** passenger must be belted (since July 1, 2018, with exceptions); parents/guardians/chartering parties may not send a child **at least 8 but under 16** unless belted | 10-1 |
 | CLP with P/S endorsement | May **not** carry passengers (except auditors, inspectors, examiners, trainees, the CDL holder riding along) | 10-1 |
 | Flat mirror view behind | **200 ft** or **4 bus lengths** | 10-2 |
 | Blind spot behind bus (flat mirrors) | **50–150 ft**, up to **400 ft** | 10-2 |
@@ -221,7 +221,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
 ## Exam traps
 - **Trap:** The danger zone reaches 12 ft in front of the bus. → **Correct:** It can reach **30 ft** in front; the **first 12 ft** is the most dangerous part. Sides and rear are 12 ft. (p. 10-1)
 - **Trap:** The right side is the most dangerous side because students get off there. → **Correct:** The **left** side is **always** dangerous because of **passing cars**. (p. 10-1)
-- **Trap:** Convex mirrors show objects at their true size and distance. → **Correct:** Convex and crossview mirrors do **not** show true size and distance; things look smaller and farther away. (p. 10-2)
+- **Trap:** Convex mirrors show objects at their true size and distance. → **Correct:** **Correct:** Convex and crossview mirrors do **not** show people and objects at their true size and distance. (p. 10-2) (p. 10-2)
 - **Trap:** The flat mirrors should show 400 ft behind the bus. → **Correct:** Flat mirrors should show **200 ft (4 bus lengths)**. 400 ft is how far the **blind spot** behind the bus can reach. (p. 10-2)
 - **Trap:** The inside overhead mirror is for watching traffic behind the bus. → **Correct:** It is for watching **students inside**. Use the outside side mirrors for traffic in the big blind spot behind. (p. 10-3)
 - **Trap:** Turn on the amber lights when you come to a stop. → **Correct:** Amber lights go on **before** the stop, at least **200 ft / 5–10 s** out. The **red** lights go on once you are stopped and traffic is a safe distance away. (p. 10-4)
@@ -238,7 +238,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
 → It is the area on every side of the bus where children are most likely to be hit, by another vehicle or by their own bus. It can reach up to 30 ft in front of the front bumper (the first 12 ft is the most dangerous), 12 ft from the left and right sides, and 12 ft behind the rear bumper. The area to the left of the bus is always dangerous because of passing cars. (p. 10-1)
 
 **TYK 10 #2** What should you be able to see in the outside flat mirrors, the outside convex mirrors, and the crossview mirrors?
-→ Flat mirrors: 200 ft (4 bus lengths) behind the bus, along the sides, and the rear tires touching the ground. Convex mirrors: the whole side of the bus up to the mirror mounts, the front of the rear tires touching the ground, and at least 1 traffic lane on each side. Crossview mirrors: the whole area in front of the bus from the bumper at ground level to where direct vision starts (the views should overlap), the left and right front tires touching the ground, and the area from the front of the bus to the service door. (pp. 10-2–10-3)
+→ Flat mirrors: 200 ft (4 bus lengths) behind the bus, along the sides, and the rear tires touching the ground. Convex mirrors: the full side of the bus as far as the mirror mounts, where the front of each rear tire meets the road, and at least 1 traffic lane on each side. Crossview mirrors: the whole area in front of the bus from the bumper at ground level to where direct vision starts (the views should overlap), the left and right front tires touching the ground, and the area from the front of the bus to the service door. (pp. 10-2–10-3)
 
 **TYK 10 #3** You are loading students along the route. When should you turn on the alternating flashing amber warning lights?
 → At least 200 ft, or about 5–10 seconds, before the bus stop (or as state law requires), if the bus has them. (p. 10-4)
@@ -289,7 +289,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
 | 32 | What should a student do after dropping something near the bus? | Leave it, get out of the danger zone, get the driver's attention |
 | 33 | What are handrail hang-ups? | Clothing, accessories or body parts caught in the handrail or door |
 | 34 | School-bus-only items to check on post-trip? | Mirror systems, flashing warning lamps, stop signal arms |
-| 35 | [CA] Which children must be buckled on a bus with belts? | At least **8** but under **16** |
+| 35 | [CA] Parents, guardians or chartering parties may not put which children on a bus unless they are belted? | At least **8** but under **16** (and every passenger on a bus with belts must be belted) |
 | 36 | Who may change a bus stop location? | Only with **written approval** from the school district official |
 
 ## Practice test (real-exam style)
@@ -385,7 +385,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
     a) Pick it up quickly before the bus moves
     b) Crawl under the bus to reach it if it rolls
     c) Leave it, move out of the danger zone, and get the driver's attention
-24. [CA] Which children may not be put on a bus with seat belts unless they are buckled in?
+24. [CA] Parents, legal guardians and chartering parties may not put which children on a bus with seat belts unless they are buckled in?
     a) Children at least 8 but under 16 years old
     b) Only children under 8 years old
     c) Only riders 16 and older
@@ -400,7 +400,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
 7. a — Convex mirrors sit below the flat mirrors; the overhead mirror is above the windshield. (p. 10-2)
 8. c — 200 ft behind the bus is what the flat mirrors show, not the convex mirrors. (p. 10-2)
 9. b — Crossview mirrors show the front bumper danger zone, service door and front wheel area. (p. 10-2)
-10. c — CCR Title 13 §1258 requires a front crossview mirror; strobe lights are found only on "some" buses. (p. 10-3)
+10. c — CCR Title 13 §1258 requires a front crossview mirror (p. 10-3); roof strobes are only on "some" buses (p. 10-12).
 11. a — Top of the rear window at the top of the mirror, and all students including heads right behind you. (p. 10-3)
 12. c — Amber lights go on at least 200 ft or about 5–10 seconds before the stop. (p. 10-4)
 13. a — The right signal goes on about 100–300 ft or 3–5 seconds before pulling over. (p. 10-4)
@@ -414,7 +414,7 @@ Report any problem **right away** to your supervisor or school officials. (p. 10
 21. c — If you miss a stop, do not back up; follow local procedures. (p. 10-5)
 22. a — The walk-through looks for hiding or sleeping students and left items. (p. 10-6)
 23. c — Students should leave dropped objects, get out of the danger zones, and signal the driver. (p. 10-6)
-24. a — [CA] Since July 1, 2018, children at least 8 but under 16 must be belted on a bus that has belts. (p. 10-1)
+24. a — [CA] Every passenger on a bus with belts must be belted (since July 1, 2018); parents, guardians and chartering parties specifically may not send a child at least 8 but under 16 unbelted. (p. 10-1)
 
 ## One-minute recap
 - Danger zones: up to **30 ft** in front (first **12 ft** most dangerous), **12 ft** at each side and behind. The **left** side is always dangerous (passing cars).
