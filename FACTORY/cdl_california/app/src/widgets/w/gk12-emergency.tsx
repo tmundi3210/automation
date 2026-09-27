@@ -23,6 +23,7 @@ const P: Record<string, { d: string; end: [number, number]; tag: string }> = {
   stab: { d: 'M215 150 L212 124 L218 112 L215 100', end: [215, 100], tag: 'wrong method' },
   countersteer: { d: 'M215 150 C214 118 218 96 215 30', end: [215, 30], tag: 'back in line' },
   jackknife: { d: 'M215 150 C215 120 246 108 300 104', end: [300, 104], tag: 'jackknife' },
+  power: { d: 'M215 150 C215 120 250 110 290 96', end: [290, 96], tag: 'drive wheels spin' },
   noCounter: { d: 'M215 150 C215 118 204 98 146 86', end: [146, 86], tag: 'skids other way' },
 };
 
@@ -135,7 +136,7 @@ const QS: Dec[] = [
   { q: 'Which statement about ABS is TRUE?', page: '2-41, 2-42', rule: 'ABS keeps the wheels from locking so you keep steering control. It does not necessarily shorten stopping distance, and it neither increases nor decreases your stopping power.',
     opts: [{ t: 'ABS always shortens your stopping distance', why: 'You may or may not stop sooner — ABS is about control.' }, { t: 'ABS increases your total braking power', why: 'ABS is an add-on; your stopping power does not go up or down.' }, { t: 'ABS helps you keep steering control during hard braking', ok: true, why: 'Right — you should still be able to steer around an obstacle while braking.' }] },
   { scene: 'skid', q: 'Your drive wheels lock while braking and the rear slides. What do you do?', page: '2-43', rule: EXPLORE.skid.dec.rule,
-    opts: [{ t: 'Keep braking and turn away from the skid', path: 'jackknife', why: 'Locked wheels keep sliding — jackknife risk.' }, { t: 'Accelerate to pull the truck straight', path: 'noCounter', why: 'Too much power spins the drive wheels — another skid cause (over-acceleration).' }, { t: 'Stop braking, then countersteer quickly', ok: true, path: 'countersteer', why: 'Right — wheels roll and grip; countersteer stops the over-rotation.' }] },
+    opts: [{ t: 'Keep braking and turn away from the skid', path: 'jackknife', why: 'Locked wheels keep sliding — jackknife risk.' }, { t: 'Accelerate to pull the truck straight', path: 'power', why: 'Too much power spins the drive wheels — another skid cause (over-acceleration).' }, { t: 'Stop braking, then countersteer quickly', ok: true, path: 'countersteer', why: 'Right — wheels roll and grip; countersteer stops the over-rotation.' }] },
 ];
 
 function Decision({ d, pick, onPick, locked }: { d: Dec; pick: number | null; onPick: (k: number) => void; locked: boolean }) {

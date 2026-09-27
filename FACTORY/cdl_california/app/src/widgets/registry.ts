@@ -22,7 +22,7 @@ export interface WidgetMeta {
 }
 interface Mod { meta: WidgetMeta; default: ComponentType<WidgetProps> }
 
-const mods = import.meta.glob('./w/*.tsx', { eager: true }) as Record<string, Mod>;
+const mods = import.meta.glob(['./w/*.tsx', '!./w/*.*.tsx'], { eager: true }) as Record<string, Mod>;
 export const WIDGETS: Mod[] = Object.values(mods).filter((m) => m && m.meta && m.default).sort((a, b) => a.meta.id.localeCompare(b.meta.id));
 
 export function widgetsForLesson(lesson: string): Mod[] { return WIDGETS.filter((w) => w.meta.lesson === lesson); }
