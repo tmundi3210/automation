@@ -17,7 +17,7 @@ export const CAUSE_HELP: Record<Cause, string> = {
   W: 'You picked an answer from federal rules, the car handbook or a website. The DMV test follows the CA commercial handbook.',
   N: 'You mixed up a number with a neighbouring number. Drill the number family side by side.',
   E4: 'You had this right before, but it faded. A quick review brings it back.',
-  U: 'This one has not stuck yet. Re-read the short lesson, then try again.',
+  U: 'New or not yet learned. Re-read the short lesson for this topic, then do the fix drill.',
 };
 
 export type EvidenceClass = 'mcq' | 'tf' | 'typed' | 'self' | 'check' | 'mock';

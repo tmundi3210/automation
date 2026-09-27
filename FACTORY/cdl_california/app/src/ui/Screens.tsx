@@ -223,6 +223,13 @@ export function NotebookScreen() {
           <div class="row">{g.rows.map((r) => <span class="chip" style={{ background: 'var(--amber-soft)', color: 'var(--amber-ink)' }} title={CAUSE_HELP[r.cause]}>{CAUSE_LABEL[r.cause]}</span>)}</div>
           <span class="small muted">Missed {misses}× · {proof > 0 ? `right on ${proof} of 2 days needed` : 'get it right on 2 different days to clear it'}</span>
           <p class="small">{CAUSE_HELP[g.rows[0].cause]}</p>
+          {(() => {
+            // the learner's own last miss on this topic: what they chose vs the handbook answer
+            const a = [...S().attempts].reverse().find((x) => !x.ok && x.chosen !== undefined && C.items[x.id] && (x.concepts ?? C.items[x.id].concepts).includes(g.concept));
+            if (!a) return null;
+            const it = C.items[a.id];
+            return <div class="small" style={{ borderLeft: '3px solid var(--line)', paddingLeft: '10px' }}><Html tag="span" html={it.stem} /><br /><span class="muted">You chose:</span> <Html tag="span" html={it.options[a.chosen!]} /> · <span class="muted">Handbook:</span> <strong><Html tag="span" html={it.options[it.key]} /></strong></div>;
+          })()}
           <div class="row">
             <button class="btn sm primary" onClick={() => fixDrill(g.concept, g.lesson)}>Fix drill</button>
             <button class="btn sm" onClick={() => go('lesson', g.lesson, g.concept)}>Re-read</button>
@@ -287,10 +294,10 @@ export function ProgressScreen() {
         ))}
       </section>
       <section class="card stack" aria-label="Stamps">
-        <h3>Topic stamps</h3>
-        <p class="small muted">Earned by doing each hands-on challenge without a mistake. They never expire.</p>
+        <div class="spread"><h3>Topic stamps</h3><span class="small num"><strong>{WIDGETS.filter((w) => w.meta.stamp && s.stamps[w.meta.stamp.id]).length}</strong> of {WIDGETS.filter((w) => w.meta.stamp).length} earned</span></div>
+        <p class="small muted">Earned by a clean run of a hands-on challenge. Retry as often as you like; mistakes in Explore or earlier tries never count against you. Stamps never expire.</p>
         <div class="grid2">{WIDGETS.filter((w) => w.meta.stamp).map((w) => { const got = s.stamps[w.meta.stamp!.id]; return (
-          <div class={`stamp ${got ? '' : 'locked'}`}><span class="seal">{w.meta.lesson}</span><span class="small"><strong>{w.meta.stamp!.name}</strong><br /><span class="muted">{got ? `Earned ${new Date(got).toLocaleDateString()}` : w.meta.stamp!.rule}</span></span></div>
+          <div class={`stamp ${got ? '' : 'locked'}`}><span class="seal">{w.meta.lesson}</span><span class="small"><strong>{w.meta.stamp!.name}</strong><br />{got ? <span class="ok-ink">✓ Earned {new Date(got).toLocaleDateString()}</span> : <span class="muted">Not yet: {w.meta.stamp!.rule}</span>}</span></div>
         ); })}</div>
       </section>
       {s.mocks.length > 0 && (
