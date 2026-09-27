@@ -21,7 +21,7 @@ const smooth = (x: number) => { const u = clamp01(x); return u * u * (3 - 2 * u)
 const path = (t: number) => 120 - 60 * smooth((t - 0.08) / 0.42);
 /** Extra sideways swing of a unit, scaled by its share of the rig's rearward amplification. */
 const bump = (t: number) => Math.sin(Math.PI * clamp01((t - 0.2) / 0.5));
-const LAG = 0.06, K = 17;
+const LAG = 0.06, K = 22;
 
 interface Unit { fx: number; fy: number; len: number; deg: number; rx: number; ry: number }
 function layout(rig: Rig, t: number): Unit[] {
@@ -89,7 +89,7 @@ function LaneChange({ rig, t }: { rig: Rig; t: number }) {
 
 function RankBars({ sel }: { sel: string }) {
   return (
-    <svg viewBox="0 0 360 96" width="100%" style={{ maxWidth: '540px', marginInline: 'auto' }} role="img" aria-label="Rearward amplification from Figure 6.1: tractor-semitrailer 1.0, conventional double 2.0, triples 3.5.">
+    <svg viewBox="0 0 360 96" width="100%" style={{ maxWidth: '420px', marginInline: 'auto' }} role="img" aria-label="Rearward amplification from Figure 6.1: tractor-semitrailer 1.0, conventional double 2.0, triples 3.5.">
       {RIGS.map((r, i) => {
         const y = 6 + i * 30, w = (r.ra / 3.5) * 150;
         return (

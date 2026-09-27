@@ -41,7 +41,7 @@ function Scene({ rig, fx, focus, reducedMotion }: { rig: Rig; fx: Fx | null; foc
   const hl = (k: string) => (focus === k ? { stroke: 'var(--amber)', 'stroke-width': 4 } : { stroke: INK, 'stroke-width': 2 });
   const tilt = rig.tilt && !coupled ? 7 : 0;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" style={{ borderRadius: '8px', background: 'var(--bg)', display: 'block' }}
+    <svg viewBox={`0 56 ${W} ${H - 56}`} width="100%" role="img" style={{ borderRadius: '8px', background: 'var(--bg)', display: 'block', maxWidth: '680px', margin: '0 auto' }}
       aria-label={`Side view. Tractor ${rig.tractor === 'under' ? 'under the trailer' : rig.tractor === 'partly' ? 'partly clear, frame still under the trailer' : rig.tractor === 'touch' ? 'just touching the trailer' : 'in front of the trailer'}; fifth wheel ${rig.tilt ? 'tilted down toward the rear' : 'level'}, jaws ${rig.jaws}; landing gear ${rig.gear}; air lines ${rig.air ? 'connected' : 'not connected'}; chocks ${rig.chocks ? 'in place' : 'off'}.${fx ? ' Problem: ' + FX_TEXT[fx] + '.' : ''}`}>
       <rect x="0" y={GY} width={W} height={H - GY} fill="var(--surface-2)" />
       <line x1="0" y1={GY} x2={W} y2={GY} stroke="var(--ink-2)" stroke-width="2" />
@@ -85,7 +85,6 @@ function Scene({ rig, fx, focus, reducedMotion }: { rig: Rig; fx: Fx | null; foc
         </g>
         <rect x="-16" y="214" width="32" height="4" fill="var(--ink-2)" />
         <Wheel x={-172} /><Wheel x={-22} /><Wheel x={24} />
-        {!rig.key && <text x="-116" y="100" font-size="20" font-weight="700" fill="var(--ink-2)" text-anchor="middle">key out</text>}
       </g>
       {/* air lines + cord (connect cab back to trailer nose) */}
       {lines && <g fill="none" stroke-linecap="round" style={focus === 'air' ? { filter: 'drop-shadow(0 0 3px var(--amber))' } : {}}>
@@ -99,8 +98,8 @@ function Scene({ rig, fx, focus, reducedMotion }: { rig: Rig; fx: Fx | null; foc
       {fx && <g>
         {(fx === 'kingpin' || fx === 'low' || fx === 'hurt' || fx === 'nobrakes') && <circle cx={fx === 'low' ? 332 : fx === 'hurt' ? cx + 2 : fx === 'nobrakes' ? 596 : 390} cy={fx === 'nobrakes' ? 238 : fx === 'hurt' ? 238 : 212} r="18" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="5 4" />}
         {fx === 'roll' && <path d="M520 150 l60 0 m-12 -10 l12 10 l-12 10" fill="none" stroke="var(--red)" stroke-width="5" />}
-        <rect x="8" y="8" width="300" height="38" rx="8" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" />
-        <text x="22" y="35" font-size="22" font-weight="700" fill="var(--red)">✕ {FX_TEXT[fx]}</text>
+        <rect x="8" y="62" width="300" height="38" rx="8" fill="var(--red-soft)" stroke="var(--red)" stroke-width="2" />
+        <text x="22" y="89" font-size="22" font-weight="700" fill="var(--red)">✕ {FX_TEXT[fx]}</text>
       </g>}
     </svg>
   );
@@ -109,7 +108,7 @@ function Scene({ rig, fx, focus, reducedMotion }: { rig: Rig; fx: Fx | null; foc
 function Status({ rig }: { rig: Rig }) {
   const items: [string, string, boolean][] = [
     ['Knob', rig.knob === 'in' ? 'IN — air to trailer' : 'OUT — trailer brakes on', rig.knob === 'out'],
-    ['Engine', rig.engine, false], ['Parking brakes', rig.parked ? 'set' : 'off', rig.parked],
+    ['Engine', rig.engine, false], ['Key', rig.key ? 'in cab' : 'taken with you', !rig.key], ['Parking brakes', rig.parked ? 'set' : 'off', rig.parked],
     ['Chocks', rig.chocks ? 'in place' : 'off', rig.chocks], ['Landing gear', rig.gear === 'slight' ? 'slightly up' : rig.gear, false],
     ['Air lines', rig.air ? 'connected' : 'stowed', rig.air], ['Cord', rig.cord ? 'plugged in' : 'unplugged', rig.cord],
   ];
@@ -194,8 +193,8 @@ export default function Coupling({ onEvidence, onChallenge, concepts, reducedMot
     <div class="stack">
       <div class="tabs" role="tablist">
         <button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Walk through</button>
-        <button role="tab" aria-selected={mode === 'couple'} onClick={() => setMode('couple')}>Couple it (16)</button>
-        <button role="tab" aria-selected={mode === 'uncouple'} onClick={() => setMode('uncouple')}>Uncouple it (10)</button>
+        <button role="tab" aria-selected={mode === 'couple'} onClick={() => setMode('couple')}>Couple (16)</button>
+        <button role="tab" aria-selected={mode === 'uncouple'} onClick={() => setMode('uncouple')}>Uncouple (10)</button>
       </div>
       {mode === 'explore' && <Explore reducedMotion={reducedMotion} />}
       {mode === 'couple' && <Challenge key="c" seq={COUPLE} start={START_COUPLE} doneName="Coupled clean" onEvidence={onEvidence} onChallenge={onChallenge} concepts={concepts} reducedMotion={reducedMotion} />}

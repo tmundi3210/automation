@@ -61,7 +61,7 @@ function Face({ x, pos, convex, refOn, angled }: { x: number; pos: Pos; convex: 
         {(convex ? [0.15, 0.45, 0.8] : [0.35, 0.9]).map((f) => <line x1={x + W - 14} y1={hz} x2={x + W - 14 - f * (W + 60)} y2={H + 4} stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="8 6" />)}
         {refOn && <path d={angled ? `M${x + W} ${hz - 14} L${x + W - 46} ${hz + 2} L${x + W - 70} ${H + 4} H${x + W} Z` : `M${x + W} ${hz - 8} L${x + W - 14} ${hz} L${x + W - 26} ${H + 4} H${x + W} Z`} fill="var(--ink-2)" stroke="var(--ink)" />}
         {v.seen && <g><rect x={cx - w / 2} y={by - h} width={w} height={h} rx={w / 6} fill="var(--blue)" stroke="var(--ink)" stroke-width="1" /><rect x={cx - w / 3} y={by - h + h * 0.15} width={w * 0.66} height={h * 0.35} rx={2} fill="var(--surface)" /></g>}
-        {!v.seen && <g><rect x={x + 8} y={hz + 26} width={104} height={20} rx={4} fill="var(--surface)" stroke="var(--red)" /><text x={x + 60} y={hz + 40} text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">✕ car not in view</text></g>}
+        {!v.seen && <g><rect x={x + 6} y={hz + 26} width={124} height={20} rx={4} fill="var(--surface)" stroke="var(--red)" /><text x={x + 68} y={hz + 40} text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">✕ car not in view</text></g>}
       </g>
       <rect x={x} y={4} width={W} height={H} rx={convex ? 26 : 6} fill="none" stroke="var(--ink)" stroke-width="3" />
       <text x={x + W / 2} y={H + 24} text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{convex ? 'Convex (spot)' : 'Flat mirror'}</text>
