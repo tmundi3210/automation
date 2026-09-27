@@ -13,15 +13,16 @@ const Mark = ({ ok }: { ok: boolean }) => <strong style={{ color: ok ? 'var(--ok
 
 const Bands = () => <p class="small muted" style={{ margin: 0 }}>Gauge bands: <strong style={{ color: 'var(--red)' }}>▬ 20–45</strong> spring brakes come on · <strong style={{ color: 'var(--amber-ink)' }}>▬ 55–75</strong> low-air warning range · <strong style={{ color: 'var(--ok)' }}>▬ 100–125</strong> governor cut-in to cut-out.</p>;
 
-function Explore() {
+function Explore({ rm = false }: { rm?: boolean }) {
   const [rig, setRig] = useState<Rig>({ kind: 'two', fault: 'none' });
   const [s, setS] = useState<Sim>(START);
   const cmb = combo(rig.kind), n = rigNums(rig);
   useEffect(() => {
     if (!s.engine) return;
-    const id = setInterval(() => setS((o) => tick(o, rig, 4)), 200); // 20× speed: each tick = 4 s
+    // 20× speed: each tick = 4 s; with reduced motion the needle moves in fewer, larger steps
+    const id = setInterval(() => setS((o) => tick(o, rig, rm ? 20 : 4)), rm ? 1000 : 200);
     return () => clearInterval(id);
-  }, [s.engine, rig]);
+  }, [s.engine, rig, rm]);
   const newRig = (r: Rig) => { setRig(r); setS(START); };
   const say = (note: string, patch: Partial<Sim> = {}) => setS({ ...s, ...patch, note });
   const released = !s.park && (!cmb || !s.supply);
@@ -182,7 +183,7 @@ export default function AirBrakeCheck(props: WidgetProps) {
   return (
     <div class="stack">
       <div class="tabs" role="tablist"><button role="tab" aria-selected={mode === 'explore'} onClick={() => setMode('explore')}>Explore the dash</button><button role="tab" aria-selected={mode === 'challenge'} onClick={() => setMode('challenge')}>Challenge: 8 rigs</button></div>
-      {mode === 'explore' ? <Explore /> : <Challenge {...props} />}
+      {mode === 'explore' ? <Explore rm={props.reducedMotion} /> : <Challenge {...props} />}
     </div>
   );
 }
