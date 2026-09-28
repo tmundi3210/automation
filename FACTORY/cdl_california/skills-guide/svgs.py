@@ -416,7 +416,7 @@ def airchart():
     b.append(t(630, y(22), 'knobs pop out 20–45', 'end', size=11, fill=RED, weight=700))
     b.append(call(110, y(95), s='Build air to governor cut-out (120–140 psi, or maker\'s number). Say when it cut out.'))
     b.append(call(280, y(126), s='Applied leakage: engine off, parking brake(s) released, hold the foot brake 1 minute. Say the loss and your limit.'))
-    b.append(call(395, y(90), s='Key on, engine off: fan the air down by pumping the foot brake.'))
+    b.append(call(395, y(90), s='Key on (engine on or off): fan the air down by pumping the foot brake.'))
     b.append(call(460, y(57), s='Low-air warning (buzzer/light) must come on BEFORE 55 psi. Say where it came on.'))
     b.append(call(520, y(32), s='Keep fanning: parking brake knob (and tractor protection valve) pop out, normally 20–45 psi. Say where.'))
     return svg(660, 290, 'Air brake check: pressure over time from cut-out, leak test, fanning down, low air warning, knobs popping', ''.join(b))
@@ -512,8 +512,8 @@ def m_alley():
     b.append(f'<path d="M300 258 L425 296" stroke="{RED}" stroke-width="1.2"/>')
     b.append(t(40, 120, 'Sight-side (driver-side) back into the alley.', size=11.5, weight=700))
     b.append(t(40, 138, 'Set up parallel to the outer boundary, past the alley.', size=11.5))
-    b.append(t(40, 156, 'Cab turned toward your driver side, so you watch the', size=11.5))
-    b.append(t(40, 172, 'trailer out of your own window.', size=11.5))
+    b.append(t(40, 156, 'The alley is on your driver (left) side, so you watch', size=11.5))
+    b.append(t(40, 172, 'the trailer through your own window as it swings in.', size=11.5))
     return svg(660, 320, 'Alley dock: sight-side backing into an alley at a right angle', ''.join(b))
 
 
@@ -602,8 +602,9 @@ def rrcross():
     b.append(t(405, 86, 'stop here: 15–50 ft from nearest rail', 'middle', weight=700, fill=ACC))
     b.append(f'<rect x="80" y="62" width="170" height="36" fill="{ACC}"/>' + t(165, 85, 'bus / placarded →', 'middle', fill='#fff', weight=700, size=11))
     b.append(t(10, 22, '4-way flashers ON approaching · stop · look and listen both ways · (bus: open window and door)', size=11.5, weight=700))
-    b.append(t(10, 146, 'While ANY part is on the crossing: no stopping, no gear change, no passing, no lane change. Flashers OFF after.', size=11.5, weight=700, fill=RED))
-    return svg(660, 156, 'Railroad crossing stop for buses and placarded vehicles: 15 to 50 feet from the nearest rail', ''.join(b))
+    b.append(t(10, 146, 'While ANY part is on the crossing: no stopping, no gear change, no passing, no lane change.', size=11.5, weight=700, fill=RED))
+    b.append(t(10, 164, 'Keep both hands on the wheel as you cross. Flashers OFF after.', size=11.5, weight=700, fill=RED))
+    return svg(660, 172, 'Railroad crossing stop for buses and placarded vehicles: 15 to 50 feet from the nearest rail', ''.join(b))
 
 
 def lanechange():
@@ -629,7 +630,7 @@ def flow():
         b.append(t(x + 16, 80, tm, fill=INK2) + t(x + 16, 102, note, weight=700, fill=ACC))
         if i < 2:
             b.append(f'<path d="M{x + 192} 68 l18 0 m-7 -7 l7 7 l-7 7" stroke="{INK}" stroke-width="2.5" fill="none"/>')
-    b.append(t(330, 140, 'Fail one part → the rest is put off to another day. 3 tries in all for the three tests.', 'middle', weight=700, fill=RED, size=11.5))
+    b.append(t(330, 140, 'Fail one part → the test ends; the rest is rescheduled. 3 tries in all for the three tests.', 'middle', weight=700, fill=RED, size=11.5))
     return svg(660, 150, 'The three skills tests in order', ''.join(b))
 
 

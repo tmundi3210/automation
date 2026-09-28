@@ -86,13 +86,13 @@ H.append(tbl(['', '1. Vehicle inspection', '2. Basic control skills', '3. Road t
 H.append('<h2 id="p1-rules">Rules for all three tests</h2>')
 sec(2, 'p1-rules', 'Rules for all three tests')
 H.append('''<ul>
-<li><b>Pass the vehicle inspection first.</b> Fail it, and the other two tests are put off to another day (pp. 11-1, 11-11).</li>
+<li><b>Pass the vehicle inspection first.</b> Fail it, and the other two tests are postponed (pp. 11-1, 11-11).</li>
 <li><b>3 tries in all</b> to pass the three skills tests on one application (p. 11-1). A failed basic control or road test means a retest fee when you return (p. 1-4).</li>
-<li><b>English only, no interpreters.</b> Not understanding or speaking another language: verbal warnings the first <b>2</b> times; the <b>3rd</b> time that day is an <b>automatic failure</b> (pp. 11-1, 12-1, 13-1).</li>
+<li><b>English only, no interpreters.</b> Speaking a language other than English, or not understanding English instructions: verbal warnings the first <b>2</b> times; the <b>3rd</b> time that day is an <b>automatic failure</b> (pp. 11-1, 12-1, 13-1).</li>
 <li><b>No aids.</b> The only aid allowed on the inspection is the handbook’s Section 11 inspection guide, and you may not write on it (p. 11-1). No phones, no helpers, no marks on the vehicle or curbs (p. 1-10).</li>
 <li><b>No labels on parts.</b> A vehicle with parts marked or labeled cannot be used (p. 11-1).</li>
 <li><b>Brake lights, 4-way flashers, turn signals and horn must work</b> — if not, the tests are postponed (p. 11-1).</li>
-<li><b>No recording.</b> Dash cams must be off or covered on the road test (p. 1-11).</li>
+<li><b>No recording.</b> Any dash cam or recording device must be off or disabled during all skills tests; if it can’t be turned off, block it (pp. 1-10 – 1-11).</li>
 <li><b>Backup cameras and self-parking</b> cannot be the only thing you use (pp. 12-1, 13-1).</li>
 </ul>''')
 H.append('<h2 id="p1-before">Before you book: permit, training, vehicle</h2>')
@@ -107,10 +107,10 @@ H.append(tbl(['Need', 'Detail'], [
 H.append('<h3>Your test vehicle sets your restrictions</h3>')
 H.append(tbl(['If you test in…', 'You get restriction', 'Meaning'], [
     ['a vehicle with an automatic transmission', '<b>E</b>', 'no manual-transmission CMV'],
-    ['a vehicle without air brakes (or you skipped the air brake knowledge test)', '<b>L</b>', 'no air-brake CMV'],
+    ['a vehicle without air brakes (or you didn’t take or failed the air brake knowledge test)', '<b>L</b>', 'no air-brake CMV'],
     ['a vehicle with air-over-hydraulic brakes', '<b>Z</b>', 'no full air-brake CMV'],
     ['a combination joined by a pintle hook or other non-fifth-wheel hitch', '<b>O</b>', 'no tractor-trailer'],
-]) + '<p class="small">From p. 1-6 (restriction codes). Testing in a manual-transmission tractor-semitrailer with full air brakes avoids all four.</p>')
+]) + '<p class="small">From pp. 1-6 – 1-7 (restriction codes). Testing in a manual-transmission tractor-semitrailer with full air brakes avoids all four.</p>')
 H.append('<h2 id="p1-auto">Automatic fails — know these cold</h2>')
 sec(2, 'p1-auto', 'Automatic fails — know these cold')
 H.append(tbl(['Test', 'Automatic failure'], [
@@ -119,7 +119,7 @@ H.append(tbl(['Test', 'Automatic failure'], [
     ['Inspection', 'Hydraulic brakes: not doing BOTH parts of the check (p. 11-4)'],
     ['Basic control', 'Not securing the vehicle (Neutral + parking brake) or not getting out safely for a look — <i>may</i> be an automatic failure (p. 12-1)'],
     ['Basic control', 'Refusing an exercise or not finishing it as told — <i>may</i> be an automatic failure (p. 12-1)'],
-    ['Road test', 'Any critical driving error; an accident; a moving violation; more than 30 errors (p. 13-1)'],
+    ['Road test', 'Any critical driving error, or more than 30 errors. You must also finish with no accident and no moving violation (p. 13-1).'],
 ]))
 H.append('</section>')
 
@@ -189,7 +189,7 @@ sec(2, 'p2-air', '3 · Air brake checks (where people fail)')
 H.append(rule('Do <b>each</b> check <b>and say the numbers</b>. The order is up to you. Doing any of them wrong = <b>automatic failure of the whole inspection</b> (p. 11-4).'))
 H.append(fig('airchart', 'Pressure on your gauge during the checks (drawn, not to scale).', 'Steps'))
 H.append(tbl(['Check', 'How', 'Pass / what to say'], [
-    ['<b>Applied leakage</b>', 'Air at cut-out (say when it cut out). Engine off, chock wheels if needed, release the parking brake (and tractor protection valve). Press the foot brake fully and hold <b>1 minute</b> after the gauge settles.', 'Loss no more than <b>3 psi</b> single vehicle · <b>4 psi</b> combination of 2 · <b>6 psi</b> combination of 3+. Say the loss and your limit.'],
+    ['<b>Applied leakage</b>', 'Air at cut-out (say when it cut out). Engine off, chock wheels if needed, release the parking brake (and tractor protection valve). Press the foot brake fully and hold <b>1 minute</b> after the gauge settles.', 'Loss no more than <b>3 psi</b> single vehicle · <b>4 psi</b> combination of 2 · <b>6 psi</b> combination of 3+ (<b>3 psi</b> if the towed unit has no air brakes). Say the loss and your limit.'],
     ['<b>Low-air warning</b>', 'Key on. Fan off the air by pumping the foot brake.', 'Buzzer/light/flag comes on <b>before 55 psi</b> (or the maker’s level). Say where.'],
     ['<b>Spring brakes pop</b>', 'Parking brake (and tractor protection valve) released; keep fanning the air down.', 'Parking brake knob (and trailer air supply knob on a tractor-trailer) <b>pop out</b>, normally <b>20–45 psi</b>. Say where.'],
     ['<b>Parking brake</b>', 'Seat belt on. Air at cut-out, parking brake on, trailer brakes released: gently try to pull forward. Then set only the <b>trailer</b> parking brake and gently pull against it.', 'Vehicle does not move.'],
@@ -197,7 +197,7 @@ H.append(tbl(['Check', 'How', 'Pass / what to say'], [
 ]) + '<p class="small">pp. 11-4, 5-8 – 5-9. A large bus often warns at 80–85 psi: say the 55–75 psi range and that your bus is built to warn higher (p. 5-9).</p>')
 H.append(box('ex', 'Say it like this (example)', '<p>“Air is at 125 psi, the governor cut out at 125. Engine off, parking brakes released, foot brake applied and held… after one minute I lost 2 psi. The limit for a two-vehicle combination is 4 psi, so it passes.”</p><p>“Pumping the brake… the low-air warning came on at 62 psi, above 55 — passes. Still pumping… the trailer air supply knob popped at 40 psi and the parking brake knob at 30 — both within 20 to 45.”</p><p class="small">Numbers here are an example; say the real numbers your gauge shows.</p>'))
 H.append(trap('Rushing the leak test (not waiting for the gauge to settle, or not holding a full minute) · forgetting to <b>say</b> the numbers · checking the parking brake without the seat belt on · pulling hard against the brakes instead of gently.'))
-H.append('<h3>Hydraulic brakes instead (if your truck has them)</h3><p>Pump the pedal <b>3 times</b>, then hold it down <b>5 seconds</b>: it must not sink. With a reserve (backup) system: key off, press the pedal, listen for the reserve pump motor; warning buzzer/light off. <b>Skipping either part = automatic failure</b>. Hydro-Boost: engine off, pump the pressure off, hold the pedal lightly (15–25 lb), start the engine — the pedal gives a little then holds (p. 11-4).</p>')
+H.append('<h3>Hydraulic brakes instead (if your truck has them)</h3><p>Pump the pedal <b>3 times</b>, then hold it down <b>5 seconds</b>: it must not sink. With a reserve (backup) system: key off, press the pedal, listen for the reserve pump motor; warning buzzer/light off. <b>Skipping either part = automatic failure</b>. Hydro-Boost: engine off, release the parking brake, pump the pedal to use up the pressure, hold it lightly (15–25 lb), start the engine at idle — the pedal gives a little then holds (p. 11-4).</p>')
 
 # steering, suspension, brakes
 H.append('<h2 id="p2-steer">4 · Steering</h2>')
@@ -268,7 +268,7 @@ H.append(say([
     ['Locking jaws', 'Fully closed around the kingpin.'],
     ['Kingpin, apron, gap', 'Kingpin not bent or damaged; apron not bent, cracked or broken; trailer lying flat on the skid plate — no gap; kingpin lock checked.'],
     ['Sliding fifth wheel', 'Locking pins there and fully engaged, no air leaks if air-powered; positioned so the tractor frame clears the landing gear in turns.'],
-]) + '<p class="small">pp. 11-7 – 11-8. Pintle hook or ball hitch instead: no missing or broken parts, no broken welds; safety chains secure, no kinks, not too much slack (p. 11-8).</p>')
+]) + '<p class="small">pp. 11-7 – 11-8, 11-10. Pintle hook or ball hitch instead: no missing or broken parts, no broken welds; safety chains secure, no kinks, not too much slack (p. 11-8).</p>')
 
 # trailer
 H.append('<h2 id="p2-trl">10 · Trailer</h2>')
@@ -380,7 +380,7 @@ H.append('<h2 id="p5-air">Air brake check card</h2>')
 sec(2, 'p5-air', 'Air brake check card')
 H.append(tbl(['#', 'Do', 'Say', 'Pass'], [
     ['1', 'Build air', '“Governor cut out at ___ psi”', '120–140 (or maker’s)'],
-    ['2', 'Engine off, parking brake(s) released, foot brake held 1 min', '“Lost ___ psi in one minute; limit ___”', '≤3 single · ≤4 two · ≤6 three+'],
+    ['2', 'Engine off, parking brake(s) released, foot brake held 1 min', '“Lost ___ psi in one minute; limit ___”', '≤3 single · ≤4 two · ≤6 three+ (≤3 if trailer has no air brakes)'],
     ['3', 'Key on, fan the brake', '“Warning came on at ___ psi”', 'before 55'],
     ['4', 'Keep fanning', '“Knob(s) popped at ___ psi”', '20–45'],
     ['5', 'Seat belt on, rebuild air, parking brake on (trailer released), gentle tug; then trailer brake only, gentle tug', '“Parking brakes hold”', 'no movement'],
