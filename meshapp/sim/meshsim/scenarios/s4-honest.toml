@@ -1,0 +1,78 @@
+[scenario]
+name = "s4-honest"
+description = "S4 with an honest courier: 11 Yes vs 10 No, split 11/10, clocks off by up to 20 min."
+duration_ms = 10_800_000
+tick_ms = 100
+
+[nodes]
+android = 11
+iphone = 10
+stations = 0
+iphone_foreground_duty = 0.60
+android_slots = 7
+battery_floor = 0.30
+
+[radio]
+latency_ms = 40
+throughput_bytes_per_s = 15_000
+frame_loss = 0.005
+iphone_wake_ms = 10_000
+wall_clock_offset_ms = [-1_200_000, 1_200_000]
+
+[groups]
+[[groups.list]]
+name = "main"
+members = "all"
+admins = [0, 1, 2]
+
+[pairs]
+random = 0
+
+[traffic]
+group_post_every_ms = 300_000
+dm_every_ms = 0
+text_bytes = [40, 120]
+
+[[partition]]
+at_ms = 0
+fragments = "all"
+[[partition]]
+at_ms = 600_000
+fragments = [["0..10"], ["11..20"]]
+[[partition]]
+at_ms = 7_200_000
+fragments = "all"
+
+[[events]]
+at_ms = 300_000
+kind = "vote_open"
+by = 0
+label = "evacuate"
+question = "Evacuate the hall now?"
+options = ["Yes", "No"]
+f = 1
+
+[[events]]
+at_ms = 1_200_000
+kind = "ballot"
+by = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+vote = "evacuate"
+choice = 0
+spread_ms = 5_400_000
+[[events]]
+at_ms = 1_200_000
+kind = "ballot"
+by = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+vote = "evacuate"
+choice = 1
+spread_ms = 5_400_000
+
+[pass]
+every_post_decrypts_after_rejoin = true
+members_h_identical = true
+no_solid_state_reverts = true
+no_duplicate_ui_delivery = true
+no_final_while_split = true
+expected_vote_states = [{ vote = "evacuate", at_ms = 10_000_000, state = "Provisional", tally = "Y11 N10", void = 0 }]
+zero_wall_clock_reads = true
+drain_report = true
