@@ -34,6 +34,34 @@
 //! The shared secret and `k_seal` live only for the call and are zeroized
 //! when it returns; [`EnvelopeKeyPair`] zeroizes its secret on drop.
 //! Nothing here reads a clock.
+//!
+//! # Sealed-first-flight cells
+//!
+//! A chain cell's tag is `prf16(k_tag, ctr)` and its body key is derived
+//! from the chain, so a receiver recognises it by one table lookup. A first
+//! flight has no chain yet, so its cells follow a different rule
+//! ([`ff_tag`], [`ff_body_key`], [`ff_seal_cell`], [`ff_open_cell`]):
+//!
+//! * the cell tag is 16 uniformly random bytes ([`ff_tag`]): nothing a
+//!   relay could precompute or relate to any envelope key (DESIGN §2.2's
+//!   `Trunc16(SHA256("seal" ‖ E_r ‖ e_pub))` would let anyone who knows a
+//!   gossiped `E_r` and reads `e_pub` from the body link the flight to its
+//!   recipient; the random tag does not, and the inner [`seal`] already
+//!   binds `e_pub` and `E_r` under the AEAD);
+//! * the body is ChaCha20-Poly1305 under `ff_body_key(E_r) = HKDF-SHA256(ikm
+//!   = E_r, salt = "", info = "meshapp.v1.ff.body")`, nonce = the first 12
+//!   bytes of the random tag (fresh per cell: the key is shared by every
+//!   flight to `E_r`, so the nonce must not repeat; 96 random bits across
+//!   the few thousand cells one envelope key ever receives is far below the
+//!   birthday bound), AAD = the clear header without the TTL, like a chain
+//!   cell. `E_r` travels only inside group encryption or on a direct
+//!   encounter (DECISIONS §3 row (4,5,6,7)), so only envelope-key holders,
+//!   not relays, can open the outer layer and see that a cell is a first
+//!   flight at all;
+//! * a receiver trial-opens every unrecognised cell under its ≤
+//!   [`MAX_LIVE_KEYS`] live `ff_body_key`s (one AEAD each, cheap), then
+//!   reassembles the [`crate::wire::inner::InnerKind::SealedFirst`] object
+//!   and [`try_unseal`]s the inner payload against the same keys.
 
 use core::fmt;
 
@@ -44,7 +72,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 use crate::crypto::aead::{self, Key32, NONCE_LEN, TAG_LEN};
 use crate::crypto::hash::hkdf32;
 use crate::crypto::hash::sha256_concat;
-use crate::wire::cell;
+use crate::wire::cell::{self, BODY_LEN, BODY_PLAINTEXT_LEN, Cell, HeaderAad};
 use crate::wire::inner::{E_PUB_LEN, MAX_OBJECT_LEN};
 
 /// Length of an X25519 key, public or secret.
@@ -63,6 +91,8 @@ pub const OVERHEAD: usize = E_PUB_LEN + TAG_LEN;
 /// still fits the fragment layer's largest object (DESIGN §2.2 "≤ 141
 /// fragments").
 pub const MAX_PAYLOAD_LEN: usize = MAX_OBJECT_LEN - OVERHEAD;
+/// HKDF `info` of the first-flight cell body key (module docs).
+pub const FF_BODY_INFO: &[u8] = b"meshapp.v1.ff.body";
 
 /// An envelope key pair. The secret is wiped on drop and never printed.
 #[derive(Clone)]
@@ -245,6 +275,76 @@ pub fn try_unseal(
         let k_seal = seal_key(&shared, e_pub, &key.public());
         if let Ok(pt) = aead::open(&k_seal, &SEAL_NONCE, e_pub, ct) {
             return Some((i, pt));
+        }
+    }
+    None
+}
+
+// ---- sealed-first-flight cells ----------------------------------------------
+
+/// `HKDF-SHA256(ikm = E_r, salt = "", info = "meshapp.v1.ff.body")`: the
+/// body key of every first-flight cell addressed to the envelope key `E_r`
+/// (module docs "Sealed-first-flight cells").
+pub fn ff_body_key(recipient_envelope_pub: &[u8; KEY_LEN]) -> Key32 {
+    Key32::from(hkdf32(recipient_envelope_pub, b"", FF_BODY_INFO))
+}
+
+/// A fresh uniformly random cell tag for a first-flight cell: not
+/// precomputable by anyone, so a relay cannot tell first flights from chain
+/// cells or group them by recipient.
+pub fn ff_tag(rng: &mut dyn CryptoRng) -> [u8; cell::TAG_LEN] {
+    let mut tag = [0u8; cell::TAG_LEN];
+    rng.fill_bytes(&mut tag);
+    tag
+}
+
+/// The body nonce of a first-flight cell: the first [`NONCE_LEN`] bytes of
+/// its random tag.
+pub fn ff_nonce(tag: &[u8; cell::TAG_LEN]) -> [u8; NONCE_LEN] {
+    let mut nonce = [0u8; NONCE_LEN];
+    nonce.copy_from_slice(&tag[..NONCE_LEN]);
+    nonce
+}
+
+/// Builds one first-flight cell: header `{ver, ttl, 0, 0, ff_tag}` and the
+/// body of `plaintext` (an inner fragment of a
+/// [`crate::wire::inner::InnerKind::SealedFirst`] object) under
+/// [`ff_body_key`]`(E_r)` with nonce [`ff_nonce`] and AAD = the header
+/// without its TTL. Deterministic for a given RNG state.
+pub fn ff_seal_cell(
+    ver: u8,
+    ttl: u8,
+    recipient_envelope_pub: &[u8; KEY_LEN],
+    plaintext: &[u8; BODY_PLAINTEXT_LEN],
+    rng: &mut dyn CryptoRng,
+) -> Cell {
+    let tag = ff_tag(rng);
+    let header = HeaderAad::new(ver, tag);
+    let key = ff_body_key(recipient_envelope_pub);
+    let ct = aead::seal(&key, &ff_nonce(&tag), &header.to_bytes(), plaintext);
+    let mut body = [0u8; BODY_LEN];
+    body.copy_from_slice(&ct);
+    cell::build(ver, ttl, &tag, &body)
+}
+
+/// Trial-opens an unrecognised cell under the body keys of the receiver's
+/// live envelope keys, current first (at most [`MAX_LIVE_KEYS`] are tried).
+/// Returns the index of the key that opened it and the body plaintext, or
+/// `None` when the cell is not a first flight to any of them (which
+/// includes every chain cell, junk, and a tampered body). Each attempt is
+/// one AEAD open; nothing here panics on input.
+pub fn ff_open_cell(
+    live_keys: &[EnvelopeKeyPair],
+    cell: &Cell,
+) -> Option<(usize, [u8; BODY_PLAINTEXT_LEN])> {
+    let tag = cell.tag();
+    let nonce = ff_nonce(&tag);
+    let aad = cell.aad_bytes();
+    for (i, key) in live_keys.iter().take(MAX_LIVE_KEYS).enumerate() {
+        let k = ff_body_key(&key.public());
+        if let Ok(pt) = aead::open(&k, &nonce, &aad, cell.body()) {
+            let arr: [u8; BODY_PLAINTEXT_LEN] = pt.as_slice().try_into().ok()?;
+            return Some((i, arr));
         }
     }
     None
@@ -479,6 +579,57 @@ mod tests {
         );
     }
 
+    #[test]
+    fn ff_body_key_is_the_documented_hkdf_and_tags_are_random() {
+        let r = pair(1);
+        assert_eq!(
+            ff_body_key(&r.public()),
+            Key32::from(hkdf32(&r.public(), b"", b"meshapp.v1.ff.body"))
+        );
+        assert_ne!(ff_body_key(&r.public()), ff_body_key(&pair(2).public()));
+        let t1 = ff_tag(&mut rng(1));
+        let t2 = ff_tag(&mut rng(2));
+        assert_ne!(t1, t2);
+        assert_eq!(t1, ff_tag(&mut rng(1)), "seeded rng");
+        assert_eq!(&ff_nonce(&t1)[..], &t1[..12]);
+    }
+
+    #[test]
+    fn ff_cell_round_trip_and_rejections() {
+        let keys = [pair(1), pair(2), pair(3)];
+        let mut pt = [0u8; BODY_PLAINTEXT_LEN];
+        pt[0] = 0x03;
+        pt[11] = 0xaa;
+        for (i, k) in keys.iter().enumerate() {
+            let c = ff_seal_cell(cell::VERSION, 7, &k.public(), &pt, &mut rng(10 + i as u64));
+            assert_eq!(c.validate(), Ok(()));
+            assert_eq!(ff_open_cell(&keys, &c), Some((i, pt)));
+            // a relay's TTL decrement does not break it
+            let fwd = c.forwarded().unwrap();
+            assert_eq!(ff_open_cell(&keys, &fwd), Some((i, pt)));
+            // the tag is not derived from anything: two flights differ
+            let c2 = ff_seal_cell(cell::VERSION, 7, &k.public(), &pt, &mut rng(99));
+            assert_ne!(c.tag(), c2.tag());
+        }
+        let c = ff_seal_cell(cell::VERSION, 6, &keys[0].public(), &pt, &mut rng(5));
+        // wrong keys, tampered tag, tampered body
+        assert_eq!(ff_open_cell(&[pair(8), pair(9)], &c), None);
+        assert_eq!(ff_open_cell(&[], &c), None);
+        let mut bytes = c.into_array();
+        bytes[cell::OFF_TAG] ^= 1;
+        assert_eq!(ff_open_cell(&keys, &Cell::from_array(bytes)), None);
+        bytes[cell::OFF_TAG] ^= 1;
+        bytes[cell::OFF_BODY + 3] ^= 1;
+        assert_eq!(ff_open_cell(&keys, &Cell::from_array(bytes)), None);
+        // a chain cell is never mistaken for a first flight
+        let chain = cell::seal_cell(cell::VERSION, 7, &[1u8; 16], &[2u8; 32], 0, 0, &pt);
+        assert_eq!(ff_open_cell(&keys, &chain), None);
+        // only the first three live keys are tried
+        let four = [pair(1), pair(2), pair(3), pair(4)];
+        let c4 = ff_seal_cell(cell::VERSION, 7, &four[3].public(), &pt, &mut rng(1));
+        assert_eq!(ff_open_cell(&four, &c4), None);
+    }
+
     proptest! {
         #![proptest_config(ProptestConfig::with_cases(128))]
 
@@ -494,6 +645,10 @@ mod tests {
             let _ = match_tag(&keys, &e_pub, &tag);
             let _ = Sealed::from_object(&ct);
             let _ = seal_tag(&e_pub, &secret);
+            let mut raw = [0u8; cell::CELL_LEN];
+            raw[..32].copy_from_slice(&e_pub);
+            raw[32..64].copy_from_slice(&secret);
+            prop_assert_eq!(ff_open_cell(&keys, &Cell::from_array(raw)), None);
         }
 
         #[test]

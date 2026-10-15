@@ -72,6 +72,7 @@ use subtle::ConstantTimeEq;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use crate::crypto::hash::hmac_sha256;
+use crate::transport::link::Role;
 use crate::wire::frame::{CONTACT_PROOF_LEN, NOISE_TAG_LEN};
 
 // ---- constants --------------------------------------------------------------
@@ -530,12 +531,28 @@ impl NoiseLink {
 
 // ---- L2 contact proof -----------------------------------------------------------
 
+/// Role byte mixed into a contact proof: `0x01` for the Noise initiator (the
+/// BLE central), `0x02` for the responder (the peripheral).
+pub const fn role_byte(role: Role) -> u8 {
+    match role {
+        Role::Central => 0x01,
+        Role::Peripheral => 0x02,
+    }
+}
+
 /// The pairwise L2 proof for one QR-verified contact (DESIGN §2.3
 /// `ContactProof = n u8 ‖ [prf16(k_pair(c), "l2", handshake_hash)]×n`; D4 L2
 /// "links authenticated as QR-verified contacts by a pairwise tag in the link
 /// handshake"):
 ///
-/// `Trunc16(HMAC-SHA256(k_pair, "meshapp.v1.l2" ‖ 0x00 ‖ handshake_hash))`.
+/// `Trunc16(HMAC-SHA256(k_pair, "meshapp.v1.l2" ‖ 0x00 ‖ role_byte ‖ handshake_hash))`
+///
+/// with `role_byte` = [`role_byte`]`(role)` of the *prover*. The role is
+/// mixed in so that a proof is never reflected: a peer that received a
+/// proof on this session cannot send it back as its own, because the
+/// verifier recomputes it with the peer's role, which differs from its own
+/// (both pairing sides prove knowledge of the same `link_key`,
+/// `pairwise::pairing`, and the same key proves the contact on later links).
 ///
 /// This settles DESIGN §2.3's `prf16` wording: `prf16` takes a `u64`
 /// counter, so the proof uses [`hmac_sha256`] directly with the handshake
@@ -544,24 +561,38 @@ impl NoiseLink {
 /// this session, so a proof replayed on another link proves nothing.
 pub fn contact_proof(
     k_pair: &[u8; 32],
+    role: Role,
     handshake_hash: &[u8; HANDSHAKE_HASH_LEN],
 ) -> [u8; CONTACT_PROOF_LEN] {
-    let full = hmac_sha256(k_pair, &[CONTACT_PROOF_LABEL, &[0u8], handshake_hash]);
+    let full = hmac_sha256(
+        k_pair,
+        &[
+            CONTACT_PROOF_LABEL,
+            &[0u8],
+            &[role_byte(role)],
+            handshake_hash,
+        ],
+    );
     let mut out = [0u8; CONTACT_PROOF_LEN];
     out.copy_from_slice(&full[..CONTACT_PROOF_LEN]);
     out
 }
 
-/// Constant-time check of a received proof against the one expected for
-/// `k_pair` on this session, so that a peer probing proofs byte by byte
-/// learns nothing from timing (the responder runs this once per contact,
-/// DESIGN §2.3 "the responder matches against its own contacts → L2").
+/// Constant-time check of a received proof against the one expected from
+/// a peer in role `peer_role` for `k_pair` on this session, so that a peer
+/// probing proofs byte by byte learns nothing from timing (the responder
+/// runs this once per contact, DESIGN §2.3 "the responder matches against
+/// its own contacts → L2"). The verifier passes the *peer's* role, never
+/// its own, which is what makes a reflected proof fail.
 pub fn verify_contact_proof(
     k_pair: &[u8; 32],
+    peer_role: Role,
     handshake_hash: &[u8; HANDSHAKE_HASH_LEN],
     proof: &[u8; CONTACT_PROOF_LEN],
 ) -> bool {
-    contact_proof(k_pair, handshake_hash).ct_eq(proof).into()
+    contact_proof(k_pair, peer_role, handshake_hash)
+        .ct_eq(proof)
+        .into()
 }
 
 // ---- tests ----------------------------------------------------------------------
@@ -802,17 +833,60 @@ mod tests {
         let (i, r) = session(1, 2);
         let (i2, _) = session(1, 3);
         let hh = i.handshake_hash();
-        let proof = contact_proof(&k, &hh);
-        let full = hmac_sha256(&k, &[b"meshapp.v1.l2", &[0u8], &hh]);
+        let proof = contact_proof(&k, Role::Central, &hh);
+        let full = hmac_sha256(&k, &[b"meshapp.v1.l2", &[0u8], &[0x01u8], &hh]);
         assert_eq!(&proof[..], &full[..16]);
-        assert_eq!(proof, contact_proof(&k, &r.handshake_hash()));
-        assert_ne!(proof, contact_proof(&k, &i2.handshake_hash()));
-        assert_ne!(proof, contact_proof(&[0x12u8; 32], &hh));
-        assert!(verify_contact_proof(&k, &hh, &proof));
-        assert!(!verify_contact_proof(&[0x12u8; 32], &hh, &proof));
+        assert_eq!(proof, contact_proof(&k, Role::Central, &r.handshake_hash()));
+        assert_ne!(
+            proof,
+            contact_proof(&k, Role::Central, &i2.handshake_hash())
+        );
+        assert_ne!(proof, contact_proof(&[0x12u8; 32], Role::Central, &hh));
+        // the responder verifies the central's proof with the peer's role
+        assert!(verify_contact_proof(&k, Role::Central, &hh, &proof));
+        assert!(!verify_contact_proof(
+            &[0x12u8; 32],
+            Role::Central,
+            &hh,
+            &proof
+        ));
         let mut bad = proof;
         bad[15] ^= 1;
-        assert!(!verify_contact_proof(&k, &hh, &bad));
+        assert!(!verify_contact_proof(&k, Role::Central, &hh, &bad));
+    }
+
+    #[test]
+    fn reflected_contact_proof_never_verifies() {
+        let k = [0x33u8; 32];
+        let (i, r) = session(4, 5);
+        let hh = r.handshake_hash();
+        assert_eq!(hh, i.handshake_hash());
+        let from_central = contact_proof(&k, Role::Central, &hh);
+        let from_peripheral = contact_proof(&k, Role::Peripheral, &hh);
+        assert_ne!(from_central, from_peripheral);
+        let full = hmac_sha256(&k, &[b"meshapp.v1.l2", &[0u8], &[0x02u8], &hh]);
+        assert_eq!(&from_peripheral[..], &full[..16]);
+        // the central expects a peripheral proof: its own echoed back fails
+        assert!(!verify_contact_proof(
+            &k,
+            Role::Peripheral,
+            &hh,
+            &from_central
+        ));
+        assert!(verify_contact_proof(
+            &k,
+            Role::Peripheral,
+            &hh,
+            &from_peripheral
+        ));
+        assert!(!verify_contact_proof(
+            &k,
+            Role::Central,
+            &hh,
+            &from_peripheral
+        ));
+        assert_eq!(role_byte(Role::Central), 0x01);
+        assert_eq!(role_byte(Role::Peripheral), 0x02);
     }
 
     #[test]

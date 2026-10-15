@@ -271,24 +271,59 @@ fn contact_proof_matches_on_both_sides_and_only_for_this_session() {
     let a = handshake(185, 1, 2);
     let b = handshake(185, 1, 3);
     let k = k_pair("alice-bob");
-    let from_i = contact_proof(&k, &a.ni.handshake_hash());
-    let from_r = contact_proof(&k, &a.nr.handshake_hash());
-    assert_eq!(
-        from_i, from_r,
-        "DESIGN §2.3: the responder matches the proof"
-    );
-    assert!(verify_contact_proof(&k, &a.nr.handshake_hash(), &from_i));
-    assert!(verify_contact_proof(&k, &a.ni.handshake_hash(), &from_r));
+    // each side proves with its own role; the other side verifies with the
+    // peer's role (DESIGN §2.3: the responder matches the proof)
+    let from_i = contact_proof(&k, Role::Central, &a.ni.handshake_hash());
+    let from_r = contact_proof(&k, Role::Peripheral, &a.nr.handshake_hash());
+    assert_ne!(from_i, from_r, "the role is bound into the proof");
+    assert!(verify_contact_proof(
+        &k,
+        Role::Central,
+        &a.nr.handshake_hash(),
+        &from_i
+    ));
+    assert!(verify_contact_proof(
+        &k,
+        Role::Peripheral,
+        &a.ni.handshake_hash(),
+        &from_r
+    ));
+    // a reflected proof (the peer's own proof sent back) never verifies
+    assert!(!verify_contact_proof(
+        &k,
+        Role::Peripheral,
+        &a.nr.handshake_hash(),
+        &from_i
+    ));
+    assert!(!verify_contact_proof(
+        &k,
+        Role::Central,
+        &a.ni.handshake_hash(),
+        &from_r
+    ));
     // another session, another proof: a replay proves nothing
-    assert_ne!(from_i, contact_proof(&k, &b.ni.handshake_hash()));
-    assert!(!verify_contact_proof(&k, &b.nr.handshake_hash(), &from_i));
+    assert_ne!(
+        from_i,
+        contact_proof(&k, Role::Central, &b.ni.handshake_hash())
+    );
+    assert!(!verify_contact_proof(
+        &k,
+        Role::Central,
+        &b.nr.handshake_hash(),
+        &from_i
+    ));
     // another pair secret, another proof
     assert_ne!(
         from_i,
-        contact_proof(&k_pair("alice-carol"), &a.ni.handshake_hash())
+        contact_proof(
+            &k_pair("alice-carol"),
+            Role::Central,
+            &a.ni.handshake_hash()
+        )
     );
     assert!(!verify_contact_proof(
         &k_pair("alice-carol"),
+        Role::Central,
         &a.nr.handshake_hash(),
         &from_i
     ));
