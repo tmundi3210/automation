@@ -1,0 +1,97 @@
+[scenario]
+name = "s4"
+description = "Contested vote: 21 members, vote opened at T+5min, split 11/10 at T+10min, wall clocks off by up to 20 min, courier (node 20) sends No in the 10-fragment then carries a Yes into the 11-fragment."
+duration_ms = 10_800_000
+tick_ms = 100
+
+[nodes]
+android = 11
+iphone = 10
+stations = 0
+iphone_foreground_duty = 0.60
+android_slots = 7
+battery_floor = 0.30
+
+[radio]
+latency_ms = 40
+throughput_bytes_per_s = 15_000
+frame_loss = 0.005
+iphone_wake_ms = 10_000
+wall_clock_offset_ms = [-1_200_000, 1_200_000]
+
+[groups]
+[[groups.list]]
+name = "main"
+members = "all"
+admins = [0, 1, 2]
+
+[pairs]
+random = 0
+
+[traffic]
+group_post_every_ms = 300_000
+dm_every_ms = 0
+text_bytes = [40, 120]
+
+[[partition]]
+at_ms = 0
+fragments = "all"
+[[partition]]
+at_ms = 600_000
+fragments = [["0..10"], ["11..20"]]
+[[partition]]
+at_ms = 7_200_000
+fragments = "all"
+
+[[events]]
+at_ms = 300_000
+kind = "vote_open"
+by = 0
+label = "evacuate"
+question = "Evacuate the hall now?"
+options = ["Yes", "No"]
+f = 1
+
+# 11-fragment (0..10): nodes 0..9 vote Yes over the first 90 min; node 10 votes No at +25 min wall clock
+[[events]]
+at_ms = 1_200_000
+kind = "ballot"
+by = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+vote = "evacuate"
+choice = 0
+spread_ms = 5_400_000
+[[events]]
+at_ms = 6_000_000
+kind = "ballot"
+by = 10
+vote = "evacuate"
+choice = 1
+
+# 10-fragment (11..20): nodes 11..19 vote No; courier 20 votes No here then carries a Yes to the other fragment
+[[events]]
+at_ms = 1_200_000
+kind = "ballot"
+by = [11, 12, 13, 14, 15, 16, 17, 18, 19]
+vote = "evacuate"
+choice = 1
+spread_ms = 5_400_000
+[[events]]
+at_ms = 2_400_000
+kind = "adversary"
+node = 20
+behaviour = "equivocate_ballot"
+vote = "evacuate"
+choices = [1, 0]
+carry_to_fragment = 0
+carry_at_ms = 6_600_000
+
+[pass]
+every_post_decrypts_after_rejoin = true
+members_h_identical = true
+no_solid_state_reverts = true
+no_duplicate_ui_delivery = true
+no_final_while_split = true
+expected_vote_states = [{ vote = "evacuate", at_ms = 10_000_000, state = "Provisional", tally = "Y10 N10", void = 1 }]
+late_ballot_counts = true
+zero_wall_clock_reads = true
+drain_report = true

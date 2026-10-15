@@ -1,0 +1,105 @@
+[scenario]
+name = "s3"
+description = "Insider: S1 topology; node 25 (in the 14-fragment) is removed at T+1h but keeps its phone and keys, posts after removal, signs sock-puppet Adds, withholds DMs and replays cells."
+duration_ms = 151_200_000
+tick_ms = 100
+
+[nodes]
+android = 20
+iphone = 20
+stations = 0
+iphone_foreground_duty = 0.30
+android_slots = 7
+battery_floor = 0.30
+
+[radio]
+latency_ms = 40
+throughput_bytes_per_s = 15_000
+frame_loss = 0.005
+iphone_wake_ms = 10_000
+wall_clock_offset_ms = [0, 0]
+
+[groups]
+[[groups.list]]
+name = "main"
+members = "all"
+admins = [0, 1, 2, 18, 19, 25]
+
+[pairs]
+explicit = [[25, 3], [25, 4], [0, 1], [2, 3], [18, 19], [20, 21], [30, 31], [32, 33], [34, 35], [36, 37]]
+
+[traffic]
+group_post_every_ms = 120_000
+dm_every_ms = 600_000
+text_bytes = [40, 300]
+
+[[partition]]
+at_ms = 0
+fragments = "all"
+[[partition]]
+at_ms = 600_000
+fragments = [["0..17"], ["18..31"], ["32..39"]]
+[[partition]]
+at_ms = 22_200_000
+fragments = "all"
+
+[[events]]
+at_ms = 4_200_000
+kind = "remove_member"
+by = 0
+subject = 25
+
+[[events]]
+at_ms = 4_200_000
+kind = "adversary"
+node = 25
+behaviour = "keep_keys_after_removal"
+
+[[events]]
+at_ms = 5_400_000
+kind = "adversary"
+node = 25
+behaviour = "sockpuppet_adds"
+count = 3
+
+[[events]]
+at_ms = 5_400_000
+kind = "adversary"
+node = 25
+behaviour = "withhold_dms"
+hold_ms = 136_800_000
+
+[[events]]
+at_ms = 7_200_000
+kind = "adversary"
+node = 25
+behaviour = "replay_cells"
+
+[[events]]
+at_ms = 3_000_000
+kind = "task_create"
+by = 5
+task = "water-run"
+[[events]]
+at_ms = 3_600_000
+kind = "task_take"
+by = 6
+task = "water-run"
+[[events]]
+at_ms = 3_900_000
+kind = "task_take"
+by = 22
+task = "water-run"
+
+[pass]
+every_post_decrypts_after_rejoin = true
+members_h_identical = true
+no_solid_state_reverts = true
+no_duplicate_ui_delivery = true
+message_keys_deleted_after_delivery = true
+removed_cannot_decrypt_post_removal = true
+sockpuppet_adds_void_everywhere = true
+removed_posts_labelled_or_rejected = true
+replays_never_redelivered = true
+zero_wall_clock_reads = true
+drain_report = true
