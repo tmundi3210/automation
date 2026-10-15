@@ -492,7 +492,7 @@ mod tests {
         assert_eq!(r.bytes::<2>(), Ok([1, 2]));
         assert_eq!(r.rest(), &[3, 4, 5]);
         assert_eq!(r.remaining(), 0);
-        assert_eq!(r.rest(), &[]);
+        assert!(r.rest().is_empty());
         assert_eq!(r.take(0), Ok(&[][..]));
         assert_eq!(
             r.take(1),

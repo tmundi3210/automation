@@ -88,10 +88,6 @@ pub trait Link {
     /// Lane for a cell received on this link (BRIEF_v2 §5.5): L1 if this
     /// phone validated it, L2 if the link is to a verified contact, else L3.
     fn lane_for(&self, validated: Validation) -> Lane {
-        match (validated, self.auth()) {
-            (Validation::Validated, _) => Lane::L1,
-            (Validation::Opaque, LinkAuth::VerifiedContact(_)) => Lane::L2,
-            (Validation::Opaque, LinkAuth::Anonymous) => Lane::L3,
-        }
+        crate::relay::lanes::classify(validated, self.auth())
     }
 }
