@@ -26,7 +26,10 @@ frame_loss = 0.005          # per Noise frame; a loss drops the link, which re-h
 iphone_wake_ms = 10_000     # locked iPhone awake per inbound connect; never locked<->locked
 wall_clock_offset_ms = [0, 0]   # per-node uniform wall-clock offset range (display only)
 
-[groups]                    # groups are created at t=0 by admin 0 with everyone pre-verified in person
+[groups]                    # groups are created at t=0 by their first admin with everyone pre-verified in person:
+                            # the simulator runs an in-person setup phase before the first event (direct links, no
+                            # budgets) in which the genesis, every member's first Sender Key and the pairs' first
+                            # flights are exchanged; the run itself is over the modelled radio with every budget on
 [[groups.list]]
 name = "main"
 members = "all"             # or a list of node indices
@@ -55,19 +58,25 @@ by = 0                      # acting node
 subject = 25                # removed/added node (remove_member/add_member)
 # task_*: task = "label", by = node
 # vote_open: by, question = "...", options = ["Yes","No"], f = 1, label = "v1"
-# ballot: by, vote = "v1", choice = 0
-# adversary: node, behaviour = "keep_keys_after_removal" | "equivocate_ballot" (vote, choices=[a,b], carry_to=fragment)
-#            | "sockpuppet_adds" (count) | "withhold_dms" (hold_ms) | "replay_cells" | "flood" (cells_per_min)
+# ballot: by (one index or a list), vote = "v1", choice = 0, spread_ms = 0 (the ballots of `by` are cast
+#         uniformly over this window; a ballot whose vote has not reached the node yet is retried every tick)
+# adversary: node, behaviour = "keep_keys_after_removal"
+#            | "equivocate_ballot" (vote, choices=[a,b], carry_to_fragment = f, carry_at_ms = t: the node casts
+#              choice a now, is moved into fragment f at t and casts choice b there)
+#            | "sockpuppet_adds" (count) | "withhold_dms" (hold_ms, count = 20) | "replay_cells" | "flood" (cells_per_min)
 
 [pass]                      # which criteria the invariant checker enforces for this scenario
-every_post_decrypts_after_rejoin = true
-members_h_identical = true
+every_post_decrypts_after_rejoin = true   # shown at every expected node; a removed node's posts citing its own removal
+                                          # are expected nowhere (hidden everywhere, S3 (c))
+members_h_identical = true          # every member node holds the roster, same members(H) per head set, and one head
+                                    # set when the run has been unpartitioned for the delivery grace (30 min)
 no_solid_state_reverts = true
 no_duplicate_ui_delivery = true
 message_keys_deleted_after_delivery = true
 removed_cannot_decrypt_post_removal = false
 sockpuppet_adds_void_everywhere = false
-removed_posts_labelled_or_rejected = false
+removed_posts_labelled_or_rejected = false   # citing posts hidden everywhere; every other post by the removed node
+                                             # labelled "who was removed" wherever it is shown after the node knew
 replays_never_redelivered = false
 no_final_while_split = false
 expected_vote_states = []           # e.g. [{vote="v1", state="Provisional", tally="Y10 N10", void=1}]
@@ -78,6 +87,8 @@ flood_honest_latency_factor_max = 0.0   # 0 = not checked; else honest C0/C1 lat
 flood_junk_within_l3_cap = false
 drain_report = true                 # always reported, never a pass/fail: C1 backlog drain time after the bridge
 ```
+
+Always reported, never a pass/fail: `cells_created.delivered_at_sender` (objects whose sender reached "Delivered" by the end; receipts are batched per conversation, `node::node::RECEIPT_BATCH_MS_ASM`) and `nodes[].last_sync_set` ("last sync" set at the end: the digest matched a neighbour's, BRIEF_v2 §2), the S0 row's "every text Delivered; receipts; last-sync set".
 
 ## Scenarios
 

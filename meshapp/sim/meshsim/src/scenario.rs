@@ -244,8 +244,6 @@ pub enum Event {
         at_ms: u64,
         by: usize,
         label: String,
-        /// Read by the votes wave.
-        #[allow(dead_code)]
         question: String,
         options: Vec<String>,
         f: u32,
@@ -255,10 +253,8 @@ pub enum Event {
         by: OneOrMany,
         vote: String,
         choice: usize,
-        /// The ballots of `by` are spread uniformly over this window (read
-        /// by the votes wave).
+        /// The ballots of `by` are spread uniformly over this window.
         #[serde(default)]
-        #[allow(dead_code)]
         spread_ms: u64,
     },
     Adversary {
@@ -310,8 +306,8 @@ impl Event {
     }
 }
 
-/// One entry of `expected_vote_states` (evaluated by the votes wave).
-#[allow(dead_code)]
+/// One entry of `expected_vote_states`: the vote line every member node
+/// must show at `at_ms` (`assert::expected_vote_line`).
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ExpectedVoteState {

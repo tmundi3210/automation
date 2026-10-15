@@ -11,9 +11,12 @@
 //! - a Take is a live claim unless the same author issued a Release that is
 //!   not in the Take's causal past ("later-or-concurrent Release");
 //! - a live Take whose causal past contains another live Take is a *second
-//!   claim* ("2 people on this"), not a conflict;
-//! - live Takes that are concurrent (neither in the other's past) form the
-//!   conflict set, resolved by [`crate::tasks::tiebreak`];
+//!   claim* ("2 people on this"), not a conflict, whatever else it is
+//!   concurrent with (two helpers who each saw the holder but not each other
+//!   are "3 people on this", not rivals);
+//! - the other live Takes saw no live Take, so they are pairwise concurrent
+//!   (neither in the other's past); two or more of them form the conflict
+//!   set, resolved by [`crate::tasks::tiebreak`];
 //! - Done by any current claimant closes the task (idempotent; concurrent
 //!   Dones are fine); a Done from someone without a live claim at that point
 //!   is ignored;
@@ -21,9 +24,10 @@
 //!   authority and the fold does not require one;
 //! - an op citing a head that is not in the set (or that is itself parked)
 //!   is parked and reported, so the caller can ask for the missing ops;
-//! - an op's identity is `(op_hash, author)`: the hash alone is not unique
-//!   per member because the post plaintext it digests has no author field
-//!   (see [`fold`]).
+//! - an op's identity is its author-bound hash
+//!   ([`crate::objects::task_op::task_op_hash`], DESIGN §2.4): the hash
+//!   digests the author with the post plaintext, so byte-identical ops from
+//!   two members are two ops, and a repeated hash is one op (see [`fold`]).
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -89,38 +93,37 @@ pub struct Fold {
 }
 
 /// One op as the fold sees it: `(op_hash, author, op)`. The author is the
-/// post's chain owner (docs/decisions-assumed.md row 12).
+/// post's chain owner (docs/decisions-assumed.md row 12) and `op_hash` is
+/// [`task_op_hash`](crate::objects::task_op::task_op_hash)`(author, post
+/// plaintext)`, the op's identity (DESIGN §2.4).
 pub type OpRecord = (Hash32, IdentityKey, TaskOp);
 
 /// Folds `ops` (any order) into the task's state. `task_id` seeds the
 /// tie-break.
 ///
-/// An op's identity is `(op_hash, author)`, not the hash alone: the op hash
-/// is `SHA256(post plaintext)` (DESIGN §2.4) and the post plaintext carries
-/// no author, so two members who Take the same task citing the same heads
-/// (the common concurrent-Take case) emit byte-identical posts with one
-/// hash. Those are two claims. A head cited by hash therefore resolves to
-/// every record carrying that hash (the citer saw a post with those bytes,
-/// whichever member sent it), and a repeated `(hash, author)` record
-/// collapses to the first seen.
+/// An op's identity is its hash: the hash is author-bound (DESIGN §2.4), so
+/// two members who Take the same task citing the same heads (the common
+/// concurrent-Take case) are two distinct ops and two claims, and a head
+/// cited in `task_heads` names exactly one op. A repeated hash is the same
+/// op seen twice and collapses to one node; should a caller ever pair one
+/// hash with two authors (impossible when the hash was computed honestly),
+/// the record with the lower author key is kept so the result still does
+/// not depend on input order.
 pub fn fold(task_id: &TaskId, ops: &[OpRecord]) -> Fold {
-    // ---- nodes: one per distinct (hash, author), in (hash, author) order --
-    let mut seen_pair: BTreeSet<(Hash32, IdentityKey)> = BTreeSet::new();
-    let mut nodes: Vec<usize> = Vec::new();
+    // ---- nodes: one per distinct hash, in hash order -------------------
+    let mut first: BTreeMap<Hash32, usize> = BTreeMap::new();
     for (i, (h, a, _)) in ops.iter().enumerate() {
-        if seen_pair.insert((*h, *a)) {
-            nodes.push(i);
+        let keep_existing = first
+            .get(h)
+            .is_some_and(|&j| ops.get(j).is_some_and(|(_, b, _)| b <= a));
+        if !keep_existing {
+            first.insert(*h, i);
         }
     }
-    nodes.sort_by_key(|&i| (ops[i].0, ops[i].1));
+    let nodes: Vec<usize> = first.values().copied().collect();
     let record = |nid: usize| -> Option<&OpRecord> { nodes.get(nid).and_then(|&i| ops.get(i)) };
-    // hash → node ids carrying it (ascending)
-    let mut by_hash: BTreeMap<Hash32, Vec<usize>> = BTreeMap::new();
-    for nid in 0..nodes.len() {
-        if let Some((h, _, _)) = record(nid) {
-            by_hash.entry(*h).or_default().push(nid);
-        }
-    }
+    // hash → node id (node ids are in hash order)
+    let by_hash: BTreeMap<Hash32, usize> = first.keys().enumerate().map(|(n, h)| (*h, n)).collect();
 
     // ---- park ops with unresolved heads (fixpoint) ----------------------
     let mut parked: BTreeSet<usize> = BTreeSet::new();
@@ -133,11 +136,10 @@ pub fn fold(task_id: &TaskId, ops: &[OpRecord]) -> Fold {
             let Some((_, _, op)) = record(nid) else {
                 continue;
             };
-            let unresolved = op.task_heads.iter().any(|hd| {
-                by_hash
-                    .get(hd)
-                    .is_none_or(|ps| ps.iter().any(|p| parked.contains(p)))
-            });
+            let unresolved = op
+                .task_heads
+                .iter()
+                .any(|hd| by_hash.get(hd).is_none_or(|p| parked.contains(p)));
             if unresolved {
                 parked.insert(nid);
                 changed = true;
@@ -148,7 +150,7 @@ pub fn fold(task_id: &TaskId, ops: &[OpRecord]) -> Fold {
         }
     }
 
-    // ---- topological order: Kahn's algorithm, ready set by (hash, author) --
+    // ---- topological order: Kahn's algorithm, ready set by hash ---------
     let resolved: Vec<usize> = (0..nodes.len()).filter(|n| !parked.contains(n)).collect();
     let mut indeg: BTreeMap<usize, usize> = BTreeMap::new();
     let mut children: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
@@ -158,7 +160,7 @@ pub fn fold(task_id: &TaskId, ops: &[OpRecord]) -> Fold {
         };
         let mut d = 0usize;
         for hd in &op.task_heads {
-            for &p in by_hash.get(hd).map(Vec::as_slice).unwrap_or(&[]) {
+            if let Some(&p) = by_hash.get(hd) {
                 children.entry(p).or_default().push(nid);
                 d = d.saturating_add(1);
             }
@@ -208,12 +210,10 @@ pub fn fold(task_id: &TaskId, ops: &[OpRecord]) -> Fold {
         let mut set = BTreeSet::new();
         if let Some((_, _, op)) = record(nid) {
             for hd in &op.task_heads {
-                for p in by_hash.get(hd).map(Vec::as_slice).unwrap_or(&[]) {
-                    if let Some(&pp) = pos.get(p) {
-                        set.insert(pp);
-                        if let Some(a) = anc.get(pp) {
-                            set.extend(a.iter().copied());
-                        }
+                if let Some(&pp) = by_hash.get(hd).and_then(|p| pos.get(p)) {
+                    set.insert(pp);
+                    if let Some(a) = anc.get(pp) {
+                        set.extend(a.iter().copied());
                     }
                 }
             }
@@ -283,11 +283,16 @@ pub fn fold(task_id: &TaskId, ops: &[OpRecord]) -> Fold {
         };
     }
 
-    // ---- conflict set: claims concurrent with at least one other --------
-    let concurrent = |a: usize, b: usize| !in_past(a, b) && !in_past(b, a);
+    // ---- second claims versus the conflict set --------------------------
+    // DESIGN §4 "Fold" (docs/decisions-assumed.md row 6): a live Take with
+    // another live Take in its causal past is a second claim, never a
+    // conflict, whatever else it is concurrent with. The remaining claims
+    // saw no live claim at all, so they are pairwise concurrent: two or
+    // more of them form the conflict set.
+    let is_second = |p: usize| claims.iter().any(|(q, _, _)| *q != p && in_past(*q, p));
     let conflict: Vec<(Hash32, IdentityKey)> = claims
         .iter()
-        .filter(|(p, _, _)| claims.iter().any(|(q, _, _)| q != p && concurrent(*p, *q)))
+        .filter(|(p, _, _)| !is_second(*p))
         .map(|(_, h, k)| (*h, *k))
         .collect();
     let state = match tiebreak::winner(task_id, &conflict) {
@@ -298,11 +303,10 @@ pub fn fold(task_id: &TaskId, ops: &[OpRecord]) -> Fold {
                 .filter(|k| *k != winner)
                 .collect();
             losers.sort_unstable();
-            let in_conflict: BTreeSet<IdentityKey> = conflict.iter().map(|(_, k)| *k).collect();
             let mut second: Vec<IdentityKey> = claims
                 .iter()
+                .filter(|(p, _, _)| is_second(*p))
                 .map(|(_, _, k)| *k)
-                .filter(|k| !in_conflict.contains(k))
                 .collect();
             second.sort_unstable();
             TaskState::Conflict {
@@ -585,6 +589,52 @@ mod tests {
     }
 
     #[test]
+    fn a_take_that_saw_a_live_take_is_a_second_claim_even_when_concurrent_with_another() {
+        // DESIGN §4 "Fold": "A Take with another live Take in its causal
+        // past is a second claim, not a conflict"; the conflict set holds
+        // only the live Takes that saw no live Take at all.
+        let create = op(1, 1, TaskKind::Create, &[]);
+        let take_a = op(2, 2, TaskKind::Take, &[1]);
+        // B and C each saw A and took anyway, without seeing each other:
+        // two helpers, "3 people on this", nothing to resolve.
+        let take_b = op(3, 3, TaskKind::Take, &[2]);
+        let take_c = op(4, 4, TaskKind::Take, &[2]);
+        let all = [create.clone(), take_a.clone(), take_b.clone(), take_c];
+        let f = fold(&TID, &all);
+        assert_eq!(
+            f.state,
+            TaskState::Taken {
+                holders: vec![key(2), key(3), key(4)]
+            }
+        );
+        for rotate in 0..all.len() {
+            let mut ops = all.to_vec();
+            ops.rotate_left(rotate);
+            assert_eq!(fold(&TID, &ops), f);
+        }
+        // D took concurrently with A (saw only the Create): the conflict is
+        // {A, D}; B, who saw A but not D, is a second claim, not a rival.
+        let take_d = op(5, 5, TaskKind::Take, &[1]);
+        let all = [create, take_a, take_b, take_d];
+        let f = fold(&TID, &all);
+        let expect = tiebreak::winner(&TID, &[(h(2), key(2)), (h(5), key(5))]).unwrap();
+        let loser = if expect == key(2) { key(5) } else { key(2) };
+        assert_eq!(
+            f.state,
+            TaskState::Conflict {
+                winner: expect,
+                losers: vec![loser],
+                second: vec![key(3)]
+            }
+        );
+        for rotate in 0..all.len() {
+            let mut ops = all.to_vec();
+            ops.rotate_left(rotate);
+            assert_eq!(fold(&TID, &ops), f);
+        }
+    }
+
+    #[test]
     fn release_then_retake_is_a_fresh_claim() {
         let take = op(2, 2, TaskKind::Take, &[]);
         let rel = op(3, 2, TaskKind::Release, &[2]);
@@ -630,54 +680,12 @@ mod tests {
     }
 
     #[test]
-    fn identical_post_bytes_from_two_authors_are_two_claims() {
-        // DESIGN §2.4: `op hash = SHA256(post plaintext)` and the post
-        // plaintext carries no author field, so two members who Take right
-        // after the Create (same task_id, same heads, same roster heads)
-        // emit byte-identical posts with one hash. They are two concurrent
-        // claims and must conflict, whichever copy a phone saw first.
+    fn a_repeated_hash_is_one_op_whatever_the_order() {
+        // DESIGN §2.4: the op hash is author-bound, so one hash is one op.
+        // The exact same record twice is still one op, and parked hashes
+        // are listed once.
         let create = op(1, 1, TaskKind::Create, &[]);
         let take_a = op(2, 2, TaskKind::Take, &[1]);
-        let take_b = op(2, 3, TaskKind::Take, &[1]);
-        let expect = tiebreak::winner(&TID, &[(h(2), key(2)), (h(2), key(3))]).unwrap();
-        let loser = if expect == key(2) { key(3) } else { key(2) };
-        let f = fold(&TID, &[create.clone(), take_a.clone(), take_b.clone()]);
-        assert_eq!(
-            f.state,
-            TaskState::Conflict {
-                winner: expect,
-                losers: vec![loser],
-                second: vec![]
-            }
-        );
-        let g = fold(&TID, &[take_b.clone(), create.clone(), take_a.clone()]);
-        assert_eq!(g, f);
-        // a later op citing that hash is after both copies
-        let take_c = op(4, 4, TaskKind::Take, &[2]);
-        let f = fold(
-            &TID,
-            &[create.clone(), take_a.clone(), take_b.clone(), take_c],
-        );
-        assert_eq!(
-            f.state,
-            TaskState::Conflict {
-                winner: expect,
-                losers: vec![loser],
-                second: vec![key(4)]
-            }
-        );
-        // the loser's Release (same bytes as any other Release citing [2]
-        // would have) cancels only the loser's claim
-        let loser_id = if loser == key(2) { 2 } else { 3 };
-        let rel = op(5, loser_id, TaskKind::Release, &[2]);
-        let f = fold(&TID, &[create.clone(), take_a.clone(), take_b.clone(), rel]);
-        assert_eq!(
-            f.state,
-            TaskState::Taken {
-                holders: vec![expect]
-            }
-        );
-        // the exact same record twice is still one op; parked hashes are listed once
         let f = fold(&TID, &[take_a.clone(), take_a.clone(), create.clone()]);
         assert_eq!(
             f.state,
@@ -685,9 +693,11 @@ mod tests {
                 holders: vec![key(2)]
             }
         );
-        let dangling_a = op(7, 2, TaskKind::Take, &[99]);
-        let dangling_b = op(7, 3, TaskKind::Take, &[99]);
-        let f = fold(&TID, &[dangling_a, dangling_b, create, take_a]);
+        let dangling = op(7, 2, TaskKind::Take, &[99]);
+        let f = fold(
+            &TID,
+            &[dangling.clone(), dangling, create.clone(), take_a.clone()],
+        );
         assert_eq!(f.parked, vec![h(7)]);
         assert_eq!(
             f.state,
@@ -695,6 +705,19 @@ mod tests {
                 holders: vec![key(2)]
             }
         );
+        // Defensive: a caller that pairs one hash with two authors (not
+        // possible with honestly computed hashes) still gets an
+        // order-independent answer: the lower author key is kept.
+        let take_b = op(2, 3, TaskKind::Take, &[1]);
+        let lower = key(2).min(key(3));
+        let f = fold(&TID, &[create.clone(), take_a.clone(), take_b.clone()]);
+        assert_eq!(
+            f.state,
+            TaskState::Taken {
+                holders: vec![lower]
+            }
+        );
+        assert_eq!(fold(&TID, &[take_b, create, take_a]), f);
     }
 
     #[test]

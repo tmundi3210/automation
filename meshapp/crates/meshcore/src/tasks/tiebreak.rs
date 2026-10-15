@@ -2,7 +2,9 @@
 //! "Tie-break"; docs/decisions-assumed.md row 6; BRIEF_v2 §4 "Conflict:
 //! Ravi also took this · a deterministic rule picks one").
 //!
-//! For the conflict set `C` of concurrent Take ops:
+//! For the conflict set `C` of concurrent Take ops, each named by its
+//! author-bound op hash ([`crate::objects::task_op::task_op_hash`], DESIGN
+//! §2.4):
 //!
 //! ```text
 //! R        = SHA256(sorted op hashes of C)
@@ -14,9 +16,11 @@
 //! exists and every task re-randomises the ranking through `task_id` and
 //! `R`, so no key choice wins in general; `R` depends on every rival's op
 //! hash, so neither the task creator nor any single taker knows the
-//! ranking before the conflict exists. Every phone computes the same winner
-//! from the same set (`tests/tasks_votes.rs` checks permutation invariance
-//! and the fairness bound).
+//! ranking before the conflict exists. Because the op hash binds the author,
+//! two rivals whose Take posts are byte-identical still contribute two
+//! distinct hashes to `R`, one per claim. Every phone computes the same
+//! winner from the same set (`tests/tasks_votes.rs` checks permutation
+//! invariance and the fairness bound).
 
 use crate::crypto::ed25519::IdentityKey;
 use crate::crypto::hash::{Hash32, sha256, sha256_concat};
@@ -26,7 +30,7 @@ use crate::objects::task_op::TaskId;
 pub const TIEBREAK_DOMAIN: &[u8] = b"meshapp.v1.tiebreak";
 
 /// `R = SHA256(sorted op hashes)`: duplicates are collapsed so a set, not a
-/// list, defines the ranking.
+/// list, defines the ranking (a repeated hash is the same op listed twice).
 pub fn ranking_seed(concurrent_takes: &[(Hash32, IdentityKey)]) -> Hash32 {
     let mut hashes: Vec<Hash32> = concurrent_takes.iter().map(|(h, _)| *h).collect();
     hashes.sort_unstable();

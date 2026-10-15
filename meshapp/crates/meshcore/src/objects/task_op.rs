@@ -15,20 +15,38 @@
 //! hashes of the task ops the author had seen for this task, so order is
 //! causal and no timestamp decides anything (BRIEF_v2 §4 "Model").
 //!
-//! Identifiers (DESIGN §2.4): `task_id = Trunc16(SHA256(Create post
-//! plaintext))` and `op hash = SHA256(post plaintext)`, both computed by the
-//! caller from the whole post plaintext ([`task_id_of_create_post`],
-//! [`op_hash_of_post`]). Because the Create's own id is derived from the
-//! bytes that contain it, a Create carries the all-zero `task_id` on the
-//! wire and cites no heads (there is nothing yet to cite); decoders enforce
-//! both so every task has exactly one Create encoding.
+//! Identifiers (DESIGN §2.4) are *author-bound*: the post plaintext
+//! (`ver ‖ kind ‖ n_heads ‖ roster_heads ‖ body`, `objects/chat_post.rs`)
+//! carries no author field, so two members who emit byte-identical ops (the
+//! common case: both Take right after the Create, citing the same heads)
+//! would otherwise share one hash and merge into one op. Instead
+//!
+//! ```text
+//! op hash = SHA256("meshapp.v1.taskop" ‖ 0x00 ‖ author [32] ‖ post plaintext)
+//! task_id = Trunc16(op hash of the Create)
+//! ```
+//!
+//! ([`task_op_hash`], [`task_id_for_create`]), where `author` is the
+//! Sender Key chain owner of the post, which the group layer knows for every
+//! post it decrypts (DESIGN §2.4 "author = chain owner"). Every task op
+//! therefore has exactly one identity per author, and a `task_heads`
+//! citation names one member's copy. Because the Create's own id is derived
+//! from the bytes that contain it, a Create carries the all-zero `task_id`
+//! on the wire and cites no heads (there is nothing yet to cite); decoders
+//! enforce both so every task has exactly one Create encoding per author.
 
 use crate::codec::{CodecError, Decode, Encode, ListItem, Reader, Writer, unknown_variant};
-use crate::crypto::hash::{Hash32, sha256};
+use crate::crypto::ed25519::IdentityKey;
+use crate::crypto::hash::{Hash32, object_hash};
 use crate::objects::MAX_HEADS;
 
-/// A task's 16-byte id (`Trunc16(SHA256(Create post plaintext))`).
+/// A task's 16-byte id: `Trunc16(task_op_hash(author, Create post
+/// plaintext))` ([`task_id_for_create`]).
 pub type TaskId = [u8; 16];
+
+/// Domain label of the author-bound task op hash (DESIGN §2.4; the same
+/// `domain ‖ 0x00 ‖ content` shape as every other object hash, §2.1).
+pub const TASK_OP_DOMAIN: &str = "meshapp.v1.taskop";
 
 /// Largest title, in UTF-8 bytes (module spec: ≤ 120 B).
 pub const MAX_TITLE_BYTES: usize = 120;
@@ -111,7 +129,8 @@ impl ListItem for TaskOp {}
 
 impl TaskOp {
     /// A Create op. The wire `task_id` is zero; the real id is
-    /// [`task_id_of_create_post`] over the post the caller wraps this in.
+    /// [`task_id_for_create`] over the author and the post the caller wraps
+    /// this in.
     pub fn create(
         title: impl Into<String>,
         details: impl Into<String>,
@@ -242,15 +261,24 @@ impl Decode for TaskOp {
     }
 }
 
-/// `task_id = Trunc16(SHA256(Create post plaintext))` (DESIGN §2.4).
-pub fn task_id_of_create_post(create_post_plaintext: &[u8]) -> TaskId {
-    sha256(create_post_plaintext).truncate16()
+/// The author-bound identity of a task op (DESIGN §2.4):
+/// `SHA256("meshapp.v1.taskop" ‖ 0x00 ‖ author ‖ post plaintext)`, i.e.
+/// [`object_hash`] under [`TASK_OP_DOMAIN`] with the author's identity key
+/// prepended to the whole post plaintext. This is the value other ops cite
+/// in `task_heads` and the tie-break ranks over. `author` is the chain
+/// owner of the post (module docs); the node supplies it.
+pub fn task_op_hash(author: &IdentityKey, post_plaintext: &[u8]) -> Hash32 {
+    let mut bytes = Vec::with_capacity(author.as_bytes().len() + post_plaintext.len());
+    bytes.extend_from_slice(author.as_bytes());
+    bytes.extend_from_slice(post_plaintext);
+    object_hash(TASK_OP_DOMAIN, &bytes)
 }
 
-/// `op hash = SHA256(post plaintext)` (DESIGN §2.4), the value other ops
-/// cite in `task_heads`.
-pub fn op_hash_of_post(post_plaintext: &[u8]) -> Hash32 {
-    sha256(post_plaintext)
+/// `task_id = Trunc16(task_op_hash(author, Create post plaintext))`
+/// (DESIGN §2.4): two members who Create byte-identical tasks get two
+/// tasks.
+pub fn task_id_for_create(author: &IdentityKey, create_post_plaintext: &[u8]) -> TaskId {
+    task_op_hash(author, create_post_plaintext).truncate16()
 }
 
 #[cfg(test)]
@@ -384,14 +412,32 @@ mod tests {
     }
 
     #[test]
-    fn ids_are_derived_from_post_plaintext() {
+    fn ids_are_author_bound_hashes_of_the_post_plaintext() {
+        use crate::crypto::ed25519::IdentitySigner;
+        use crate::crypto::hash::sha256;
+        let a = IdentitySigner::from_seed(&[1; 32]).public();
+        let b = IdentitySigner::from_seed(&[2; 32]).public();
         let post = b"pretend post plaintext";
-        assert_eq!(task_id_of_create_post(post), sha256(post).truncate16());
-        assert_eq!(op_hash_of_post(post), sha256(post));
-        assert_ne!(
-            task_id_of_create_post(post),
-            task_id_of_create_post(b"other")
+        // known structure: domain ‖ 0x00 ‖ author ‖ plaintext
+        let mut pre = TASK_OP_DOMAIN.as_bytes().to_vec();
+        pre.push(0);
+        pre.extend_from_slice(a.as_bytes());
+        pre.extend_from_slice(post);
+        assert_eq!(task_op_hash(&a, post), sha256(&pre));
+        assert_eq!(
+            task_id_for_create(&a, post),
+            task_op_hash(&a, post).truncate16()
         );
+        // identical bytes, different authors: different op and task identities
+        assert_ne!(task_op_hash(&a, post), task_op_hash(&b, post));
+        assert_ne!(task_id_for_create(&a, post), task_id_for_create(&b, post));
+        // and different bytes under one author differ too
+        assert_ne!(task_op_hash(&a, post), task_op_hash(&a, b"other"));
+        // no ambiguity between author and plaintext boundaries: the author
+        // is fixed-width, so shifting a byte across changes the digest
+        let mut shifted = a.as_bytes().to_vec();
+        shifted.extend_from_slice(post);
+        assert_ne!(task_op_hash(&a, post), sha256(&shifted));
     }
 
     proptest! {

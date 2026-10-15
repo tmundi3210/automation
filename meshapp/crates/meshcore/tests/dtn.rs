@@ -15,11 +15,12 @@ use meshcore::dtn::dedupe::{
     dedupe_retention_ms,
 };
 use meshcore::dtn::store::{
-    CellMeta, CellStore, EvictionEntry, EvictionPolicy, LowestClassL3First, Put, StoreCaps,
+    CellMeta, CellStore, EvictionEntry, EvictionPolicy, LowestClassL3First, Put,
+    SUMMARY_SALT_ROTATE_MS_ASM, StoreCaps,
 };
 use meshcore::dtn::summary::{
-    Assembled, ChunkAssembler, MAX_CHUNK_TOTAL, MAX_K, MAX_N_BITS, MIN_N_BITS, SummaryError,
-    SummaryVector, sizing,
+    Assembled, ChunkAssembler, IdWords, MAX_CHUNK_TOTAL, MAX_K, MAX_N_BITS, MIN_N_BITS,
+    SummaryError, SummaryIndex, SummaryVector, sizing,
 };
 use meshcore::dtn::sync::{LinkSync, Out, PROTO_VERSION, SyncConfig, SyncState};
 use meshcore::relay::Lane;
@@ -656,6 +657,189 @@ proptest! {
     }
 }
 
+/// The store's maintained filter (DESIGN §7 "summary vectors") contains
+/// every held cell at every moment, forgets evicted ones exactly, and
+/// stays at or below the 1 % target at the designed load.
+#[test]
+fn store_summary_index_is_exact_and_under_one_percent_at_load() {
+    let n = 10_000u64;
+    let mut s = CellStore::with_default_policy(StoreCaps::cells(20_000, 20_000));
+    s.rotate_summary_salt(0xABCD_0001, 0);
+    assert_eq!(s.summary_salt(), 0xABCD_0001);
+    for i in 0..n {
+        assert_eq!(
+            s.put(cell(i, 7), meta(Class::C2Text, Lane::L1, None, i)),
+            Put::Stored
+        );
+    }
+    let idx = s.summary_index();
+    assert_eq!(idx.len(), 10_000);
+    assert!(idx.capacity() >= 10_000 && idx.capacity() <= 11_300);
+    assert!((0..n).all(|i| idx.vector().contains(&id_of(i))));
+    let probes = 50_000u64;
+    let fp = (n..n + probes)
+        .filter(|i| idx.vector().contains(&id_of(*i)))
+        .count();
+    let fpr = fp as f64 / probes as f64;
+    assert!(fpr <= 0.01, "fpr {fpr}");
+    // words are the first sixteen bytes of the id; slots are dense
+    for i in 0..10u64 {
+        let slot = s.slot_of(&id_of(i)).unwrap();
+        assert_eq!(s.id_at(slot), Some(&id_of(i)));
+        assert_eq!(idx.words(slot), Some(&IdWords::of(&id_of(i))));
+        assert!(s.generation(slot) > 0);
+    }
+    // removal clears what only that cell set
+    let before = idx.vector().clone();
+    assert!(s.remove(&id_of(0)).is_some());
+    let after = s.summary_index().vector();
+    assert_ne!(&before, after);
+    assert!(after.is_subset_of(&before) == Some(true));
+    assert!((1..n).all(|i| after.contains(&id_of(i))));
+    let fresh = SummaryVector::build((1..n).map(id_of), after.salt(), after.n_bits(), after.k());
+    assert_eq!(after, &fresh, "counting filter equals a fresh build");
+    // a reused slot carries a new generation
+    let slot0 = s.slot_of(&id_of(1)).unwrap();
+    assert!(s.remove(&id_of(1)).is_some());
+    assert_eq!(s.id_at(slot0), None);
+    let g = s.generation(slot0);
+    assert_eq!(
+        s.put(cell(n + 1, 7), meta(Class::C2Text, Lane::L1, None, 5)),
+        Put::Stored
+    );
+    assert_eq!(s.slot_of(&id_of(n + 1)), Some(slot0));
+    assert_eq!(s.generation(slot0), g + 1);
+}
+
+/// The salt rotation policy (store module docs): a fresh salt is taken at
+/// most once per interval of powered-on time, `0` means every encounter,
+/// and `start` under the store's salt sends the maintained bits while any
+/// other salt derives an exactly-sized vector.
+#[test]
+fn salt_rotation_is_bounded_and_start_uses_the_maintained_filter() {
+    let mut s = store_of(&BTreeSet::from([1u64, 2, 3, 4]));
+    assert_eq!(s.summary_salt_interval_ms(), SUMMARY_SALT_ROTATE_MS_ASM);
+    assert_eq!(s.summary_salt_for(1_000, 11), 11, "first call rotates");
+    assert_eq!(
+        s.summary_salt_for(1_000 + SUMMARY_SALT_ROTATE_MS_ASM - 1, 12),
+        11
+    );
+    assert_eq!(
+        s.summary_salt_for(1_000 + SUMMARY_SALT_ROTATE_MS_ASM, 13),
+        13
+    );
+    assert_eq!(
+        s.summary_salt_for(500, 14),
+        13,
+        "a clock that went back waits"
+    );
+    s.set_summary_salt_interval_ms(0);
+    assert_eq!(s.summary_salt_for(500, 15), 15);
+    assert_eq!(s.summary_salt_for(500, 16), 16);
+    assert_eq!(s.summary_salt(), 16);
+    let d = DedupeCache::new(ms::DAY, 100);
+    let mut a = LinkSync::new(SyncConfig::default());
+    a.start(16, 0, &s, &d);
+    let local = a.local_summary().unwrap();
+    assert_eq!(
+        local,
+        s.summary_index().vector(),
+        "maintained bits as they are"
+    );
+    assert_eq!(local.n_bits(), sizing(SummaryIndex::MIN_CAPACITY, 0.01).0);
+    let mut b = LinkSync::new(SyncConfig::default());
+    b.start(17, 0, &s, &d);
+    let derived = b.local_summary().unwrap();
+    assert_eq!(derived.salt(), 17);
+    assert_eq!((derived.n_bits(), derived.k()), sizing(4, 0.01));
+    assert!((1..=4u64).all(|i| derived.contains(&id_of(i))));
+    // rejected ids ride along on both paths
+    let mut dr = DedupeCache::new(ms::DAY, 100);
+    dr.mark_rejected(id_of(50), 0);
+    let mut c = LinkSync::new(SyncConfig::default());
+    c.start(16, 0, &s, &dr);
+    assert!(c.local_summary().unwrap().contains(&id_of(50)));
+    assert_ne!(c.local_summary().unwrap(), s.summary_index().vector());
+    let mut e = LinkSync::new(SyncConfig::default());
+    e.start(18, 0, &s, &dr);
+    assert!(e.local_summary().unwrap().contains(&id_of(50)));
+    assert_eq!(e.local_summary().unwrap().n_bits(), sizing(5, 0.01).0);
+}
+
+/// The forwardable scan hands out slots, generations and words that agree
+/// with the id-keyed API, in the forwarding order.
+#[test]
+fn scan_forwardable_matches_candidates_and_carries_slots() {
+    let seeds: BTreeSet<u64> = (0..40).collect();
+    let s = store_of(&seeds);
+    let scanned: Vec<Hash32> = s.scan_forwardable().map(|c| *c.id).collect();
+    assert_eq!(scanned, s.candidates_for(&|_| false, 1_000));
+    assert!(seeds.iter().filter(|x| ttl_of(**x) < 2).count() > 0);
+    assert_eq!(
+        scanned.len(),
+        seeds.iter().filter(|x| ttl_of(**x) >= 2).count()
+    );
+    for c in s.scan_forwardable() {
+        assert_eq!(s.slot_of(c.id), Some(c.slot));
+        assert_eq!(s.generation(c.slot), c.generation);
+        assert_eq!(c.words, &IdWords::of(c.id));
+        assert_eq!(s.summary_index().words(c.slot), Some(c.words));
+    }
+    assert_eq!(s.candidates_for(&|_| false, 3).len(), 3);
+}
+
+/// Throughput guard for the anti-entropy hot path (ignored by default;
+/// `cargo test -p meshcore --test dtn -- --ignored bench`): a 10 000-cell
+/// store, 1 000 encounters against a peer holding half of it, each with a
+/// fresh salt on one side and the store's salt on the other. The bound is
+/// generous for a debug build.
+#[test]
+#[ignore]
+#[allow(clippy::disallowed_methods)]
+fn bench_thousand_encounters_over_a_ten_thousand_cell_store() {
+    let n = 10_000u64;
+    let mut sa = CellStore::with_default_policy(StoreCaps::cells(20_000, 20_000));
+    let mut sb = CellStore::with_default_policy(StoreCaps::cells(20_000, 20_000));
+    for i in 0..n {
+        sa.put(cell(i, 7), meta(class_of(i), Lane::L1, None, i));
+        if i % 2 == 0 {
+            sb.put(cell(i, 7), meta(class_of(i), Lane::L1, None, i));
+        }
+    }
+    let da = DedupeCache::new(ms::DAY, 1_000);
+    let db = DedupeCache::new(ms::DAY, 1_000);
+    let started = std::time::Instant::now();
+    let mut offered = 0usize;
+    for e in 0..1_000u64 {
+        let now = e * 1_000;
+        let salt_a = sa.summary_salt_for(now, 0x1000 + e as u32);
+        let mut a = LinkSync::new(SyncConfig::default());
+        let mut b = LinkSync::new(SyncConfig::default());
+        let a0 = a.start(salt_a, now, &sa, &da);
+        let b0 = b.start(0x9000 + e as u32, now, &sb, &db);
+        let a1 = deliver(b0, &mut a);
+        let b1 = deliver(a0, &mut b);
+        deliver(a1, &mut b);
+        deliver(b1, &mut a);
+        assert_eq!(a.state(), SyncState::Pushing);
+        loop {
+            let ids = a.next_to_send(&sa, &da, 256);
+            offered += ids.len();
+            if ids.len() < 256 {
+                break;
+            }
+        }
+        assert!(b.next_to_send(&sb, &db, 256).len() < 256);
+        assert!(a.never_offered() >= 4_000);
+    }
+    let elapsed = started.elapsed();
+    assert!(offered >= 1_000 * 4_000);
+    assert!(
+        elapsed.as_secs() < 60,
+        "1 000 encounters took {elapsed:?} (bound 60 s)"
+    );
+}
+
 // ---- sync -------------------------------------------------------------------
 
 #[test]
@@ -692,7 +876,7 @@ fn rejected_ids_are_never_re_offered_in_either_direction() {
         "2 (held by B) and 3 (rejected by B) are both in B's vector"
     );
     assert_eq!(
-        a.withheld_ids().collect::<BTreeSet<_>>(),
+        a.withheld_ids(&sa).collect::<BTreeSet<_>>(),
         BTreeSet::from([id_of(2), id_of(3)])
     );
     assert!(b.next_to_send(&sb, &db, 100).is_empty());
@@ -760,10 +944,66 @@ fn equal_stores_match_digests_and_push_nothing() {
     // every cell was withheld on the peer's vector, all of them true holdings
     assert_eq!(a.never_offered(), 3);
     assert_eq!(
-        a.withheld_ids().collect::<BTreeSet<_>>(),
+        a.withheld_ids(&sa).collect::<BTreeSet<_>>(),
         ids.iter().map(|s| id_of(*s)).collect()
     );
     assert_eq!(a.summary_errors(), 0);
+}
+
+/// The per-link marks are keyed by store slot *and generation*: a cell
+/// pushed or withheld earlier in the encounter and then evicted frees its
+/// slot, and the next cell stored in that slot is a fresh candidate (it is
+/// offered, or withheld on its own account), never hidden by the mark left
+/// for the previous occupant. `withheld_ids` lists only what the store
+/// still holds while `never_offered` keeps counting the evicted one.
+#[test]
+fn a_reused_store_slot_is_a_fresh_candidate_in_the_same_encounter() {
+    let mut sa = store_of(&BTreeSet::from([1u64, 2]));
+    let sb = store_of(&BTreeSet::from([2u64, 5]));
+    let da = DedupeCache::new(ms::DAY, 100);
+    let db = DedupeCache::new(ms::DAY, 100);
+    let mut a = LinkSync::new(SyncConfig::default());
+    let mut b = LinkSync::new(SyncConfig::default());
+    exchange(&mut a, &sa, &da, &mut b, &sb, &db);
+    let sum_b = b.local_summary().unwrap().clone();
+    assert!(!sum_b.contains(&id_of(1)) && !sum_b.contains(&id_of(3)));
+    assert_eq!(
+        a.next_to_send(&sa, &da, 10),
+        vec![id_of(1)],
+        "2 is withheld"
+    );
+    assert_eq!(a.never_offered(), 1);
+    assert_eq!(a.withheld_ids(&sa).collect::<Vec<_>>(), vec![id_of(2)]);
+    let slot1 = sa.slot_of(&id_of(1)).unwrap();
+    let slot2 = sa.slot_of(&id_of(2)).unwrap();
+    let gen2 = sa.generation(slot2);
+    // both go (eviction, retention, a superseded op); 5 and 3 arrive and
+    // take the freed slots (LIFO: 5 lands in 2's slot, 3 in 1's)
+    assert!(sa.remove(&id_of(1)).is_some());
+    assert!(sa.remove(&id_of(2)).is_some());
+    assert!(a.withheld_ids(&sa).next().is_none(), "evicted: not listed");
+    assert_eq!(a.never_offered(), 1, "evicted: still counted");
+    assert_eq!(
+        sa.put(cell(5, 7), meta(class_of(5), Lane::L1, None, 10)),
+        Put::Stored
+    );
+    assert_eq!(
+        sa.put(cell(3, 7), meta(class_of(3), Lane::L1, None, 11)),
+        Put::Stored
+    );
+    assert_eq!(sa.slot_of(&id_of(5)), Some(slot2));
+    assert_eq!(sa.slot_of(&id_of(3)), Some(slot1));
+    assert_eq!(sa.generation(slot2), gen2 + 1);
+    // 5 (C0) is scanned first and withheld because B holds it; 3 (C3) is
+    // offered although its slot carries 1's "pushed" mark
+    assert_eq!(a.next_to_send(&sa, &da, 10), vec![id_of(3)]);
+    assert_eq!(a.never_offered(), 2);
+    assert_eq!(a.withheld_ids(&sa).collect::<Vec<_>>(), vec![id_of(5)]);
+    assert!(
+        a.next_to_send(&sa, &da, 10).is_empty(),
+        "each slot once per occupant"
+    );
+    assert_eq!(a.pushed_len(), 2);
 }
 
 /// The peer's chunks can complete before `start` (a pocketed phone's link
@@ -915,7 +1155,7 @@ proptest! {
             .filter(|id| sum_b.contains(id))
             .collect();
         prop_assert_eq!(a.never_offered(), withheld_a.len() as u64);
-        prop_assert_eq!(a.withheld_ids().collect::<BTreeSet<_>>(), withheld_a.clone());
+        prop_assert_eq!(a.withheld_ids(&sa).collect::<BTreeSet<_>>(), withheld_a.clone());
         // the simulator's metric: withheld although B really lacked it (a
         // false positive of B's vector, or B's rejection)
         let suppressed: BTreeSet<Hash32> = withheld_a

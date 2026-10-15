@@ -35,6 +35,16 @@
 //! messages or when asked ([`PairwiseManager::request_reseed`], e.g. after a
 //! "phone was out of my hands" report). A relay never sees a seed.
 //!
+//! # SKDM entries (DECISIONS D3 K1–K2)
+//!
+//! Group Sender Key distribution (`groups::group`) encrypts and decrypts
+//! its per-member entries through [`PairwiseManager::encrypt_to`] and
+//! [`PairwiseManager::decrypt_from`], never through the backend directly:
+//! an SKDM is often the first message to a co-member (a PreKey message),
+//! and only this manager's path records `sent_prekey`/`got_prekey`, turns
+//! the state `Ready` (or `Crossed`) and clears the decrypt-failure count,
+//! so the session the SKDM started behaves like one started by a text.
+//!
 //! # Cells
 //!
 //! A 1:1 object is the [`PairwiseCt`] encoding, fragmented with
@@ -217,6 +227,26 @@ impl Default for Contact {
     }
 }
 
+/// The persistable form of one contact's session bookkeeping
+/// ([`PairwiseManager::export`] / [`PairwiseManager::restore_contact`]):
+/// everything the manager keeps in memory per peer. The send epoch's keys
+/// are included because the seed is not retained after it was sent; the
+/// receive windows live in the shared [`TagTable`], which the node persists
+/// separately. The node stores this in the encrypted `chains` namespace.
+#[derive(Debug, Clone)]
+pub struct ContactRecord {
+    pub peer: PeerId,
+    pub state: SessionState,
+    /// `(epoch id, epoch keys, messages sent under it)`.
+    pub send: Option<(u32, RecogEpoch, u32)>,
+    pub recv_epochs: Vec<u32>,
+    pub next_obj_seq: u32,
+    pub reseed_requested: bool,
+    pub sent_prekey: bool,
+    pub got_prekey: bool,
+    pub decrypt_failures: u32,
+}
+
 /// All of this node's 1:1 sessions (module docs).
 #[derive(Debug)]
 pub struct PairwiseManager {
@@ -383,8 +413,10 @@ impl PairwiseManager {
         ct: &PairwiseCt,
         rng: &mut dyn CryptoRng,
     ) -> Result<Received, PairwiseError> {
+        // Wiped on drop: a 1:1 plaintext may be an SKDM entry (a chain key
+        // and an epoch seed, `groups::group`).
         let plain = match PairwiseBackend::decrypt(backend, txn, peer, ct, rng) {
-            Ok(p) => p,
+            Ok(p) => Zeroizing::new(p),
             Err(BackendError::NoSession | BackendError::UntrustedIdentity) => {
                 let c = self.contacts.entry(*peer).or_default();
                 c.state = SessionState::NeedsTheirKey;
@@ -537,6 +569,68 @@ impl PairwiseManager {
         let ct: PairwiseCt = decode(&object)?;
         let received = self.decrypt_from(txn, backend, recog, &peer, &ct, rng)?;
         Ok(Some((peer, received)))
+    }
+
+    /// Every contact's bookkeeping, in key order, for persistence.
+    pub fn export(&self) -> Vec<ContactRecord> {
+        self.contacts
+            .iter()
+            .map(|(peer, c)| ContactRecord {
+                peer: *peer,
+                state: c.state,
+                send: c
+                    .send
+                    .as_ref()
+                    .map(|s| (s.epoch_id, s.epoch.clone(), s.sent)),
+                recv_epochs: c.recv_epochs.clone(),
+                next_obj_seq: c.next_obj_seq,
+                reseed_requested: c.reseed_requested,
+                sent_prekey: c.sent_prekey,
+                got_prekey: c.got_prekey,
+                decrypt_failures: c.decrypt_failures,
+            })
+            .collect()
+    }
+
+    /// Restores one contact from a [`ContactRecord`]: the send epoch is
+    /// re-registered in the table at `send_next_ctr` (the persisted sender
+    /// counter, so no cell key is ever reused), the receive chain mapping is
+    /// recorded (its windows are restored into the table by the caller), and
+    /// the session flags are set as persisted. Replaces any state for the
+    /// peer.
+    pub fn restore_contact(
+        &mut self,
+        recog: &mut TagTable,
+        record: ContactRecord,
+        send_next_ctr: u64,
+    ) {
+        let key = pair_chain_key(&self.me, &record.peer);
+        let send = record.send.map(|(epoch_id, epoch, sent)| {
+            recog.register_sender(key, EpochId(epoch_id), epoch.clone(), send_next_ctr);
+            SendEpoch {
+                key,
+                epoch_id,
+                epoch,
+                sent,
+            }
+        });
+        if !record.recv_epochs.is_empty() {
+            self.recv_chains
+                .insert(pair_chain_key(&record.peer, &self.me), record.peer);
+        }
+        self.contacts.insert(
+            record.peer,
+            Contact {
+                state: record.state,
+                send,
+                recv_epochs: record.recv_epochs,
+                next_obj_seq: record.next_obj_seq,
+                reseed_requested: record.reseed_requested,
+                sent_prekey: record.sent_prekey,
+                got_prekey: record.got_prekey,
+                decrypt_failures: record.decrypt_failures,
+            },
+        );
     }
 
     /// Adopts a completed QR pairing (`pairwise::pairing`): the session

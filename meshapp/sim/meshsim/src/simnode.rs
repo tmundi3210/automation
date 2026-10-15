@@ -1,79 +1,58 @@
-//! One shell node of the simulator (DESIGN §7 "link lifecycle in core":
-//! `link_up` → Noise NN handshake (initiator = central) → `Hello` → summary
-//! exchange (`dtn/sync`) → scheduled push; `Throttle` frames carry
-//! backpressure). In this wave the node carries *opaque* cells: random
-//! bodies, no roster and no end-to-end crypto, so that the engine, the
-//! radio model and the link lifecycle can be exercised before the real node
-//! drops in (DESIGN §10 "Simulator scenarios").
+//! One simulated phone or station: a real [`meshcore::node::Node`] on an
+//! in-memory database, plus the parts of the device the core does not
+//! model (DESIGN §7 `SimLink` row, §10 "Simulator scenarios"; docs/testing.md
+//! "Assumptions baked into the simulator"):
 //!
-//! What a node owns:
-//!
-//! * per link a [`PlatformLink`] (byte pipe), a [`NoiseLink`] (one NN
-//!   session per link, DESIGN §2.3), a [`LinkSync`] (anti-entropy), an
-//!   inbound [`LinkBudget`] (BRIEF_v2 §5.5 "rate limits per inbound link"),
-//!   an outbound mirror budget that paces what we push, and a [`Scheduler`]
-//!   (BRIEF_v2 §5.6 strict class order, fair across inbound links);
-//! * a [`CellStore`] with the [`BufferPolicy`] caps (DECISIONS D4 BUFFER), a
-//!   [`DedupeCache`] (BRIEF_v2 §5.5 "dedupe cache of message-id hashes") and
-//!   a [`SlotPolicy`] (D4 LINK SLOTS);
+//! * the node itself: identity, roster, pairwise sessions, DTN store, link
+//!   lifecycle, lanes and budgets all live in `meshcore::node` (DESIGN §1
+//!   `node/*`); the engine drives it with `link_up`/`feed`/`poll_outbound`/
+//!   `link_down`/`tick` and the commands, nothing else;
+//! * the GATT slot policy used to decide dialling (`relay::slots`, D4 LINK
+//!   SLOTS), mirrored here because the node accepts whatever link the
+//!   platform brings up;
 //! * the battery model (BRIEF_v2 §5.7: below the floor the phone stops
-//!   forwarding others' cells but still sends its own) and the iPhone
-//!   foreground/locked state (DECISIONS D10 Q1–Q4; docs/testing.md);
-//! * a [`SimClock`]: a `ManualClock` the engine advances, with every
-//!   `wall_for_display` call counted so the `zero_wall_clock_reads`
-//!   criterion can be asserted (DESIGN §10 S4 (e)).
+//!   forwarding others' cells but still sends its own; fed to the node with
+//!   `set_power`) and the iPhone foreground/locked state (DECISIONS D10
+//!   Q1–Q4; docs/testing.md);
+//! * a [`SimClock`]: the display hook handed to the node with
+//!   `set_display_clock`. The node's powered-on meter runs on the `now_mono`
+//!   the engine passes in; the wall clock is reachable only through this
+//!   hook and every read of it is counted (`Node::wall_reads` plus the
+//!   trait reads counted here), so the `zero_wall_clock_reads` criterion
+//!   can be asserted (DESIGN §10 S4 (e)).
 //!
-//! Lanes (BRIEF_v2 §5.5): the cell body is random, so "validation" is
-//! simulated out of band: a cell counts as [`Validation::Validated`] at a
-//! node that is in its audience (the group's members, or the two ends of a
-//! DM pair), which is what the real node would find when the tag matches a
-//! chain it holds. Everything else is opaque and takes L2 on a link to a
-//! QR-verified contact (the sim sets `LinkAuth::VerifiedContact` for pairs
-//! instead of running the ContactProof exchange) or L3 otherwise.
-//!
-//! The `flood` adversary (docs/scenarios.md S-flood) is a node with
-//! [`SimNode::set_flooding`]: it pushes its junk without the outbound
-//! mirror budget and ignores `Throttle` holds, so what reaches the honest
-//! nodes is bounded only by their inbound budgets (BRIEF_v2 §5.5).
+//! The [`ObjRegistry`] is the simulator's omniscient record of every text
+//! object created in the run (group posts and DMs by `ObjId`, the same id
+//! on sender and receivers): who was expected to see it and when each node
+//! first *showed* it (`Event::Post` / `Event::Dm` after the decrypting
+//! transaction committed). "Delivered" in every criterion means shown at
+//! the node, never store presence. The [`Trace`] folds every node event
+//! into what the invariant checker needs (`assert.rs`).
 //!
 //! Nothing here reads the OS clock: `now_ms` arrives from the engine.
 
 use std::cell::Cell as StdCell;
-use std::collections::{BTreeMap, BTreeSet, VecDeque};
+use std::collections::{BTreeMap, BTreeSet};
+use std::rc::Rc;
 
-use meshcore::clock::{Clock, ManualClock};
-use meshcore::codec::{Encode, decode};
-use meshcore::crypto::ed25519::{IdentityKey, IdentitySigner};
+use meshcore::clock::Clock;
+use meshcore::crypto::backend::GroupId;
+use meshcore::crypto::ed25519::IdentityKey;
 use meshcore::crypto::hash::Hash32;
-use meshcore::dtn::dedupe::{DEDUPE_MAX_ENTRIES_ASM, DedupeCache};
-use meshcore::dtn::store::{CellMeta, CellStore, Put};
-use meshcore::dtn::sync::{LinkSync, Out, SyncConfig, SyncState};
-use meshcore::relay::Lane;
-use meshcore::relay::buffers::BufferPolicy;
-use meshcore::relay::limits::{Admit, LinkBudget};
-use meshcore::relay::sched::Scheduler;
-use meshcore::relay::slots::SlotPolicy;
-use meshcore::transport::link::{
-    Link, LinkAuth, LinkError, LinkId, LinkInfo, PeerKind, Role, Validation,
+use meshcore::node::node::NodeStats as CoreStats;
+use meshcore::node::{
+    DeliveryState, Event, Node, NodeConfig as CoreConfig, NodeError, ObjId, VoteId,
 };
-use meshcore::transport::platform_link::PlatformLink;
-use meshcore::wire::cell::{self, BODY_LEN, CELL_LEN, Cell, TAG_LEN};
-use meshcore::wire::frame::{Class, Frame, LinkFrame, Throttle};
-use meshcore::wire::noise::NoiseLink;
+use meshcore::objects::task_op::TaskId;
+use meshcore::relay::slots::SlotPolicy;
+use meshcore::storage::Db;
+use meshcore::transport::link::{LinkAuth, LinkId, Role};
+use meshcore::votes::tally::VoteState;
 use rand::{Rng, RngCore, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
 use crate::scenario::NodeKind;
 
-/// Ids pulled from `LinkSync::next_to_send` per call: the store scan it
-/// runs is linear in the store (one Bloom check per id), so pulls are
-/// batched rather than one id at a time (assumption; engine performance
-/// only). A call that returns fewer ids than this reached the end of the
-/// store, so no further pull is needed this encounter.
-pub const PULL_BATCH: usize = 256;
-/// Powered-on time between dedupe sweeps (DESIGN §6 "all expiries use the
-/// powered-on meter"; the sweep itself is cheap).
-pub const DEDUPE_SWEEP_MS: u64 = 60_000;
 /// Length of one iPhone foreground/locked window (simulation assumption:
 /// "windows of 5 min drawn from the rng").
 pub const DUTY_WINDOW_MS: u64 = 5 * 60_000;
@@ -84,9 +63,6 @@ pub const DRAIN_PPM_PER_H: u64 = 10_000;
 pub const RELAY_DRAIN_PPM_PER_H: u64 = 20_000;
 /// iPhone GATT link slots (DECISIONS D4 Q4/Q9: "iOS unpublished"; assumption).
 pub const IPHONE_SLOTS: u32 = 4;
-/// Class of every opaque cell this wave generates (posts, DMs and junk are
-/// all text-sized, BRIEF_v2 §5.6 C2).
-pub const OPAQUE_CLASS: Class = Class::C2Text;
 
 const PPM: u64 = 1_000_000;
 const MS_PER_H: u64 = 3_600_000;
@@ -101,12 +77,11 @@ pub enum DropReason {
     WakeEnd,
     /// The partition schedule separated the two nodes.
     Partition,
-    /// The Noise session failed (handshake rejected, decrypt failed).
-    Noise,
-    /// The byte stream was corrupt or a queue overflowed.
-    Framing,
-    /// An authenticated frame did not decode (a peer bug in this wave).
-    Malformed,
+    /// The node declared the link dead (`NodeError::LinkDead`: Noise
+    /// failure, corrupt stream or a malformed authenticated frame).
+    Dead,
+    /// The node refused to bring the link up.
+    Refused,
 }
 
 impl DropReason {
@@ -115,429 +90,238 @@ impl DropReason {
             DropReason::FrameLoss => "frame_loss",
             DropReason::WakeEnd => "wake_end",
             DropReason::Partition => "partition",
-            DropReason::Noise => "noise",
-            DropReason::Framing => "framing",
-            DropReason::Malformed => "malformed",
+            DropReason::Dead => "link_dead",
+            DropReason::Refused => "refused",
         }
     }
 }
 
 // ---- clock ------------------------------------------------------------------------
 
-/// The engine-driven clock of one node: a [`ManualClock`] whose
-/// `wall_for_display` calls are counted, so the run can assert that the
-/// protocol never read wall time (DESIGN §10 S4 (e): "the sim's protocol
-/// clock is a counter and `wall_for_display` is instrumented").
 #[derive(Debug, Default)]
+struct ClockState {
+    mono: StdCell<u64>,
+    wall_offset_ms: StdCell<i64>,
+    reads: StdCell<u64>,
+}
+
+/// The display clock of one node (module docs): the engine moves it, the
+/// node reaches it only through `set_display_clock`, and every
+/// `wall_for_display` call made through the trait is counted. The handle
+/// is shared (`Rc`), so the engine keeps one and the node owns another.
+#[derive(Debug, Clone, Default)]
 pub struct SimClock {
-    inner: ManualClock,
-    wall_reads: StdCell<u64>,
+    state: Rc<ClockState>,
 }
 
 impl SimClock {
     pub fn new(wall_offset_ms: i64) -> Self {
-        let inner = ManualClock::new(0);
-        inner.set_wall_offset_ms(wall_offset_ms);
+        let state = ClockState::default();
+        state.wall_offset_ms.set(wall_offset_ms);
         SimClock {
-            inner,
-            wall_reads: StdCell::new(0),
+            state: Rc::new(state),
         }
     }
 
     /// The engine sets powered-on time before every call into the node.
     pub fn set(&self, mono_ms: u64) {
-        self.inner.set(mono_ms);
+        self.state.mono.set(mono_ms);
     }
 
     /// Calls of [`Clock::wall_for_display`] made through the trait.
     pub fn wall_reads(&self) -> u64 {
-        self.wall_reads.get()
+        self.state.reads.get()
     }
 
-    /// The display hook: the report reads wall time here, and this path is
-    /// not counted (it is the one legitimate reader).
+    /// The display hook the report reads; not counted (the one legitimate
+    /// reader).
     pub fn display_hook_wall(&self) -> i64 {
-        self.inner.wall_for_display()
+        i64::try_from(self.state.mono.get())
+            .unwrap_or(i64::MAX)
+            .saturating_add(self.state.wall_offset_ms.get())
     }
 }
 
 impl Clock for SimClock {
     fn mono_ms(&self) -> u64 {
-        self.inner.mono_ms()
+        self.state.mono.get()
     }
 
     fn wall_for_display(&self) -> i64 {
-        self.wall_reads.set(self.wall_reads.get().saturating_add(1));
-        self.inner.wall_for_display()
+        self.state
+            .reads
+            .set(self.state.reads.get().saturating_add(1));
+        self.display_hook_wall()
     }
 }
 
-// ---- cell registry ------------------------------------------------------------------
+// ---- object registry --------------------------------------------------------------
 
-/// What kind of traffic a cell is (docs/scenarios.md `[traffic]` and the
-/// `flood` adversary).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum CellKind {
-    /// A group post.
-    Post,
-    /// A DM between a verified pair.
-    Dm,
-    /// Junk from a flooding node: counted, never expected to be delivered.
-    Junk,
+/// What a text object is (docs/scenarios.md `[traffic]`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ObjKind {
+    /// A text post to scenario group `g`.
+    Post { group: usize },
+    /// A 1:1 text from the creator to `to`.
+    Dm { to: usize },
 }
 
-/// Who could validate a cell (module docs "Lanes").
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Audience {
-    Group(usize),
-    Pair(usize, usize),
-    Nobody,
-}
-
-/// The sim's omniscient record of one created cell: creator, creation
-/// time, fragment at creation and the first-seen time at every node.
+/// The sim's omniscient record of one created object.
 #[derive(Debug, Clone)]
-pub struct CellRecord {
-    pub id: Hash32,
+pub struct ObjRecord {
+    pub obj: ObjId,
     pub creator: usize,
     pub created_ms: u64,
+    /// Index into the resolved partition schedule in force at creation.
+    pub partition_idx: usize,
+    /// The creator's fragment at creation.
     pub fragment: usize,
-    pub kind: CellKind,
-    pub audience: Audience,
-    /// Powered-on time each node first held the cell; `u64::MAX` = never.
-    pub first_seen: Vec<u64>,
+    pub kind: ObjKind,
+    /// Nodes expected to show the object (the creator shows its own at
+    /// creation and is not listed).
+    pub expected: BTreeSet<usize>,
+    /// Powered-on time each node first showed the object; `u64::MAX` = never.
+    pub shown: Vec<u64>,
+    /// Non-empty label lists per node at the time it was shown.
+    pub labels: BTreeMap<usize, Vec<String>>,
+    /// A DM the `withhold_dms` adversary held back and released at
+    /// `created_ms` (docs/scenarios.md S3).
+    pub withheld: bool,
+    /// A setup hello sent during the in-person setup phase before the run
+    /// (engine docs "Provisioning"); shown everywhere at t=0 and excluded
+    /// from every delivery criterion.
+    pub setup: bool,
 }
 
-/// Every cell created in the run, by index and by `msg_id`.
+/// What recording a shown object found.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Shown {
+    First,
+    Duplicate,
+    Unknown,
+}
+
+/// Every text object created in the run, by index and by `ObjId`.
 #[derive(Debug, Default)]
-pub struct CellRegistry {
-    pub records: Vec<CellRecord>,
-    by_id: BTreeMap<Hash32, usize>,
-    group_members: Vec<BTreeSet<usize>>,
+pub struct ObjRegistry {
+    pub records: Vec<ObjRecord>,
+    by_id: BTreeMap<ObjId, usize>,
     n_nodes: usize,
-    /// Times a node recorded the same `msg_id` as newly seen twice
-    /// (`no_duplicate_ui_delivery`).
-    pub duplicate_first_seen: u64,
+    /// Times a node showed the same object twice (`no_duplicate_ui_delivery`).
+    pub duplicate_shown: u64,
+    /// Objects shown that the sim never created (would be a forgery).
+    pub unknown_shown: u64,
 }
 
-impl CellRegistry {
-    pub fn new(n_nodes: usize, group_members: Vec<BTreeSet<usize>>) -> Self {
-        CellRegistry {
-            records: Vec::new(),
-            by_id: BTreeMap::new(),
-            group_members,
+impl ObjRegistry {
+    pub fn new(n_nodes: usize) -> Self {
+        ObjRegistry {
             n_nodes,
-            duplicate_first_seen: 0,
+            ..Self::default()
         }
     }
 
-    fn register(
+    /// Records a new object; the creator shows it at once.
+    #[allow(clippy::too_many_arguments)]
+    pub fn register(
         &mut self,
-        id: Hash32,
+        obj: ObjId,
         creator: usize,
         created_ms: u64,
+        partition_idx: usize,
         fragment: usize,
-        kind: CellKind,
-        audience: Audience,
+        kind: ObjKind,
+        expected: BTreeSet<usize>,
+        withheld: bool,
+        setup: bool,
     ) -> usize {
         let idx = self.records.len();
-        self.records.push(CellRecord {
-            id,
+        let mut shown = vec![u64::MAX; self.n_nodes];
+        if let Some(s) = shown.get_mut(creator) {
+            *s = created_ms;
+        }
+        self.records.push(ObjRecord {
+            obj,
             creator,
             created_ms,
+            partition_idx,
             fragment,
             kind,
-            audience,
-            first_seen: vec![u64::MAX; self.n_nodes],
+            expected,
+            shown,
+            labels: BTreeMap::new(),
+            withheld,
+            setup,
         });
-        self.by_id.insert(id, idx);
+        self.by_id.insert(obj, idx);
         idx
     }
 
-    pub fn index_of(&self, id: &Hash32) -> Option<usize> {
-        self.by_id.get(id).copied()
+    pub fn index_of(&self, obj: &ObjId) -> Option<usize> {
+        self.by_id.get(obj).copied()
     }
 
-    pub fn creator_of(&self, id: &Hash32) -> Option<usize> {
-        self.index_of(id).map(|i| self.records[i].creator)
-    }
-
-    /// Whether `node` could validate the cell (module docs "Lanes").
-    pub fn in_audience(&self, node: usize, id: &Hash32) -> bool {
-        let Some(i) = self.index_of(id) else {
-            return false;
+    /// Records that `node` showed `obj` at `now`.
+    pub fn record_shown(&mut self, obj: &ObjId, node: usize, now: u64, labels: &[String]) -> Shown {
+        let Some(i) = self.index_of(obj) else {
+            self.unknown_shown = self.unknown_shown.saturating_add(1);
+            return Shown::Unknown;
         };
-        match self.records[i].audience {
-            Audience::Group(g) => self.group_members.get(g).is_some_and(|m| m.contains(&node)),
-            Audience::Pair(a, b) => node == a || node == b,
-            Audience::Nobody => false,
-        }
-    }
-
-    /// Records that `node` holds the cell from `now` on. A second record
-    /// for the same node is the duplicate-delivery violation the checker
-    /// reports.
-    pub fn record_first_seen(&mut self, id: &Hash32, node: usize, now: u64) {
-        let Some(i) = self.index_of(id) else {
-            return;
+        let rec = &mut self.records[i];
+        let Some(slot) = rec.shown.get_mut(node) else {
+            return Shown::Unknown;
         };
-        if let Some(slot) = self.records[i].first_seen.get_mut(node) {
-            if *slot == u64::MAX {
-                *slot = now;
-            } else {
-                self.duplicate_first_seen = self.duplicate_first_seen.saturating_add(1);
-            }
+        if *slot != u64::MAX {
+            self.duplicate_shown = self.duplicate_shown.saturating_add(1);
+            return Shown::Duplicate;
         }
+        *slot = now;
+        if !labels.is_empty() {
+            rec.labels.insert(node, labels.to_vec());
+        }
+        Shown::First
     }
 }
 
-// ---- per-node statistics ---------------------------------------------------------------
+// ---- per-node statistics -------------------------------------------------------------
 
-/// Counters one node keeps; summed into the report.
+/// Sums the node counters of every node for the report.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct NodeStats {
-    pub handshakes: u64,
-    pub frames_sent: u64,
-    pub cells_sent: u64,
     pub cells_received: u64,
-    pub duplicates: u64,
+    pub cells_sent: u64,
     pub malformed: u64,
+    pub duplicates: u64,
     pub throttled_in: u64,
-    pub throttled_out: u64,
     pub rejected_in: u64,
-    pub rejected_out: u64,
     pub no_room: u64,
-    pub throttles_received: u64,
-    pub withheld_low_battery: u64,
-    pub digest_matches: u64,
-    pub summary_errors: u64,
+    pub decrypted: u64,
+    pub decrypt_failures: u64,
+    pub rejected_posts: u64,
+    pub parked: u64,
+    pub handshakes: u64,
+    pub commits: u64,
+    pub rollbacks: u64,
+    pub penalties: u64,
 }
 
 impl NodeStats {
-    pub fn add(&mut self, o: &NodeStats) {
-        self.handshakes += o.handshakes;
-        self.frames_sent += o.frames_sent;
-        self.cells_sent += o.cells_sent;
+    pub fn add(&mut self, o: &CoreStats) {
         self.cells_received += o.cells_received;
-        self.duplicates += o.duplicates;
+        self.cells_sent += o.cells_sent;
         self.malformed += o.malformed;
+        self.duplicates += o.duplicates;
         self.throttled_in += o.throttled_in;
-        self.throttled_out += o.throttled_out;
         self.rejected_in += o.rejected_in;
-        self.rejected_out += o.rejected_out;
         self.no_room += o.no_room;
-        self.throttles_received += o.throttles_received;
-        self.withheld_low_battery += o.withheld_low_battery;
-        self.digest_matches += o.digest_matches;
-        self.summary_errors += o.summary_errors;
-    }
-}
-
-// ---- link end ------------------------------------------------------------------------
-
-/// One node's side of one link.
-#[derive(Debug)]
-struct LinkEnd {
-    id: u32,
-    role: Role,
-    platform: PlatformLink,
-    /// `None` only transiently while the handshake state is converted.
-    noise: Option<NoiseLink>,
-    sync: LinkSync,
-    inbound_budget: LinkBudget,
-    /// Mirror of the peer's inbound budget, created when the push phase
-    /// starts; paces what we push so that the peer rarely has to throttle.
-    outbound_budget: Option<LinkBudget>,
-    sched: Scheduler,
-    /// The id picked from the scheduler but not yet sent (budget or queue
-    /// held it).
-    head: Option<Hash32>,
-    /// Encrypted frames the platform queue did not take yet (`Busy`).
-    pending: VecDeque<Vec<u8>>,
-    /// Powered-on time until which a `Throttle` holds this link.
-    hold_until: u64,
-    /// `true` once `next_to_send` returned nothing: new cells then go
-    /// through the scheduler directly.
-    pull_exhausted: bool,
-    /// A cell was stored since the encounter started and before the pull
-    /// finished, so the store differs from what the summary described.
-    dirty: bool,
-    /// Frames handed to the platform since the engine last rolled losses.
-    frames_unrolled: u32,
-}
-
-impl LinkEnd {
-    fn has_work(&self) -> bool {
-        self.head.is_some()
-            || !self.pending.is_empty()
-            || !self.sched.is_empty()
-            || (!self.pull_exhausted && self.sync.state() == SyncState::Pushing)
-    }
-
-    fn is_pushing(&self) -> bool {
-        self.sync.state() == SyncState::Pushing
-    }
-
-    /// Hands pending encrypted frames to the platform until it says `Busy`.
-    fn flush_pending(&mut self, stats: &mut NodeStats) -> Result<(), DropReason> {
-        while let Some(frame) = self.pending.front() {
-            match self.platform.send(frame) {
-                Ok(()) => {
-                    self.pending.pop_front();
-                    self.frames_unrolled = self.frames_unrolled.saturating_add(1);
-                    stats.frames_sent = stats.frames_sent.saturating_add(1);
-                }
-                Err(LinkError::Busy) => return Ok(()),
-                Err(LinkError::Closed | LinkError::TooLarge(_)) => {
-                    return Err(DropReason::Framing);
-                }
-            }
-        }
-        Ok(())
-    }
-
-    /// Encrypts one link frame and queues it (DESIGN §7 layering: frame →
-    /// `encrypt_frame` → `send`).
-    fn stage(&mut self, plain: &[u8], stats: &mut NodeStats) -> Result<(), DropReason> {
-        let noise = self.noise.as_mut().ok_or(DropReason::Noise)?;
-        let ct = noise.encrypt_frame(plain).map_err(|_| DropReason::Noise)?;
-        self.pending.push_back(ct);
-        self.flush_pending(stats)
-    }
-
-    fn apply_outs(&mut self, outs: Vec<Out>, stats: &mut NodeStats) -> Result<(), DropReason> {
-        for out in outs {
-            match out {
-                Out::SendHello(h) => {
-                    let bytes = LinkFrame::hello(&h)
-                        .try_encode()
-                        .map_err(|_| DropReason::Malformed)?;
-                    self.stage(&bytes, stats)?;
-                }
-                Out::SendSummary(chunks) => {
-                    for c in &chunks {
-                        let bytes = LinkFrame::summary(c)
-                            .and_then(|f| f.try_encode())
-                            .map_err(|_| DropReason::Malformed)?;
-                        self.stage(&bytes, stats)?;
-                    }
-                }
-                Out::Push => {}
-            }
-        }
-        Ok(())
-    }
-
-    /// The push loop (module docs): drain pending frames, then pick ids
-    /// from the scheduler (fed by `next_to_send` until exhausted, then by
-    /// live forwarding), admit each against the outbound mirror budget and
-    /// send its TTL-decremented copy (DESIGN §2.2 `Cell::forwarded`).
-    ///
-    /// `flooding`: the node is the `flood` adversary and skips the mirror
-    /// budget and any `Throttle` hold (docs/scenarios.md S-flood "injecting
-    /// 600 junk cells/min": containment is the receiver's inbound budget,
-    /// BRIEF_v2 §5.5, never the sender's good manners).
-    #[allow(clippy::too_many_arguments)]
-    fn service(
-        &mut self,
-        store: &CellStore,
-        dedupe: &DedupeCache,
-        reg: &CellRegistry,
-        me: usize,
-        relaying: bool,
-        flooding: bool,
-        now: u64,
-        stats: &mut NodeStats,
-    ) -> Result<(), DropReason> {
-        self.flush_pending(stats)?;
-        if !self.is_pushing() {
-            return Ok(());
-        }
-        loop {
-            if !self.pending.is_empty() {
-                return Ok(());
-            }
-            if now < self.hold_until && !flooding {
-                self.sched.set_held(true);
-                return Ok(());
-            }
-            let Some(id) = self.head else {
-                if let Some(id) = self.sched.pick() {
-                    self.head = Some(id);
-                    continue;
-                }
-                if self.pull_exhausted {
-                    self.sched.set_held(false);
-                    return Ok(());
-                }
-                if self.sync.digest_matched() && !self.dirty {
-                    // Every id we hold is in the peer's vector and nothing
-                    // arrived since: a pull would withhold all of them
-                    // (DESIGN §10 risk 4 `never_offered`), so the scan is
-                    // skipped and live forwarding takes over.
-                    self.pull_exhausted = true;
-                    continue;
-                }
-                let ids = self.sync.next_to_send(store, dedupe, PULL_BATCH);
-                if ids.len() < PULL_BATCH {
-                    // The scan reached the end of the store: nothing more to
-                    // pull this encounter.
-                    self.pull_exhausted = true;
-                }
-                if ids.is_empty() {
-                    continue;
-                }
-                for id in ids {
-                    let Some((_, meta)) = store.get(&id) else {
-                        continue;
-                    };
-                    if relaying || reg.creator_of(&id) == Some(me) {
-                        self.sched
-                            .enqueue(id, meta.class, meta.lane, meta.from_link);
-                    } else {
-                        stats.withheld_low_battery = stats.withheld_low_battery.saturating_add(1);
-                    }
-                }
-                continue;
-            };
-            let Some((cell, meta)) = store.get(&id) else {
-                self.head = None;
-                continue;
-            };
-            let peer_is_station = self.sync.peer_hello().is_some_and(|h| h.is_station);
-            let budget = self
-                .outbound_budget
-                .get_or_insert_with(|| LinkBudget::new(now, peer_is_station));
-            let verdict = if flooding {
-                Admit::Accept
-            } else {
-                budget.admit(meta.class, meta.lane, CELL_LEN, now)
-            };
-            match verdict {
-                Admit::Accept => {}
-                Admit::Throttle { retry_ms } => {
-                    self.hold_until = now.saturating_add(u64::from(retry_ms));
-                    self.sched.set_held(true);
-                    stats.throttled_out = stats.throttled_out.saturating_add(1);
-                    return Ok(());
-                }
-                Admit::Reject => {
-                    self.head = None;
-                    stats.rejected_out = stats.rejected_out.saturating_add(1);
-                    continue;
-                }
-            }
-            let Some(fwd) = cell.forwarded() else {
-                self.head = None;
-                continue;
-            };
-            let bytes = LinkFrame::cell(meta.class, &fwd)
-                .try_encode()
-                .map_err(|_| DropReason::Malformed)?;
-            self.stage(&bytes, stats)?;
-            self.head = None;
-            stats.cells_sent = stats.cells_sent.saturating_add(1);
-        }
+        self.decrypted += o.decrypted;
+        self.decrypt_failures += o.decrypt_failures;
+        self.rejected_posts += o.rejected_posts;
+        self.parked += o.parked;
+        self.handshakes += o.handshakes;
+        self.commits += o.commits;
+        self.rollbacks += o.rollbacks;
+        self.penalties += o.penalties;
     }
 }
 
@@ -548,6 +332,8 @@ impl LinkEnd {
 pub struct NodeConfig {
     pub idx: usize,
     pub kind: NodeKind,
+    /// Display name (BRIEF_v2 §6 step 1; never used to look anything up).
+    pub name: String,
     /// GATT link slots.
     pub slots: u32,
     pub battery_floor_ppm: u64,
@@ -556,8 +342,6 @@ pub struct NodeConfig {
     pub foreground_duty_ppm: u64,
     pub wall_offset_ms: i64,
     pub dedupe_retention_ms: u64,
-    /// QR-verified contacts (node indices).
-    pub contacts: BTreeSet<usize>,
 }
 
 /// The outcome of one node tick the engine acts on.
@@ -566,67 +350,95 @@ pub struct TickOutcome {
     /// The iPhone just left the locked state (the engine starts its dial
     /// attempts).
     pub became_foreground: bool,
-    /// Links that were serviced and may have queued bytes for the radio.
-    pub serviced: Vec<u32>,
-    /// Links whose service failed; the engine tears them down.
-    pub dead_links: Vec<(u32, DropReason)>,
 }
 
 /// One simulated phone or station. See the module docs.
-#[derive(Debug)]
 pub struct SimNode {
     cfg: NodeConfig,
     pub clock: SimClock,
+    node: Node,
     rng: ChaCha20Rng,
-    identity: IdentityKey,
-    store: CellStore,
-    dedupe: DedupeCache,
     slots: SlotPolicy,
-    links: BTreeMap<u32, LinkEnd>,
+    roles: BTreeMap<u32, Role>,
     foreground: bool,
     next_duty_window_ms: u64,
-    next_dedupe_sweep_ms: u64,
     powered_ms: u64,
     relay_ms: u64,
     last_tick_ms: u64,
-    /// The `flood` adversary: pushes without its own pacing (module docs).
-    flooding: bool,
-    pub stats: NodeStats,
+    /// Events the node produced, stamped with the time of the call, not yet
+    /// folded into the trace.
+    events: Vec<(u64, Event)>,
+    /// Radio batches this side handed to the air.
+    pub batches_sent: u64,
+    /// Posts the generator skipped because the node did not hold the group
+    /// yet or was no longer a member.
+    pub posts_skipped: u64,
+    /// Rows in the kv store right after provisioning.
+    pub kv_rows_at_start: u64,
+    /// Display reads the report itself made through the node
+    /// ([`SimNode::last_sync_set`]); not protocol reads.
+    report_reads: StdCell<u64>,
+}
+
+impl core::fmt::Debug for SimNode {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("SimNode")
+            .field("idx", &self.cfg.idx)
+            .field("kind", &self.cfg.kind)
+            .field("foreground", &self.foreground)
+            .field("links", &self.roles.len())
+            .finish_non_exhaustive()
+    }
 }
 
 impl SimNode {
-    /// A node seeded from the engine's RNG. `foreground` for an iPhone is
+    /// Opens the node at `now` on a fresh in-memory database keyed from the
+    /// node's seed (identity seed, db key and entropy all derive from it, so
+    /// the same seed gives the same node). `foreground` for an iPhone is
     /// drawn for the first duty window here.
-    pub fn new(cfg: NodeConfig, seed: u64) -> Self {
+    pub fn new(cfg: NodeConfig, seed: u64, now: u64) -> Result<Self, NodeError> {
         let mut rng = ChaCha20Rng::seed_from_u64(seed);
         let mut id_seed = [0u8; 32];
         rng.fill_bytes(&mut id_seed);
-        let identity = IdentitySigner::from_seed(&id_seed).public();
-        let policy = BufferPolicy::default();
-        let store = CellStore::new(policy.caps(), Box::new(policy));
-        let dedupe = DedupeCache::new(cfg.dedupe_retention_ms, DEDUPE_MAX_ENTRIES_ASM);
+        let mut db_key = [0u8; 32];
+        rng.fill_bytes(&mut db_key);
+        let mut entropy = [0u8; 32];
+        rng.fill_bytes(&mut entropy);
+        let node_rng = ChaCha20Rng::seed_from_u64(rng.next_u64());
+        let db = Db::open_in_memory(db_key, entropy)?;
+        let mut core = match cfg.kind {
+            NodeKind::Station => CoreConfig::station(),
+            NodeKind::Android | NodeKind::IPhone => CoreConfig::member(id_seed, cfg.name.clone()),
+        };
+        core.dedupe_retention_ms = cfg.dedupe_retention_ms;
+        core.max_links = cfg.slots;
+        core.battery_floor_ppm = u32::try_from(cfg.battery_floor_ppm).unwrap_or(u32::MAX);
+
+        let mut node = Node::open(db, core, now, node_rng)?;
+        node.set_receipt_batch_ms(meshcore::node::node::RECEIPT_BATCH_MS_ASM);
         let slots = SlotPolicy::new(cfg.slots);
         let clock = SimClock::new(cfg.wall_offset_ms);
-        let mut node = SimNode {
+        clock.set(now);
+        let mut sim = SimNode {
             cfg,
             clock,
+            node,
             rng,
-            identity,
-            store,
-            dedupe,
             slots,
-            links: BTreeMap::new(),
+            roles: BTreeMap::new(),
             foreground: true,
             next_duty_window_ms: DUTY_WINDOW_MS,
-            next_dedupe_sweep_ms: DEDUPE_SWEEP_MS,
             powered_ms: 0,
             relay_ms: 0,
-            last_tick_ms: 0,
-            flooding: false,
-            stats: NodeStats::default(),
+            last_tick_ms: now,
+            events: Vec::new(),
+            batches_sent: 0,
+            posts_skipped: 0,
+            kv_rows_at_start: 0,
+            report_reads: StdCell::new(0),
         };
-        node.draw_duty();
-        node
+        sim.draw_duty();
+        Ok(sim)
     }
 
     fn draw_duty(&mut self) {
@@ -638,15 +450,10 @@ impl SimNode {
         }
     }
 
-    /// Replaces the store with an empty one holding at most `max_cells`
-    /// (tests of the no-room path).
-    #[cfg(test)]
-    fn shrink_store(&mut self, max_cells: usize) {
-        use meshcore::dtn::store::StoreCaps;
-        self.store = CellStore::new(
-            StoreCaps::cells(max_cells, max_cells),
-            Box::new(BufferPolicy::default()),
-        );
+    /// Attaches the display hook (after provisioning, so that the badge
+    /// dates of the provisioned contacts never count as protocol reads).
+    pub fn attach_display_clock(&mut self) {
+        self.node.set_display_clock(Box::new(self.clock.clone()));
     }
 
     /// Turns this node into the `flood` adversary (docs/scenarios.md
@@ -654,7 +461,7 @@ impl SimNode {
     /// pacing and through the peer's `Throttle` frames; containing it is the
     /// receiver's job (BRIEF_v2 §5.5 "rate limits per inbound link").
     pub fn set_flooding(&mut self, flooding: bool) {
-        self.flooding = flooding;
+        self.node.set_adversary_ignore_throttle(flooding);
     }
 
     // ---- accessors -----------------------------------------------------------
@@ -667,8 +474,22 @@ impl SimNode {
         self.cfg.kind
     }
 
-    pub fn identity(&self) -> IdentityKey {
-        self.identity
+    pub fn name(&self) -> &str {
+        &self.cfg.name
+    }
+
+    /// The real node (commands and queries).
+    pub fn node(&self) -> &Node {
+        &self.node
+    }
+
+    pub fn node_mut(&mut self) -> &mut Node {
+        &mut self.node
+    }
+
+    /// This node's identity key (`None` for a station).
+    pub fn identity(&self) -> Option<IdentityKey> {
+        self.node.identity()
     }
 
     pub fn is_station(&self) -> bool {
@@ -698,23 +519,49 @@ impl SimNode {
     }
 
     pub fn link_count(&self) -> usize {
-        self.links.len()
-    }
-
-    pub fn is_contact(&self, peer: usize) -> bool {
-        self.cfg.contacts.contains(&peer)
+        self.roles.len()
     }
 
     pub fn holds(&self, id: &Hash32) -> bool {
-        self.store.contains(id)
+        self.node.holds(id)
     }
 
     pub fn store_len(&self) -> usize {
-        self.store.len()
+        self.node.store_len()
     }
 
+    pub fn store_bytes(&self) -> usize {
+        self.node.store_bytes()
+    }
+
+    /// Wall-clock reads made during the run: every read the node makes
+    /// through its display hook reaches the clock trait (the node's own
+    /// counter and the clock's count the same call, so only the clock's is
+    /// summed), plus any made through the trait directly, minus the
+    /// report's own [`SimNode::last_sync_set`] reads.
     pub fn wall_reads(&self) -> u64 {
-        self.clock.wall_reads()
+        self.clock
+            .wall_reads()
+            .saturating_sub(self.report_reads.get())
+    }
+
+    /// Whether "last sync" is set (BRIEF_v2 §2: the message digest matched
+    /// a neighbour's; DESIGN §10 S0 "last-sync set"). The status strip reads
+    /// the display clock for the "N min ago" when it is set; that read is
+    /// the report's, not the protocol's, and is excluded from
+    /// [`SimNode::wall_reads`].
+    pub fn last_sync_set(&self, now: u64) -> bool {
+        self.clock.set(now);
+        let before = self.clock.wall_reads();
+        let set = self.node.status_strip(now).last_sync_age_ms.is_some();
+        let made = self.clock.wall_reads().saturating_sub(before);
+        self.report_reads
+            .set(self.report_reads.get().saturating_add(made));
+        set
+    }
+
+    pub fn stats(&self) -> CoreStats {
+        self.node.stats()
     }
 
     /// Battery level in parts per million (stations are mains powered).
@@ -735,63 +582,37 @@ impl SimNode {
         self.is_station() || self.battery_ppm() >= self.cfg.battery_floor_ppm
     }
 
+    /// Takes the events the node produced since the last call.
+    pub fn take_events(&mut self) -> Vec<(u64, Event)> {
+        std::mem::take(&mut self.events)
+    }
+
+    /// Moves the node's events into the pending list, stamped `now`.
+    pub fn collect(&mut self, now: u64) {
+        for e in self.node.poll_events() {
+            self.events.push((now, e));
+        }
+    }
+
     // ---- links ----------------------------------------------------------------
 
-    /// A link came up. The central runs the Noise initiator and writes the
-    /// first handshake message at once (DESIGN §7 "initiator = central").
+    /// A link came up (DESIGN §7). `hint`: the contact the platform
+    /// believes is on the other end (a QR-verified pair in the sim), so the
+    /// node offers its L2 contact proof.
     pub fn link_up(
         &mut self,
         id: u32,
         role: Role,
-        chunk: usize,
-        hint: PeerKind,
-        peer_contact: Option<IdentityKey>,
+        hint: Option<IdentityKey>,
         now: u64,
     ) -> Result<(), DropReason> {
         self.clock.set(now);
-        let mtu_hint = u16::try_from(chunk.saturating_add(3)).unwrap_or(u16::MAX);
-        let info = LinkInfo {
-            role,
-            peer_kind_hint: hint,
-            mtu_hint,
-        };
-        let mut platform = PlatformLink::new(LinkId(id), info);
-        if let Some(key) = peer_contact {
-            platform.set_auth(LinkAuth::VerifiedContact(key));
-        }
-        let mut noise = match role {
-            Role::Central => NoiseLink::initiator(&mut self.rng),
-            Role::Peripheral => NoiseLink::responder(&mut self.rng),
-        }
-        .map_err(|_| DropReason::Noise)?;
-        let mut frames_unrolled = 0u32;
-        if role == Role::Central {
-            let msg = noise.write_handshake().map_err(|_| DropReason::Noise)?;
-            platform.send(&msg).map_err(|_| DropReason::Framing)?;
-            frames_unrolled = 1;
-            self.stats.frames_sent = self.stats.frames_sent.saturating_add(1);
-        }
-        let end = LinkEnd {
-            id,
-            role,
-            platform,
-            noise: Some(noise),
-            sync: LinkSync::new(SyncConfig {
-                is_station: self.is_station(),
-                ..SyncConfig::default()
-            }),
-            inbound_budget: LinkBudget::new(now, self.is_station()),
-            outbound_budget: None,
-            sched: Scheduler::new(),
-            head: None,
-            pending: VecDeque::new(),
-            hold_until: 0,
-            pull_exhausted: false,
-            dirty: false,
-            frames_unrolled,
-        };
+        self.node
+            .link_up(LinkId(id), role, hint, now)
+            .map_err(|_| DropReason::Refused)?;
         self.slots.on_link_up(role);
-        self.links.insert(id, end);
+        self.roles.insert(id, role);
+        self.collect(now);
         Ok(())
     }
 
@@ -799,306 +620,59 @@ impl SimNode {
     /// bytes; the next encounter re-summarises).
     pub fn link_down(&mut self, id: u32, now: u64) {
         self.clock.set(now);
-        if let Some(end) = self.links.remove(&id) {
-            self.slots.on_link_down(end.role);
-            if end.sync.digest_matched() {
-                self.stats.digest_matches = self.stats.digest_matches.saturating_add(1);
-            }
-            self.stats.summary_errors = self
-                .stats
-                .summary_errors
-                .saturating_add(end.sync.summary_errors());
+        self.node.link_down(LinkId(id), now);
+        self.forget_link(id);
+        self.collect(now);
+    }
+
+    fn forget_link(&mut self, id: u32) {
+        if let Some(role) = self.roles.remove(&id) {
+            self.slots.on_link_down(role);
         }
     }
 
     /// Bytes the radio wants to carry from this side of `id`, at most
-    /// `max_bytes`.
-    pub fn poll_outbound(&mut self, id: u32, max_bytes: usize) -> Vec<u8> {
-        self.links
-            .get_mut(&id)
-            .map(|l| l.platform.poll_outbound(max_bytes))
-            .unwrap_or_default()
-    }
-
-    /// Frames handed to the platform since the last call (the radio rolls
-    /// one loss per frame).
-    pub fn take_unrolled_frames(&mut self, id: u32) -> u32 {
-        self.links
-            .get_mut(&id)
-            .map(|l| std::mem::take(&mut l.frames_unrolled))
-            .unwrap_or(0)
-    }
-
-    /// Inbound radio bytes, fed to the platform link in `chunk`-sized
-    /// pieces (the ATT MTU−3 the platform would use) and processed.
-    pub fn on_bytes(
-        &mut self,
-        id: u32,
-        bytes: &[u8],
-        chunk: usize,
-        now: u64,
-        reg: &mut CellRegistry,
-    ) -> Result<(), DropReason> {
+    /// `max_bytes` (the node services the link first).
+    pub fn poll_outbound(&mut self, id: u32, max_bytes: usize, now: u64) -> Vec<u8> {
         self.clock.set(now);
-        let Some(end) = self.links.get_mut(&id) else {
-            return Ok(());
-        };
-        for piece in bytes.chunks(chunk.max(1)) {
-            match end.platform.feed(piece) {
-                Ok(()) => {}
-                Err(LinkError::Busy) => return Err(DropReason::Framing),
-                Err(_) => return Err(DropReason::Framing),
-            }
+        let bytes = self.node.poll_outbound(LinkId(id), max_bytes, now);
+        if !bytes.is_empty() {
+            self.batches_sent = self.batches_sent.saturating_add(1);
         }
-        self.with_link(id, now, reg, |node, end, now, reg| {
-            node.process_inbound(end, now, reg)
-        })
+        self.collect(now);
+        bytes
     }
 
-    /// Continues pushing on `id` (the radio drained some of its queue).
-    pub fn service_link(
-        &mut self,
-        id: u32,
-        now: u64,
-        reg: &mut CellRegistry,
-    ) -> Result<(), DropReason> {
+    /// Inbound radio bytes. `Err` means the node declared the link dead and
+    /// removed it.
+    pub fn feed(&mut self, id: u32, bytes: &[u8], now: u64) -> Result<(), DropReason> {
         self.clock.set(now);
-        self.with_link(id, now, reg, |node, end, now, reg| {
-            let relaying = node.is_relaying();
-            end.service(
-                &node.store,
-                &node.dedupe,
-                reg,
-                node.cfg.idx,
-                relaying,
-                node.flooding,
-                now,
-                &mut node.stats,
-            )
-        })
-    }
-
-    /// Runs `f` with the link taken out of the map, so that the handler can
-    /// touch every other link (live forwarding never sends back on the
-    /// source link).
-    fn with_link<F>(
-        &mut self,
-        id: u32,
-        now: u64,
-        reg: &mut CellRegistry,
-        f: F,
-    ) -> Result<(), DropReason>
-    where
-        F: FnOnce(&mut SimNode, &mut LinkEnd, u64, &mut CellRegistry) -> Result<(), DropReason>,
-    {
-        let Some(mut end) = self.links.remove(&id) else {
-            return Ok(());
-        };
-        let r = f(self, &mut end, now, reg);
-        self.links.insert(id, end);
-        r
-    }
-
-    fn process_inbound(
-        &mut self,
-        end: &mut LinkEnd,
-        now: u64,
-        reg: &mut CellRegistry,
-    ) -> Result<(), DropReason> {
-        while let Some(msg) = end.platform.recv() {
-            let noise = end.noise.as_mut().ok_or(DropReason::Noise)?;
-            if !noise.is_transport() {
-                noise.read_handshake(&msg).map_err(|_| DropReason::Noise)?;
-                if noise.is_my_turn() {
-                    let reply = noise.write_handshake().map_err(|_| DropReason::Noise)?;
-                    end.platform.send(&reply).map_err(|_| DropReason::Framing)?;
-                    end.frames_unrolled = end.frames_unrolled.saturating_add(1);
-                    self.stats.frames_sent = self.stats.frames_sent.saturating_add(1);
-                }
-                if noise.is_handshake_finished() {
-                    let hs = end.noise.take().ok_or(DropReason::Noise)?;
-                    end.noise = Some(hs.into_transport().map_err(|_| DropReason::Noise)?);
-                    self.stats.handshakes = self.stats.handshakes.saturating_add(1);
-                    let salt = self.rng.next_u32();
-                    let outs = end.sync.start(salt, now, &self.store, &self.dedupe);
-                    end.apply_outs(outs, &mut self.stats)?;
-                }
-                continue;
+        let r = self.node.feed(LinkId(id), bytes, now);
+        self.collect(now);
+        match r {
+            Ok(()) => Ok(()),
+            Err(NodeError::LinkDead(_)) => {
+                self.forget_link(id);
+                Err(DropReason::Dead)
             }
-            let plain = noise.decrypt_frame(&msg).map_err(|_| DropReason::Noise)?;
-            let frame: Frame = decode(&plain).map_err(|_| DropReason::Malformed)?;
-            match frame {
-                Frame::Hello(h) => {
-                    let outs = end.sync.on_hello(h);
-                    end.apply_outs(outs, &mut self.stats)?;
-                }
-                Frame::Summary(s) => {
-                    let outs = end.sync.on_summary_chunk(s);
-                    end.apply_outs(outs, &mut self.stats)?;
-                }
-                Frame::Cell { class, cell } => self.on_cell(end, class, cell, now, reg)?,
-                Frame::Throttle(t) => {
-                    end.hold_until = now.saturating_add(u64::from(t.retry_ms));
-                    end.sched.set_held(true);
-                    self.stats.throttles_received = self.stats.throttles_received.saturating_add(1);
-                }
-                Frame::ContactProof(_) => {}
-            }
+            Err(_) => Ok(()),
         }
-        let relaying = self.is_relaying();
-        end.service(
-            &self.store,
-            &self.dedupe,
-            reg,
-            self.cfg.idx,
-            relaying,
-            self.flooding,
-            now,
-            &mut self.stats,
-        )
-    }
-
-    /// The inbound pipeline of one cell (DESIGN §1 `node/inbound.rs`:
-    /// "stream → frame → cell → dedupe → store"; BRIEF_v2 §5.5 "checks
-    /// format, size and TTL", per-link rate limits, dedupe).
-    fn on_cell(
-        &mut self,
-        end: &mut LinkEnd,
-        class: Class,
-        cell: Cell,
-        now: u64,
-        reg: &mut CellRegistry,
-    ) -> Result<(), DropReason> {
-        self.stats.cells_received = self.stats.cells_received.saturating_add(1);
-        if cell.validate().is_err() {
-            self.stats.malformed = self.stats.malformed.saturating_add(1);
-            return Ok(());
-        }
-        let id = cell.msg_id();
-        end.sync.on_cell_received(id);
-        if self.dedupe.expires_at(&id).is_some_and(|exp| exp > now) {
-            self.stats.duplicates = self.stats.duplicates.saturating_add(1);
-            return Ok(());
-        }
-        let validated = if reg.in_audience(self.cfg.idx, &id) {
-            Validation::Validated
-        } else {
-            Validation::Opaque
-        };
-        let lane = end.platform.lane_for(validated);
-        match end.inbound_budget.admit(class, lane, CELL_LEN, now) {
-            Admit::Accept => {}
-            Admit::Throttle { retry_ms } => {
-                self.stats.throttled_in = self.stats.throttled_in.saturating_add(1);
-                let bytes = LinkFrame::throttle(&Throttle::for_class(class, retry_ms))
-                    .try_encode()
-                    .map_err(|_| DropReason::Malformed)?;
-                end.stage(&bytes, &mut self.stats)?;
-                return Ok(());
-            }
-            Admit::Reject => {
-                self.stats.rejected_in = self.stats.rejected_in.saturating_add(1);
-                return Ok(());
-            }
-        }
-        let meta = CellMeta {
-            class,
-            lane,
-            from_link: Some(LinkId(end.id)),
-            first_seen_mono: now,
-            pinned: false,
-        };
-        // The dedupe entry is written only for a cell the node actually
-        // holds (DESIGN §1 "dedupe → store" is one step): a cell refused for
-        // lack of room was never delivered, and remembering it as seen would
-        // drop every later offer as a duplicate for the whole retention
-        // window, long after room came back.
-        match self.store.put(cell, meta) {
-            Put::Stored => {
-                self.dedupe.seen_or_insert(id, now);
-                reg.record_first_seen(&id, self.cfg.idx, now);
-                if self.is_relaying() {
-                    self.forward_live(id, class, lane, Some(LinkId(end.id)));
-                }
-            }
-            Put::Duplicate => {
-                self.dedupe.seen_or_insert(id, now);
-                self.stats.duplicates = self.stats.duplicates.saturating_add(1);
-            }
-            Put::NoRoom => self.stats.no_room = self.stats.no_room.saturating_add(1),
-        }
-        Ok(())
-    }
-
-    /// Queues a newly held cell on every pushing link whose initial pull is
-    /// over (links still pulling will find it in the store). The source
-    /// link is never in the map while its cell is handled.
-    fn forward_live(&mut self, id: Hash32, class: Class, lane: Lane, from: Option<LinkId>) {
-        for end in self.links.values_mut() {
-            if end.is_pushing() && end.pull_exhausted {
-                end.sched.enqueue(id, class, lane, from);
-            } else {
-                end.dirty = true;
-            }
-        }
-    }
-
-    // ---- traffic ---------------------------------------------------------------
-
-    /// Creates one opaque cell of `kind` (random tag and body, TTL drawn
-    /// per DESIGN §2.2) and holds it as this node's own (lane L1, no inbound
-    /// link). Own cells are forwarded even below the battery floor
-    /// (BRIEF_v2 §5.7 "still sends its own").
-    pub fn create_cell(
-        &mut self,
-        kind: CellKind,
-        audience: Audience,
-        fragment: usize,
-        now: u64,
-        reg: &mut CellRegistry,
-    ) -> Hash32 {
-        self.clock.set(now);
-        let ttl = cell::draw_initial_ttl(&mut self.rng);
-        let mut tag = [0u8; TAG_LEN];
-        self.rng.fill_bytes(&mut tag);
-        let mut body = [0u8; BODY_LEN];
-        self.rng.fill_bytes(&mut body);
-        let c = cell::build(cell::VERSION, ttl, &tag, &body);
-        let id = c.msg_id();
-        self.dedupe.seen_or_insert(id, now);
-        let meta = CellMeta {
-            class: OPAQUE_CLASS,
-            lane: Lane::L1,
-            from_link: None,
-            first_seen_mono: now,
-            pinned: false,
-        };
-        reg.register(id, self.cfg.idx, now, fragment, kind, audience);
-        if self.store.put(c, meta) == Put::Stored {
-            reg.record_first_seen(&id, self.cfg.idx, now);
-            self.forward_live(id, OPAQUE_CLASS, Lane::L1, None);
-        }
-        id
     }
 
     // ---- tick ------------------------------------------------------------------
 
-    /// One node tick (scenario `tick_ms`): battery meter, dedupe sweep,
-    /// iPhone duty window, and a service pass over links with pending work
-    /// (throttle retries).
-    pub fn tick(&mut self, now: u64, reg: &mut CellRegistry) -> TickOutcome {
+    /// One node tick (scenario `tick_ms`): battery meter, iPhone duty
+    /// window, then the node's own tick (dedupe sweep, rotations due,
+    /// delivery ageing, held links serviced).
+    pub fn tick(&mut self, now: u64) -> TickOutcome {
         self.clock.set(now);
         let mut outcome = TickOutcome::default();
         let dt = now.saturating_sub(self.last_tick_ms);
         self.last_tick_ms = now;
-        let relaying_now = !self.links.is_empty() && self.is_relaying() && !self.is_station();
+        let relaying_now = !self.roles.is_empty() && self.is_relaying() && !self.is_station();
         self.powered_ms = self.powered_ms.saturating_add(dt);
         if relaying_now {
             self.relay_ms = self.relay_ms.saturating_add(dt);
-        }
-        if now >= self.next_dedupe_sweep_ms {
-            self.dedupe.expire(now);
-            self.next_dedupe_sweep_ms = now.saturating_add(DEDUPE_SWEEP_MS);
         }
         if self.cfg.kind == NodeKind::IPhone && now >= self.next_duty_window_ms {
             let was = self.foreground;
@@ -1106,33 +680,196 @@ impl SimNode {
             self.next_duty_window_ms = now.saturating_add(DUTY_WINDOW_MS);
             outcome.became_foreground = self.foreground && !was;
         }
-        self.service_links(now, reg, &mut outcome);
+        let level = u32::try_from(self.battery_ppm()).unwrap_or(u32::MAX);
+        self.node.set_power(level, self.is_station());
+        for e in self.node.tick(now) {
+            self.events.push((now, e));
+        }
         outcome
     }
+}
 
-    /// Services every pushing link that has work and is not held
-    /// (throttle retries, live forwards queued since the last pass).
-    pub fn service_links(&mut self, now: u64, reg: &CellRegistry, outcome: &mut TickOutcome) {
-        self.clock.set(now);
-        let relaying = self.is_relaying();
-        let flooding = self.flooding;
-        for end in self.links.values_mut() {
-            if end.is_pushing() && (flooding || now >= end.hold_until) && end.has_work() {
-                match end.service(
-                    &self.store,
-                    &self.dedupe,
-                    reg,
-                    self.cfg.idx,
-                    relaying,
-                    flooding,
-                    now,
-                    &mut self.stats,
-                ) {
-                    Ok(()) => outcome.serviced.push(end.id),
-                    Err(reason) => outcome.dead_links.push((end.id, reason)),
+// ---- trace ---------------------------------------------------------------------------
+
+/// One `VoteChanged` event in the run.
+#[derive(Debug, Clone)]
+pub struct VoteEvent {
+    pub at_ms: u64,
+    pub node: usize,
+    pub vote_id: VoteId,
+    pub line: String,
+    pub state: Option<VoteState>,
+}
+
+/// Everything the invariant checker reads, folded from node events as
+/// they happen (module docs).
+#[derive(Debug, Default)]
+pub struct Trace {
+    pub registry: ObjRegistry,
+    last_delivery: BTreeMap<(usize, ObjId), DeliveryState>,
+    /// A solid delivery state (`Delivered`) that reverted (S1 (f)).
+    pub solid_reverts: Vec<String>,
+    pub delivery_events: u64,
+    pub votes: Vec<VoteEvent>,
+    /// The first `Final` decision per (node, vote): the winning option and
+    /// the line it was shown with.
+    final_seen: BTreeMap<(usize, VoteId), (u8, String)>,
+    /// A `Final` decision that changed afterwards (S4 (c): the state or the
+    /// winner; the displayed counts may still grow as late ballots arrive).
+    pub final_changes: Vec<String>,
+    /// `TaskChanged` events seen.
+    pub task_events: u64,
+    done_seen: BTreeSet<(usize, GroupId, TaskId)>,
+    /// A `Done` task that reverted (S1 (f)).
+    pub done_reverts: Vec<String>,
+    /// Keys whose removal from a roster the trace tracks (scenario
+    /// removals and sock-puppet keys).
+    pub tracked_keys: BTreeSet<IdentityKey>,
+    /// `(node, key)` → powered-on time the node's `members(H)` first lacked
+    /// `key` after holding it (the node applied the removal, or voided the Add).
+    pub removal_applied: BTreeMap<(usize, IdentityKey), u64>,
+    member_seen: BTreeSet<(usize, IdentityKey)>,
+    pub roster_changes: u64,
+    pub needs_key: u64,
+    pub same_name: u64,
+    pub link_ups: u64,
+    pub l2_links: u64,
+}
+
+impl Trace {
+    pub fn new(n_nodes: usize) -> Self {
+        Trace {
+            registry: ObjRegistry::new(n_nodes),
+            ..Self::default()
+        }
+    }
+
+    /// Folds one event of node `n` into the trace.
+    pub fn on_event(&mut self, n: usize, now: u64, ev: &Event, node: &SimNode) {
+        match ev {
+            Event::Post { obj, labels, .. } => {
+                self.registry.record_shown(obj, n, now, labels);
+            }
+            Event::Dm { obj, .. } => {
+                self.registry.record_shown(obj, n, now, &[]);
+            }
+            Event::Delivery { obj, state } => {
+                self.delivery_events = self.delivery_events.saturating_add(1);
+                if let Some(prev) = self.last_delivery.get(&(n, *obj))
+                    && prev.is_solid()
+                    && !state.is_solid()
+                {
+                    self.solid_reverts.push(format!(
+                        "node {n} obj {obj} {} -> {} at {now} ms",
+                        prev.text(),
+                        state.text()
+                    ));
+                }
+                self.last_delivery.insert((n, *obj), *state);
+            }
+            Event::RosterChanged { group, .. } => {
+                self.roster_changes = self.roster_changes.saturating_add(1);
+                self.note_roster(n, now, group, node);
+            }
+            Event::TaskChanged { group, task_id, ui } => {
+                let key = (n, *group, *task_id);
+                if self.done_seen.contains(&key) && ui != "Done" {
+                    self.done_reverts.push(format!(
+                        "node {n} task {} Done -> {ui} at {now} ms",
+                        hex::encode(task_id)
+                    ));
+                }
+                if ui == "Done" {
+                    self.done_seen.insert(key);
+                }
+                self.task_events = self.task_events.saturating_add(1);
+            }
+            Event::VoteChanged {
+                vote_id,
+                line,
+                state,
+            } => {
+                let key = (n, *vote_id);
+                let option = match state {
+                    Some(VoteState::Final { option }) => Some(*option),
+                    _ => None,
+                };
+                if let Some((first_option, first_line)) = self.final_seen.get(&key)
+                    && option != Some(*first_option)
+                {
+                    self.final_changes.push(format!(
+                        "node {n}: \"{first_line}\" -> \"{line}\" at {now} ms"
+                    ));
+                }
+                if let Some(option) = option
+                    && !self.final_seen.contains_key(&key)
+                {
+                    self.final_seen.insert(key, (option, line.clone()));
+                }
+                self.votes.push(VoteEvent {
+                    at_ms: now,
+                    node: n,
+                    vote_id: *vote_id,
+                    line: line.clone(),
+                    state: state.clone(),
+                });
+            }
+            Event::NeedsKey { .. } => self.needs_key = self.needs_key.saturating_add(1),
+            Event::SameName { .. } => self.same_name = self.same_name.saturating_add(1),
+            Event::LinkState { up, auth, .. } => {
+                if *up {
+                    self.link_ups = self.link_ups.saturating_add(1);
+                    if matches!(auth, LinkAuth::VerifiedContact(_)) {
+                        self.l2_links = self.l2_links.saturating_add(1);
+                    }
                 }
             }
         }
+    }
+
+    /// Checks the tracked keys against the node's current `members(H)`.
+    fn note_roster(&mut self, n: usize, now: u64, group: &GroupId, node: &SimNode) {
+        if self.tracked_keys.is_empty() {
+            return;
+        }
+        let Ok(view) = node.node().roster(group) else {
+            return;
+        };
+        for key in &self.tracked_keys {
+            let member = view.is_member(key);
+            let k = (n, *key);
+            if member {
+                self.member_seen.insert(k);
+            } else if self.member_seen.contains(&k) && !self.removal_applied.contains_key(&k) {
+                self.removal_applied.insert(k, now);
+            }
+        }
+    }
+
+    /// Seeds the member-seen set from a node's current roster (called once
+    /// a tracked key becomes known, so a later disappearance counts).
+    pub fn seed_membership(&mut self, n: usize, group: &GroupId, node: &SimNode) {
+        if let Ok(view) = node.node().roster(group) {
+            for key in &self.tracked_keys {
+                if view.is_member(key) {
+                    self.member_seen.insert((n, *key));
+                }
+            }
+        }
+    }
+
+    #[cfg(test)]
+    pub fn delivery_state(&self, n: usize, obj: &ObjId) -> Option<DeliveryState> {
+        self.last_delivery.get(&(n, *obj)).copied()
+    }
+
+    /// Objects whose sender's delivery state is `Delivered` now (BRIEF_v2
+    /// §5.9; DESIGN §10 S0 "every text Delivered; receipts").
+    pub fn delivered_at_sender(&self) -> u64 {
+        self.last_delivery
+            .values()
+            .filter(|s| **s == DeliveryState::Delivered)
+            .count() as u64
     }
 }
 
@@ -1144,38 +881,14 @@ mod tests {
         NodeConfig {
             idx,
             kind,
+            name: format!("Node {idx}"),
             slots: 7,
             battery_floor_ppm: 300_000,
             battery_start_ppm: 1_000_000,
             foreground_duty_ppm: 1_000_000,
             wall_offset_ms: 0,
             dedupe_retention_ms: 10 * 24 * 3_600_000,
-            contacts: BTreeSet::new(),
         }
-    }
-
-    fn registry() -> CellRegistry {
-        CellRegistry::new(2, vec![BTreeSet::from([0, 1])])
-    }
-
-    /// Carries bytes both ways until nothing moves, like the radio does.
-    fn pump(a: &mut SimNode, b: &mut SimNode, id: u32, now: u64, reg: &mut CellRegistry) {
-        for _ in 0..200 {
-            let ab = a.poll_outbound(id, usize::MAX);
-            let ba = b.poll_outbound(id, usize::MAX);
-            if ab.is_empty() && ba.is_empty() {
-                return;
-            }
-            if !ab.is_empty() {
-                b.on_bytes(id, &ab, 185, now, reg).unwrap();
-            }
-            if !ba.is_empty() {
-                a.on_bytes(id, &ba, 512, now, reg).unwrap();
-            }
-            a.service_link(id, now, reg).unwrap();
-            b.service_link(id, now, reg).unwrap();
-        }
-        panic!("the link never settled");
     }
 
     #[test]
@@ -1187,258 +900,201 @@ mod tests {
         assert_eq!(c.wall_reads(), 0);
         assert_eq!(c.wall_for_display(), 95);
         assert_eq!(c.wall_reads(), 1);
+        let shared = c.clone();
+        shared.set(200);
+        assert_eq!(c.mono_ms(), 200, "handles share one state");
     }
 
     #[test]
-    fn handshake_hello_summary_and_push_deliver_cells_both_ways() {
-        let mut reg = registry();
-        let mut a = SimNode::new(cfg(0, NodeKind::Android), 1);
-        let mut b = SimNode::new(cfg(1, NodeKind::Android), 2);
-        let ida = a.create_cell(CellKind::Post, Audience::Group(0), 0, 10, &mut reg);
-        let idb = b.create_cell(CellKind::Post, Audience::Group(0), 0, 10, &mut reg);
-        a.link_up(7, Role::Central, 512, PeerKind::AppUuid, None, 100)
-            .unwrap();
-        b.link_up(7, Role::Peripheral, 512, PeerKind::AppUuid, None, 100)
-            .unwrap();
-        pump(&mut a, &mut b, 7, 200, &mut reg);
-        assert_eq!(a.stats.handshakes, 1);
-        assert_eq!(b.stats.handshakes, 1);
-        assert!(a.holds(&idb), "a received b's cell");
-        assert!(b.holds(&ida), "b received a's cell");
-        assert_eq!(reg.records[0].first_seen, vec![10, 200]);
-        assert_eq!(reg.duplicate_first_seen, 0);
-        // a live cell created after the sync goes through the scheduler
-        let live = a.create_cell(CellKind::Post, Audience::Group(0), 0, 300, &mut reg);
-        a.service_link(7, 300, &mut reg).unwrap();
-        pump(&mut a, &mut b, 7, 300, &mut reg);
-        assert!(b.holds(&live));
-        assert_eq!(reg.records[2].first_seen[1], 300);
-        // the TTL was decremented on the way (DESIGN §2.2 `Cell::forwarded`)
-        let ttl_at_a = a.store.get(&live).unwrap().0.ttl();
-        let ttl_at_b = b.store.get(&live).unwrap().0.ttl();
-        assert_eq!(ttl_at_b, ttl_at_a - 1, "one hop, one TTL decrement");
-        a.link_down(7, 400);
-        b.link_down(7, 400);
-        assert_eq!(a.link_count(), 0);
-        assert_eq!(
-            a.stats.digest_matches + b.stats.digest_matches,
+    fn registry_records_first_show_duplicates_and_unknowns() {
+        let mut reg = ObjRegistry::new(3);
+        let obj = Hash32::ZERO;
+        reg.register(
+            obj,
             0,
-            "stores differed at start"
+            10,
+            0,
+            0,
+            ObjKind::Post { group: 0 },
+            BTreeSet::from([1, 2]),
+            false,
+            false,
         );
-        // a second encounter with equal stores: both sides see a digest match
-        b.link_up(8, Role::Central, 185, PeerKind::AppUuid, None, 500)
-            .unwrap();
-        a.link_up(8, Role::Peripheral, 185, PeerKind::AppUuid, None, 500)
-            .unwrap();
-        pump(&mut b, &mut a, 8, 600, &mut reg);
-        a.link_down(8, 700);
-        b.link_down(8, 700);
-        assert_eq!(a.stats.digest_matches + b.stats.digest_matches, 2);
-        assert_eq!(reg.duplicate_first_seen, 0);
-    }
-
-    #[test]
-    fn corrupt_bytes_tear_the_link_down() {
-        let mut reg = registry();
-        let mut a = SimNode::new(cfg(0, NodeKind::Android), 1);
-        let mut b = SimNode::new(cfg(1, NodeKind::Android), 2);
-        a.link_up(1, Role::Central, 512, PeerKind::AppUuid, None, 0)
-            .unwrap();
-        b.link_up(1, Role::Peripheral, 512, PeerKind::AppUuid, None, 0)
-            .unwrap();
-        let mut msg1 = a.poll_outbound(1, usize::MAX);
-        assert_eq!(msg1.len(), 2 + 32);
-        msg1[5] ^= 0xFF;
-        let r = b.on_bytes(1, &msg1, 512, 0, &mut reg);
-        // a flipped ephemeral byte is still a valid handshake message; the
-        // initiator then fails on the responder's reply tag.
-        if r.is_ok() {
-            let msg2 = b.poll_outbound(1, usize::MAX);
-            assert_eq!(
-                a.on_bytes(1, &msg2, 512, 0, &mut reg),
-                Err(DropReason::Noise)
-            );
-        }
-        // a short frame on the stream closes the platform link
-        let mut c = SimNode::new(cfg(0, NodeKind::Android), 3);
-        c.link_up(2, Role::Peripheral, 512, PeerKind::AppUuid, None, 0)
-            .unwrap();
+        assert_eq!(reg.records[0].shown, vec![10, u64::MAX, u64::MAX]);
+        assert_eq!(reg.record_shown(&obj, 1, 50, &["x".into()]), Shown::First);
+        assert_eq!(reg.record_shown(&obj, 1, 60, &[]), Shown::Duplicate);
+        assert_eq!(reg.duplicate_shown, 1);
         assert_eq!(
-            c.on_bytes(2, &[1, 0, 9], 512, 0, &mut reg),
-            Err(DropReason::Framing)
+            reg.records[0].labels.get(&1).unwrap(),
+            &vec!["x".to_owned()]
         );
+        let other = meshcore::crypto::hash::sha256(b"other");
+        assert_eq!(reg.record_shown(&other, 2, 1, &[]), Shown::Unknown);
+        assert_eq!(reg.unknown_shown, 1);
     }
 
     #[test]
-    fn battery_drains_and_the_floor_stops_relaying_but_not_own_cells() {
-        let mut reg = registry();
+    fn battery_drains_and_the_floor_stops_relaying() {
         let mut c = cfg(0, NodeKind::Android);
         c.battery_start_ppm = 400_000;
-        let mut n = SimNode::new(c, 9);
+        let mut n = SimNode::new(c, 9, 0).unwrap();
         assert!(n.is_relaying());
         // 1 %/h idle: after 11 h the level is 29 % < 30 % floor
-        n.tick(11 * MS_PER_H, &mut reg);
+        n.tick(11 * MS_PER_H);
         assert_eq!(n.battery_ppm(), 290_000);
         assert!(!n.is_relaying());
-        let own = n.create_cell(
-            CellKind::Post,
-            Audience::Group(0),
-            0,
-            11 * MS_PER_H,
-            &mut reg,
-        );
-        assert!(n.holds(&own));
-        let mut s = SimNode::new(cfg(1, NodeKind::Station), 10);
-        s.tick(100 * MS_PER_H, &mut reg);
+        let mut s = SimNode::new(cfg(1, NodeKind::Station), 10, 0).unwrap();
+        s.tick(100 * MS_PER_H);
         assert_eq!(s.battery_ppm(), PPM, "stations are mains powered");
+        assert!(s.identity().is_none());
+        assert_eq!(n.wall_reads(), 0);
     }
 
     #[test]
     fn locked_iphone_never_dials_and_duty_windows_redraw() {
-        let mut reg = registry();
         let mut c = cfg(0, NodeKind::IPhone);
         c.foreground_duty_ppm = 0;
         c.slots = IPHONE_SLOTS;
-        let mut n = SimNode::new(c, 4);
+        let mut n = SimNode::new(c, 4, 0).unwrap();
         assert!(n.is_locked_iphone());
         assert!(!n.can_dial());
         assert!(n.accepting_inbound());
         let mut c = cfg(0, NodeKind::IPhone);
         c.foreground_duty_ppm = PPM;
-        let mut m = SimNode::new(c, 4);
+        let mut m = SimNode::new(c, 4, 0).unwrap();
         assert!(m.is_foreground() && m.can_dial());
-        let o = n.tick(DUTY_WINDOW_MS, &mut reg);
+        let o = n.tick(DUTY_WINDOW_MS);
         assert!(!o.became_foreground);
-        let o = m.tick(DUTY_WINDOW_MS, &mut reg);
+        let o = m.tick(DUTY_WINDOW_MS);
         assert!(!o.became_foreground, "already foreground: no transition");
     }
 
     #[test]
-    fn verified_contacts_get_l2_links() {
-        let mut reg = registry();
-        let mut ca = cfg(0, NodeKind::Android);
-        ca.contacts.insert(1);
-        let a = SimNode::new(ca, 1);
-        let b = SimNode::new(cfg(1, NodeKind::Android), 2);
-        let mut a = a;
-        a.link_up(
-            3,
-            Role::Central,
-            512,
-            PeerKind::AppUuid,
-            Some(b.identity()),
+    fn two_nodes_handshake_over_the_wrapper_and_exchange_a_dm() {
+        let mut a = SimNode::new(cfg(0, NodeKind::Android), 1, 0).unwrap();
+        let mut b = SimNode::new(cfg(1, NodeKind::Android), 2, 0).unwrap();
+        // provisioning as the engine does it
+        let ka = [7u8; 32];
+        let import_a = meshcore::node::ImportedContact {
+            keycard: a.node().my_keycard().unwrap(),
+            display_name: a.name().to_owned(),
+            bundle: a
+                .node_mut()
+                .my_bundle(
+                    meshcore::pairwise::bundles::IssueContext::DirectEncounter,
+                    0,
+                )
+                .unwrap(),
+            link_key: Some(ka),
+            envelope_pub: a.node().my_envelope_pub().unwrap(),
+            badge: meshcore::node::ImportBadge::VerifiedInPerson,
+        };
+        let import_b = meshcore::node::ImportedContact {
+            keycard: b.node().my_keycard().unwrap(),
+            display_name: b.name().to_owned(),
+            bundle: b
+                .node_mut()
+                .my_bundle(
+                    meshcore::pairwise::bundles::IssueContext::DirectEncounter,
+                    0,
+                )
+                .unwrap(),
+            link_key: Some(ka),
+            envelope_pub: b.node().my_envelope_pub().unwrap(),
+            badge: meshcore::node::ImportBadge::VerifiedInPerson,
+        };
+        a.node_mut().import_contact(import_b, 0).unwrap();
+        b.node_mut().import_contact(import_a, 0).unwrap();
+        a.attach_display_clock();
+        b.attach_display_clock();
+        a.link_up(1, Role::Central, b.identity(), 10).unwrap();
+        b.link_up(1, Role::Peripheral, a.identity(), 10).unwrap();
+        assert_eq!(a.link_count(), 1);
+        let obj = a
+            .node_mut()
+            .send_dm(b.identity().unwrap(), "hi", 20)
+            .unwrap();
+        let mut trace = Trace::new(2);
+        trace.registry.register(
+            obj,
             0,
-        )
-        .unwrap();
-        let end = a.links.get(&3).unwrap();
-        assert_eq!(end.platform.auth(), LinkAuth::VerifiedContact(b.identity()));
-        assert_eq!(end.platform.lane_for(Validation::Opaque), Lane::L2);
-        assert!(a.is_contact(1));
-        let _ = &mut reg;
-    }
-    #[test]
-    fn below_the_floor_a_node_withholds_others_cells_but_pushes_its_own() {
-        let mut reg = CellRegistry::new(3, vec![BTreeSet::from([0, 1, 2])]);
-        let mut c = cfg(0, NodeKind::Android);
-        c.battery_start_ppm = 400_000;
-        let mut a = SimNode::new(c, 1);
-        let mut b = SimNode::new(cfg(1, NodeKind::Android), 2);
-        let mut d = SimNode::new(cfg(2, NodeKind::Android), 3);
-        // b hands a its cell while a is still relaying
-        let theirs = b.create_cell(CellKind::Post, Audience::Group(0), 0, 10, &mut reg);
-        b.link_up(1, Role::Central, 512, PeerKind::AppUuid, None, 100)
-            .unwrap();
-        a.link_up(1, Role::Peripheral, 512, PeerKind::AppUuid, None, 100)
-            .unwrap();
-        pump(&mut b, &mut a, 1, 200, &mut reg);
-        assert!(a.holds(&theirs));
-        a.link_down(1, 300);
-        b.link_down(1, 300);
-        // 11 h later a is at 29 % < 30 %: BRIEF_v2 §5.7 "stops relaying
-        // for others" but "keeps own traffic"
-        let t = 11 * MS_PER_H;
-        a.tick(t, &mut reg);
-        assert!(!a.is_relaying());
-        let own = a.create_cell(CellKind::Post, Audience::Group(0), 0, t, &mut reg);
-        a.link_up(2, Role::Central, 512, PeerKind::AppUuid, None, t)
-            .unwrap();
-        d.link_up(2, Role::Peripheral, 512, PeerKind::AppUuid, None, t)
-            .unwrap();
-        pump(&mut a, &mut d, 2, t + 100, &mut reg);
-        assert!(d.holds(&own), "own cells still go out below the floor");
-        assert!(
-            !d.holds(&theirs),
-            "others' cells are withheld below the floor"
+            20,
+            0,
+            0,
+            ObjKind::Dm { to: 1 },
+            BTreeSet::from([1]),
+            false,
+            false,
         );
-        assert!(a.stats.withheld_low_battery >= 1);
-    }
-
-    #[test]
-    fn a_cell_refused_for_lack_of_room_is_not_remembered_as_seen() {
-        let mut reg = registry();
-        let mut a = SimNode::new(cfg(0, NodeKind::Android), 1);
-        let mut b = SimNode::new(cfg(1, NodeKind::Android), 2);
-        a.shrink_store(1);
-        let first = b.create_cell(CellKind::Post, Audience::Group(0), 0, 10, &mut reg);
-        b.link_up(1, Role::Central, 512, PeerKind::AppUuid, None, 100)
-            .unwrap();
-        a.link_up(1, Role::Peripheral, 512, PeerKind::AppUuid, None, 100)
-            .unwrap();
-        pump(&mut b, &mut a, 1, 200, &mut reg);
-        assert!(a.holds(&first));
-        // pinned, so the policy cannot evict it for the next cell
-        assert!(a.store.set_pinned(&first, true));
-        let second = b.create_cell(CellKind::Post, Audience::Group(0), 0, 300, &mut reg);
-        b.service_link(1, 300, &mut reg).unwrap();
-        pump(&mut b, &mut a, 1, 300, &mut reg);
-        assert!(!a.holds(&second), "no room for a second cell");
-        assert_eq!(a.stats.no_room, 1);
-        // DESIGN §1 inbound pipeline "dedupe → store": a cell the store
-        // refused was never delivered, so the dedupe cache must not claim it
-        // was seen, or a later re-offer (when room exists) is dropped as a
-        // duplicate for the whole retention window.
-        assert!(
-            !a.dedupe.contains(&second),
-            "a refused cell must stay acceptable on a later offer"
-        );
-        assert_eq!(reg.records[1].first_seen[0], u64::MAX);
-    }
-
-    #[test]
-    fn a_flooding_node_ignores_its_outbound_budget_and_throttles() {
-        // docs/scenarios.md S-flood: the adversary "injects 600 junk
-        // cells/min"; it is the honest receiver's inbound budget (BRIEF_v2
-        // §5.5) that must contain it, not the sender's own pacing.
-        let mut reg = CellRegistry::new(2, vec![BTreeSet::from([0])]);
-        let mut honest = SimNode::new(cfg(0, NodeKind::Android), 1);
-        let mut flooder = SimNode::new(cfg(1, NodeKind::Android), 2);
-        flooder.set_flooding(true);
-        flooder
-            .link_up(1, Role::Central, 512, PeerKind::AppUuid, None, 0)
-            .unwrap();
-        honest
-            .link_up(1, Role::Peripheral, 512, PeerKind::AppUuid, None, 0)
-            .unwrap();
-        pump(&mut flooder, &mut honest, 1, 10, &mut reg);
-        let n = 200u64;
-        for i in 0..n {
-            let now = 100 + i * 100;
-            flooder.create_cell(CellKind::Junk, Audience::Nobody, 0, now, &mut reg);
-            flooder.service_link(1, now, &mut reg).unwrap();
-            pump(&mut flooder, &mut honest, 1, now, &mut reg);
+        let mut now = 20;
+        for _ in 0..200 {
+            now += 2_000;
+            let ab = a.poll_outbound(1, usize::MAX, now);
+            if !ab.is_empty() {
+                b.feed(1, &ab, now).unwrap();
+            }
+            let ba = b.poll_outbound(1, usize::MAX, now);
+            if !ba.is_empty() {
+                a.feed(1, &ba, now).unwrap();
+            }
+            a.tick(now);
+            b.tick(now);
+            for (t, e) in a.take_events() {
+                trace.on_event(0, t, &e, &a);
+            }
+            for (t, e) in b.take_events() {
+                trace.on_event(1, t, &e, &b);
+            }
+            if trace.registry.records[0].shown[1] != u64::MAX {
+                break;
+            }
         }
-        assert!(
-            flooder.stats.cells_sent >= n - 5,
-            "the flooder sent {} of {n} junk cells: its own mirror budget paced it",
-            flooder.stats.cells_sent
+        assert_ne!(
+            trace.registry.records[0].shown[1],
+            u64::MAX,
+            "B showed the DM"
         );
-        assert_eq!(flooder.stats.throttled_out, 0);
-        assert!(honest.stats.throttles_received == 0);
-        assert!(
-            honest.stats.throttled_in > n / 2,
-            "the honest side throttled only {} of {n} L3 junk cells",
-            honest.stats.throttled_in
+        // the batched receipt (`node::node::RECEIPT_BATCH_MS_ASM`) settles
+        // the delivery state once its window passed
+        for _ in 0..40 {
+            now += 60_000;
+            let ab = a.poll_outbound(1, usize::MAX, now);
+            if !ab.is_empty() {
+                b.feed(1, &ab, now).unwrap();
+            }
+            let ba = b.poll_outbound(1, usize::MAX, now);
+            if !ba.is_empty() {
+                a.feed(1, &ba, now).unwrap();
+            }
+            a.tick(now);
+            b.tick(now);
+            for (t, e) in a.take_events() {
+                trace.on_event(0, t, &e, &a);
+            }
+            for (t, e) in b.take_events() {
+                trace.on_event(1, t, &e, &b);
+            }
+            if trace.delivery_state(0, &obj) == Some(DeliveryState::Delivered) {
+                break;
+            }
+        }
+        assert_eq!(
+            trace.delivery_state(0, &obj),
+            Some(DeliveryState::Delivered)
         );
-        assert!(honest.store_len() < usize::try_from(n / 2).unwrap());
+        assert!(trace.solid_reverts.is_empty());
+        assert!(trace.l2_links >= 1, "the pair's link is L2");
+        assert_eq!(a.wall_reads() + b.wall_reads(), 0);
+        // a display read through the node counts once (the node's own
+        // counter and the clock's count the same call), and the report's
+        // own last-sync read is not a protocol read
+        let _ = a.last_sync_set(now);
+        assert_eq!(a.wall_reads(), 0);
+        assert_eq!(a.node().wall_reads(), a.clock.wall_reads());
+        let _ = a.node().name_of(&b.identity().unwrap());
+        assert_eq!(a.wall_reads(), 0, "name_of is not a wall read");
+        a.link_down(1, now);
+        b.link_down(1, now);
+        assert_eq!(a.link_count(), 0);
     }
 }

@@ -25,9 +25,21 @@
 //! * **What we summarise**: every id in the store plus the dedupe cache's
 //!   rejected ids, so that peers stop re-offering what we refused (§3 row
 //!   (1,2,3,4,10) (iv)).
-//! * **Salt per encounter** (DESIGN §10 risk 4): the caller draws a random
-//!   salt for `start`; a false positive under one salt does not repeat
-//!   under the next, so a rarely-met peer is not starved for ever.
+//! * **Salt per encounter** (DESIGN §10 risk 4): every encounter's vector
+//!   carries the salt the caller gives `start`; a false positive under one
+//!   salt does not repeat under the next, so a rarely-met peer is not
+//!   starved for ever. Cost: when the salt is the store's current one
+//!   ([`CellStore::summary_salt_for`], the rotation policy and its
+//!   trade-off are documented there) the store's maintained filter is
+//!   copied (`O(n_bits/8)`) and the rejected ids folded in; under any
+//!   other salt the vector is derived from the store's cached words
+//!   (`O(n·k)` integer operations). Neither path hashes anything: the one
+//!   SHA-256 per cell was paid when the cell was stored.
+//! * **Bookkeeping per store slot**: what this link pushed, withheld or
+//!   must never offer is marked in bitsets keyed by the store's slot and
+//!   generation ([`CellStore::scan_forwardable`]), so a push scan is one
+//!   ordered-map step, two table reads and at most `k` filter probes per
+//!   cell, with no allocation per cell and no lookup by id.
 //! * **"Last sync" digest match** (DESIGN §1 `dtn/summary.rs`; §3 task
 //!   `reach_set` "members synced in the last 10 min"):
 //!   [`LinkSync::digest_matched`] is true when every id we *hold* is in
@@ -54,7 +66,7 @@ use crate::crypto::hash::Hash32;
 use crate::dtn::dedupe::DedupeCache;
 use crate::dtn::store::CellStore;
 use crate::dtn::summary::{
-    Assembled, ChunkAssembler, SUMMARY_TARGET_FPR_ASM, SummaryError, SummaryVector, sizing,
+    Assembled, ChunkAssembler, IdWords, SUMMARY_TARGET_FPR_ASM, SummaryVector, sizing,
 };
 use crate::wire::frame::{Frame, Hello, SummaryChunk};
 
@@ -109,6 +121,48 @@ impl Default for SyncConfig {
     }
 }
 
+/// Marks keyed by store slot: a slot is marked while its generation equals
+/// the one recorded, so a mark never outlives the cell it was made for
+/// (the store reuses slots and bumps the generation).
+#[derive(Debug, Clone, Default)]
+struct SlotMarks {
+    gens: Vec<u32>,
+    count: u64,
+}
+
+impl SlotMarks {
+    fn is_marked(&self, slot: usize, generation: u32) -> bool {
+        generation != 0 && self.gens.get(slot).copied() == Some(generation)
+    }
+
+    /// Marks the slot; `true` if it was not marked for this generation.
+    fn mark(&mut self, slot: usize, generation: u32) -> bool {
+        if generation == 0 {
+            return false;
+        }
+        if self.gens.len() <= slot {
+            self.gens.resize(slot.saturating_add(1), 0);
+        }
+        match self.gens.get_mut(slot) {
+            Some(g) if *g != generation => {
+                *g = generation;
+                self.count = self.count.saturating_add(1);
+                true
+            }
+            _ => false,
+        }
+    }
+
+    /// Marked `(slot, generation)` pairs in slot order.
+    fn iter(&self) -> impl Iterator<Item = (usize, u32)> + '_ {
+        self.gens
+            .iter()
+            .enumerate()
+            .filter(|(_, g)| **g != 0)
+            .map(|(s, g)| (s, *g))
+    }
+}
+
 /// The anti-entropy state machine of one link. See the module docs.
 #[derive(Debug)]
 pub struct LinkSync {
@@ -118,9 +172,10 @@ pub struct LinkSync {
     started_at_mono: Option<u64>,
     local: Option<SummaryVector>,
     local_chunks: Vec<SummaryChunk>,
-    /// The ids the store held at `start` (ascending): what the digest
-    /// match is judged over. The vector also carries the rejected ids.
-    local_ids: Vec<Hash32>,
+    /// The words of the ids the store held at `start`: what the digest
+    /// match is judged over (the vector also carries the rejected ids).
+    /// Freed once judged.
+    local_words: Vec<IdWords>,
     summary_sent: bool,
     peer_hello: Option<Hello>,
     assembler: ChunkAssembler,
@@ -128,8 +183,13 @@ pub struct LinkSync {
     ours_in_theirs: Option<bool>,
     received: BTreeSet<Hash32>,
     received_outside_local: u64,
-    pushed: BTreeSet<Hash32>,
-    withheld: BTreeSet<Hash32>,
+    /// Slots this encounter will not offer again: pushed, withheld, held
+    /// copies of received ids, rejected ids.
+    done: SlotMarks,
+    /// Slots withheld because the peer's vector claims them (a subset of
+    /// `done`).
+    withheld: SlotMarks,
+    pushed: u64,
     summary_errors: u64,
 }
 
@@ -142,7 +202,7 @@ impl LinkSync {
             started_at_mono: None,
             local: None,
             local_chunks: Vec::new(),
-            local_ids: Vec::new(),
+            local_words: Vec::new(),
             summary_sent: false,
             peer_hello: None,
             assembler: ChunkAssembler::new(),
@@ -150,8 +210,9 @@ impl LinkSync {
             ours_in_theirs: None,
             received: BTreeSet::new(),
             received_outside_local: 0,
-            pushed: BTreeSet::new(),
-            withheld: BTreeSet::new(),
+            done: SlotMarks::default(),
+            withheld: SlotMarks::default(),
+            pushed: 0,
             summary_errors: 0,
         }
     }
@@ -196,7 +257,7 @@ impl LinkSync {
 
     /// Ids pushed to the peer this encounter.
     pub fn pushed_len(&self) -> usize {
-        self.pushed.len()
+        usize::try_from(self.pushed).unwrap_or(usize::MAX)
     }
 
     /// Ids the peer pushed to us this encounter.
@@ -208,14 +269,19 @@ impl LinkSync {
     /// the peer's vector claims them: true holdings and false positives
     /// alike, since only the simulator knows which is which (module docs).
     pub fn never_offered(&self) -> u64 {
-        u64::try_from(self.withheld.len()).unwrap_or(u64::MAX)
+        self.withheld.count
     }
 
-    /// The ids behind [`never_offered`](Self::never_offered), ascending;
-    /// the simulator intersects them with the peer's true holdings to count
-    /// false-positive suppression.
-    pub fn withheld_ids(&self) -> impl Iterator<Item = Hash32> + '_ {
-        self.withheld.iter().copied()
+    /// The ids behind [`never_offered`](Self::never_offered) that `store`
+    /// (the store this link syncs) still holds, in slot order; the
+    /// simulator intersects them with the peer's true holdings to count
+    /// false-positive suppression. A withheld cell evicted since is counted
+    /// but no longer listed.
+    pub fn withheld_ids<'a>(&'a self, store: &'a CellStore) -> impl Iterator<Item = Hash32> + 'a {
+        self.withheld
+            .iter()
+            .filter(move |(slot, generation)| store.generation(*slot) == *generation)
+            .filter_map(move |(slot, _)| store.id_at(slot).copied())
     }
 
     /// Chunks refused (bad parameters, a second vector mid-stream, or an
@@ -237,10 +303,12 @@ impl LinkSync {
 
     // ---- events ---------------------------------------------------------
 
-    /// Opens the encounter at `now_mono` with a fresh `salt`: builds our
-    /// summary from the store's ids and the dedupe cache's rejected ids,
-    /// and sends our Hello (plus our summary if the peer's Hello already
-    /// arrived). A second call does nothing.
+    /// Opens the encounter at `now_mono` under `salt`: builds our summary
+    /// from the store's cached words and the dedupe cache's rejected ids
+    /// (module docs: the store's maintained filter when `salt` is the
+    /// store's current salt, else a derivation under `salt`), and sends
+    /// our Hello (plus our summary if the peer's Hello already arrived). A
+    /// second call does nothing.
     pub fn start(
         &mut self,
         salt: u32,
@@ -253,15 +321,37 @@ impl LinkSync {
         }
         self.salt = salt;
         self.started_at_mono = Some(now_mono);
-        let held: Vec<Hash32> = store.iter_ids().collect();
-        let mut ids: Vec<Hash32> = held.iter().copied().chain(dedupe.rejected_ids()).collect();
-        ids.sort_unstable();
-        ids.dedup();
-        let (n_bits, k) = sizing(ids.len(), self.cfg.target_fpr);
-        let local = SummaryVector::build(ids.iter().copied(), salt, n_bits, k);
+        let index = store.summary_index();
+        // rejected ids we only remember (a held rejected cell is already in
+        // the index)
+        let rejected_only: Vec<IdWords> = dedupe
+            .rejected_ids()
+            .filter(|id| !store.contains(id))
+            .map(|id| IdWords::of(&id))
+            .collect();
+        let n_items = index.len().saturating_add(rejected_only.len());
+        let maintained = index.vector();
+        let local =
+            if salt == index.salt() && maintained.estimated_fpr(n_items) <= self.cfg.target_fpr {
+                let mut v = maintained.clone();
+                for w in &rejected_only {
+                    v.insert_words(w);
+                }
+                v
+            } else {
+                let (n_bits, k) = sizing(n_items, self.cfg.target_fpr);
+                let mut v = SummaryVector::empty(salt, n_bits, k);
+                for (_, w) in index.iter_live() {
+                    v.insert_words(w);
+                }
+                for w in &rejected_only {
+                    v.insert_words(w);
+                }
+                v
+            };
         self.local_chunks = local.to_chunks(self.cfg.max_chunk_bytes);
         self.local = Some(local);
-        self.local_ids = held;
+        self.local_words = index.iter_live().map(|(_, w)| *w).collect();
         self.judge_digest();
         self.state = SyncState::HelloSent;
         let mut out = vec![Out::SendHello(self.hello(store))];
@@ -304,10 +394,12 @@ impl LinkSync {
     }
 
     /// Judges the digest-match inputs from what is known now: every id we
-    /// held at `start` against the peer's vector, and every id the peer
-    /// pushed against our vector. Called whenever either summary becomes known, so the
-    /// verdict is the same whether `start` or the peer's chunks came first
-    /// (before `start` there is nothing of ours to judge against).
+    /// held at `start` against the peer's vector (`O(n·k)` integer probes
+    /// over the word snapshot, which is then freed), and every id the peer
+    /// pushed against our vector. Called whenever either summary becomes
+    /// known, so the verdict is the same whether `start` or the peer's
+    /// chunks came first (before `start` there is nothing of ours to judge
+    /// against).
     fn judge_digest(&mut self) {
         let Some(local) = self.local.as_ref() else {
             return;
@@ -319,10 +411,10 @@ impl LinkSync {
                 .count(),
         )
         .unwrap_or(u64::MAX);
-        self.ours_in_theirs = self
-            .peer
-            .as_ref()
-            .map(|peer| self.local_ids.iter().all(|id| peer.contains(id)));
+        if let Some(peer) = self.peer.as_ref() {
+            self.ours_in_theirs = Some(self.local_words.iter().all(|w| peer.contains_words(w)));
+            self.local_words = Vec::new();
+        }
     }
 
     /// The peer's Hello arrived. If ours is out, our summary follows.
@@ -335,22 +427,20 @@ impl LinkSync {
 
     /// One chunk of the peer's summary arrived. Chunks are collected in any
     /// order; a chunk of a different vector restarts the collection (the
-    /// peer re-summarised); malformed chunks are counted and ignored. When
-    /// the vector completes (and ours was sent) `Out::Push` is returned.
-    /// Chunks after completion are ignored.
+    /// peer re-summarised); malformed chunks, and a second copy of an index
+    /// with different bits, are counted and dropped (the collection
+    /// restarts empty). When the vector completes (and ours was sent)
+    /// `Out::Push` is returned. Chunks after completion are ignored.
     pub fn on_summary_chunk(&mut self, chunk: SummaryChunk) -> Vec<Out> {
         let mut out = Vec::new();
         if self.peer.is_some() {
             return out;
         }
-        let result = match self.assembler.push(chunk.clone()) {
-            Err(SummaryError::Mismatch) => {
-                self.summary_errors = self.summary_errors.saturating_add(1);
-                self.assembler.reset();
-                self.assembler.push(chunk)
-            }
-            other => other,
-        };
+        if !self.assembler.accepts(&chunk) {
+            self.summary_errors = self.summary_errors.saturating_add(1);
+            self.assembler.reset();
+        }
+        let result = self.assembler.push(chunk);
         match result {
             Ok(Assembled::Incomplete { .. }) => {
                 if self.state == SyncState::AwaitSummary {
@@ -399,37 +489,45 @@ impl LinkSync {
 
     /// Up to `budget_cells` ids to push now (module docs), in class
     /// priority and age order; they are recorded as pushed. Empty before
-    /// the push phase.
+    /// the push phase. `store` must be the store this link syncs (the slot
+    /// marks are keyed by it).
     pub fn next_to_send(
         &mut self,
         store: &CellStore,
         dedupe: &DedupeCache,
         budget_cells: usize,
     ) -> Vec<Hash32> {
-        if self.state != SyncState::Pushing {
+        if self.state != SyncState::Pushing || budget_cells == 0 {
             return Vec::new();
         }
         let Some(peer) = self.peer.as_ref() else {
             return Vec::new();
         };
-        let withheld = core::cell::RefCell::new(Vec::new());
-        let ids = {
-            let pushed = &self.pushed;
-            let received = &self.received;
-            let exclude = |id: &Hash32| -> bool {
-                if pushed.contains(id) || received.contains(id) || dedupe.is_rejected(id) {
-                    return true;
-                }
-                if peer.contains(id) {
-                    withheld.borrow_mut().push(*id);
-                    return true;
-                }
-                false
-            };
-            store.candidates_for(&exclude, budget_cells)
-        };
-        self.withheld.extend(withheld.into_inner());
-        self.pushed.extend(ids.iter().copied());
+        let mut ids = Vec::new();
+        let check_received = !self.received.is_empty();
+        let check_rejected = dedupe.rejected_len() > 0;
+        for c in store.scan_forwardable() {
+            if self.done.is_marked(c.slot, c.generation) {
+                continue;
+            }
+            if (check_received && self.received.contains(c.id))
+                || (check_rejected && dedupe.is_rejected(c.id))
+            {
+                self.done.mark(c.slot, c.generation);
+                continue;
+            }
+            if peer.contains_words(c.words) {
+                self.done.mark(c.slot, c.generation);
+                self.withheld.mark(c.slot, c.generation);
+                continue;
+            }
+            self.done.mark(c.slot, c.generation);
+            self.pushed = self.pushed.saturating_add(1);
+            ids.push(*c.id);
+            if ids.len() >= budget_cells {
+                break;
+            }
+        }
         ids
     }
 }

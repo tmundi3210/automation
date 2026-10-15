@@ -22,10 +22,34 @@
 //!   DESIGN §3 "roster ops are never evicted until superseded"), and an
 //!   entry whose class outranks the incoming cell's class is never evicted.
 //! * **Forwarding candidates** (BRIEF_v2 §5.6 strict class priority; §5.7
-//!   DTN store-and-forward): [`CellStore::candidates_for`] lists cells in
-//!   class order, oldest first within a class, skipping cells the caller
-//!   excludes and cells a relay may no longer forward (`ttl < 2`, DESIGN
-//!   §2.2).
+//!   DTN store-and-forward): [`CellStore::scan_forwardable`] (and the
+//!   id-only [`CellStore::candidates_for`]) lists cells in class order,
+//!   oldest first within a class, skipping cells a relay may no longer
+//!   forward (`ttl < 2`, DESIGN §2.2). Each candidate carries its *slot*
+//!   and *generation* so a link can remember what it offered in a bitset
+//!   instead of a set of ids.
+//! * **Summary index** (BRIEF_v2 §5.7 anti-entropy; DESIGN §7 "summary
+//!   vectors"; D4 MERGE): the store owns a
+//!   [`SummaryIndex`](crate::dtn::summary::SummaryIndex) that caches each
+//!   cell's two hash words at `put` (the cell's `msg_id` is the one
+//!   SHA-256 a cell ever costs for summary purposes) and keeps a counting
+//!   Bloom filter under the store's current salt exact on every put and
+//!   evict. [`CellStore::summary_salt_for`] is the **salt rotation
+//!   policy**: DESIGN §10 risk 4 names "salt rotation per encounter" as
+//!   the knob against accumulated false positives, and every encounter
+//!   still carries its own salt on the wire; but the store hands out a
+//!   *fresh* salt (re-deriving the filter, `O(n·k)` integer operations)
+//!   at most once per [`SUMMARY_SALT_ROTATE_MS_ASM`] of powered-on time
+//!   and otherwise the current one (an `O(n_bits/8)` copy). Trade-off: two
+//!   peers met inside one window receive vectors under the same salt, so
+//!   (a) a false positive of ours repeats for both until the next
+//!   rotation, bounded by the window, and (b) the two vectors are
+//!   bit-comparable, which lets colluding peers link the two encounters
+//!   to one phone and count what arrived in between. The Noise session
+//!   hides the vector from everyone else (DESIGN §7), and the platform's
+//!   BLE address rotation already links encounters over a similar window,
+//!   so the default is a 10-minute window; `set_summary_salt_interval_ms(0)`
+//!   restores per-encounter rotation at `O(n·k)` per encounter.
 //!
 //! Everything is deterministic: the same sequence of calls gives the same
 //! contents, the same candidate order and the same victims. Time only
@@ -38,6 +62,7 @@ use core::fmt;
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::crypto::hash::Hash32;
+use crate::dtn::summary::{IdWords, SUMMARY_TARGET_FPR_ASM, SummaryIndex};
 use crate::relay::Lane;
 use crate::transport::link::LinkId;
 use crate::wire::cell::{CELL_LEN, Cell};
@@ -48,6 +73,10 @@ use crate::wire::frame::Class;
 pub const STORE_MAX_BYTES_ASM: usize = 50 * 1024 * 1024;
 /// Per inbound link, D4 BUFFER "at most 5 MB per inbound link".
 pub const STORE_MAX_BYTES_PER_LINK_ASM: usize = 5 * 1024 * 1024;
+/// Powered-on time between summary salt rotations (module docs; DESIGN
+/// §10 risk 4; an assumption: the window of BLE address rotation, within
+/// which encounters are linkable anyway). `0` rotates on every encounter.
+pub const SUMMARY_SALT_ROTATE_MS_ASM: u64 = 10 * 60_000;
 
 /// What the store knows about a cell besides its bytes (DESIGN §6 `cells`
 /// row: class, lane, first_seen_mono; the TTL is read from the cell).
@@ -185,17 +214,38 @@ impl EvictionPolicy for LowestClassL3First {
 struct Entry {
     cell: Cell,
     meta: CellMeta,
+    /// Slot in the summary index and the slot tables.
+    slot: usize,
 }
 
 /// Forwarding-order key: class (C0 first), then first seen, then id.
 type OrderKey = (Class, u64, Hash32);
+
+/// One forwardable cell as [`CellStore::scan_forwardable`] yields it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Candidate<'a> {
+    /// Dense index of the cell in the store's slot tables; reused after a
+    /// removal, hence `generation`.
+    pub slot: usize,
+    /// The slot's generation while this cell occupies it (never 0).
+    pub generation: u32,
+    pub id: &'a Hash32,
+    /// The cell's cached summary words.
+    pub words: &'a IdWords,
+}
 
 /// The cell store. See the module docs for the rules.
 pub struct CellStore {
     caps: StoreCaps,
     policy: Box<dyn EvictionPolicy>,
     entries: BTreeMap<Hash32, Entry>,
-    order: BTreeSet<OrderKey>,
+    order: BTreeMap<OrderKey, usize>,
+    /// Slot tables parallel to the index: id and forwardability per slot.
+    slot_ids: Vec<Hash32>,
+    slot_fwd: Vec<bool>,
+    index: SummaryIndex,
+    salt_rotated_at: Option<u64>,
+    salt_interval_ms: u64,
     per_class: [usize; Class::ALL.len()],
     per_link: BTreeMap<LinkId, usize>,
     evicted_total: u64,
@@ -210,6 +260,8 @@ impl fmt::Debug for CellStore {
             .field("per_class", &self.per_class)
             .field("per_link", &self.per_link)
             .field("evicted_total", &self.evicted_total)
+            .field("summary_salt", &self.index.salt())
+            .field("summary_capacity", &self.index.capacity())
             .finish_non_exhaustive()
     }
 }
@@ -231,7 +283,12 @@ impl CellStore {
             caps,
             policy,
             entries: BTreeMap::new(),
-            order: BTreeSet::new(),
+            order: BTreeMap::new(),
+            slot_ids: Vec::new(),
+            slot_fwd: Vec::new(),
+            index: SummaryIndex::new(0, SUMMARY_TARGET_FPR_ASM),
+            salt_rotated_at: None,
+            salt_interval_ms: SUMMARY_SALT_ROTATE_MS_ASM,
             per_class: [0; Class::ALL.len()],
             per_link: BTreeMap::new(),
             evicted_total: 0,
@@ -317,14 +374,16 @@ impl CellStore {
         self.entries.iter().map(|(id, e)| (id, &e.cell, &e.meta))
     }
 
-    /// The forwarding view of every entry, in forwarding order.
-    fn eviction_entries(&self, keep: impl Fn(&Entry) -> bool) -> Vec<EvictionEntry> {
+    /// The forwarding view of every entry, in forwarding order. The id
+    /// comes from the order key (and is handed to `keep` as such): no cell
+    /// is re-hashed here.
+    fn eviction_entries(&self, keep: impl Fn(&Hash32, &Entry) -> bool) -> Vec<EvictionEntry> {
         self.order
-            .iter()
-            .filter_map(|(_, _, id)| self.entries.get(id))
-            .filter(|e| keep(e))
-            .map(|e| EvictionEntry {
-                id: e.cell.msg_id(),
+            .keys()
+            .filter_map(|(_, _, id)| self.entries.get(id).map(|e| (id, e)))
+            .filter(|(id, e)| keep(id, e))
+            .map(|(id, e)| EvictionEntry {
+                id: *id,
                 class: e.meta.class,
                 lane: e.meta.lane,
                 first_seen_mono: e.meta.first_seen_mono,
@@ -332,6 +391,74 @@ impl CellStore {
                 ttl: e.cell.ttl(),
             })
             .collect()
+    }
+
+    // ---- summary index ------------------------------------------------------
+
+    /// The incremental summary of the store (module docs): every held
+    /// cell's cached words and the filter under [`summary_salt`](Self::summary_salt).
+    pub fn summary_index(&self) -> &SummaryIndex {
+        &self.index
+    }
+
+    /// The salt the maintained filter is under (0 before the first
+    /// rotation).
+    pub fn summary_salt(&self) -> u32 {
+        self.index.salt()
+    }
+
+    /// Powered-on time between salt rotations by
+    /// [`summary_salt_for`](Self::summary_salt_for).
+    pub fn summary_salt_interval_ms(&self) -> u64 {
+        self.salt_interval_ms
+    }
+
+    pub fn set_summary_salt_interval_ms(&mut self, ms: u64) {
+        self.salt_interval_ms = ms;
+    }
+
+    /// Re-derives the maintained filter under `salt` (`O(n·k)` integer
+    /// operations, no hashing) and records `now_mono` as the rotation time.
+    pub fn rotate_summary_salt(&mut self, salt: u32, now_mono: u64) {
+        self.index.rotate(salt);
+        self.salt_rotated_at = Some(now_mono);
+    }
+
+    /// The salt an encounter opening at `now_mono` should summarise under
+    /// (module docs, salt rotation policy): `fresh` (drawn by the caller
+    /// from its rng) when no rotation happened yet or the last one is at
+    /// least [`summary_salt_interval_ms`](Self::summary_salt_interval_ms)
+    /// of powered-on time ago, in which case the filter is re-derived
+    /// under it; otherwise the current salt, whose filter is ready.
+    pub fn summary_salt_for(&mut self, now_mono: u64, fresh: u32) -> u32 {
+        let due = match self.salt_rotated_at {
+            None => true,
+            Some(at) => now_mono.saturating_sub(at) >= self.salt_interval_ms,
+        };
+        if due {
+            self.rotate_summary_salt(fresh, now_mono);
+        }
+        self.index.salt()
+    }
+
+    /// The slot of a held cell.
+    pub fn slot_of(&self, id: &Hash32) -> Option<usize> {
+        self.entries.get(id).map(|e| e.slot)
+    }
+
+    /// The id in `slot`, if it is live.
+    pub fn id_at(&self, slot: usize) -> Option<&Hash32> {
+        if self.index.is_live(slot) {
+            self.slot_ids.get(slot)
+        } else {
+            None
+        }
+    }
+
+    /// The generation of `slot` (0 if it never held a cell); see
+    /// [`Candidate`].
+    pub fn generation(&self, slot: usize) -> u32 {
+        self.index.generation(slot)
     }
 
     // ---- mutation -----------------------------------------------------------
@@ -364,7 +491,7 @@ impl CellStore {
                 let need = have
                     .saturating_add(CELL_LEN)
                     .saturating_sub(self.caps.max_bytes_per_link);
-                let pool = self.eviction_entries(|e| e.meta.from_link == Some(link));
+                let pool = self.eviction_entries(|_, e| e.meta.from_link == Some(link));
                 let chosen = self.policy.victims(&pool, &incoming, need);
                 let freed = accept_victims(&pool, &chosen, incoming.class, &mut victims);
                 if freed < need {
@@ -381,7 +508,7 @@ impl CellStore {
                 .saturating_add(CELL_LEN)
                 .saturating_sub(self.caps.max_bytes);
             let already = victims.clone();
-            let pool = self.eviction_entries(|e| !already.contains(&e.cell.msg_id()));
+            let pool = self.eviction_entries(|id, _| !already.contains(id));
             let chosen = self.policy.victims(&pool, &incoming, need);
             let freed = accept_victims(&pool, &chosen, incoming.class, &mut victims);
             if freed < need {
@@ -399,7 +526,18 @@ impl CellStore {
     }
 
     fn insert(&mut self, id: Hash32, cell: Cell, meta: CellMeta) {
-        self.order.insert((meta.class, meta.first_seen_mono, id));
+        let slot = self.index.insert(&id);
+        if self.slot_ids.len() <= slot {
+            let want = slot.saturating_add(1);
+            self.slot_ids.resize(want, Hash32::ZERO);
+            self.slot_fwd.resize(want, false);
+        }
+        if let (Some(i), Some(f)) = (self.slot_ids.get_mut(slot), self.slot_fwd.get_mut(slot)) {
+            *i = id;
+            *f = cell.is_forwardable();
+        }
+        self.order
+            .insert((meta.class, meta.first_seen_mono, id), slot);
         if let Some(n) = self.per_class.get_mut(class_index(meta.class)) {
             *n = n.saturating_add(1);
         }
@@ -407,7 +545,7 @@ impl CellStore {
             let n = self.per_link.entry(link).or_insert(0);
             *n = n.saturating_add(1);
         }
-        self.entries.insert(id, Entry { cell, meta });
+        self.entries.insert(id, Entry { cell, meta, slot });
     }
 
     /// Removes a cell (eviction, retention deletion, a superseded roster
@@ -416,6 +554,7 @@ impl CellStore {
         let e = self.entries.remove(id)?;
         self.order
             .remove(&(e.meta.class, e.meta.first_seen_mono, *id));
+        self.index.remove(e.slot);
         if let Some(n) = self.per_class.get_mut(class_index(e.meta.class)) {
             *n = n.saturating_sub(1);
         }
@@ -448,33 +587,43 @@ impl CellStore {
 
     // ---- forwarding ---------------------------------------------------------
 
-    /// Up to `budget_cells` ids to offer a peer, in class priority order
-    /// (C0 > C1 > C2 > C3 > C4, BRIEF_v2 §5.6) and oldest first within a
-    /// class (ties by id), skipping ids for which `exclude` is true and
-    /// cells a relay may not forward (`ttl < 2`, DESIGN §2.2). The lane
-    /// split of C2/C3 is the scheduler's job (`relay/sched.rs`).
+    /// Every cell a relay may forward (`ttl ≥ 2`, DESIGN §2.2) in class
+    /// priority order (C0 > C1 > C2 > C3 > C4, BRIEF_v2 §5.6) and oldest
+    /// first within a class (ties by id), with its slot, generation and
+    /// cached words: one ordered-map step and two table reads per cell, no
+    /// lookup by id. The lane split of C2/C3 is the scheduler's job
+    /// (`relay/sched.rs`).
+    pub fn scan_forwardable(&self) -> impl Iterator<Item = Candidate<'_>> + '_ {
+        self.order.iter().filter_map(move |((_, _, id), &slot)| {
+            if !self.slot_fwd.get(slot).copied().unwrap_or(false) {
+                return None;
+            }
+            let words = self.index.words(slot)?;
+            Some(Candidate {
+                slot,
+                generation: self.index.generation(slot),
+                id,
+                words,
+            })
+        })
+    }
+
+    /// Up to `budget_cells` ids to offer a peer, in the order of
+    /// [`scan_forwardable`](Self::scan_forwardable), skipping ids for which
+    /// `exclude` is true.
     pub fn candidates_for(
         &self,
         exclude: &dyn Fn(&Hash32) -> bool,
         budget_cells: usize,
     ) -> Vec<Hash32> {
-        let mut out = Vec::new();
         if budget_cells == 0 {
-            return out;
+            return Vec::new();
         }
-        for (_, _, id) in &self.order {
-            let Some(e) = self.entries.get(id) else {
-                continue;
-            };
-            if !e.cell.is_forwardable() || exclude(id) {
-                continue;
-            }
-            out.push(*id);
-            if out.len() >= budget_cells {
-                break;
-            }
-        }
-        out
+        self.scan_forwardable()
+            .filter(|c| !exclude(c.id))
+            .map(|c| *c.id)
+            .take(budget_cells)
+            .collect()
     }
 }
 

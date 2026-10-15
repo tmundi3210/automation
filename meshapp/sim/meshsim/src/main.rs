@@ -151,14 +151,27 @@ mod tests {
         assert_eq!(r.wall_clock_reads, 0);
         assert!(r.delivery.evaluated_cells > 0);
         assert!(r.cells_created.dms > 0, "s0 has one pair exchanging DMs");
+        assert!(r.cells_created.posts > 0);
         let names: Vec<&str> = r.criteria.iter().map(|c| c.name.as_str()).collect();
         assert!(names.contains(&"every_post_decrypts_after_rejoin"));
+        assert!(names.contains(&"members_h_identical"));
+        assert!(names.contains(&"invariant:bounded_buffers"));
+        let members = r
+            .criteria
+            .iter()
+            .find(|c| c.name == "members_h_identical")
+            .unwrap();
+        assert_eq!(members.status, assert::Status::Pass, "{}", members.detail);
         assert!(
-            names.contains(&"members_h_identical"),
-            "reported as not_evaluated"
+            members.detail.contains("1 head set(s)"),
+            "{}",
+            members.detail
         );
         assert_eq!(r.nodes.len(), 3);
         assert_eq!(r.drain_ms, None, "no rejoin in s0");
+        assert!(r.cells.decrypted > 0);
+        assert_eq!(r.cells.rollbacks, 0);
+        assert!(r.summary.contains("PASS"));
     }
 
     #[test]
@@ -211,7 +224,7 @@ every_post_decrypts_after_rejoin = true
             assert_eq!(rec.a / 3, rec.b / 3, "link {rec:?} crossed the partition");
         }
         let r = sim.report();
-        assert!(!r.passed(), "cells cannot cross fragments");
+        assert!(!r.passed(), "objects cannot cross fragments");
         for miss in &r.delivery.misses {
             for &n in &miss.missing_at {
                 assert_ne!(
@@ -221,14 +234,19 @@ every_post_decrypts_after_rejoin = true
                 );
             }
         }
-        // but every cell reached its own fragment
-        for rec in &sim.registry().records {
-            for n in 0..6 {
-                if n / 3 == rec.creator / 3 {
-                    assert!(sim.nodes()[n].holds(&rec.id), "{rec:?} missing at {n}");
+        // everyone holds the group from the setup phase, so both fragments
+        // post, and every post reaches its own fragment
+        let mut fragments_posting = std::collections::BTreeSet::new();
+        for rec in &sim.trace().registry.records {
+            fragments_posting.insert(rec.creator / 3);
+            let base = rec.creator / 3 * 3;
+            for n in base..base + 3 {
+                if n != rec.creator {
+                    assert_ne!(rec.shown[n], u64::MAX, "{rec:?} not shown at {n}");
                 }
             }
         }
+        assert_eq!(fragments_posting.len(), 2);
     }
 
     #[test]
@@ -274,19 +292,19 @@ text_bytes = [40, 300]
             assert_eq!(l.a, 0);
         }
         assert!(sim.radio().history.iter().all(|r| !(r.a > 0 && r.b > 0)));
-        // cells still flow during the wakes
+        // texts still flow during the wakes
         assert!(r.delivery.ratio > 0.5, "{}", r.summary_line());
     }
 
     #[test]
-    fn three_fragments_of_forty_nodes_fully_deliver_after_the_rejoin() {
+    fn two_fragments_of_twelve_nodes_fully_deliver_after_the_rejoin() {
         let text = r#"
 [scenario]
-name = "rejoin40"
-duration_ms = 3_600_000
+name = "rejoin12"
+duration_ms = 2_400_000
 tick_ms = 100
 [nodes]
-android = 40
+android = 12
 iphone = 0
 iphone_foreground_duty = 1.0
 android_slots = 7
@@ -303,33 +321,36 @@ name = "main"
 members = "all"
 admins = [0, 1, 2]
 [pairs]
-random = 10
+random = 4
 [traffic]
 group_post_every_ms = 120_000
 dm_every_ms = 600_000
 text_bytes = [40, 300]
 [[partition]]
-at_ms = 0
-fragments = [["0..17"], ["18..31"], ["32..39"]]
+at_ms = 300_000
+fragments = [["0..6"], ["7..11"]]
 [[partition]]
-at_ms = 1_800_000
+at_ms = 1_500_000
 fragments = "all"
 [pass]
 every_post_decrypts_after_rejoin = true
 no_duplicate_ui_delivery = true
 zero_wall_clock_reads = true
+members_h_identical = true
+no_solid_state_reverts = true
 drain_report = true
 "#;
         let scn = parse(text).unwrap();
         let r = engine::run(&scn, 1, None).unwrap();
         assert!(r.passed(), "{}\n{}", r.summary_line(), r.to_json());
         assert_eq!(r.delivery.ratio, 1.0);
-        assert_eq!(r.rejoin_at_ms, Some(1_800_000));
+        assert_eq!(r.rejoin_at_ms, Some(1_500_000));
+        assert_eq!(r.split_at_ms, Some(300_000));
         let drain = r
             .drain_ms
-            .expect("every pre-rejoin cell reached every node");
-        assert!(drain > 0 && drain < 1_800_000, "drain {drain} ms");
-        assert!(r.links.established > 40, "{}", r.summary_line());
+            .expect("every pre-rejoin object reached every expected node");
+        assert!(drain > 0 && drain < 900_000, "drain {drain} ms");
+        assert!(r.links.established > 12, "{}", r.summary_line());
         assert_eq!(r.links.wake_links, 0, "no iPhones in this run");
     }
 }

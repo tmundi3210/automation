@@ -12,9 +12,8 @@ use meshcore::crypto::backend::GroupId;
 use meshcore::crypto::ed25519::{IdentityKey, IdentitySigner};
 use meshcore::crypto::hash::{Hash32, sha256};
 use meshcore::objects::ballot::Ballot;
-use meshcore::objects::task_op::{
-    TaskId, TaskKind, TaskOp, op_hash_of_post, task_id_of_create_post,
-};
+use meshcore::objects::chat_post::PostPlain;
+use meshcore::objects::task_op::{TaskId, TaskKind, TaskOp, task_id_for_create, task_op_hash};
 use meshcore::objects::vote_open::{VoteOpen, threshold};
 use meshcore::objects::{SignedHeader, kind};
 use meshcore::tasks::state::{Fold, OpRecord, TaskState, fold};
@@ -445,38 +444,70 @@ fn tiebreak_is_fair_over_many_tasks() {
 
 // ---- task fold scenarios (DESIGN §4 "Fold"; BRIEF_v2 §4 Tasks) ---------------
 
-/// A tiny post pipeline: the op's hash is the SHA256 of the post plaintext
-/// `ver u8 ‖ kind u8 (0x31) ‖ n_heads u8 = 0 ‖ body` (DESIGN §2.4, no
-/// roster heads). The plaintext has no author field, so two members who
-/// emit the same op citing the same heads get the same hash; the fold
-/// keys records by `(hash, author)` for that reason.
+/// A tiny post pipeline over the real post layout: each op travels as the
+/// body of a `PostPlain` of kind 0x31 (`ver ‖ kind ‖ n_heads ‖ roster_heads
+/// ‖ body`, DESIGN §2.4) and its identity is the author-bound
+/// `task_op_hash(author, post plaintext)`. The plaintext has no author
+/// field, so two members who emit the same op citing the same heads produce
+/// byte-identical posts; the author binding keeps them two ops.
 struct Pipeline {
     task_id: TaskId,
     ops: Vec<OpRecord>,
 }
 
+/// Every member cites the same roster heads, as members of one group in one
+/// roster state would.
+fn roster_heads() -> Vec<Hash32> {
+    vec![
+        Hash32::from_bytes([0xaa; 32]),
+        Hash32::from_bytes([0x0b; 32]),
+    ]
+}
+
 fn post_plaintext(op: &TaskOp) -> Vec<u8> {
-    [&[1u8, kind::POST_TASK_OP, 0][..], &encode(op)].concat()
+    let post = PostPlain::new(kind::POST_TASK_OP, roster_heads(), encode(op)).unwrap();
+    let bytes = encode(&post);
+    // the layout the hash covers: ver, kind, two sorted heads, the body
+    assert_eq!(&bytes[..3], &[1u8, kind::POST_TASK_OP, 2]);
+    assert_eq!(&bytes[3..35], &[0x0b; 32]);
+    assert_eq!(&bytes[35..67], &[0xaa; 32]);
+    assert_eq!(&bytes[67..], &encode(op)[..]);
+    bytes
+}
+
+fn create_post() -> (TaskOp, Vec<u8>) {
+    let create = TaskOp::create("Water run", "2 jerry cans to the school").unwrap();
+    let post = post_plaintext(&create);
+    (create, post)
 }
 
 impl Pipeline {
     fn new() -> Self {
-        let create = TaskOp::create("Water run", "2 jerry cans to the school").unwrap();
-        let post = post_plaintext(&create);
-        let task_id = task_id_of_create_post(&post);
+        Self::created_by(0)
+    }
+
+    fn created_by(author: usize) -> Self {
+        let (create, post) = create_post();
+        let task_id = task_id_for_create(&key(author), &post);
         let mut p = Pipeline {
             task_id,
             ops: Vec::new(),
         };
-        p.ops.push((op_hash_of_post(&post), key(0), create));
+        p.ops
+            .push((task_op_hash(&key(author), &post), key(author), create));
         p
     }
 
     fn emit(&mut self, author: usize, kind: TaskKind, heads: &[Hash32]) -> Hash32 {
         let op = TaskOp::on_task(self.task_id, kind, heads.to_vec()).unwrap();
-        let h = op_hash_of_post(&post_plaintext(&op));
+        let h = task_op_hash(&key(author), &post_plaintext(&op));
         self.ops.push((h, key(author), op));
         h
+    }
+
+    /// The post plaintext of the record at `i`, as its author sent it.
+    fn plaintext(&self, i: usize) -> Vec<u8> {
+        post_plaintext(&self.ops[i].2)
     }
 
     fn fold(&self) -> Fold {
@@ -516,12 +547,15 @@ fn second_claim_versus_conflict_versus_release_versus_done() {
     assert_eq!(p.fold_reversed(), p.fold());
 
     // Mo, in another fragment, took concurrently with Ana, citing only the
-    // Create: Mo's post bytes equal Ana's, so they share one op hash. Ravi
-    // cited that hash, which means he saw a post with those bytes, whoever
-    // sent it: he is causally after both copies, so his claim stays a
-    // second claim and the conflict set is {Ana, Mo}.
+    // Create: Mo's post bytes equal Ana's, but the op hash binds the author
+    // (DESIGN §2.4), so Mo's Take is its own op. Ravi's Take has Ana's live
+    // Take in its causal past, so it is a second claim, not a conflict
+    // (DESIGN §4 "Fold"; docs/decisions-assumed.md row 6), even though Ravi
+    // never saw Mo: the conflict set is {Ana, Mo} and Ravi stays on the
+    // task as "2 people on this" helper.
     let take_m = p.emit(3, TaskKind::Take, &[create]);
-    assert_eq!(take_m, take_a);
+    assert_eq!(p.plaintext(1), p.plaintext(3), "byte-identical Take posts");
+    assert_ne!(take_m, take_a, "but two ops");
     let f = p.fold();
     let TaskState::Conflict {
         winner,
@@ -540,6 +574,11 @@ fn second_claim_versus_conflict_versus_release_versus_done() {
     assert!([key(1), key(3)].contains(&losers[0]));
     assert_eq!(*second, vec![key(2)]);
     assert_eq!(p.fold_reversed(), f);
+    for rotate in 0..p.ops.len() {
+        let mut ops = p.ops.clone();
+        ops.rotate_left(rotate);
+        assert_eq!(fold(&p.task_id, &ops), f);
+    }
 
     // Mo releases after the merge → the conflict dissolves, Ana and Ravi remain
     let rel_m = p.emit(3, TaskKind::Release, &[take_r, take_m]);
@@ -560,16 +599,41 @@ fn second_claim_versus_conflict_versus_release_versus_done() {
 }
 
 #[test]
-fn two_takes_with_identical_post_bytes_conflict_on_every_phone() {
+fn two_authors_creating_byte_identical_tasks_get_different_task_ids() {
+    // DESIGN §2.4: the post plaintext carries no author, so Ana's and
+    // Ravi's Create posts are byte-identical; the author-bound hash keeps
+    // them two tasks with two ids, and either task folds on its own.
+    let (_, post) = create_post();
+    let ana = Pipeline::created_by(1);
+    let ravi = Pipeline::created_by(2);
+    assert_eq!(ana.plaintext(0), ravi.plaintext(0));
+    assert_eq!(ana.plaintext(0), post);
+    assert_ne!(ana.task_id, ravi.task_id);
+    assert_ne!(ana.ops[0].0, ravi.ops[0].0);
+    assert_eq!(ana.task_id, task_op_hash(&key(1), &post).truncate16());
+    assert_eq!(ana.fold().state, TaskState::Open);
+    assert_eq!(ravi.fold().state, TaskState::Open);
+    // the same author creating the same bytes twice is one task (one op)
+    let again = Pipeline::created_by(1);
+    assert_eq!(again.task_id, ana.task_id);
+    let both: Vec<OpRecord> = [ana.ops.clone(), again.ops.clone()].concat();
+    assert_eq!(fold(&ana.task_id, &both), ana.fold());
+}
+
+#[test]
+fn two_takes_with_identical_post_bytes_are_two_claims_and_conflict() {
     // Ana and Ravi both Take right after the Create: same task_id, same
-    // heads, same (empty) roster heads → the same post plaintext and the
-    // same op hash. Both claims must survive, conflict, and resolve the
-    // same way whichever copy a phone received first.
+    // heads, same roster heads → byte-identical post plaintext. The
+    // author-bound hash makes them two ops; both claims survive, conflict,
+    // and resolve the same way whichever copy a phone received first.
     let mut p = Pipeline::new();
     let create = p.ops[0].0;
     let take_a = p.emit(1, TaskKind::Take, &[create]);
     let take_r = p.emit(2, TaskKind::Take, &[create]);
-    assert_eq!(take_a, take_r, "identical plaintext, identical hash");
+    assert_eq!(p.plaintext(1), p.plaintext(2), "identical plaintext");
+    assert_ne!(take_a, take_r, "distinct author-bound hashes");
+    assert_eq!(take_a, task_op_hash(&key(1), &p.plaintext(1)));
+    assert_eq!(take_r, task_op_hash(&key(2), &p.plaintext(2)));
     let f = p.fold();
     let expect = tiebreak::winner(&p.task_id, &[(take_a, key(1)), (take_r, key(2))]).unwrap();
     let loser = if expect == key(1) { key(2) } else { key(1) };
@@ -581,9 +645,16 @@ fn two_takes_with_identical_post_bytes_conflict_on_every_phone() {
             second: vec![]
         }
     );
-    assert_eq!(p.fold_reversed(), f);
-    // Mo saw "the" Take (either copy) and took anyway: after both, a second claim
-    p.emit(3, TaskKind::Take, &[take_a]);
+    // every arrival order on every phone
+    for rotate in 0..p.ops.len() {
+        let mut ops = p.ops.clone();
+        ops.rotate_left(rotate);
+        assert_eq!(fold(&p.task_id, &ops), f);
+        ops.reverse();
+        assert_eq!(fold(&p.task_id, &ops), f);
+    }
+    // Mo saw both Takes and took anyway: after both, a second claim
+    p.emit(3, TaskKind::Take, &[take_a, take_r]);
     let f = p.fold();
     assert_eq!(
         f.state,
@@ -595,10 +666,13 @@ fn two_takes_with_identical_post_bytes_conflict_on_every_phone() {
     );
     assert_eq!(p.fold_reversed(), f);
     // the loser releases (its Release bytes equal any other Release citing
-    // Mo's Take, but the author differs) → winner and Mo remain
+    // Mo's Take, but the author is bound into the hash) → winner and Mo remain
     let last = p.ops.last().unwrap().0;
     let loser_idx = if loser == key(1) { 1 } else { 2 };
-    p.emit(loser_idx, TaskKind::Release, &[last]);
+    let rel = p.emit(loser_idx, TaskKind::Release, &[last]);
+    let other_rel = TaskOp::on_task(p.task_id, TaskKind::Release, vec![last]).unwrap();
+    assert_eq!(p.plaintext(p.ops.len() - 1), post_plaintext(&other_rel));
+    assert_ne!(rel, task_op_hash(&key(3), &post_plaintext(&other_rel)));
     let f = p.fold();
     assert_eq!(
         f.state,
@@ -608,6 +682,61 @@ fn two_takes_with_identical_post_bytes_conflict_on_every_phone() {
     );
     assert_eq!(p.fold_reversed(), f);
     assert!(f.parked.is_empty());
+}
+
+#[test]
+fn three_identical_takes_resolve_the_same_way_in_every_permutation() {
+    // Three members Take right after the Create with byte-identical posts:
+    // three ops, one conflict set, one winner, in all 24 arrival orders.
+    let mut p = Pipeline::new();
+    let create = p.ops[0].0;
+    let hs: Vec<Hash32> = (1..=3)
+        .map(|i| p.emit(i, TaskKind::Take, &[create]))
+        .collect();
+    assert_eq!(p.plaintext(1), p.plaintext(2));
+    assert_eq!(p.plaintext(2), p.plaintext(3));
+    let distinct: BTreeSet<Hash32> = hs.iter().copied().collect();
+    assert_eq!(distinct.len(), 3);
+    let set: Vec<(Hash32, IdentityKey)> = hs
+        .iter()
+        .enumerate()
+        .map(|(i, h)| (*h, key(i + 1)))
+        .collect();
+    let winner = tiebreak::winner(&p.task_id, &set).unwrap();
+    let mut losers: Vec<IdentityKey> = (1..=3).map(key).filter(|k| *k != winner).collect();
+    losers.sort_unstable();
+    let expect = Fold {
+        state: TaskState::Conflict {
+            winner,
+            losers,
+            second: vec![],
+        },
+        parked: vec![],
+    };
+    // all permutations of 4 records via Heap's algorithm
+    let mut ops = p.ops.clone();
+    let n = ops.len();
+    let mut c = vec![0usize; n];
+    assert_eq!(fold(&p.task_id, &ops), expect);
+    let mut i = 0;
+    let mut count = 1;
+    while i < n {
+        if c[i] < i {
+            if i % 2 == 0 {
+                ops.swap(0, i);
+            } else {
+                ops.swap(c[i], i);
+            }
+            assert_eq!(fold(&p.task_id, &ops), expect);
+            count += 1;
+            c[i] += 1;
+            i = 0;
+        } else {
+            c[i] = 0;
+            i += 1;
+        }
+    }
+    assert_eq!(count, 24);
 }
 
 #[test]

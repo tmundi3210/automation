@@ -18,6 +18,7 @@ use meshcore::crypto::ed25519::IdentitySigner;
 use meshcore::crypto::keycard::KeyCard;
 use meshcore::groups::group::{GroupError, GroupState, Inbound, Rotation};
 use meshcore::objects::chat_post::{PostPlain, TextBody, kind};
+use meshcore::objects::skdm_bundle::SkdmEntry;
 use meshcore::pairwise::bundles::{BundleError, BundleManager, IssueContext};
 use meshcore::pairwise::pairing::{
     Paired, PairingError, PairingMsg, PairingSession, PairingStep, QrCode, QrPayload, link_key,
@@ -218,12 +219,14 @@ impl Node {
             recog,
             groups,
             rng,
+            pm,
             ..
         } = self;
         groups.get_mut(&g).expect("group").accept_bundle(
             kv,
             &*be(),
             recog,
+            pm,
             from.id(),
             expected,
             &rot.bundle,
@@ -237,13 +240,73 @@ impl Node {
             recog,
             groups,
             rng,
+            pm,
             ..
         } = self;
         groups
             .get_mut(&g)
             .expect("group")
-            .rotate(kv, &*be(), recog, members, now, rng)
+            .rotate(kv, &*be(), recog, pm, members, now, rng)
             .expect("rotate")
+    }
+
+    /// The current chain's SKDM for `to`, as the node re-sends it to a
+    /// member reached later.
+    fn skdm_entry_for(
+        &mut self,
+        g: GroupId,
+        to: &PeerId,
+        now: u64,
+    ) -> Result<SkdmEntry, GroupError> {
+        let Node {
+            kv,
+            recog,
+            groups,
+            rng,
+            pm,
+            ..
+        } = self;
+        groups
+            .get(&g)
+            .expect("group")
+            .skdm_entry_for(kv, &*be(), recog, pm, to, now, rng)
+    }
+
+    /// Receives one pairwise SKDM entry from `from` the way the node's 1:1
+    /// path does: decrypt through the manager, then the atomic acceptance.
+    fn accept_entry(
+        &mut self,
+        from: &Node,
+        g: GroupId,
+        entry: &SkdmEntry,
+    ) -> Result<ChainId, GroupError> {
+        let ct: meshcore::crypto::backend::PairwiseCt = decode(&entry.ct).expect("a pairwise ct");
+        let got = self
+            .pm
+            .decrypt_from(
+                &mut self.kv,
+                &*be(),
+                &mut self.recog,
+                &from.id(),
+                &ct,
+                &mut self.rng,
+            )
+            .expect("entry decrypts");
+        let Received::Post(post) = got else {
+            panic!("post expected");
+        };
+        let expected = from.card.x25519;
+        let Node {
+            kv, recog, groups, ..
+        } = self;
+        groups.get_mut(&g).expect("group").accept_skdm_post(
+            kv,
+            &*be(),
+            recog,
+            from.id(),
+            expected,
+            &post,
+        )
     }
 
     fn post(&mut self, g: GroupId, plain: &PostPlain) -> Result<Vec<Cell>, GroupError> {
@@ -710,12 +773,13 @@ fn mismatched_expected_key_stores_nothing() {
         recog,
         groups,
         rng,
+        pm,
         ..
     } = &mut b;
     let err = groups
         .get_mut(&g)
         .unwrap()
-        .accept_bundle(kv, &*be(), recog, a.id(), wrong, &rot.bundle, rng)
+        .accept_bundle(kv, &*be(), recog, pm, a.id(), wrong, &rot.bundle, rng)
         .unwrap_err();
     assert_eq!(err, GroupError::IdentityMismatch);
     assert_eq!(snapshot(&b.kv), before, "no store write");
@@ -834,13 +898,20 @@ fn rotation_after_a_removal_keeps_late_posts_readable() {
         recog,
         groups,
         rng,
+        pm,
         ..
     } = &mut b;
     assert_eq!(
-        groups
-            .get_mut(&g)
-            .unwrap()
-            .accept_bundle(kv, &*be(), recog, a.id(), expected, bundle, rng),
+        groups.get_mut(&g).unwrap().accept_bundle(
+            kv,
+            &*be(),
+            recog,
+            pm,
+            a.id(),
+            expected,
+            bundle,
+            rng
+        ),
         Ok(r2.chain)
     );
     assert_eq!(b.group(g).member_chains().next().unwrap().1.len(), 2);
@@ -1271,12 +1342,13 @@ fn a_rotation_that_fails_to_cut_cells_keeps_the_own_chain() {
         recog,
         groups,
         rng,
+        pm,
         ..
     } = &mut a;
     let err = groups
         .get_mut(&g)
         .unwrap()
-        .rotate(kv, &*be(), recog, &[b.id()], 2, rng)
+        .rotate(kv, &*be(), recog, pm, &[b.id()], 2, rng)
         .unwrap_err();
     assert!(matches!(err, GroupError::Recog(_)), "{err:?}");
     assert_eq!(
@@ -1348,6 +1420,217 @@ fn a_peer_that_lost_its_state_is_recognised_again_after_a_new_first_flight() {
     let cells = b2.send_1to1(&a.id(), &text("two", vec![]), 4).unwrap();
     let got = a.receive_1to1(&cells);
     assert!(matches!(&got[0].1, Received::Post(p) if text_of(p) == "two"));
+}
+
+// ---- late SKDMs, first-message rotations, padding ---------------------------------
+
+#[test]
+fn a_member_reached_after_the_window_passed_still_reads_the_chain() {
+    // B has no session with A when A rotates: it gets no entry. A then
+    // issues more than one tag window of cells before B's session exists.
+    // The SKDM A sends B afterwards carries A's current counter, so B opens
+    // its window there and reads A's next cell; the SKDM at counter 0
+    // would have left B unable to recognise anything.
+    let g = GroupId([12; 16]);
+    let (mut a, mut b) = (Node::new(81), Node::new(82));
+    a.group(g);
+    b.group(g);
+    let rot = a.rotate(g, &[a.id(), b.id()], 1);
+    assert_eq!(rot.without_session, vec![b.id()], "no session yet");
+    assert!(rot.recipients.is_empty());
+    assert_eq!(a.pm.state(&b.id()), SessionState::NeedsTheirKey);
+    assert_eq!(
+        a.skdm_entry_for(g, &b.id(), 1).unwrap_err(),
+        GroupError::Pairwise(PairwiseError::NeedsTheirKey)
+    );
+    // 120 cells go out before B can be reached
+    let mut early = Vec::new();
+    for i in 0..120 {
+        let cells = a.post(g, &text(&format!("early {i}"), vec![])).unwrap();
+        assert_eq!(cells.len(), 1);
+        early.extend(cells);
+    }
+    let key = meshcore::groups::group::group_chain_key(&g, &a.id(), rot.chain);
+    assert_eq!(a.recog.sender_next_ctr(key), Some(120));
+    // now the session exists (bundle inside the group, first message, reply)
+    a.connect(&mut b, 2);
+    let entry = a
+        .skdm_entry_for(g, &b.id(), 3)
+        .expect("entry for the late member");
+    assert_eq!(
+        entry.hint,
+        meshcore::objects::skdm_bundle::hint(&b.id(), rot.chain)
+    );
+    let ct: meshcore::crypto::backend::PairwiseCt = decode(&entry.ct).unwrap();
+    assert_eq!(ct.kind, PairwiseKind::Normal, "the session already exists");
+    assert_eq!(b.accept_entry(&a, g, &entry), Ok(rot.chain));
+    assert_eq!(b.group(g).member_chains().count(), 1);
+    // the window starts at 120: the early cells are not recognised, the
+    // next one is and decrypts (the backend skips the 120 message keys)
+    assert!(early.iter().all(|c| b.recog.lookup(&c.tag()).is_none()));
+    let w = b
+        .recog
+        .window(key, meshcore::wire::recog::EpochId(rot.chain.0))
+        .unwrap();
+    assert_eq!(w.base, 120);
+    let cells = a.post(g, &text("the 121st", vec![])).unwrap();
+    assert!(b.recog.lookup(&cells[0].tag()).is_some());
+    let got = b.receive_group(g, &cells).unwrap();
+    assert!(
+        matches!(&got[0], Inbound::Post { sender, chain, obj_seq: 120, post } if *sender == a.id() && *chain == rot.chain && text_of(post) == "the 121st")
+    );
+    let cells = a.post(g, &text("the 122nd", vec![])).unwrap();
+    let got = b.receive_group(g, &cells).unwrap();
+    assert!(matches!(&got[0], Inbound::Post { post, .. } if text_of(post) == "the 122nd"));
+}
+
+#[test]
+fn a_resent_skdm_after_two_hundred_missed_cells_moves_the_window() {
+    // B accepted A's SKDM at counter 0 and read one post; then it missed
+    // 200 cells. A re-sends the current chain's SKDM with its counter: the
+    // window moves there (the same seed within the window would have been
+    // ignored), without re-accepting the counter B already consumed.
+    let g = GroupId([13; 16]);
+    let (mut a, mut b) = (Node::new(83), Node::new(84));
+    a.connect(&mut b, 0);
+    a.group(g);
+    b.group(g);
+    let rot = a.rotate(g, &[a.id(), b.id()], 1);
+    assert_eq!(b.accept_rotation(&a, g, &rot), Ok(rot.chain));
+    let first = a.post(g, &text("read", vec![])).unwrap();
+    let got = b.receive_group(g, &first).unwrap();
+    assert!(matches!(&got[0], Inbound::Post { post, .. } if text_of(post) == "read"));
+    let key = meshcore::groups::group::group_chain_key(&g, &a.id(), rot.chain);
+    let epoch_id = meshcore::wire::recog::EpochId(rot.chain.0);
+    // 200 cells B never sees
+    for i in 0..200 {
+        a.post(g, &text(&format!("missed {i}"), vec![])).unwrap();
+    }
+    let unread = a.post(g, &text("beyond the window", vec![])).unwrap();
+    assert_eq!(
+        b.recog.lookup(&unread[0].tag()),
+        None,
+        "window still near 0"
+    );
+    assert_eq!(a.recog.sender_next_ctr(key), Some(202));
+    // the re-sent entry carries counter 202
+    let entry = a.skdm_entry_for(g, &b.id(), 5).unwrap();
+    let tags_before = b.recog.len();
+    assert_eq!(b.accept_entry(&a, g, &entry), Ok(rot.chain));
+    assert_eq!(b.recog.len(), tags_before, "one window replaced another");
+    assert_eq!(b.recog.window(key, epoch_id).unwrap().base, 202);
+    assert_eq!(
+        b.recog.lookup(&first[0].tag()),
+        None,
+        "consumed stays consumed"
+    );
+    assert_eq!(
+        b.recog.lookup(&unread[0].tag()),
+        None,
+        "below the new window"
+    );
+    assert_eq!(b.group(g).member_chains().next().unwrap().1.len(), 1);
+    let cells = a.post(g, &text("after the re-send", vec![])).unwrap();
+    let got = b.receive_group(g, &cells).unwrap();
+    assert!(
+        matches!(&got[0], Inbound::Post { obj_seq: 202, post, .. } if text_of(post) == "after the re-send")
+    );
+    // a second copy of the same entry (counter 202, window now at 202)
+    // registers nothing: the just-consumed 202 is not re-accepted
+    let ct: meshcore::crypto::backend::PairwiseCt = decode(&entry.ct).unwrap();
+    let plain = PairwiseBackend::decrypt(&*be(), &mut b.kv.clone(), &a.id(), &ct, &mut b.rng);
+    assert!(
+        plain.is_err(),
+        "the ratchet refuses the replayed ciphertext"
+    );
+    let entry2 = a.skdm_entry_for(g, &b.id(), 6).unwrap();
+    assert_eq!(b.accept_entry(&a, g, &entry2), Ok(rot.chain));
+    assert_eq!(
+        b.recog.lookup(&cells[0].tag()),
+        None,
+        "203 > base: window kept"
+    );
+    assert_eq!(b.recog.window(key, epoch_id).unwrap().base, 203);
+}
+
+#[test]
+fn a_rotation_that_is_the_first_message_leaves_the_session_ready() {
+    // A holds B's bundle (from inside another group) but never wrote to B:
+    // the SKDM entry is A's first message, a PreKey message. Because it
+    // goes through the pairwise manager, A's view of the session is Ready
+    // (not still "Needs their key") and B's first reply decrypts.
+    let g = GroupId([14; 16]);
+    let (mut a, mut b) = (Node::new(85), Node::new(86));
+    a.pin(&b);
+    b.pin(&a);
+    let bundle_b =
+        b.bm.issue(
+            &mut b.kv,
+            &*be(),
+            IssueContext::InsideGroup(g),
+            0,
+            &mut b.rng,
+        )
+        .unwrap();
+    be().process_prekey_bundle(&mut a.kv, &b.id(), &bundle_b, 0, &mut a.rng)
+        .unwrap();
+    assert_eq!(
+        a.pm.state(&b.id()),
+        SessionState::NeedsTheirKey,
+        "nothing sent yet"
+    );
+    a.group(g);
+    b.group(g);
+    let rot = a.rotate(g, &[a.id(), b.id()], 1);
+    assert!(rot.without_session.is_empty());
+    assert_eq!(rot.recipients.len(), 1);
+    assert_eq!(rot.recipients[0].0, b.id());
+    assert_eq!(rot.recipients[0].1.kind, PairwiseKind::PreKey);
+    assert_eq!(
+        a.pm.state(&b.id()),
+        SessionState::Ready,
+        "the manager saw the PreKey"
+    );
+    assert_eq!(a.pm.contacts().count(), 1);
+    // every bundle entry has the PreKey entry's width, dummies included
+    let prekey_len = rot.recipients[0].1.encode().len();
+    assert_eq!(usize::from(rot.bundle.width), prekey_len);
+    let bytes = encode(&rot.bundle);
+    assert_eq!(bytes.len(), rot.bundle.wire_len());
+    assert_eq!(bytes.len(), 7 + 8 * (10 + prekey_len));
+    assert!(rot.bundle.entries.iter().all(|e| e.ct.len() == prekey_len));
+    assert!(prekey_len > 1_000, "PQXDH first message: {prekey_len}");
+    // B accepts through its manager: got_prekey, Ready
+    assert_eq!(b.accept_rotation(&a, g, &rot), Ok(rot.chain));
+    assert_eq!(b.pm.state(&a.id()), SessionState::Ready);
+    // B's first reply is a Normal message that A decrypts
+    let reply =
+        b.pm.encrypt_to(
+            &mut b.kv,
+            &*be(),
+            &a.id(),
+            &text("got your key", vec![]).encode(),
+            2,
+            &mut b.rng,
+        )
+        .unwrap();
+    assert_eq!(reply.kind, PairwiseKind::Normal);
+    let got =
+        a.pm.decrypt_from(&mut a.kv, &*be(), &mut a.recog, &b.id(), &reply, &mut a.rng)
+            .unwrap();
+    assert!(matches!(got, Received::Post(p) if text_of(&p) == "got your key"));
+    assert_eq!(a.pm.state(&b.id()), SessionState::Ready);
+    // and A's posts read at B
+    let cells = a.post(g, &text("first post", vec![])).unwrap();
+    let got = b.receive_group(g, &cells).unwrap();
+    assert!(matches!(&got[0], Inbound::Post { post, .. } if text_of(post) == "first post"));
+    // the rotation's plaintext is what B's entry decrypted to, with counter 0
+    let plain_post: PostPlain = decode(&rot.entry_plain).unwrap();
+    assert_eq!(plain_post.kind, kind::POST_SKDM_BUNDLE);
+    let payload: meshcore::objects::skdm_bundle::SkdmPayload = decode(&plain_post.body).unwrap();
+    assert_eq!(payload.group, g);
+    assert_eq!(payload.next_ctr, 0);
+    assert!(format!("{rot:?}").contains("redacted"));
 }
 
 #[test]
