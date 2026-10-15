@@ -18,6 +18,29 @@ pub mod ns {
     pub const KYBER_PREKEYS: &str = "kyber_prekeys";
     pub const SENDER_KEYS: &str = "sender_keys";
     pub const PEER_IDENTITIES: &str = "peer_identities";
+    /// Key-bound contacts (people/contacts.rs).
+    pub const CONTACTS: &str = "contacts";
+    /// Recognition epochs and chain mappings (groups/pairwise state).
+    pub const CHAINS: &str = "chains";
+    /// Decrypted objects (posts, task ops, ballots) by object id.
+    pub const PLAINTEXT: &str = "plaintext";
+    /// Objects authored here and not yet acknowledged.
+    pub const OUTBOX: &str = "outbox";
+    /// Namespaces the storage layer encrypts at rest (storage/txn.rs
+    /// `SECRET_NAMESPACES` is built from this list).
+    pub const SECRET: &[&str] = &[
+        IDENTITY,
+        SESSIONS,
+        PREKEYS,
+        SIGNED_PREKEYS,
+        KYBER_PREKEYS,
+        SENDER_KEYS,
+        PEER_IDENTITIES,
+        CONTACTS,
+        CHAINS,
+        PLAINTEXT,
+        OUTBOX,
+    ];
 }
 
 /// A transaction-scoped, namespaced byte map.

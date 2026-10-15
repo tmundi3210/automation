@@ -48,19 +48,7 @@ use super::kv::{KvTxn, ns};
 /// `contacts`, `chains` recog epochs, `backend_kv` = sessions, sender keys,
 /// prekeys; `objects.plaintext`; BRIEF_v2 §5.3 "keys, ratchet state and the
 /// plaintext outbox"). Everything else is stored in the clear.
-pub const SECRET_NAMESPACES: &[&str] = &[
-    ns::IDENTITY,
-    ns::SESSIONS,
-    ns::PREKEYS,
-    ns::SIGNED_PREKEYS,
-    ns::KYBER_PREKEYS,
-    ns::SENDER_KEYS,
-    ns::PEER_IDENTITIES,
-    "contacts",
-    "chains",
-    "plaintext",
-    "outbox",
-];
+pub const SECRET_NAMESPACES: &[&str] = ns::SECRET;
 
 /// Bytes added to a plaintext by the secret-namespace encoding:
 /// 24-byte nonce + 16-byte Poly1305 tag.
