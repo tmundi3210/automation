@@ -52,7 +52,8 @@ impl KvTxn for MemKv {
         self.map.get(&(ns.to_owned(), key.to_vec())).cloned()
     }
     fn put(&mut self, ns: &str, key: &[u8], value: &[u8]) {
-        self.map.insert((ns.to_owned(), key.to_vec()), value.to_vec());
+        self.map
+            .insert((ns.to_owned(), key.to_vec()), value.to_vec());
     }
     fn delete(&mut self, ns: &str, key: &[u8]) {
         self.map.remove(&(ns.to_owned(), key.to_vec()));

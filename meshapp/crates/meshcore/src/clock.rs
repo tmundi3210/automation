@@ -25,7 +25,10 @@ pub struct ManualClock {
 
 impl ManualClock {
     pub fn new(mono_ms: u64) -> Self {
-        Self { mono: Cell::new(mono_ms), wall_offset_ms: Cell::new(0) }
+        Self {
+            mono: Cell::new(mono_ms),
+            wall_offset_ms: Cell::new(0),
+        }
     }
     /// Advance powered-on time by `ms`.
     pub fn advance(&self, ms: u64) {
@@ -62,7 +65,10 @@ impl PoweredOnMeter {
     /// `persisted_base_ms`: powered-on total saved by the previous session.
     /// `session_start_mono_ms`: the platform's monotonic reading at this start.
     pub fn resume(persisted_base_ms: u64, session_start_mono_ms: u64) -> Self {
-        Self { persisted_base_ms, session_start_mono_ms }
+        Self {
+            persisted_base_ms,
+            session_start_mono_ms,
+        }
     }
     /// Powered-on total given the platform's current monotonic reading.
     pub fn total_ms(&self, now_mono_ms: u64) -> u64 {
@@ -86,7 +92,7 @@ mod tests {
     #[test]
     fn manual_clock_advances_and_offsets_display_only() {
         let c = ManualClock::new(10);
-        c.set_wall_offset_ms(-ms::MINUTE as i64 * 20);
+        c.set_wall_offset_ms(-(ms::MINUTE as i64) * 20);
         c.advance(5);
         assert_eq!(c.mono_ms(), 15);
         assert_eq!(c.wall_for_display(), 15 - 20 * ms::MINUTE as i64);
