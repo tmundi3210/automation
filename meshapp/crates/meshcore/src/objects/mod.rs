@@ -17,9 +17,7 @@ pub mod vote_open;
 
 use crate::codec::{CodecError, Decode, Encode, ListItem, Reader, Writer};
 use crate::crypto::backend::GroupId;
-use crate::crypto::ed25519::{
-    IdentityKey, IdentitySigner, SigError, admit_public_key, sign, verify,
-};
+use crate::crypto::ed25519::{IdentityKey, IdentitySigner, SigError, admit_public_key, verify};
 use crate::crypto::hash::{Hash32, sha256};
 
 /// Version byte every object starts with. Decoders reject anything else.
@@ -169,7 +167,7 @@ impl ListItem for Hash32 {}
 
 /// Signs `bytes` (a header plus body, already encoded) under `domain`.
 pub fn sign_bytes(signer: &IdentitySigner, domain: &str, bytes: &[u8]) -> [u8; 64] {
-    sign(signer, domain, bytes)
+    signer.sign(domain, bytes)
 }
 
 /// Verifies `sig` over `bytes` under `domain` with the strict verifier.

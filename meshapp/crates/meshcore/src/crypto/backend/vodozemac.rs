@@ -256,7 +256,11 @@ mod tests {
         );
         assert_eq!(be.own_chain(&kv, &group), None);
         assert!(kv.is_empty(), "the stub never writes");
-        assert!(VodozemacBackend::library_account_type().contains("olm::Account"));
+        let name = VodozemacBackend::library_account_type();
+        assert!(
+            name.starts_with("vodozemac::") && name.ends_with("Account"),
+            "{name}"
+        );
         assert!(!VodozemacBackend::skipped_key_cap_sufficient());
     }
 }
