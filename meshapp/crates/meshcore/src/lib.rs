@@ -10,6 +10,10 @@
 pub mod clock;
 pub mod codec;
 pub mod crypto;
+pub mod dtn;
+pub mod relay;
 pub mod storage;
+pub mod transport;
+pub mod wire;
 
 pub use clock::Clock;
