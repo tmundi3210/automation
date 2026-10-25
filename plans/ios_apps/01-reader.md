@@ -25,9 +25,9 @@ Feature details below come from store listings and vendor pages seen only as sea
 | Duolingo "Jump here" | Skip only by passing a short test | Pattern only (used in S7b) |
 | Readwise Reader Ghostreader | Passage prompts and chat with the document | Pattern only (used in S9) |
 
-**Use X instead.** For most of this brief, use RemNote Guided Learn for levels, summaries and quizzes, plus Recite or Blurt for voice retell with missed points. Speechify covers document quizzes and Feynman AI covers explain-back scoring. Nobody found combines a no-skip paragraph gate, voice recall every N hours and calls.
+**Use X instead.** For most of this brief, use RemNote Guided Learn for levels, summaries and quizzes, plus Recite or Blurt for voice retell with missed points. Speechify covers document quizzes and Feynman AI covers explain-back scoring. Nobody found combines a no-skip paragraph gate, voice recall every N hours and calls. Decided: build the Reader, with no trial of these apps ([decision 5](04-decisions-and-checklist.md#decisions)).
 
-**Cost to still build.** This is the largest app in the plan: two phases of app hours, one Claude Code pipeline session per new book and, if the relay is built ([decision 32](04-decisions-and-checklist.md#decisions)), runtime Claude use on the Max plan every day (all in [budget](00-overview.md#budget)), a check set before the scorer is trusted, and a check-set re-run when the Claude model version changes. [Decision 5](04-decisions-and-checklist.md#decisions).
+**Cost to still build.** This is the largest app in the plan: two phases of app hours, one Claude Code pipeline session per new book and, if the relay is built ([decision 32](04-decisions-and-checklist.md#decisions)), runtime Claude use on the Max plan every day (all in [budget](00-overview.md#budget)), a check set before the scorer is trusted, and a check-set re-run when the Claude model version changes.
 
 **Strongest case against.**
 1. Drop-off is the norm. Education apps keep about 2% (Business of Apps) to 8% (OneSignal) of users at day 30 (unverified). Those are store cohorts, not a tool built by its only user, but fading motivation is the usual way this ends.
