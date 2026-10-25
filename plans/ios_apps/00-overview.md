@@ -77,7 +77,7 @@ Weekly share bands (proposal): count a heavy turn as 4 base turns and a runtime 
 
 Calibrate in Phase 0: read the `/usage` 7-day bar before and after R-01 (about 8 base-equivalent turns), scale each phase's weekly rate from R-01's share and re-rate the bands. The rest of that week's bar is roughly the loop's own share.
 
-Fixed costs: Apple Developer Program 99 USD a year (as of 2026-10-25) if [decision 6](04-decisions-and-checklist.md#decisions) is yes; the ClawCall plan you already have, price not checked.
+Fixed costs: Apple Developer Program 99 USD a year (as of 2026-10-25), already paid, activation pending ([decision 6](04-decisions-and-checklist.md#decisions)); the ClawCall plan you already have, price not checked.
 
 ## Top-5 risks
 

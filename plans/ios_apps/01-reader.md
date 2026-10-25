@@ -115,7 +115,7 @@ Why not the Recorder pipeline as the main path: it transcribes on the Mac (faste
 | No Claude API key, so the phone cannot call Claude | Scoring and chat from the phone | Mac relay to Claude Code headless on the Max plan, on hold ([decision 32](04-decisions-and-checklist.md#decisions)); until then your own verdicts or an R-20-passed local model ([runtime path](#llm-options-no-claude-api-key)) (proposal) |
 | Silent reading makes no sound | Paper-book progress from audio | Read aloud ([physical-book mode](#physical-book-mode)); start and end page photos with OCR otherwise (proposal) |
 | Force-quit ends background recording, per a forum report (to verify) | Long paper-book sessions | Save the transcript every 60 s; say so on the session screen (proposal) |
-| Free account: builds expire after 7 days; no iCloud, time-sensitive notifications or FamilyControls | Daily use, phone-Mac sync, focus shield | Paid developer program now, while J-01 runs (proposal). [Decision 6](04-decisions-and-checklist.md#decisions) |
+| Free account: builds expire after 7 days; no iCloud, time-sensitive notifications or FamilyControls | Daily use, phone-Mac sync, focus shield | Paid program already bought; activation expected about 2026-10-26. Until then J-01 builds on the free account; then signing moves to the paid team ([decision 6](04-decisions-and-checklist.md#decisions)) |
 
 ### Screens
 
