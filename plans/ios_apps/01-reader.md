@@ -50,8 +50,8 @@ Platform, model and library facts in this section are as of 2026-10-25.
 | Levels | Recursive summarization pattern (arXiv 2109.10862), Sonnet in an interactive Claude Code session you start | Claude Max plan, ordinary use, no key | (proposal) |
 | Idea units, quiz items | Idea units Sonnet, quiz items Haiku, in the same session, checked by script | Same | (proposal) |
 | Reader and gate | Paged view with no scroll, dwell timer, retell gate at topic end | SwiftUI | (proposal) |
-| Hour-scale spacing | Anki constants applied in hours ([schedule](#schedule-and-spacing)) | Own code, or Jeet's scheduler if R-01 says it fits | (proposal) |
-| Day-scale spacing | FSRS-6 (Free Spaced Repetition Scheduler), desired retention 0.9 | swift-fsrs (MIT) | — |
+| Hour-scale spacing | Anki constants applied in hours ([schedule](#schedule-and-spacing)) | New code: R-01 found Jeet's scheduler works in whole days only | (proposal) |
+| Day-scale spacing | FSRS-6 (Free Spaced Repetition Scheduler), desired retention 0.9 | Jeet's FSRS-6 (MIT, with tests), copied into `Shared/Scheduling/` ([reuse](#reuse-and-to-verify)) | (proposal) |
 | Session pings | One local notification per session slot, rolling window | UserNotifications | — |
 | Speech-to-text | Live, long-form, on device ([choice](#speech-to-text-choice)) | SpeechAnalyzer with SpeechTranscriber (iOS 26+) | — |
 | Recall scoring | One verdict per idea unit plus an evidence quote; output schema checked by script | Claude Sonnet through the Mac relay once built, on hold; interim path in [LLM options](#llm-options-no-claude-api-key) | Scoring quality (to verify) |
@@ -192,7 +192,7 @@ The topic is the unit of scheduling. Numbers below are (proposal) unless they ar
 - Example, G = 4, all Good: read in the 07:30 slot; review in the 11:30 slot; the next 10 h gap is due about 21:30, which rounds past 19:30 into quiet hours, so 07:30 next day; the next gap would be over 24 h, so the topic moves to days. Two hour-scale reviews. At G = 2 the nominal gaps are 2 h, 5 h and 12.5 h, then days: three.
 
 **(b) Hand-off to days.**
-- When the computed next gap reaches 24 h, the topic moves to day mode: swift-fsrs with FSRS-6 parameters selected explicitly (the package defaults to FSRS-5, as of 2026-10-25), desired retention 0.9.
+- When the computed next gap reaches 24 h, the topic moves to day mode: Jeet's FSRS-6 code, copied into `Shared/Scheduling/` (R-22), desired retention 0.9.
 - The hand-off review is the FSRS card's first review, with the same grade (Again 1, Hard 2, Good 3, Easy 4).
 - Day-mode reviews fall on the FSRS due day, in the slot nearest the time of the last review.
 - A lapse (Again) in day mode gets one hour-scale relearning step at G, then returns to FSRS.
@@ -320,12 +320,11 @@ Rules (proposal): at most 1 call a day, none in quiet hours or the 30 min before
 
 | asset | intended reuse | status and check |
 |---|---|---|
-| Jeet (`~/Projects/jeet-ios`) | Scheduler, flashcard model, notifications and question generation, for spacing, quiz items and the notification planner | All (to verify); R-01 reports what is reusable. If its scheduler is day-only or SM-2 only, use swift-fsrs plus the hour layer above. If its question generation calls an LLM with a key, it is not used at runtime |
+| Jeet (`~/Projects/jeet-ios`) | Scheduler, flashcard model, notifications and question generation | Checked by R-01 on 2026-10-25 (report: `~/Projects/mundi-apps/docs/jeet-reuse-report.md`). Scheduler: adapt. FSRS-6, MIT, with tests, in `Packages/JeetKit/Sources/JeetCore/Scheduling/`; whole days only, so the R-22 hour layer is new code and swift-fsrs is not needed. Copy it with its tests and note the source commit; Jeet stays untouched (proposal). Card and question model: adapt by adding an idea-unit id; nothing links them today. Notifications: absent, so J-06 builds from scratch. Question generation is build-time, with no LLM: keep its lint and quarantine checks as candidates for R-04, drop the rest. Builds with Xcode 27.1, scheme Jeet; no keys found by name |
 | Always-on Recorder | Speech-to-text fallback for Punjabi and Hindi; word-count cross-check; the scored transcript if R-15 finds its Whisper more accurate and the relay exists | (to verify): reading its transcript for a time window, and the Indic model's output format. Not the live path |
 | ClawCall | Push, boost and quiz calls | A test call to you worked. Custom script per call, API use from a Mac job, transcript return, caller ID: (to verify), R-29 |
 | Big Brain loop | Optional daily export of reading progress and recall results | [Decision 14](04-decisions-and-checklist.md#decisions). Reader work never changes loop code; the export is a file the loop may read |
 | Shared package from the Journal phase | Storage, notification planner and folder exporter | Built in Phase 1 with the Journal ([journal task table](02-journal.md#task-table); [decision 3](04-decisions-and-checklist.md#decisions), decided: build); the Reader adds Speech, LLM, Gap and Scheduling modules |
-| swift-fsrs | Day-scale scheduling | MIT; FSRS-6 must be selected explicitly; parses hour steps |
 | This engine, later | Part 3 reuses the brief, ask, add, deepen flow and the pipeline | [Part 3](03-later-phases.md#part-3-mind) |
 
 ## Task table
@@ -333,6 +332,8 @@ Rules (proposal): at most 1 call a day, none in quiet hours or the 30 min before
 Paths follow the new repo layout ([decision 9](04-decisions-and-checklist.md#decisions)). Models per job: [LLM options](#llm-options-no-claude-api-key); script = deterministic and model-free. A script lint runs before every repair pass. Prompt files are named only; their text is written after approval. Phase hours: [phases](00-overview.md#how-the-apps-fit-around-big-brain).
 
 ### Phase 0
+
+R-01 done 2026-10-25; its findings are in [reuse](#reuse-and-to-verify).
 
 | id | files | done-check |
 |---|---|---|
@@ -369,7 +370,7 @@ Starts now, in parallel with J-01 ([decision 1](04-decisions-and-checklist.md#de
 | R-19 Run the check-set gate · script; Sonnet verdicts from the batch session | `tests/recall-checkset/results.txt` | 40 retells you confirmed, scored by Sonnet in the [batch session](#recall-scoring-gap-and-root-cause) until the relay exists; pass means agreement at least 85%, kappa at least 0.6, false credit at most 10%; the result is saved with the model version |
 | R-20 Side-by-side test, only if a local model is proposed for a job · Sonnet | `scripts/side-by-side.py`, `docs/side-by-side.md`, `tests/recall-checkset/`, `tests/side-by-side/<job>/` | Needs no relay: the cloud model's outputs come from an interactive Claude Code session you start on the Mac (for recall scoring, the [batch session](#recall-scoring-gap-and-root-cause)). For recall scoring, the candidate and the cloud model score the same 40 labelled retells; the candidate may take the job only if its agreement is at least the cloud model's minus 2 points and its false credit is no higher, and it also passes the [check-set gate](#recall-scoring-gap-and-root-cause) on its own (proposal). While decision 32 is on hold, Apple's on-device model is proposed for recall scoring once R-19 is saved, if the iPhone supports it ([decision 7](04-decisions-and-checklist.md#decisions)) (proposal). For any other job, you first label 40 cases of it in `tests/side-by-side/<job>/`; where the output is text (chat, idea units, notes), you pick blind between the two outputs, and the candidate must be preferred or tied in at least half (proposal). The doc records both models' results |
 | R-21 Result screen, cause hints and retell loop S6 · Sonnet | `Reader/Views/ResultView.swift`, `Shared/Gap/CauseRules.swift`, `Shared/Package.swift`, `tests/GapTests/` | Missed group shows first; the hint card says "hint"; rule tests cover never learned, forgotten and misunderstood with the stated precedence; "Retell again" shows only paragraphs with missed or partial units; the loop stops at 3; the schedule uses the first attempt's grade |
-| R-22 Hour-scale scheduler and FSRS hand-off · Sonnet | `Shared/Scheduling/HourScheduler.swift`, `Shared/Scheduling/FSRSBridge.swift`, `Shared/Package.swift` (swift-fsrs dependency), `tests/SchedulingTests/` | Table tests: G 4, all Good, read at 07:30 gives a review in the 11:30 slot, then 07:30 next day, then day mode; G 2 gives 3 hour-scale reviews; Again resets to G and ease never drops below 1.3; next is always at least current + G; the FSRS parameter array has 21 values (FSRS-6), not 19 (FSRS-5) |
+| R-22 Hour-scale scheduler and FSRS hand-off · Sonnet | `Shared/Scheduling/HourScheduler.swift`, `Shared/Scheduling/FSRS/` (Jeet's FSRS-6 and its tests, copied from `JeetCore/Scheduling/`, source commit noted), `Shared/Package.swift` (Scheduling target), `tests/SchedulingTests/` | Jeet's own FSRS tests pass in the copy. Table tests: G 4, all Good, read at 07:30 gives a review in the 11:30 slot, then 07:30 next day, then day mode; G 2 gives 3 hour-scale reviews; Again resets to G and ease never drops below 1.3; next is always at least current + G; the FSRS parameter array has 21 values (FSRS-6), not 19 (FSRS-5) |
 | R-23 Session builder and Today S10 · Sonnet | `Reader/Session/SessionBuilder.swift`, `Reader/Views/TodayView.swift` | With 9 overdue reviews the session is 5 reviews then the new topic, and 4 roll over; the hero card shows "N due" or "Next session in Xh Ym" |
 | R-24 Quiz, level test and test-out S7 · Sonnet | `Reader/Views/QuizView.swift`, `Reader/TestOut/TestOut.swift` | Test-out at 90% unlocks and puts its units in day mode with a first review at least 24 h out; at 50% it returns to reading and changes nothing but the attempt log; a retake is blocked until the next slot; "I don't know" scores wrong; a level test at 80% with every central unit at least partial opens the next level, and at 70% it does not |
 | R-25 Reader notification plan · Sonnet | `Reader/Reminders/ReaderSlotPlan.swift`, `Shared/Notifications/RollingScheduler.swift`, `tests/NotificationTests/` | After any rebuild, pending is 10 or fewer and none falls in quiet hours; changing G from 4 to 2 re-plans within 1 s; with the debug clock and no sessions, pings fire for the next 2 slots, then none until the next morning's first slot |

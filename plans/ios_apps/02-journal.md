@@ -152,7 +152,7 @@ Design (proposal):
 | item | what the journal does with it | status |
 |---|---|---|
 | Shared package | J-01 creates the workspace and the package. The journal adds Storage (J-03), Notifications (J-06) and Export (J-09). The Reader adds Speech, LLM, Gap and Scheduling modules later and reuses the rest. | (proposal); the Reader links here |
-| Jeet notification code | Read the R-01 report ([Reader tasks](01-reader.md#task-table)) before J-06. Adopt its scheduler only if it already does dated one-shot requests. | (to verify) |
+| Jeet notification code | Nothing to reuse: R-01 found no dated reminders and no 64-cap handling, so J-06 builds from scratch ([Reader reuse](01-reader.md#reuse-and-to-verify)). | Checked by R-01, 2026-10-25 |
 | Big Brain input folder | Receives one JSON file per night | (to verify): folder path, whether the digest can read a second input besides the transcript, digest run time |
 | iCloud Drive folder | Carries the export to the Mac | Needs the paid account ([iOS limits](01-reader.md#ios-limits-that-block-a-piece), [decision 6](04-decisions-and-checklist.md#decisions)); the Mac-side path is (to verify) |
 | Recorder, ClawCall | Not used by the journal | — |
