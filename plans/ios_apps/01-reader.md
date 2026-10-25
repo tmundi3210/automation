@@ -99,7 +99,7 @@ Why not the Recorder pipeline as the main path: it transcribes on the Mac (faste
 | On-device model: small context; no Hindi or Punjabi (unverified); background calls may be throttled (unverified) | Long sessions, Hindi or Punjabi, scoring while closed | Score in the foreground right after Stop; chunk long input; Mac fallback (proposal) |
 | Silent reading makes no sound | Paper-book progress from audio | Read aloud ([physical-book mode](#physical-book-mode)); start and end page photos with OCR otherwise (proposal) |
 | Force-quit ends background recording, per a forum report (to verify) | Long paper-book sessions | Save the transcript every 60 s; say so on the session screen (proposal) |
-| Free account: builds expire after 7 days; no iCloud, time-sensitive notifications, FamilyControls or PCC | Daily use, phone-Mac sync, focus shield, PCC fallback | Paid developer program before Phase 1, when the Journal build starts (proposal). [Decision 6](04-decisions-and-checklist.md#decisions) |
+| Free account: builds expire after 7 days; no iCloud, time-sensitive notifications, FamilyControls or PCC | Daily use, phone-Mac sync, focus shield, PCC fallback | Paid developer program now, while J-01 runs (proposal). [Decision 6](04-decisions-and-checklist.md#decisions) |
 
 ### Screens
 

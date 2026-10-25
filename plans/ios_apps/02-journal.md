@@ -19,7 +19,7 @@ Feature notes in this table come from store and vendor summaries, not hands-on u
 | Rosebud | AI conversational journaling, voice entries, guided journals including gratitude, pattern insights. Not on Mobbin. | Nothing for v1. AI replies are on the won't-build list. |
 | Presently | Gratitude timeline, calendar, reminders, no prompts. Android only, written in Kotlin. The README says open source, but the repo has no license file, so the code is all rights reserved. | Ideas only: a plain gratitude timeline. No code. |
 
-**Use Five Minute Journal or Day One instead.** Both already give nightly prompts and reminders at zero build cost. Cheapest test (proposal): use Five Minute Journal during Phase 0 (no build hours), morning gratitude off, one custom evening gratitude question. Its settings show both controls; a custom question in the evening flow was not seen, and custom questions are premium (table above), so it may need a paid trial. If it is enough, say so at the Phase 1 go ([decision 3](04-decisions-and-checklist.md#decisions)): the journal tasks drop out except the Shared groundwork the Reader builds on (J-01, J-02's check scripts, and the Shared parts of J-03, J-06 and J-09).
+**Use Five Minute Journal or Day One instead.** Both already give nightly prompts and reminders at zero build cost. Cheapest test (proposal): use Five Minute Journal in the first week, while J-01 and J-02 run (no build hours), morning gratitude off, one custom evening gratitude question. Its settings show both controls; a custom question in the evening flow was not seen, and custom questions are premium (table above), so it may need a paid trial. If it is enough, say so before J-03 starts ([decision 3](04-decisions-and-checklist.md#decisions)): the journal tasks drop out except the Shared groundwork the Reader builds on (J-01, J-02's check scripts, and the Shared parts of J-03, J-06 and J-09).
 
 **Cost to still build.** Tasks J-01 to J-11, about one weekend of build turns ([budget](00-overview.md#budget)). Upkeep: fixes after iOS updates; on a free Apple account also a reinstall every 7 days ([iOS limits](01-reader.md#ios-limits-that-block-a-piece), [decision 6](04-decisions-and-checklist.md#decisions)).
 
@@ -166,7 +166,7 @@ Design (proposal):
 
 ## Task table
 
-J-01 starts only after the Phase 0 exit gate ([decision 1](04-decisions-and-checklist.md#decisions)). Paths are relative to the new repo root ([decision 9](04-decisions-and-checklist.md#decisions)). The Shared-package tasks here are the base the Reader builds on. Lint runs as a script (J-10) before any repair pass.
+J-01 starts now, in parallel with the digest test ([decision 1](04-decisions-and-checklist.md#decisions)); only J-09's hookup to the Big Brain folder waits for the Phase 0 gate. Paths are relative to the new repo root ([decision 9](04-decisions-and-checklist.md#decisions)). The Shared-package tasks here are the base the Reader builds on. Lint runs as a script (J-10) before any repair pass.
 
 | id | files | done-check |
 |---|---|---|
