@@ -27,14 +27,14 @@ Feature details below come from store listings and vendor pages seen only as sea
 
 **Use X instead.** For most of this brief, use RemNote Guided Learn for levels, summaries and quizzes, plus Recite or Blurt for voice retell with missed points. Speechify covers document quizzes and Feynman AI covers explain-back scoring. Nobody found combines a no-skip paragraph gate, voice recall every N hours and calls.
 
-**Cost to still build.** This is the largest app in the plan: two phases of app hours ([budget](00-overview.md#budget)), one Claude Code pipeline session per new book, a check set before the scorer is trusted, and a check-set re-run after each iOS update that changes Apple's on-device model. [Decision 5](04-decisions-and-checklist.md#decisions).
+**Cost to still build.** This is the largest app in the plan: two phases of app hours, one Claude Code pipeline session per new book and runtime Claude use on the Max plan every day (all in [budget](00-overview.md#budget)), a check set before the scorer is trusted, and a check-set re-run when the Claude model version changes. [Decision 5](04-decisions-and-checklist.md#decisions).
 
 **Strongest case against.**
 1. Drop-off is the norm. Education apps keep about 2% (Business of Apps) to 8% (OneSignal) of users at day 30 (unverified). Those are store cohorts, not a tool built by its only user, but fading motivation is the usual way this ends.
 2. Ping fatigue and time. A 4-hour cycle in a 15-hour waking window is 4 pings a day; at 2 hours it is 8. At 10-15 minutes a session, the default costs an estimated 40-60 minutes of use a day (proposal).
 3. A missed review stalls new content, and a strict gate makes that worse.
 4. Hour gaps mostly help same-day memory. The best gap grows with how long you want to remember (about 20-40% of a one-week test delay, Cepeda 2008) (unverified), and the Anki manual says repeating a card several times in one day adds little to long-term memory. The 4-hour cycle is a learning-phase tool; long retention comes from the day phase.
-5. The scorer is the weakest link. GPT-4 tracked human scorers closely in two studies (r about .94 on per-clause rates pooled over recalls; .97 or more on per-person totals); a clinical ChatGPT-4o study found r about .65, as close as its human raters came to each other. None judged idea units per attempt, and nothing validates a ~3B on-device judge (unverified). A wrong "you forgot X" breaks trust fast.
+5. The scorer is the weakest link. GPT-4 tracked human scorers closely in two studies (r about .94 on per-clause rates pooled over recalls; .97 or more on per-person totals); a clinical ChatGPT-4o study found r about .65, as close as its human raters came to each other. No study validated per-attempt idea-unit judging by any model, so the check set gates it (unverified). A wrong "you forgot X" breaks trust fast.
 6. Gates can dead-end. A topic you cannot pass blocks everything behind it.
 
 **What the design does about it (proposal).** Pings come at most once per base gap and pause after two ignored slots ([notifications](#notifications-and-calls)). Overdue reviews never block new content for more than one session ([schedule](#schedule-and-spacing)). Topics hand off to day-scale spacing after about a day. The scorer must pass a check set before its verdicts gate anything ([scoring](#recall-scoring-gap-and-root-cause)). A topic failed three times goes provisional instead of blocking ([gate](#no-skip-gate-and-test-out)). Use check: if MVP use falls under 8 sessions a week in weeks 2 and 3 after R-23 is on the phone, Phase 3 waits for the user's review.
@@ -47,16 +47,16 @@ Platform, model and library facts in this section are as of 2026-10-25.
 |---|---|---|---|
 | Book import | Book package (JSON) made on the Mac, opened in the app from Files | Files document picker, app container | (proposal) |
 | Paragraphs | Deterministic script on the Mac ([pipeline](#pdf-to-levels-pipeline)) | PDF text layer or EPUB XHTML; scanned PDFs not in the MVP | (proposal) |
-| Levels | Recursive summarization pattern (arXiv 2109.10862), Sonnet in an interactive Claude Code session the user starts | Claude subscription, ordinary use, no key | (proposal) |
-| Idea units, quiz items | Haiku in the same session, checked by script | Same | (proposal) |
+| Levels | Recursive summarization pattern (arXiv 2109.10862), Sonnet in an interactive Claude Code session the user starts | Claude Max plan, ordinary use, no key | (proposal) |
+| Idea units, quiz items | Idea units Sonnet, quiz items Haiku, in the same session, checked by script | Same | (proposal) |
 | Reader and gate | Paged view with no scroll, dwell timer, retell gate at topic end | SwiftUI | (proposal) |
 | Hour-scale spacing | Anki constants applied in hours ([schedule](#schedule-and-spacing)) | Own code, or Jeet's scheduler if R-01 says it fits | (proposal) |
 | Day-scale spacing | FSRS-6 (Free Spaced Repetition Scheduler), desired retention 0.9 | swift-fsrs (MIT) | — |
 | Session pings | One local notification per session slot, rolling window | UserNotifications | — |
 | Speech-to-text | Live, long-form, on device ([choice](#speech-to-text-choice)) | SpeechAnalyzer with SpeechTranscriber (iOS 26+) | — |
-| Recall scoring | One verdict per idea unit plus an evidence quote, typed output | Foundation Models on-device model, guided generation | Scoring quality (to verify) |
+| Recall scoring | One verdict per idea unit plus an evidence quote; output schema checked by script | Claude Sonnet through the Mac relay ([LLM options](#llm-options-no-claude-api-key)) | Scoring quality (to verify) |
 | Cause hint | Rules on attempt history plus a contradiction flag from the model ([scoring](#recall-scoring-gap-and-root-cause)) | Same | (proposal) |
-| Talk about the text | Model session fed the paragraph, its summary path and idea units; voice input via the system keyboard mic | Foundation Models; system dictation | (proposal) |
+| Talk about the text | Model call fed the paragraph, its summary path and idea units; voice input via the system keyboard mic | Sonnet through the Mac relay; system dictation | (proposal) |
 | Paper-book recording | Record audio session plus the audio background mode; recording continues with the screen locked | AVAudioSession; SpeechTranscriber | Live transcription while locked (to verify) |
 | Page-photo fallback | OCR of printed page numbers on the start and end pages | Vision | (proposal) |
 | Calls | Scheduled job on the Mac reads the app's status file and asks ClawCall to dial | ClawCall; launchd on the Mac | (proposal) |
@@ -68,23 +68,39 @@ Platform, model and library facts in this section are as of 2026-10-25.
 
 | option | strengths | limits | role in this plan |
 |---|---|---|---|
-| Apple on-device model (Foundation Models) | Free, offline, private. Guided generation gives typed output. Apple lists "classify or judge text" as a fit | About 3B parameters. 4,096-token context per Apple's docs; WWDC26 code comments say 8,192 on iOS 27 newer devices (to verify); read contextSize at runtime. No Hindi or Punjabi (unverified). Limited reasoning. Needs an Apple Intelligence iPhone, 15 Pro or later (to verify); [decision 7](04-decisions-and-checklist.md#decisions) | Runtime default: recall scoring, contradiction flag, chat |
-| Apple Private Cloud Compute (PCC) model (iOS 27) | Free, keyless, 32K context, stronger reasoning, same API | Per-person daily quota. Needs internet, an Apple Intelligence iPhone, the paid developer program, Small Business Program enrolment and a requested PCC entitlement. Whether a personal Xcode build qualifies (to verify) | First fallback if the on-device model fails the check set; better chat if eligible |
-| Local model on the Mac (8B class) | Free, private, likely stronger than 3B | Mac must be awake and reachable from the phone (to verify). Judge quality unmeasured | Second fallback; also overnight re-scoring |
-| Claude Code, interactive, on the subscription | Best quality. Ordinary use when the user starts the session | Uses the weekly limit. `claude -p` as an app backend is a grey area under the consumer terms, and `--bare` (API key only) is slated to become its default | Book packages only, in sessions the user starts. Never a runtime backend |
+| Claude Code, interactive, on the Max plan | Best quality. Ordinary use when the user starts the session | Uses the weekly limit | Build sessions and book packages |
+| Claude Code headless (`claude -p`) through the Mac relay, Max plan | The same Claude models at runtime, no key | Mac must be awake and reachable; daily use of the weekly limit; terms and `--bare` risks in the runtime path below | Runtime default for every phone job |
+| Local models: Apple's on-device model, Apple's Private Cloud Compute model (runs on Apple's servers; held to the same R-20 rule), an 8B-class model on the Mac | Private; the on-device model needs no network | Weaker reasoning than Sonnet; idea-unit judging unmeasured; Apple's models need a supported iPhone, Private Cloud Compute also an entitlement (to verify) | None by default; a candidate takes a job only by passing R-20 |
 | Other providers' APIs (OpenAI, Gemini) | Strong models | Need a key, an account and per-token billing | Not planned |
 
-Recommendation (proposal): split by job. Book-to-levels is a heavy, one-time job per book, so it runs in an interactive Claude Code session on the Mac. Scoring, the contradiction flag and chat are short jobs on the phone, so they use the on-device model. Judging a retell against a fixed list of idea units is classification, which suits a small model better than open grading. The on-device scorer gates nothing until it passes the check set. [Decision 16](04-decisions-and-checklist.md#decisions).
+Recommendation, decided 2026-10-25 ([decision 16](04-decisions-and-checklist.md#decisions)): quality first. Claude cloud models are the default for every model job, Haiku for bulk and Sonnet where quality matters; Opus only plans. A local model replaces the cloud model on a job only after a side-by-side test on that job's check set ([R-20](#phase-2-reader-mvp)) shows it matches.
+
+| job | model and where it runs |
+|---|---|
+| Planning and plan revisions | Opus, interactive on the Mac |
+| App features, scheduler, scorer service, relay, docs needing judgment | Sonnet, interactive on the Mac |
+| Validators, settings-only screens, harnesses, fixtures, lint scripts, gap lists | Haiku, interactive on the Mac |
+| Book levels, summaries and idea units (idea units define what counts as recalled) | Sonnet, in the [pipeline](#pdf-to-levels-pipeline) session the user starts |
+| Quiz items and suggested questions | Haiku in the same session; a topic that fails the spot check is redone with Sonnet |
+| Recall scoring, contradiction flag, quiz-call scoring, talk about the text and "ask it for more", paper-book idea units | Sonnet, headless through the Mac relay |
+| Reader packs (Parts 3 and 7, lessons of Parts 4-5); Part 6 style brief; Part 4 session notes, exercises and grammar feedback | Sonnet: packs and the style brief interactive on the Mac, Part 4 through the relay ([part cards](03-later-phases.md#part-cards)) |
+| Push and boost call scripts | Templates, no model |
+
+**Runtime path (proposal).** With no key, the phone cannot call Claude itself.
+- The phone sends the transcript (text; audio only if [R-15 picks Whisper](#speech-to-text-choice)) to a small relay on the Mac (`mac/relay/`), over Tailscale or the home network (to verify). The relay runs Claude Code headless (`claude -p`) on the owner's Max login, never with `--bare`, with ANTHROPIC_API_KEY unset. It passes the job's prompt file and model, checks the JSON output with a script, retries once on invalid output and returns the verdicts.
+- Target: verdicts within 30 s for 20 idea units; R-17 measures it (to verify).
+- The Mac must be awake and reachable; it already runs the Recorder transcription (assumption). When the relay is unreachable or the weekly limit is used up, the retell is saved, its result shows once scored, and the next topic opens provisionally, so nothing dead-ends. How runtime calls relate to the 60% pause: [loop floor](00-overview.md#how-the-apps-fit-around-big-brain).
+- Risks: the consumer terms bar automated access except where Anthropic explicitly permits it. Personal scripted `claude -p` use is documented, but as an app backend it is a grey area (to verify). The docs say `--bare` (API key only) is slated to become the `-p` default (to verify). If the subscription path stops working, a local model that passed R-20 takes over; if none has, the owner confirms verdicts by hand on S6.
 
 #### Speech-to-text choice
 
-Choice (proposal): on-device SpeechAnalyzer with SpeechTranscriber, for both dictate-back and physical-book mode. [Decision 18](04-decisions-and-checklist.md#decisions).
-- Works anywhere, with no Mac and no network.
+Choice (proposal): on-device SpeechAnalyzer with SpeechTranscriber for live words, in both dictate-back and physical-book mode. Speech-to-text is not a Claude job, so it stays on the iPhone or the Mac. [Decision 18](04-decisions-and-checklist.md#decisions).
 - Shows live words while you speak (volatile results), which S5 and S8 need.
+- Captures anywhere, with no Mac and no network; the transcript waits on the phone until the Mac scores it.
 - Built for long-form audio; no time limit is documented.
 - Private; the system fetches the model once.
 
-Why not the Recorder pipeline as the main path: it transcribes on the Mac (faster-whisper large-v3-turbo plus an Indic model), so every retell would need an upload, a round trip and a reachable Mac before the result. That suits a nightly digest, not a retell-score-retell loop. Keep it as a fallback for Punjabi or Hindi reading and as an optional word-count cross-check for long paper-book sessions at home ([reuse](#reuse-and-to-verify)). Whether SpeechTranscriber supports hi-IN or pa-IN is (to verify): no evidence was found, and R-15 reads `supportedLocales` on the iPhone. Books are in English (assumption). SpeechAnalyzer is unavailable on iPhone 11 and SE (2nd gen), per a forum report.
+Why not the Recorder pipeline as the main path: it transcribes on the Mac (faster-whisper large-v3-turbo plus an Indic model), so it shows no live words and captures nothing while the Mac is unreachable. The Mac is in the scoring loop anyway, so Whisper may supply the scored transcript: R-15 transcribes one scripted passage both ways and records the word error rate of each; if Whisper is more accurate, the retell audio also goes to the relay, Whisper's transcript is the one scored, and the audio is deleted after (proposal). Keep the pipeline also as a fallback for Punjabi or Hindi reading and as an optional word-count cross-check for long paper-book sessions at home ([reuse](#reuse-and-to-verify)). Whether SpeechTranscriber supports hi-IN or pa-IN is (to verify): no evidence was found, and R-15 reads `supportedLocales` on the iPhone. Books are in English (assumption). SpeechAnalyzer is unavailable on iPhone 11 and SE (2nd gen), per a forum report (unverified).
 
 #### iOS limits that block a piece
 
@@ -96,10 +112,10 @@ Why not the Recorder pipeline as the main path: it transcribes on the Mac (faste
 | SFSpeechRecognizer 1-minute limit (documented for the server path at least) | Long retells and reading sessions | SpeechAnalyzer long-form on device (proposal) |
 | An app cannot phone its user; calls need server telephony | Push, boost and quiz calls from the app | ClawCall dials from the Mac; AlarmKit alarm as a no-server push (proposal) |
 | Notification actions take buttons or text, not audio | Answering a review from the lock screen | A tap opens straight into the session (proposal) |
-| On-device model: small context; no Hindi or Punjabi (unverified); background calls may be throttled (unverified) | Long sessions, Hindi or Punjabi, scoring while closed | Score in the foreground right after Stop; chunk long input; Mac fallback (proposal) |
+| No Claude API key, so the phone cannot call Claude | Scoring and chat from the phone | Mac relay to Claude Code headless on the Max plan; retells wait when the Mac is unreachable (proposal) |
 | Silent reading makes no sound | Paper-book progress from audio | Read aloud ([physical-book mode](#physical-book-mode)); start and end page photos with OCR otherwise (proposal) |
 | Force-quit ends background recording, per a forum report (to verify) | Long paper-book sessions | Save the transcript every 60 s; say so on the session screen (proposal) |
-| Free account: builds expire after 7 days; no iCloud, time-sensitive notifications, FamilyControls or PCC | Daily use, phone-Mac sync, focus shield, PCC fallback | Paid developer program now, while J-01 runs (proposal). [Decision 6](04-decisions-and-checklist.md#decisions) |
+| Free account: builds expire after 7 days; no iCloud, time-sensitive notifications or FamilyControls | Daily use, phone-Mac sync, focus shield | Paid developer program now, while J-01 runs (proposal). [Decision 6](04-decisions-and-checklist.md#decisions) |
 
 ### Screens
 
@@ -150,17 +166,17 @@ Runs on the Mac, once per book, in an interactive Claude Code session the user s
 
 1. **Input.** A PDF with a text layer, or an EPUB, in `mac/pipeline/inbox/`. "A PDF or book" means a PDF or an EPUB file; paper books use [physical-book mode](#physical-book-mode) (assumption). An EPUB is a zip of XHTML files read in spine order (unverified). Not in the MVP: scanned PDFs; the script stops with "needs OCR", and Vision OCR is a later add (proposal).
 2. **Paragraphs (script).** `scripts/extract-paragraphs.py` joins hyphenated line breaks, drops lines repeated on most pages (running headers, page numbers), builds a chapter and section tree from headings, and keeps page refs.
-3. **Levels (Sonnet, `prompts/level-generation.txt`).** Bottom-up: section summaries (L2) from paragraphs, chapter summaries (L1) from section summaries, a brief (L0) from chapter summaries. Every summary lists its source paragraph ids, so each summary screen has "View source": the source opens below the summary, not beside it, since a phone screen is too narrow for both (proposal). One chapter per step keeps context small.
+3. **Levels (Sonnet, `prompts/level-generation.txt`).** Bottom-up: section summaries (L2) from paragraphs, chapter summaries (L1) from section summaries, a brief (L0) from chapter summaries. Every summary lists its source paragraph ids, so each summary screen has "View source": the source opens below the summary, not beside it, since a phone screen is too narrow for both (proposal). One chapter per step, so each summary is written from its whole source with nothing compacted away (proposal).
 4. **Topics (script).** L3 paragraphs grouped into topics of 3-7 along section boundaries; each summary block is one topic.
-5. **Idea units (Haiku, `prompts/idea-units.txt`).** 2-4 per L3 paragraph, 3-8 per summary unit. Each is one proposition with its exact span in the unit; 1-2 per unit marked central.
+5. **Idea units (Sonnet, `prompts/idea-units.txt`).** 2-4 per L3 paragraph, 3-8 per summary unit. Each is one proposition with its exact span in the unit; 1-2 per unit marked central.
 6. **Quiz items and questions (Haiku, `prompts/quiz-generation.txt`, `prompts/suggested-questions.txt`).** 3-5 multiple-choice items per topic, each tied to idea units, plus "I don't know"; 3 suggested questions per topic for [talk about the text](#talk-about-the-text).
 7. **Lint before any repair (script).** `scripts/validate-package.py` checks the schema; every L3 paragraph in exactly one topic; every summary has a source id; every idea-unit span is found in its unit; counts within limits; no duplicate ids; the banned-word list. Failures go to one repair pass that touches only the failing items.
-8. **Spot check (user, about 10 minutes).** `scripts/sample-package.py` prints 10 random summaries beside their sources and 10 idea units. More than 2 bad out of 20: regenerate each chapter that had a bad item with Sonnet, then sample again.
+8. **Spot check (user, about 10 minutes).** `scripts/sample-package.py` prints 10 random summaries beside their sources, 5 idea units and 5 quiz items. More than 2 bad out of 20: regenerate with Sonnet each chapter that had a bad summary or idea unit and each topic that had a bad quiz item, then sample again.
 9. **Deliver.** The package reaches the phone through the shared iCloud Drive folder (paid account) or AirDrop to Files. The app validates it again before import.
 
 Level order (assumption): L0 and L1 cover the whole book first ("introduction first"), then each chapter goes deeper, L2 then L3, in book order. Each book gets a depth target at import (L1, L2 or L3; default L3) that is fixed afterwards (proposal). [Decision 15](04-decisions-and-checklist.md#decisions).
 
-Not in the MVP: making packages on the phone. The on-device model's context is far too small to summarize a book; PCC might do it later (proposal).
+Not in the MVP: making packages on the phone. The pipeline needs a Claude Code session and the user's spot check, both on the Mac (proposal).
 
 ### Schedule and spacing
 
@@ -219,17 +235,16 @@ Gate unit: the topic (3-7 paragraphs). A retell after every paragraph would mean
 
 ### Recall scoring, gap and root cause
 
-**Pass 1: which idea units are missing.** On-device model, `prompts/recall-scoring.txt`.
-- Input: the transcript and the topic's idea units. Output per unit: recalled, partial or missed, plus a short quote from the transcript as evidence. Guided generation forces exactly one verdict per unit.
-- Normal topics fit the 4,096-token window. Topics with more than 15 units are scored in chunks of 15 (proposal).
+**Pass 1: which idea units are missing.** Sonnet through the relay, `prompts/recall-scoring.txt`.
+- Input: the transcript and the topic's idea units. Output per unit: recalled, partial or missed, plus a short quote from the transcript as evidence. The output schema, checked by script, requires exactly one verdict per unit.
 - Evidence check in app code: a recalled or partial verdict whose quote is not in the transcript is downgraded to missed. This blocks invented credit.
-- Score = (recalled + 0.5 × partial) ÷ units. Runs in the foreground right after Stop; target under 10 s for 20 units.
-- Each attempt stores the model version and prompt version. Apple's on-device model changes between iOS versions, so the check set re-runs after each iOS update.
+- Score = (recalled + 0.5 × partial) ÷ units. The transcript goes to the relay right after Stop; the time target and the unreachable-Mac rule are in the [runtime path](#llm-options-no-claude-api-key).
+- Each attempt stores the model version and prompt version.
 
 **Pass 2: why.** Reading "two-step thinking, like Big Brain" as pass 1 = what is missing, pass 2 = why, is an (assumption). [Decision 19](04-decisions-and-checklist.md#decisions).
 - Never learned: never recalled in any attempt, or skimmed, or known only through test-out. A rule, no model.
 - Forgotten: recalled or partial before, missed now. A rule, no model.
-- Misunderstood: the retell says something that contradicts the unit. A model flag (`prompts/contradiction-check.txt`), run only on missed or partial units.
+- Misunderstood: the retell says something that contradicts the unit. A Sonnet flag (`prompts/contradiction-check.txt`), run only on missed or partial units.
 - Precedence when two apply: misunderstood, then forgotten, then never learned.
 
 **What the user sees.** The gap is the exact missed units and the paragraphs that hold them. The cause shows only as "Likely cause (hint)" on S6, never as a verdict. A "wrong hint" tap logs it.
@@ -238,7 +253,7 @@ Gate unit: the topic (3-7 paragraphs). A retell after every paragraph would mean
 - Until the gate passes, every verdict on S6 has a flip toggle, and the user's confirmed verdicts are the ones the gate uses. Those confirmations become the labels in `tests/recall-checkset/`, so no separate labelling session is needed.
 - After 40 confirmed retells on the pilot book, `scripts/score-checkset.py` reports per-unit agreement, Cohen's kappa (recalled vs not) and false credit (missed units marked recalled).
 - Gate: agreement at least 85%, kappa at least 0.6, false credit at most 10%. Then the toggles hide and the model's verdicts drive the gate.
-- If it fails: try the PCC model (if eligible), then a local model on the Mac, on the same set. If all fail, user confirmation stays on for good.
+- If it fails, user confirmation stays on; each prompt revision re-runs the gate on the same set. The gate also re-runs when the Claude model version changes.
 
 ### Dictate-back loop
 
@@ -259,7 +274,7 @@ The user reads aloud; silent reading makes no sound to analyze (assumption). [De
 2. Record, with the screen locked if wanted ([paper-book row](#how-each-piece-works)); no time limit is documented. Hold to end.
 3. Transcribe live on device. The transcript is saved every 60 s, so a force-quit loses at most a minute. Whether SpeechTranscriber keeps running with the screen locked is (to verify) in R-30; if it stops, the audio goes to a file that is transcribed on Stop and then deleted (proposal).
 4. At the end, pages ≈ words read ÷ words per page. The first session per book asks for the end page and stores words per page; later sessions show "about N pages, confirm or edit". Minutes and pages add to "how much I have read".
-5. Optional retell. Idea units come from the session transcript (on-device model, `prompts/session-idea-units.txt`; about 600-word chunks, 2-3 units each, at most 15). One swipe deletes a bad unit. The rest are scheduled like any topic.
+5. Optional retell. Idea units come from the session transcript (Sonnet through the [relay](#llm-options-no-claude-api-key), `prompts/session-idea-units.txt`; 2-3 per 600 words, at most 15). One swipe deletes a bad unit. The rest are scheduled like any topic.
 
 Alternative (proposal): photos of the start and end pages; Vision OCR reads the printed page numbers. It works for silent reading but gives no transcript, so no retell.
 
@@ -270,11 +285,11 @@ R-30 checks whether the Reader can record on the main iPhone while the Big Brain
 "Talk" means typing or dictating questions, with answers shown as text (assumption). Design (proposal):
 
 - Entry: one "Ask" button on the paragraph (S4) opens a half-height sheet; the paragraph stays visible.
-- Context: the current paragraph, its summary path (brief line, chapter summary, section summary), the topic's idea units and the last 4 turns. Read contextSize at runtime and drop the oldest turns first.
+- Context: the current paragraph and the topic's earlier paragraphs, its summary path (brief line, chapter summary, section summary), the idea units of paragraphs already shown and the whole chat on this topic, sent to Sonnet through the [relay](#llm-options-no-claude-api-key).
 - No skip-ahead through chat: the context holds only units already shown. A question about later parts gets "that comes later in the book".
-- Every answer carries a "from the book" or "outside the book" tag (a guided-generation field), shown under it.
+- Every answer carries a "from the book" or "outside the book" tag (a field in the output schema), shown under it.
 - "Ask it for more": a More chip returns one extra card (an example, an analogy or more detail) for the paragraph. "Save as idea unit" adds it to the topic's reviews; at most 3 saved per topic.
-- Honest limit: a ~3B model gives short and sometimes shallow answers. For a deep question, a share button sends the paragraph and the question to the Claude app on the phone, which is ordinary subscription use with no key. Whether that app accepts shared text is (to verify).
+- Honest limit: chat needs the relay. When the Mac is unreachable, the sheet says so and keeps the question until it is.
 
 ### Notifications and calls
 
@@ -295,17 +310,17 @@ R-30 checks whether the Reader can record on the main iPhone while the Big Brain
 
 Data path (proposal):
 1. After each session and on leaving the app, the app writes `status.json` (planned slots, due topics, 2-3 due idea units with questions, today's progress) to the shared folder.
-2. A launchd job in `mac/calls/` runs every 15 min, applies the rules, and asks ClawCall to place the call with a short script built from `status.json`. No LLM on the Mac: push and boost are templates, and quiz questions come from the package. Whether ClawCall's API takes a custom script per call and returns the transcript is checked in R-29 ([reuse](#reuse-and-to-verify)).
-3. The Mac saves the quiz transcript at once as `call-result.json`; one listing says ClawCall deletes transcripts after 7 days (unverified, as of 2026-10-25). The app imports it on next open and scores it with the same on-device scorer; it counts as a review.
+2. A launchd job in `mac/calls/` runs every 15 min, applies the rules, and asks ClawCall to place the call with a short script built from `status.json`. No model writes call scripts: push and boost are templates, and quiz questions come from the package. Whether ClawCall's API takes a custom script per call and returns the transcript is checked in R-29 ([reuse](#reuse-and-to-verify)).
+3. The Mac saves the quiz transcript at once, scores it with the same Sonnet scorer through the relay, and writes transcript and verdicts to `call-result.json`; one listing says ClawCall deletes transcripts after 7 days (unverified, as of 2026-10-25). The app imports it on next open; it counts as a review.
 
-Rules (proposal): at most 1 call a day, none in quiet hours or the 30 min before them (so a missed last slot at G = 2 does not ring over the Journal's 10:00 pm ping), none within 2 h of the last, no push after 2 missed slots in a row until the next morning's first slot; each type toggled in Settings (defaults: push and quiz on, boost off). The Mac is on and awake, since it already transcribes the Recorder stream (to verify). No-server fallback (proposal): an AlarmKit alarm 30 min after a planned slot with no session, under the same time rules, set only for slots in the notification plan so it pauses with the pings; push calls are off while it is on. [Decision 24](04-decisions-and-checklist.md#decisions).
+Rules (proposal): at most 1 call a day, none in quiet hours or the 30 min before them (so a missed last slot at G = 2 does not ring over the Journal's 10:00 pm ping), none within 2 h of the last, no push after 2 missed slots in a row until the next morning's first slot; each type toggled in Settings (defaults: push and quiz on, boost off). The Mac must be awake, as for the [relay](#llm-options-no-claude-api-key). No-server fallback (proposal): an AlarmKit alarm 30 min after a planned slot with no session, under the same time rules, set only for slots in the notification plan so it pauses with the pings; push calls are off while it is on. [Decision 24](04-decisions-and-checklist.md#decisions).
 
 ### Reuse and to verify
 
 | asset | intended reuse | status and check |
 |---|---|---|
 | Jeet (`~/Projects/jeet-ios`) | Scheduler, flashcard model, notifications and question generation, for spacing, quiz items and the notification planner | All (to verify); R-01 reports what is reusable. If its scheduler is day-only or SM-2 only, use swift-fsrs plus the hour layer above. If its question generation calls an LLM with a key, it is not used at runtime |
-| Always-on Recorder | Speech-to-text fallback for Punjabi and Hindi; word-count cross-check | (to verify): reading its transcript for a time window, and the Indic model's output format. Not the live path |
+| Always-on Recorder | Speech-to-text fallback for Punjabi and Hindi; word-count cross-check; the scored transcript if R-15 finds its Whisper more accurate | (to verify): reading its transcript for a time window, and the Indic model's output format. Not the live path |
 | ClawCall | Push, boost and quiz calls | A test call to the user worked. Custom script per call, API use from a Mac job, transcript return, caller ID: (to verify), R-29 |
 | Big Brain loop | Optional daily export of reading progress and recall results | [Decision 14](04-decisions-and-checklist.md#decisions). Reader work never changes loop code; the export is a file the loop may read |
 | Shared package from the Journal phase | Storage, notification planner and folder exporter | Built in Phase 1 ([journal task table](02-journal.md#task-table)), even if [decision 3](04-decisions-and-checklist.md#decisions) keeps Five Minute Journal; the Reader adds Speech, LLM, Gap and Scheduling modules |
@@ -314,7 +329,7 @@ Rules (proposal): at most 1 call a day, none in quiet hours or the 30 min before
 
 ## Task table
 
-Paths follow the new repo layout ([decision 9](04-decisions-and-checklist.md#decisions)). Haiku = mechanical, Sonnet = writing or judgment, script = deterministic and model-free. A script lint runs before every repair pass. Prompt files are named only; their text is written after approval. Phase hours: [phases](00-overview.md#how-the-apps-fit-around-big-brain).
+Paths follow the new repo layout ([decision 9](04-decisions-and-checklist.md#decisions)). Models per job: [LLM options](#llm-options-no-claude-api-key); script = deterministic and model-free. A script lint runs before every repair pass. Prompt files are named only; their text is written after approval. Phase hours: [phases](00-overview.md#how-the-apps-fit-around-big-brain).
 
 ### Phase 0
 
@@ -330,11 +345,11 @@ Starts now, in parallel with J-01 ([decision 1](04-decisions-and-checklist.md#de
 |---|---|---|
 | R-02 Book-package schema and fixtures · Sonnet | `schemas/book-package.schema.json`, `docs/book-package.md`, `tests/fixtures/mini-book.json`, `tests/fixtures/bad/` | A standard JSON-schema validator accepts the 2-chapter fixture and rejects 3 bad fixtures (missing source ids, empty idea units, unknown level); 2 more (duplicate ids, 9 idea units on one paragraph) need cross-field checks and go to R-04 |
 | R-03 Paragraph extraction · Sonnet | `scripts/extract-paragraphs.py`, `tests/extract/` | On the pilot PDF: paragraph count within 5% of the owner's hand count on 3 sample chapters (about 20 min); 0 running headers or page numbers left (repeated-line check); 0 words split by line-break hyphens; an EPUB fixture yields paragraphs in spine order; a scanned PDF exits with "needs OCR" |
-| R-04 Package validator and sampler · Haiku | `scripts/validate-package.py`, `scripts/sample-package.py`, `scripts/banned-words.txt` | Exit 0 on the good fixture; non-zero with a named error on each of the 5 bad ones; covers paragraph coverage, source ids, idea-unit spans, counts, duplicates and banned words; the sampler prints 10 summaries beside sources and 10 idea units |
+| R-04 Package validator and sampler · Haiku | `scripts/validate-package.py`, `scripts/sample-package.py`, `scripts/banned-words.txt` | Exit 0 on the good fixture; non-zero with a named error on each of the 5 bad ones; covers paragraph coverage, source ids, idea-unit spans, counts, duplicates and banned words; the sampler prints 10 summaries beside sources, 5 idea units and 5 quiz items |
 | R-05 Pipeline prompts · Sonnet | `prompts/level-generation.txt`, `prompts/idea-units.txt`, `prompts/quiz-generation.txt`, `prompts/suggested-questions.txt`, `scripts/lint-prompts.py` | The lint script checks every file in `prompts/` for an output schema, limits, a banned list and one example; run on the mini fixture, the output passes R-04 with at most 2 failing items |
 | R-06 Pilot levels and topics · Sonnet | `mac/pipeline/inbox/`, `mac/pipeline/build/pilot/paragraphs.json`, `mac/pipeline/build/pilot/levels.json`, `docs/pilot-package-report.md` | One real PDF chosen by the user; L0 exists once; L1 and L2 exist for every chapter; every summary lists source ids; turns and time used are written to the report |
-| R-07 Pilot idea units, quiz items and questions · Haiku | `mac/pipeline/build/pilot/pilot.readerpkg.json` | Every unit has idea units within limits; every topic has 3-5 quiz items and 3 suggested questions; the file passes the schema |
-| R-08 Lint and sample the pilot package · script; repair Haiku (idea units, quizzes) or Sonnet (summaries) | `mac/pipeline/build/pilot/lint-report.txt`, `docs/pilot-package-report.md` | Validator exits 0 after at most one repair pass that touched only failing items; the user marks at most 2 of 20 sampled items bad |
+| R-07 Pilot idea units, quiz items and questions · Sonnet (idea units), Haiku (quiz items, questions) | `mac/pipeline/build/pilot/pilot.readerpkg.json` | Every unit has idea units within limits; every topic has 3-5 quiz items and 3 suggested questions; the file passes the schema |
+| R-08 Lint and sample the pilot package · script; repair Sonnet (summaries, idea units) or Haiku (quiz items, questions) | `mac/pipeline/build/pilot/lint-report.txt`, `docs/pilot-package-report.md` | Validator exits 0 after at most one repair pass that touched only failing items; the user marks at most 2 of 20 sampled items bad |
 
 ### Phase 2: Reader MVP
 
@@ -346,19 +361,19 @@ Starts now, in parallel with J-01 ([decision 1](04-decisions-and-checklist.md#de
 | R-12 Brief, self-rating and placement S2 · Sonnet | `Reader/Views/OnboardingView.swift`, `Reader/Placement/Placement.swift` | First open of a book shows brief, 5-level self-rating and start choice; "Find my level" asks 1-2 items per chapter; passed chapters show as tested out on S3; the first step starts at the first chapter not passed |
 | R-13 Level map S3 · Sonnet | `Reader/Views/LevelMapView.swift` | Later levels show LOCKED with the unlock rule written; the current topic is highlighted; "Test out?" appears on locked items; a "Time to review" card sits on top when reviews are due |
 | R-14 One-paragraph reader and dwell gate S4 · Sonnet | `Reader/Views/ParagraphReaderView.swift`, `tests/ReaderUITests/NoSkipTests.swift` | UI test: swipe, scroll and tap-anywhere leave the paragraph index unchanged; Continue stays disabled 12 s on a 100-word paragraph; back works only inside the topic; read counters update |
-| R-15 On-device transcriber · Sonnet | `Shared/Speech/Transcriber.swift`, `Shared/Package.swift`, `docs/device-capabilities.md` | On the iPhone, a 5-minute continuous read-aloud transcribes without stopping and live words appear within about 1 s; the doc records `supportedLocales` (hi-IN and pa-IN present or not) and Apple Intelligence availability |
+| R-15 On-device transcriber and Whisper comparison · Sonnet | `Shared/Speech/Transcriber.swift`, `Shared/Package.swift`, `scripts/word-error-rate.py`, `docs/device-capabilities.md` | On the iPhone, a 5-minute continuous read-aloud transcribes without stopping and live words appear within about 1 s; the same scripted passage is also transcribed by the Recorder's Whisper on the Mac, and the doc records the word error rate of both and which transcript gets scored; the doc records `supportedLocales` (hi-IN and pa-IN present or not) |
 | R-16 Dictate-back screen S5 · Sonnet | `Reader/Views/RetellView.swift` | Source text hidden; live transcript with the newest word bold; Stop submits; discard asks to confirm; typed fallback works; under 15 words keeps the gate shut |
-| R-17 Recall scorer with evidence check · Sonnet | `Shared/LLM/RecallScorer.swift`, `Shared/Package.swift`, `prompts/recall-scoring.txt`, `prompts/contradiction-check.txt`, `tests/ScoringTests/` | On a fixture retell: exactly one verdict per idea unit; a recalled or partial verdict whose quote is missing from the transcript is downgraded (test); 20 units score in under 10 s on the iPhone; model and prompt version saved per attempt; `scripts/lint-prompts.py` passes on both prompts |
+| R-17 Recall scorer with evidence check, Mac relay and phone client · Sonnet | `Shared/LLM/RecallScorer.swift`, `Shared/LLM/RelayClient.swift`, `Shared/Package.swift`, `mac/relay/`, `prompts/recall-scoring.txt`, `prompts/contradiction-check.txt`, `tests/ScoringTests/` | On a fixture retell: exactly one verdict per idea unit; a recalled or partial verdict whose quote is missing from the transcript is downgraded (test); verdicts for a 20-unit fixture return within 30 s; with the Mac off, the retell is saved and scored on reconnect; the relay refuses to run if ANTHROPIC_API_KEY is set; if R-15 picked Whisper, the relay scores Whisper's transcript of the fixture audio; model and prompt version saved per attempt; `scripts/lint-prompts.py` passes on both prompts |
 | R-18 Check-set harness · Haiku | `scripts/score-checkset.py`, `tests/recall-checkset/` | On a 5-retell sample with known labels, the printed agreement, kappa and false-credit rate match a hand calculation |
 | R-19 Run the check-set gate · script | `tests/recall-checkset/results.txt` | 40 user-confirmed retells scored; pass means agreement at least 85%, kappa at least 0.6, false credit at most 10%; the result is saved with the model version |
-| R-20 Fallback scorer, only if R-19 fails · Sonnet | `Shared/LLM/PCCScorer.swift`, `mac/scorer/`, `docs/scorer-fallback.md` | The same check set passes the same gate with the PCC model or the Mac local model; if none passes, user confirmation stays on and the doc says so |
+| R-20 Side-by-side test, only if a local model is proposed for a job · Sonnet | `scripts/side-by-side.py`, `docs/side-by-side.md`, `tests/recall-checkset/`, `tests/side-by-side/<job>/` | For recall scoring, the candidate and the cloud model score the same 40 labelled retells; the candidate may take the job only if its agreement is at least the cloud model's minus 2 points and its false credit is no higher (proposal). For any other job, the owner first labels 40 cases of it in `tests/side-by-side/<job>/`; where the output is text (chat, idea units, notes), the owner picks blind between the two outputs, and the candidate must be preferred or tied in at least half (proposal). The doc records both models' results |
 | R-21 Result screen, cause hints and retell loop S6 · Sonnet | `Reader/Views/ResultView.swift`, `Shared/Gap/CauseRules.swift`, `Shared/Package.swift`, `tests/GapTests/` | Missed group shows first; the hint card says "hint"; rule tests cover never learned, forgotten and misunderstood with the stated precedence; "Retell again" shows only paragraphs with missed or partial units; the loop stops at 3; the schedule uses the first attempt's grade |
 | R-22 Hour-scale scheduler and FSRS hand-off · Sonnet | `Shared/Scheduling/HourScheduler.swift`, `Shared/Scheduling/FSRSBridge.swift`, `Shared/Package.swift` (swift-fsrs dependency), `tests/SchedulingTests/` | Table tests: G 4, all Good, read at 07:30 gives a review in the 11:30 slot, then 07:30 next day, then day mode; G 2 gives 3 hour-scale reviews; Again resets to G and ease never drops below 1.3; next is always at least current + G; the FSRS parameter array has 21 values (FSRS-6), not 19 (FSRS-5) |
 | R-23 Session builder and Today S10 · Sonnet | `Reader/Session/SessionBuilder.swift`, `Reader/Views/TodayView.swift` | With 9 overdue reviews the session is 5 reviews then the new topic, and 4 roll over; the hero card shows "N due" or "Next session in Xh Ym" |
 | R-24 Quiz, level test and test-out S7 · Sonnet | `Reader/Views/QuizView.swift`, `Reader/TestOut/TestOut.swift` | Test-out at 90% unlocks and puts its units in day mode with a first review at least 24 h out; at 50% it returns to reading and changes nothing but the attempt log; a retake is blocked until the next slot; "I don't know" scores wrong; a level test at 80% with every central unit at least partial opens the next level, and at 70% it does not |
 | R-25 Reader notification plan · Sonnet | `Reader/Reminders/ReaderSlotPlan.swift`, `Shared/Notifications/RollingScheduler.swift`, `tests/NotificationTests/` | After any rebuild, pending is 10 or fewer and none falls in quiet hours; changing G from 4 to 2 re-plans within 1 s; with the debug clock and no sessions, pings fire for the next 2 slots, then none until the next morning's first slot |
 | R-26 Settings S11 · Haiku | `Reader/Views/SettingsView.swift` | Base-gap stepper 1-12 h; quiet hours with a caption naming the active time zone; the research-steps preset; values survive a relaunch; the link to iOS notification settings opens |
-| R-27 Focus guard: mid-topic ping and Guided Access tip · Haiku | `Reader/Focus/FocusGuard.swift` | Leaving mid-topic fires one ping at 5 min; returning earlier cancels it; the Guided Access tip shows at session start until "don't show again" |
+| R-27 Focus guard: mid-topic ping and Guided Access tip · Sonnet | `Reader/Focus/FocusGuard.swift` | Leaving mid-topic fires one ping at 5 min; returning earlier cancels it; the Guided Access tip shows at session start until "don't show again" |
 | R-28 Debug clock and diagnostics · Haiku | `Reader/Views/DebugView.swift` | Debug builds only: a clock offset moves "now" by hours or days and the Today screen and pending list follow; the screen shows the pending notification count |
 
 ### Phase 3: Reader extras
@@ -368,13 +383,13 @@ Starts now, in parallel with J-01 ([decision 1](04-decisions-and-checklist.md#de
 | R-29 ClawCall API check · Sonnet | `docs/clawcall-setup.md` | The doc answers with evidence: custom script per call, transcript returned and how fast, retention, caller ID, calls from a Mac script; one manual test call is placed from the Mac. If the per-call script or the transcript is missing: no quiz calls, R-34 and check 11 drop their quiz parts, and [decision 24](04-decisions-and-checklist.md#decisions) is asked again |
 | R-30 Physical-book session S8 · Sonnet | `Reader/PaperBook/PaperSessionView.swift`, `prompts/session-idea-units.txt`, `docs/device-capabilities.md` | 20 minutes read aloud with the screen locked leaves no transcript gap over 60 s; after calibration the page estimate is within 10% of the owner's hand count; a force-quit loses 60 s or less; `scripts/lint-prompts.py` passes on the prompt; the doc notes whether live transcription runs while locked and whether recording works while the Big Brain recorder runs |
 | R-31 Page-photo fallback · Sonnet | `Reader/PaperBook/PagePhotoReader.swift` | On 10 page photos, the printed page number is read right on at least 9 |
-| R-32 Talk about the text S9 · Sonnet | `Reader/Chat/ChatSheet.swift`, `prompts/talk-about-text.txt` | A test inspects the packed context: no unit after the current position, size within the runtime contextSize; each answer shows its book or outside tag; a saved "More" card appears in the next review; `scripts/lint-prompts.py` passes on the prompt |
-| R-33 Status export and call-result import · Sonnet | `Reader/Calls/StatusExport.swift`, `Reader/Calls/CallResultImport.swift`, `schemas/status-export.schema.json`, `schemas/call-result.schema.json` | Writes through J-09's `Shared/Export/FolderExporter.swift`; `status.json` validates after every session; a fixture `call-result.json` dropped into the folder is scored on next open and moves that topic's due time |
-| R-34 Mac call runner · Sonnet | `mac/calls/call-runner.py`, `mac/calls/reader-calls.plist`, `tests/calls/fixtures/` | A dry run on 6 fixtures (push, boost, quiz, nothing due, quiet hours, a second call the same day) prints the right decision for each; one live call of each type reaches the phone |
-| R-35 AlarmKit missed-slot alarm · Haiku | `Reader/Alarm/MissedSlotAlarm.swift` | Off by default; when on, a planned slot with no session sounds one alarm 30 min later with Focus on and the ringer silent; a session before then cancels it |
+| R-32 Talk about the text S9 · Sonnet | `Reader/Chat/ChatSheet.swift`, `prompts/talk-about-text.txt` | A test inspects the packed context: no unit after the current position; each answer shows its book or outside tag; a saved "More" card appears in the next review; `scripts/lint-prompts.py` passes on the prompt |
+| R-33 Status export and call-result import · Sonnet | `Reader/Calls/StatusExport.swift`, `Reader/Calls/CallResultImport.swift`, `schemas/status-export.schema.json`, `schemas/call-result.schema.json` | Writes through J-09's `Shared/Export/FolderExporter.swift`; `status.json` validates after every session; a fixture `call-result.json` with verdicts dropped into the folder is imported on next open and moves that topic's due time |
+| R-34 Mac call runner · Sonnet | `mac/calls/call-runner.py`, `mac/calls/reader-calls.plist`, `tests/calls/fixtures/` | A dry run on 6 fixtures (push, boost, quiz, nothing due, quiet hours, a second call the same day) prints the right decision for each; a quiz-transcript fixture comes back from the relay with verdicts in `call-result.json`; one live call of each type reaches the phone |
+| R-35 AlarmKit missed-slot alarm · Sonnet | `Reader/Alarm/MissedSlotAlarm.swift` | Off by default; when on, a planned slot with no session sounds one alarm 30 min later with Focus on and the ringer silent; a session before then cancels it |
 | R-36 Session shield, paid account · Sonnet | `Reader/Focus/SessionShield.swift`, `Reader/Extensions/Shield/`, `docs/device-capabilities.md` | During a session every other app shows the shield; ending the session lifts it; the doc notes whether this works on a dev-signed build |
 | R-37 Recorder fallback ([decision 18](04-decisions-and-checklist.md#decisions)), only when you start a Punjabi or Hindi text and R-15 found that locale missing · Sonnet | `mac/recorder-bridge/` | For one Punjabi or Hindi session, the Mac transcript for the session window reaches the app within 10 minutes |
-| R-38 Big Brain export, only if [decision 14](04-decisions-and-checklist.md#decisions) says yes · Haiku | `Reader/Export/BigBrainExport.swift`, `schemas/bigbrain-export.schema.json`, `docs/big-brain-reader-intake.md` | The day's file in the shared folder is rewritten after each session and validates against the schema; a day with no session has no file; the intake doc names folder, file name, schema and update rule; no Big Brain file changes |
+| R-38 Big Brain export, only if [decision 14](04-decisions-and-checklist.md#decisions) says yes · Sonnet | `Reader/Export/BigBrainExport.swift`, `schemas/bigbrain-export.schema.json`, `docs/big-brain-reader-intake.md` | The day's file in the shared folder is rewritten after each session and validates against the schema; a day with no session has no file; the intake doc names folder, file name, schema and update rule; no Big Brain file changes |
 
 ## Checks
 
@@ -391,5 +406,5 @@ End-to-end, on the iPhone, with the pilot book. Each check passes or fails.
 9. **Physical book.** Read aloud for 10 minutes with the phone locked on a table. The transcript exists; after the first calibration the page estimate is within 10% of a hand count; a force-quit mid-session keeps all but the last minute.
 10. **Talk.** Ask about the current paragraph, then about a later chapter. The first answer is tagged "from the book"; the second says it comes later. Tap More and save the card; it appears in the next review.
 11. **Calls.** Over one week: no call in quiet hours and at most one a day. In a live quiz call, answer two questions; opening the app within 10 minutes after the call shows it counted as a review, with verdicts.
-12. **Offline.** In airplane mode, read, retell, score and schedule a topic. Only calls, folder sync and a PCC or Mac fallback scorer (if R-20 chose one) fail.
-13. **No API key.** ANTHROPIC_API_KEY is unset on the Mac, and a script search of the repo for key patterns finds none.
+12. **Offline.** In airplane mode, read and retell a topic: the retell is saved, the next topic opens provisionally and pings stay on plan. After reconnecting, the retell is scored and the topic is scheduled from its grade. Only scoring, chat, calls and folder sync waited.
+13. **No API key.** ANTHROPIC_API_KEY is unset on the Mac, the relay refuses to start with it set, and a script search of the repo for key patterns finds none.
