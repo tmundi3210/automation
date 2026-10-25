@@ -2,7 +2,7 @@
 
 ## Decisions
 
-Ordered by what blocks the build soonest. Each default is a proposal; nothing is decided until you say yes, ok or go. Decided items keep their number. Items marked "Default, Talwinder can reverse" were applied on 2026-10-25 at the owner's instruction; the rest that are not decided (14, 24, 25, 29, 30, 31, 32) involve money, privacy, Anthropic's terms or something hard to undo, and stay open.
+Ordered by what blocks the build soonest. Each default is a proposal; nothing is decided until you say yes, ok or go. Decided items keep their number. Items marked "Default, Talwinder can reverse" were applied on 2026-10-25 at the owner's instruction. Decisions 14, 24, 25, 29, 30, 31 and 32 (money, privacy, Anthropic's terms or hard to undo) were decided by Talwinder the same day with their defaults; 24 and 31 carry conditions. No decision is open.
 
 Decision 32 was added after the list was ordered; it blocks R-39 and the runtime model jobs.
 
@@ -19,7 +19,7 @@ Decision 32 was added after the list was ordered; it blocks R-39 and the runtime
 11. Default, Talwinder can reverse (2026-10-25): journal reminders at 10:00 pm nightly and 7:15 am in the morning, Pacific; the journal day starts at 4:00 am; reminder times editable in 15-minute steps, the day start by the hour.
 12. Default, Talwinder can reverse (2026-10-25): the morning reminder opens last night's gratitude lines plus one "Today I will" line, and offers to fill in a blank night.
 13. Default, Talwinder can reverse (2026-10-25): when travelling, journal reminders, Reader slots and quiet hours follow the phone's time zone (Pacific at home), with a setting that pins Pacific; same rule in both apps.
-14. Should app data (journal entries, Reader progress, later tracking files and decision worksheets) feed Big Brain as optional files in its input folder? Default: yes; one file per day (per decision for worksheets), a missing file means no data, no Big Brain code changes, and Big Brain reads them only after the Phase 0 gate.
+14. Decided 2026-10-25 by Talwinder (default accepted): app data (journal entries, Reader progress, later tracking files and decision worksheets) feeds Big Brain as optional files in its input folder, one file per day (per decision for worksheets); a missing file means no data, no Big Brain code changes, and Big Brain reads them only after the Phase 0 gate.
 15. Default, Talwinder can reverse (2026-10-25): each book covers the whole book first (brief and chapter summaries), then takes each chapter deeper; depth is fixed at import, with the full text as the target.
 16. Decided 2026-10-25: quality first. Claude cloud models are the default for every model job, with no API key: Haiku for bulk, Sonnet where quality matters (job list in [LLM options](01-reader.md#llm-options-no-claude-api-key)). A local or on-device model may take a job only after a side-by-side test (R-20) shows it matches cloud quality.
 17. Default, Talwinder can reverse (2026-10-25): the gate is on each topic (3-7 paragraphs), not every paragraph.
@@ -29,15 +29,15 @@ Decision 32 was added after the list was ordered; it blocks R-39 and the runtime
 21. Default, Talwinder can reverse (2026-10-25): the gap grows after each successful retell, multiplied by ease as in Anki (start 2.5, floor 1.3).
 22. Default, Talwinder can reverse (2026-10-25): at most 5 piled-up reviews go into one session before the new topic; the rest roll to the next slot.
 23. Default, Talwinder can reverse (2026-10-25): a Guided Access tip plus a "left mid-topic" ping in Phase 2; an optional shield over other apps in Phase 3.
-24. Which calls should ClawCall place, and how often? Default: push and quiz on, boost off (facts only when on); at most 1 call a day, none in quiet hours.
-25. Does paper-book mode assume you read aloud? Default: yes; start and end page photos with OCR cover silent reading.
+24. Decided 2026-10-25 by Talwinder (default accepted): ClawCall places push and quiz calls, boost off (facts only when on); at most 1 call a day, none in quiet hours. Condition: R-29 confirms how long ClawCall keeps call recordings and transcripts and reports that to Talwinder before the first quiz call.
+25. Decided 2026-10-25 by Talwinder (default accepted): paper-book mode assumes you read aloud; start and end page photos with OCR cover silent reading. The mic also picks up people nearby; audio and transcript stay on the phone.
 26. Default, Talwinder can reverse (2026-10-25): later parts follow the Reader extras in this order: Part 3 Mind, Part 2 Self-tracking, Part 4 Voice, Part 7 rest, Part 5 Body language, Part 6 Clothes, one at a time, each behind its gate.
 27. Default, Talwinder can reverse (2026-10-25): later parts are hosted as Reader packs (Parts 3 and 7, lessons of Parts 4-5), Journal additions (Part 7's if-then line and decision worksheet), one new Practice app (drills of Parts 4-5) and one Tracker app (Part 2), both new targets in the [decision 9](#decisions) workspace, and Mac-only scripts (Part 6).
 28. Default, Talwinder can reverse (2026-10-25): blind men and the elephant leads the biases pack, paired with the invisible gorilla experiment; runner-up Plato's cave.
-29. Should the location log keep only visits and significant moves, or also a continuous precise trail? Default: visits and significant moves; the continuous trail only when switched on.
-30. Build camera-based room tracking at all? Default: no; reconsider after Part 2 v1 has run 4 weeks, starting with a 1-day heat test on a phone that is not the Recorder (battery is not weighed, [decision 7](#decisions)).
-31. Which cloud service may receive your face photos for LoRA training and render the final looks with that LoRA? Default: fal for both, only after L-06 shows its trainer and render model are outside the no-training carve-outs, with payload storage off; never Higgsfield.
-32. Build the Mac relay that runs Claude Code headless on your Max login for runtime scoring and chat (R-39)? On hold: Talwinder decides separately; risks in [runtime path](01-reader.md#llm-options-no-claude-api-key). Default: hold; quality argues for the relay, the terms risk for waiting. Until then retells are scored by your own confirmation on S6, or by a local model that passed R-20. The hold also covers any phone-to-Mac link for a Mac-hosted local model (assumption).
+29. Decided 2026-10-25 by Talwinder (default accepted): the location log keeps visits and significant moves; a continuous precise trail runs only when switched on.
+30. Decided 2026-10-25 by Talwinder (default accepted): camera-based room tracking is not built; reconsider after Part 2 v1 has run 4 weeks, starting with a 1-day heat test on a phone that is not the Recorder (battery is not weighed, [decision 7](#decisions)).
+31. Decided 2026-10-25 by Talwinder (default accepted): fal is the only service that may receive face photos (LoRA training and final renders), with payload storage off; never Higgsfield. Conditions: L-06 checks fal's terms first; then Talwinder is asked again right before any actual face upload, and nothing is uploaded without that final yes.
+32. Decided 2026-10-25 by Talwinder (default accepted): hold. The Mac relay (R-39) is not built until Talwinder decides separately; risks in [runtime path](01-reader.md#llm-options-no-claude-api-key). Until then retells are scored by your own confirmation on S6, or by a local model that passed R-20. The hold also covers any phone-to-Mac link for a Mac-hosted local model (assumption).
 33. Default, Talwinder can reverse (2026-10-25): no meditation app is assumed; Part 3 ends with a generic meditation hand-off until Talwinder names the app.
 
 ## Checklist
@@ -54,12 +54,12 @@ Decision 32 was added after the list was ordered; it blocks R-39 and the runtime
 | R8 | Part 1: Anki-style rule at hour scale, gap growth labelled assumption, hand-off to days, difference in 3 lines, decision with default | PASS | 01-reader.md, "Schedule and spacing" (a)-(d); task R-22; decisions 20, 21 |
 | R9 | Part 1: dictate-back: retell, hear what I forgot, retell again | PASS | 01-reader.md, "Dictate-back loop"; tasks R-16, R-21. PASS on design, with the live-scorer caveat in R64 |
 | R10 | Part 1: gap analysis of the specific missing idea and its root cause; two-step reading labelled assumption, hint only, decision | PASS | 01-reader.md, "Recall scoring, gap and root cause"; tasks R-17, R-21; decision 19. PASS on design, with the live-scorer caveat in R64 |
-| R11 | Part 1: calls during learning to push, boost or quiz | PASS | 01-reader.md, "Notifications and calls"; tasks R-29, R-33, R-34; decision 24. ClawCall's per-call script and transcript return are (to verify) in 01-reader.md, "Reuse and to verify", ClawCall row; R-29 checks them, and if either is missing, quiz calls drop and decision 24 is asked again |
+| R11 | Part 1: calls during learning to push, boost or quiz | PASS | 01-reader.md, "Notifications and calls"; tasks R-29, R-33, R-34; decision 24. ClawCall's per-call script and transcript return are (to verify) in 01-reader.md, "Reuse and to verify", ClawCall row; R-29 checks them and the recording retention, reported to Talwinder before the first quiz call; if the script or transcript is missing, quiz calls drop and decision 24 is asked again |
 | R12 | Part 2: precise location sent by my own app, no Find My | PASS | 03-later-phases.md, "Part 2. Self-tracking" (Goal, Smallest useful version, iOS limits); decision 29 |
 | R13 | Part 2: HealthKit steps, other activity, sleep, sleep and wake times | PASS | 03-later-phases.md, "Part 2. Self-tracking" (Smallest useful version, iOS limits) |
 | R14 | Part 2: screen time | PASS | 03-later-phases.md, "Part 2. Self-tracking", iOS limits row (blocked; spike and fallbacks); task L-03 |
 | R15 | Part 2: website history | PASS | 03-later-phases.md, "Part 2. Self-tracking", iOS limits row (blocked on iPhone; Mac-side and domain-list alternatives) |
-| R16 | Part 2: camera or vision of how I work and spend time in a room | UNKNOWN | 03-later-phases.md, "Part 2. Self-tracking" gives the block and a stand-phone alternative; heat and privacy cost are unmeasured, and decision 30 defaults to no |
+| R16 | Part 2: camera or vision of how I work and spend time in a room | UNKNOWN | 03-later-phases.md, "Part 2. Self-tracking" gives the block and a stand-phone alternative; heat and privacy cost are unmeasured, and decision 30 decided not to build it for now |
 | R17 | Part 2: iOS limits stated honestly, nearest workable alternative for each blocked item | PASS | 03-later-phases.md, "Part 2. Self-tracking", iOS limits table; each row's alternative is marked (proposal) |
 | R18 | Part 3: mental models | PASS | 03-later-phases.md, "Part 3. Mind", Mental models bullet |
 | R19 | Part 3: biases with examples and stories, including a perception story chosen from candidates | PASS | 03-later-phases.md, "Part 3. Mind", Biases bullet (choice labelled assumption); decision 28 |
@@ -85,7 +85,7 @@ Decision 32 was added after the list was ordered; it blocks R-39 and the runtime
 | R39 | Part 5: quick-read tips page for right before a conversation | PASS | 03-later-phases.md, "Part 5. Body language and conversation", tips page bullet |
 | R40 | Part 5: repeat phrases with body language and a smile | PASS | 03-later-phases.md, "Part 5. Body language and conversation", repeat-phrase drill bullet |
 | R41 | Part 6: research what suits me | PASS | 03-later-phases.md, "Part 6. Clothes", step 1 |
-| R42 | Part 6: looks generated on my own photos, with a plan to collect and label them | PASS | 03-later-phases.md, "Part 6. Clothes", steps 2-3; tasks L-05, L-06; decision 31 |
+| R42 | Part 6: looks generated on my own photos, with a plan to collect and label them | PASS | 03-later-phases.md, "Part 6. Clothes", steps 2-3; tasks L-05, L-06; decision 31 (L-06 first, then a final yes right before any face upload) |
 | R43 | Part 6: find the items on Amazon | PASS | 03-later-phases.md, "Part 6. Clothes", step 4 and iOS limits (search API closed; Amazon Lens hand-off) |
 | R44 | Part 6: not fashion-trend chasing | PASS | 03-later-phases.md, "Part 6. Clothes", Goal and step 1; 00-overview.md, "Won't-build list" |
 | R45 | Part 7: journal every night, with gratitude | PASS | 02-journal.md, "Nightly flow and gratitude step"; task J-04; decision 10 |
@@ -113,7 +113,7 @@ Decision 32 was added after the list was ordered; it blocks R-39 and the runtime
 | R67 | Reader and journal near build-ready; all other parts brief and phased | PASS | 01-reader.md and 02-journal.md (design, task tables, checks); 03-later-phases.md, "Part cards" (six fields each); 00-overview.md, phase table |
 | R68 | Reuse of Jeet, Recorder, ClawCall and Big Brain marked to verify where needed | PASS | 01-reader.md, "Reuse and to verify"; 02-journal.md, "Reuse and to verify" |
 | R69 | No Claude API key assumed | PASS | 01-reader.md, "LLM options (no Claude API key)" (runtime relay on hold, decision 32; if built, R-39 uses the Max login and refuses to run with ANTHROPIC_API_KEY set; terms risk and interim path stated) and "Checks" item 13; task J-02 key search; 00-overview.md, "Won't-build list" |
-| R70 | Open questions numbered, each with a default | PASS | 04-decisions-and-checklist.md, "Decisions" (33 items, meditation app last; 26 decided or applied by default, 7 still open with defaults: 14, 24, 25, 29, 30, 31, 32) |
+| R70 | Open questions numbered, each with a default | PASS | 04-decisions-and-checklist.md, "Decisions" (33 items, meditation app last; all decided; 16 applied by default, Talwinder can reverse) |
 | R71 | Owner summary present | PASS | 00-overview.md, "Owner summary" (5 lines) |
 | R72 | Won't-build list present | PASS | 00-overview.md, "Won't-build list" |
 | R73 | Top-5 risks present | PASS | 00-overview.md, "Top-5 risks" (5 items, each linked to its detail) |

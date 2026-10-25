@@ -18,7 +18,7 @@ Gate tasks: only the rows that decide whether a slot's build starts. Thresholds 
 | L-03 Screen Time and web-domain export spike · Sonnet | `Tracker/Spike/`, `docs/screen-time-spike.md` | On the iPhone, dev build, in California: the iOS 26.4 export (as of 2026-10-25) returns yesterday's per-app usage and at least 1 visited web domain, or the doc records the exact error. The doc also states whether Apple's Screen Time pane kept updating over 3 days. |
 | L-04 Pace meter accuracy · Sonnet | `Shared/Speech/PaceMeter.swift`, `tests/fixtures/pace/`, `scripts/score-pace.py`, `docs/pace-meter-check.md` | Five recordings of one 300-word passage at slow, normal and fast pace: in all 5, the meter's session average is within 10% of words ÷ elapsed time from the script; a stopwatch check shows the gauge reacting within 2 s of a pace change. |
 | L-05 Photo set check · Haiku | `scripts/check-photo-set.py`, `mac/clothes/labels.csv` | Exits 0 only when `mac/clothes/photos/` holds 15-30 photos, at most 3 labelled full body, each with an expression label, none flagged sunglasses or hand on face; prints counts per label; exits 1 on a planted 4th full-body photo. |
-| L-06 Clothes privacy check · Sonnet | `docs/clothes-privacy.md` | Names the exact trainer and render model; quotes the terms text that places each inside or outside fal's carve-outs, with the date read; records payload storage as off; you say go on this doc before any photo is uploaded. |
+| L-06 Clothes privacy check · Sonnet | `docs/clothes-privacy.md` | Names the exact trainer and render model; quotes the terms text that places each inside or outside fal's carve-outs, with the date read; records payload storage as off; Talwinder reads this doc first, then is asked again right before any actual face upload, and nothing is uploaded without that final yes ([decision 31](04-decisions-and-checklist.md#decisions)). |
 
 ### Part 2. Self-tracking
 
@@ -137,7 +137,7 @@ Gate tasks: only the rows that decide whether a slot's build starts. Thresholds 
 
 **Case against.** Highest privacy cost of any part: face photos go to a cloud service. Clothes need full-body shots, where likeness is weakest, and the smile is unproven (step 3). Generated items may not exist, so Lens finds lookalikes. A store fitting room answers "does this suit me" with no build (proposal); virtual try-on apps were not researched. Cost to still build: Mac scripts plus paid cloud training and render runs ([budget](00-overview.md#budget), Phase 9 row).
 
-**Phase.** Later slot 6 of 6 (proposal), [decision 26](04-decisions-and-checklist.md#decisions). Gate: [decision 31](04-decisions-and-checklist.md#decisions) answered; L-05 and L-06 pass, including your go on the privacy doc. Why last: highest privacy and money cost, needs photos, no reuse of the Reader.
+**Phase.** Later slot 6 of 6 (proposal), [decision 26](04-decisions-and-checklist.md#decisions). Gate: [decision 31](04-decisions-and-checklist.md#decisions) answered; L-05 and L-06 pass; every face upload still needs Talwinder's final yes right before it. Why last: highest privacy and money cost, needs photos, no reuse of the Reader.
 
 ### Part 7. Productivity (rest)
 
