@@ -279,7 +279,7 @@ You read aloud; silent reading makes no sound to analyze (assumption). [Decision
 
 Alternative (proposal): photos of the start and end pages; Vision OCR reads the printed page numbers. It works for silent reading but gives no transcript, so no retell.
 
-R-30 checks whether the Reader can record on the main iPhone while the Big Brain recorder holds the mic and the DJI receiver (to verify). Your brief names both a main iPhone with a DJI mic and a spare iPhone streaming 24/7; this plan reads both as parts of the Recorder setup (assumption). [Decision 8](04-decisions-and-checklist.md#decisions).
+For now the Recorder runs on the main iPhone with the DJI mic; it moves to the spare iPhone later, on the Recorder project's date. Until then R-30 checks whether the Reader can record while the Recorder holds the mic and the DJI receiver (to verify); after the move the main iPhone's mic is free. [Decision 8](04-decisions-and-checklist.md#decisions).
 
 ### Talk about the text
 
