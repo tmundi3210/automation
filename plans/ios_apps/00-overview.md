@@ -16,7 +16,7 @@ Nothing here is decided until you say yes, ok or go; open points are numbered in
 
 ## How the apps fit around Big Brain
 
-Phase plan (proposal). Hours are per day, out of 4. Inside app hours: talk = chats with AI bots to plan and decide; build = starting and watching Claude Code sessions; feedback = testing on the iPhone and reviewing reports (assumption). The split is [decision 2](04-decisions-and-checklist.md#decisions). Phases 4-9 follow the order in [decision 26](04-decisions-and-checklist.md#decisions).
+Phase plan (proposal). Hours are per day, out of 4. Inside app hours: talk = chats with AI bots to plan and decide; build = starting and watching Claude Code sessions; feedback = testing on the iPhone and reviewing reports. Hours and split are decided ([decision 2](04-decisions-and-checklist.md#decisions)). Phases 4-9 follow the order in [decision 26](04-decisions-and-checklist.md#decisions).
 
 | phase | start / gate | loop h/day | apps h/day | inside apps: talk / build / feedback | what is built (task ids) | why this order |
 |---|---|---|---|---|---|---|
@@ -31,11 +31,11 @@ Phase plan (proposal). Hours are per day, out of 4. Inside app hours: talk = cha
 | 8. Later slot 5: Part 5 Body language | Slot 4 closed and your go; build gate in [Part 5](03-later-phases.md#part-5-body-language-and-conversation) | 1.5; 3.5 in trial | 2.5; 0.5 in trial | 0.5 / 1.25 / 0.75 when building | One pack, Practice drills, tips page | Depends on Part 4; weakest evidence |
 | 9. Later slot 6: Part 6 Clothes | Slot 5 closed and your go; build gate in [Part 6](03-later-phases.md#part-6-clothes) | 1.5 | 2.5 | 0.5 / 1.25 / 0.75 | L-05, L-06, then Mac scripts | Highest privacy and money cost |
 
-**Stop rule (proposal).** A failed digest night has no digest or needs a manual fix; a clean night has neither. After 2 failed nights in a row, app work pauses and its hours go to the loop until 2 clean nights in a row. The rule counts from the day the Phase 0 gate first passes, since failed nights during the digest test are expected and app work runs in parallel by [decision 1](04-decisions-and-checklist.md#decisions). A phase starts only when you say go.
+**Stop rule (approved 2026-10-25).** A failed digest night has no digest or needs a manual fix; a clean night has neither. After 2 failed nights in a row, app work pauses and its hours go to the loop until 2 clean nights in a row. The rule counts from the day the Phase 0 gate first passes, since failed nights during the digest test are expected and app work runs in parallel by [decision 1](04-decisions-and-checklist.md#decisions). A phase starts only when you say go.
 
 **Later slots (proposal).** Phases 4-9 run one at a time. A slot closes when its approved build tasks are done, or when it stops at its build gate; trials and gate tasks run first inside it ([part cards](03-later-phases.md#part-cards)).
 
-**Loop floor (proposal).** The loop keeps at least 1.5 h a day in every phase. In a later slot's trial weeks (a "use X instead" app tried for 2 weeks, or a course), app time drops to 0.5 h and the rest goes back to the loop. Big Brain's Claude sessions draw on the same weekly limit as app sessions (to verify), so app sessions stop until the weekly reset once the `/usage` 7-day bar passes 60%, and a new book starts only below 30%.
+**Loop floor (approved 2026-10-25, [decision 2](04-decisions-and-checklist.md#decisions)).** The loop keeps at least 1.5 h a day in every phase. In a later slot's trial weeks (a "use X instead" app tried for 2 weeks, or a course), app time drops to 0.5 h and the rest goes back to the loop. Big Brain's Claude sessions draw on the same weekly limit as app sessions (to verify), so app sessions stop until the weekly reset once the `/usage` 7-day bar passes 60%, and a new book starts only below 30%.
 
 **How the apps feed the loop.** Only as optional files in the folder Big Brain reads, if [decision 14](04-decisions-and-checklist.md#decisions) is yes. A missing file means no data. This plan changes no Big Brain code; a Big Brain session adds the reading side after the Phase 0 gate.
 - Journal: one file per night, J-09 ([feeding Big Brain](02-journal.md#feeding-big-brain)).

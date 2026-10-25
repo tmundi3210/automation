@@ -324,6 +324,8 @@ Paths follow the new repo layout ([decision 9](04-decisions-and-checklist.md#dec
 
 ### Phase 1: book-package spike
 
+Starts now, in parallel with J-01 ([decision 1](04-decisions-and-checklist.md#decisions)).
+
 | id | files | done-check |
 |---|---|---|
 | R-02 Book-package schema and fixtures · Sonnet | `schemas/book-package.schema.json`, `docs/book-package.md`, `tests/fixtures/mini-book.json`, `tests/fixtures/bad/` | A standard JSON-schema validator accepts the 2-chapter fixture and rejects 3 bad fixtures (missing source ids, empty idea units, unknown level); 2 more (duplicate ids, 9 idea units on one paragraph) need cross-field checks and go to R-04 |
