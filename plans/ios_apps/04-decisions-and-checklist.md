@@ -2,7 +2,7 @@
 
 ## Decisions
 
-Ordered by what blocks the build soonest. Each default is a proposal; nothing is decided until you say yes, ok or go. Decided items keep their number.
+Ordered by what blocks the build soonest. Each default is a proposal; nothing is decided until you say yes, ok or go. Decided items keep their number. Items marked "Default, Talwinder can reverse" were applied on 2026-10-25 at the owner's instruction; the rest that are not decided (14, 24, 25, 29, 30, 31, 32) involve money, privacy, Anthropic's terms or something hard to undo, and stay open.
 
 Decision 32 was added after the list was ordered; it blocks R-39 and the runtime model jobs.
 
@@ -15,30 +15,30 @@ Decision 32 was added after the list was ordered; it blocks R-39 and the runtime
 7. Decided 2026-10-25: the apps run on the main iPhone, an iPhone 15 Pro Max (Apple Intelligence capable). The spare iPhone 15 Pro can run them too and is optional until it takes over the Recorder ([decision 8](#decisions)). Battery is not weighed. [R-20](01-reader.md#phase-2-reader-mvp) may test Apple's on-device model. The iOS version is not confirmed: J-01 checks it is iOS 26 or later.
 8. Decided 2026-10-25: the Recorder runs on the main iPhone with the DJI mic for now and moves to the spare iPhone 15 Pro long-term, streaming 24/7 to the Mac; the Recorder project sets the move date. Once it moves, the main iPhone's mic is free for Reader retells; until then R-30 checks whether the Reader can record while the Recorder runs.
 9. Decided 2026-10-25: one new repo, `~/Projects/mundi-apps`, with one Xcode workspace, two apps (Journal, Reader) and one shared local Swift package; J-01 creates it, and each app keeps its own pending-notification cap. The GitHub remote is private. Room is left for a third app: the learning-system app from your separate decision list (D30) may join this workspace but keeps its own SRS engine (D31). Those D-numbers are not this plan's decisions 30 and 31.
-10. Night flow of gratitude (always on) plus best moment, lesson and mood, each of the last three switchable in settings? Default: yes, all four on.
-11. Journal reminders at 10:00 pm nightly and 7:15 am in the morning, Pacific, with the journal day starting at 4:00 am? Default: yes; reminder times editable in 15-minute steps, the day start by the hour.
-12. What is the morning reminder for? Default: it opens last night's gratitude lines plus one "Today I will" line, and offers to fill in a blank night.
-13. When you travel, do journal reminders, Reader slots and quiet hours follow the phone's time zone or stay on Pacific? Default: follow the phone's zone, Pacific at home, with a setting that pins Pacific; same rule in both apps.
+10. Decided 2026-10-25: gratitude is always on; best moment, lesson and mood are each switchable in settings; all four are on by default.
+11. Default, Talwinder can reverse (2026-10-25): journal reminders at 10:00 pm nightly and 7:15 am in the morning, Pacific; the journal day starts at 4:00 am; reminder times editable in 15-minute steps, the day start by the hour.
+12. Default, Talwinder can reverse (2026-10-25): the morning reminder opens last night's gratitude lines plus one "Today I will" line, and offers to fill in a blank night.
+13. Default, Talwinder can reverse (2026-10-25): when travelling, journal reminders, Reader slots and quiet hours follow the phone's time zone (Pacific at home), with a setting that pins Pacific; same rule in both apps.
 14. Should app data (journal entries, Reader progress, later tracking files and decision worksheets) feed Big Brain as optional files in its input folder? Default: yes; one file per day (per decision for worksheets), a missing file means no data, no Big Brain code changes, and Big Brain reads them only after the Phase 0 gate.
-15. Should each book cover the whole book first (brief and chapter summaries), then take each chapter deeper, with its depth fixed at import? Default: yes; the depth target is the full text.
+15. Default, Talwinder can reverse (2026-10-25): each book covers the whole book first (brief and chapter summaries), then takes each chapter deeper; depth is fixed at import, with the full text as the target.
 16. Decided 2026-10-25: quality first. Claude cloud models are the default for every model job, with no API key: Haiku for bulk, Sonnet where quality matters (job list in [LLM options](01-reader.md#llm-options-no-claude-api-key)). A local or on-device model may take a job only after a side-by-side test (R-20) shows it matches cloud quality.
-17. Gate on each topic (3-7 paragraphs) or on every paragraph? Default: each topic.
-18. Which speech-to-text runs dictate-back and paper-book mode? Default: on-device SpeechAnalyzer for live words; R-15 compares it with the Recorder's Whisper on the same passage and the more accurate transcript is scored (Whisper's only once the relay exists, [decision 32](#decisions)); Recorder pipeline also the Punjabi or Hindi fallback.
-19. Does "two-step thinking" mean pass 1 finds the missing idea units and pass 2 proposes why (never learned, misunderstood, forgotten), shown only as a hint? Default: yes.
-20. Spacing default: your 4-hour base gap (growing by ease if decision 21 is yes) with a hand-off to FSRS days at 24 h, or the research's fixed 2 h, 4 h and 8 h steps, then days? Default: your 4-hour rule (two hour-scale reviews per topic instead of three); the research steps ship as a settings preset.
-21. Does the gap grow after each successful retell? Default: yes, multiplied by ease as in Anki (start 2.5, floor 1.3).
-22. When reviews pile up, how many go into one session before the new topic? Default: 5; the rest roll to the next slot.
-23. Which guard keeps you from drifting off mid-topic? Default: a Guided Access tip plus a "left mid-topic" ping in Phase 2; an optional shield over other apps in Phase 3 if the paid account allows it.
+17. Default, Talwinder can reverse (2026-10-25): the gate is on each topic (3-7 paragraphs), not every paragraph.
+18. Default, Talwinder can reverse (2026-10-25): on-device SpeechAnalyzer for live words; R-15 compares it with the Recorder's Whisper on the same passage and the more accurate transcript is scored (Whisper's only once the relay exists, [decision 32](#decisions)); the Recorder pipeline is also the Punjabi or Hindi fallback.
+19. Default, Talwinder can reverse (2026-10-25): "two-step thinking" means pass 1 finds the missing idea units and pass 2 proposes why (never learned, misunderstood, forgotten), shown only as a hint.
+20. Default, Talwinder can reverse (2026-10-25): your 4-hour base gap, growing by ease ([decision 21](#decisions)), with a hand-off to FSRS days at 24 h (two hour-scale reviews per topic instead of three); the research's fixed 2 h, 4 h and 8 h steps ship as a settings preset.
+21. Default, Talwinder can reverse (2026-10-25): the gap grows after each successful retell, multiplied by ease as in Anki (start 2.5, floor 1.3).
+22. Default, Talwinder can reverse (2026-10-25): at most 5 piled-up reviews go into one session before the new topic; the rest roll to the next slot.
+23. Default, Talwinder can reverse (2026-10-25): a Guided Access tip plus a "left mid-topic" ping in Phase 2; an optional shield over other apps in Phase 3.
 24. Which calls should ClawCall place, and how often? Default: push and quiz on, boost off (facts only when on); at most 1 call a day, none in quiet hours.
 25. Does paper-book mode assume you read aloud? Default: yes; start and end page photos with OCR cover silent reading.
-26. In what order should the later parts follow the Reader extras? Default: Part 3 Mind, Part 2 Self-tracking, Part 4 Voice, Part 7 rest, Part 5 Body language, Part 6 Clothes, one at a time, each behind its gate.
-27. Host the later parts as Reader packs (Parts 3 and 7, lessons of Parts 4-5), Journal additions (Part 7's if-then line and decision worksheet), one new Practice app (drills of Parts 4-5) and one Tracker app (Part 2), both new targets in the decision 9 workspace, and Mac-only scripts (Part 6)? Default: yes.
-28. Which perception story leads the biases pack? Default: blind men and the elephant, paired with the invisible gorilla experiment; runner-up Plato's cave.
+26. Default, Talwinder can reverse (2026-10-25): later parts follow the Reader extras in this order: Part 3 Mind, Part 2 Self-tracking, Part 4 Voice, Part 7 rest, Part 5 Body language, Part 6 Clothes, one at a time, each behind its gate.
+27. Default, Talwinder can reverse (2026-10-25): later parts are hosted as Reader packs (Parts 3 and 7, lessons of Parts 4-5), Journal additions (Part 7's if-then line and decision worksheet), one new Practice app (drills of Parts 4-5) and one Tracker app (Part 2), both new targets in the [decision 9](#decisions) workspace, and Mac-only scripts (Part 6).
+28. Default, Talwinder can reverse (2026-10-25): blind men and the elephant leads the biases pack, paired with the invisible gorilla experiment; runner-up Plato's cave.
 29. Should the location log keep only visits and significant moves, or also a continuous precise trail? Default: visits and significant moves; the continuous trail only when switched on.
 30. Build camera-based room tracking at all? Default: no; reconsider after Part 2 v1 has run 4 weeks, starting with a 1-day heat test on a phone that is not the Recorder (battery is not weighed, [decision 7](#decisions)).
 31. Which cloud service may receive your face photos for LoRA training and render the final looks with that LoRA? Default: fal for both, only after L-06 shows its trainer and render model are outside the no-training carve-outs, with payload storage off; never Higgsfield.
 32. Build the Mac relay that runs Claude Code headless on your Max login for runtime scoring and chat (R-39)? On hold: Talwinder decides separately; risks in [runtime path](01-reader.md#llm-options-no-claude-api-key). Default: hold; quality argues for the relay, the terms risk for waiting. Until then retells are scored by your own confirmation on S6, or by a local model that passed R-20. The hold also covers any phone-to-Mac link for a Mac-hosted local model (assumption).
-33. Which meditation app did you mean? Default: none assumed; Part 3 ends with a generic meditation hand-off until you name it.
+33. Default, Talwinder can reverse (2026-10-25): no meditation app is assumed; Part 3 ends with a generic meditation hand-off until Talwinder names the app.
 
 ## Checklist
 
@@ -113,7 +113,7 @@ Decision 32 was added after the list was ordered; it blocks R-39 and the runtime
 | R67 | Reader and journal near build-ready; all other parts brief and phased | PASS | 01-reader.md and 02-journal.md (design, task tables, checks); 03-later-phases.md, "Part cards" (six fields each); 00-overview.md, phase table |
 | R68 | Reuse of Jeet, Recorder, ClawCall and Big Brain marked to verify where needed | PASS | 01-reader.md, "Reuse and to verify"; 02-journal.md, "Reuse and to verify" |
 | R69 | No Claude API key assumed | PASS | 01-reader.md, "LLM options (no Claude API key)" (runtime relay on hold, decision 32; if built, R-39 uses the Max login and refuses to run with ANTHROPIC_API_KEY set; terms risk and interim path stated) and "Checks" item 13; task J-02 key search; 00-overview.md, "Won't-build list" |
-| R70 | Open questions numbered, each with a default | PASS | 04-decisions-and-checklist.md, "Decisions" (33 items, meditation app last; 32, the relay, on hold with a default) |
+| R70 | Open questions numbered, each with a default | PASS | 04-decisions-and-checklist.md, "Decisions" (33 items, meditation app last; 26 decided or applied by default, 7 still open with defaults: 14, 24, 25, 29, 30, 31, 32) |
 | R71 | Owner summary present | PASS | 00-overview.md, "Owner summary" (5 lines) |
 | R72 | Won't-build list present | PASS | 00-overview.md, "Won't-build list" |
 | R73 | Top-5 risks present | PASS | 00-overview.md, "Top-5 risks" (5 items, each linked to its detail) |
